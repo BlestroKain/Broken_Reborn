@@ -84,6 +84,7 @@ namespace Intersect.Server.Entities
         private bool mResetting = false;
 
         private int mLastTargetDir = -1;
+        private long mLastOverrideAttack = 0L;
 
         /// <summary>
         /// The map on which this NPC was "aggro'd" and started chasing a target.
@@ -377,6 +378,19 @@ namespace Intersect.Server.Entities
         {
             if (target.IsDisposed)
             {
+                return;
+            }
+
+            // If this enemy "attacks" with a spell, then don't bother with traditional attacking.
+            var spellOverride = Base.SpellAttackOverrideId;
+            if (Base.SpellAttackOverrideId != default)
+            {
+                if (CanCastSpell(spellOverride, target) && Timing.Global.MillisecondsUtc > mLastOverrideAttack)
+                {
+                    CastSpell(spellOverride);
+                    mLastOverrideAttack = Timing.Global.MillisecondsUtc + CalculateAttackTime();
+                }
+
                 return;
             }
 
@@ -954,6 +968,10 @@ namespace Intersect.Server.Entities
                                                         Dir = dirTarget;
                                                         PacketSender.SendEntityDir(this);
                                                     }
+                                                    if ((Base.SpellAttackOverrideId == default && CanAttack(Target, null)) || (Base.SpellAttackOverrideId != default && CanAttack(Target, SpellBase.Get(Base.SpellAttackOverrideId))))
+                                                    {
+                                                        TryAttack(Target);
+                                                    }
                                                 }
                                                 mPathFinder.PathFailed(timeMs);
                                             }
@@ -1065,7 +1083,7 @@ namespace Intersect.Server.Entities
                                             }
                                             else
                                             {
-                                                if (CanAttack(tempTarget, null))
+                                                if ((Base.SpellAttackOverrideId == default && CanAttack(Target, null)) || (Base.SpellAttackOverrideId != default && CanAttack(Target, SpellBase.Get(Base.SpellAttackOverrideId))))
                                                 {
                                                     TryAttack(tempTarget);
                                                 }

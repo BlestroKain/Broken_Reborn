@@ -83,6 +83,8 @@ namespace Intersect.Server.Entities
         private int mResetMax = 100;
         private bool mResetting = false;
 
+        private int mLastTargetDir = -1;
+
         /// <summary>
         /// The map on which this NPC was "aggro'd" and started chasing a target.
         /// </summary>
@@ -943,6 +945,16 @@ namespace Intersect.Server.Entities
                                             }
                                             else
                                             {
+                                                if (Base.StandStill && Target != null)
+                                                {
+                                                    var dirTarget = GetDirectionTo(Target);
+                                                    if (mLastTargetDir < 0 || mLastTargetDir != dirTarget)
+                                                    {
+                                                        smLastTargetDir = dirTarget;
+                                                        Dir = dirTarget;
+                                                        PacketSender.SendEntityDir(this);
+                                                    }
+                                                }
                                                 mPathFinder.PathFailed(timeMs);
                                             }
 

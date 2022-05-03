@@ -472,6 +472,8 @@ namespace Intersect.Server.Migrations.Game
 
                     b.Property<string>("Sprite");
 
+                    b.Property<bool>("StandStill");
+
                     b.Property<bool>("Swarm");
 
                     b.Property<double>("Tenacity");

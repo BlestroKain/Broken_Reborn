@@ -114,6 +114,8 @@ namespace Intersect.GameObjects
 
         public int ResetRadius { get; set; }
 
+        public bool StandStill { get; set; }
+
         //Conditions
         [Column("PlayerFriendConditions")]
         [JsonIgnore]

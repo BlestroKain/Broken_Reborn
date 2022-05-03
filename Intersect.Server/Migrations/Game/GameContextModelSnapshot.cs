@@ -404,6 +404,9 @@ namespace Intersect.Server.Migrations.Game
 
                     b.Property<int>("DamageType");
 
+                    b.Property<Guid>("DeathTransformId")
+                        .HasColumnName("DeathTransformId");
+
                     b.Property<long>("Experience");
 
                     b.Property<byte>("FleeHealthPercentage");

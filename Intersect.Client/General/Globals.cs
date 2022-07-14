@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 using Intersect.Client.Entities;
@@ -35,6 +35,7 @@ namespace Intersect.Client.General
         public static Item[] Bank;
         public static bool GuildBank;
         public static int BankSlots;
+        public static int BankValue;
 
         public static bool ConnectionLost;
 

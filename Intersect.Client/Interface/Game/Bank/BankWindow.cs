@@ -9,6 +9,8 @@ using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.General;
 using Intersect.Client.Localization;
 using Intersect.GameObjects;
+using Intersect.Client.Networking;
+using Intersect.Client.Framework.Gwen.Control.EventArguments;
 
 namespace Intersect.Client.Interface.Game.Bank
 {
@@ -26,6 +28,10 @@ namespace Intersect.Client.Interface.Game.Bank
         private WindowControl mBankWindow;
 
         private ScrollControl mItemContainer;
+
+        private Button mSortButton;
+
+        private Label mValueLabel;
 
         private List<Label> mValues = new List<Label>();
 
@@ -50,6 +56,14 @@ namespace Intersect.Client.Interface.Game.Bank
 
             mItemContainer = new ScrollControl(mBankWindow, "ItemContainer");
             mItemContainer.EnableScroll(false, true);
+            
+            mSortButton = new Button(mBankWindow, "SortButton");
+            mSortButton.SetText(Strings.Bank.sort);
+            mSortButton.Clicked += sort_Clicked;
+
+            mValueLabel = new Label(mBankWindow, "ValueLabel");
+            mValueLabel.SetText(Strings.Bank.bankvalue.ToString(Strings.FormatQuantityAbbreviated(Globals.BankValue)));
+            mValueLabel.SetToolTipText(Strings.Bank.bankvalue.ToString(Globals.BankValue.ToString("N0").Replace(",", Strings.Numbers.comma)));
 
             mBankWindow.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
             InitItemContainer();
@@ -134,7 +148,8 @@ namespace Intersect.Client.Interface.Game.Bank
 
                 return;
             }
-
+            mValueLabel.SetText(Strings.Bank.bankvalue.ToString(Strings.FormatQuantityAbbreviated(Globals.BankValue)));
+            mValueLabel.SetToolTipText(Strings.Bank.bankvaluefull.ToString(Globals.BankValue.ToString("N0").Replace(",", Strings.Numbers.comma)));
             X = mBankWindow.X;
             Y = mBankWindow.Y;
             for (var i = 0; i < Math.Min(Globals.BankSlots, Options.Instance.Bank.MaxSlots); i++)
@@ -177,7 +192,12 @@ namespace Intersect.Client.Interface.Game.Bank
                 }
             }
         }
+        void sort_Clicked(Base sender, ClickedEventArgs arguments)
+        {
+            if (mBankWindow.IsHidden) return;
 
+            PacketSender.SendBankSortPacket();
+        }
         private void InitItemContainer()
         {
             for (var slotIndex = 0; slotIndex < Options.Instance.Bank.MaxSlots; slotIndex++)

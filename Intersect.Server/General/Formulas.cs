@@ -26,7 +26,7 @@ namespace Intersect.Server.General
             "Random(((BaseDamage + (ScalingStat * ScaleFactor))) * CritMultiplier * .975, ((BaseDamage + (ScalingStat * ScaleFactor))) * CritMultiplier * 1.025) * (100 / (100 + V_MagicResist))";
 
         public string PhysicalDamage =
-            "Random(((BaseDamage + ((ScalingStat  * ScaleFactor)+ A_Potency)/100+1)+ A_DamageBonus) * CritMultiplier * .975, ((BaseDamage + ((ScalingStat + A_Potency) * ScaleFactor)/100+1)A_DamageBonus) * CritMultiplier * 1.025) * (100 / (100 + V_Defense))";
+            "Random(((BaseDamage + (BaseDamage * (((A_Potency) + (ScalingStat * ScaleFactor)) / 15 + 1)))) * CritMultiplier * .975 , ((BaseDamage + (BaseDamage * (((A_Potency) + (ScalingStat * ScaleFactor)))/ 15 + 1))) * CritMultiplier * 1.025) * (100 / (100 + V_Defense)) ";
 
         public string TrueDamage =
             "Random(((BaseDamage + (ScalingStat * ScaleFactor))) * CritMultiplier * .975, ((BaseDamage + (ScalingStat * ScaleFactor))) * CritMultiplier * 1.025)";
@@ -171,10 +171,11 @@ namespace Intersect.Server.General
                 expression.Parameters["A_Attack"] = attacker.Stat[(int) Stats.Attack].Value();
                 expression.Parameters["A_Defense"] = attacker.Stat[(int) Stats.Defense].Value();
                 expression.Parameters["A_Speed"] = attacker.Stat[(int) Stats.Speed].Value();
+                expression.Parameters["A_Agility"] = attacker.Stat[(int)Stats.Agility].Value();
                 expression.Parameters["A_AbilityPwr"] = attacker.Stat[(int) Stats.AbilityPower].Value();
                 expression.Parameters["A_MagicResist"] = attacker.Stat[(int) Stats.MagicResist].Value();
                 expression.Parameters["A_CureBonus"] = attacker.Stat[(int)Stats.Cures].Value();
-                expression.Parameters["A_DamageBonus"] = attacker.Stat[(int)Stats.Fixeddamage].Value();
+               //expression.Parameters["A_DamageBonus"] = attacker.Stat[(int)Stats.Fixeddamage].Value();
                 expression.Parameters["A_Potency"] = attacker.Stat[(int)Stats.Potency].Value();
                 expression.Parameters["V_Attack"] = victim.Stat[(int) Stats.Attack].Value();
                 expression.Parameters["V_Defense"] = victim.Stat[(int) Stats.Defense].Value();

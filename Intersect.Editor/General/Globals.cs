@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -187,10 +187,16 @@ namespace Intersect.Editor.General
                     return "Ability Power";
                 case (int) Stat.Defense:
                     return "Defense";
-                case (int) Stat.MagicResist:
+                case (int) Stats.Vitality:
                     return "Magic Resist";
                 case (int) Stat.Speed:
                     return "Speed";
+                case (int)Stats.Agility:
+                    return "Agility";
+                case (int) Stats.Potency :
+                    return "Bonus Damage";
+                case (int)Stats.Cures:
+                    return "Bonus Curas";
                 default:
                     return "Invalid Stat";
             }

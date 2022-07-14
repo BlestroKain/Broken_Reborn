@@ -296,13 +296,13 @@ namespace Intersect.Editor.Forms.Editors
                 cmbOnDeathEventKiller.SelectedIndex = EventBase.ListIndex(mEditorItem.OnDeathEventId) + 1;
                 cmbOnDeathEventParty.SelectedIndex = EventBase.ListIndex(mEditorItem.OnDeathPartyEventId) + 1;
 
-                nudStr.Value = mEditorItem.Stats[(int) Stat.Attack];
-                nudMag.Value = mEditorItem.Stats[(int) Stat.AbilityPower];
-                nudDef.Value = mEditorItem.Stats[(int) Stat.Defense];
-                nudMR.Value = mEditorItem.Stats[(int) Stat.MagicResist];
-                nudSpd.Value = mEditorItem.Stats[(int) Stat.Speed];
-                nudHp.Value = mEditorItem.MaxVital[(int) Vital.Health];
-                nudMana.Value = mEditorItem.MaxVital[(int) Vital.Mana];
+                nudStr.Value = mEditorItem.Stats[(int) Stats.Attack];
+                nudMag.Value = mEditorItem.Stats[(int) Stats.AbilityPower];
+                nudDef.Value = mEditorItem.Stats[(int) Stats.Defense];
+                nudMR.Value = mEditorItem.Stats[(int) Stats.Vitality];
+                nudSpd.Value = mEditorItem.Stats[(int) Stats.Speed];
+                nudHp.Value = mEditorItem.MaxVital[(int) Vitals.Health];
+                nudMana.Value = mEditorItem.MaxVital[(int) Vitals.Mana];
                 nudExp.Value = mEditorItem.Experience;
                 chkAttackAllies.Checked = mEditorItem.AttackAllies;
                 chkEnabled.Checked = mEditorItem.NpcVsNpcEnabled;
@@ -696,7 +696,7 @@ namespace Intersect.Editor.Forms.Editors
 
         private void nudMR_ValueChanged(object sender, EventArgs e)
         {
-            mEditorItem.Stats[(int) Stat.MagicResist] = (int) nudMR.Value;
+            mEditorItem.Stats[(int) Stats.Vitality] = (int) nudMR.Value;
         }
 
         private void nudSpd_ValueChanged(object sender, EventArgs e)

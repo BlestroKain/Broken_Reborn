@@ -118,6 +118,10 @@ namespace Intersect
 
         public static int TradeRange => Instance.PlayerOpts.TradeRange;
 
+        public static int AttackHealthDivider => Instance.PlayerOpts.VitalityHealthDivider;
+
+        public static int AbilityPowerManaDivider => Instance.PlayerOpts.IntManaDivider;
+
         public static int WeaponIndex => Instance.EquipmentOpts.WeaponSlot;
 
         public static int ShieldIndex => Instance.EquipmentOpts.ShieldSlot;

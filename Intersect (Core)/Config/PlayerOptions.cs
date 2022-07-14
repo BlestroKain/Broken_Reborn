@@ -1,4 +1,4 @@
-﻿namespace Intersect.Config
+namespace Intersect.Config
 {
     /// <summary>
     /// Contains configurable options pertaining to the way Players are handled by the engine.
@@ -38,7 +38,15 @@
         /// If true, it will remove the associated exp, otherwise you will lose the exp based on the exp required to level up.
         /// </summary>
         public bool ExpLossFromCurrentExp { get; set; } = true;
+        /// <summary>
+        /// The amount to divide strength by when determining its HP bonus 
+        /// </summary>
+        public int VitalityHealthDivider = 3;
 
+        /// <summary>
+        /// The amount to divide AP by when determining its MP bonus 
+        /// </summary>
+        public int IntManaDivider = 3;
         /// <summary>
         /// A percentage between 0 and 100 which determines the experience that players will lose when they die.
         /// </summary>

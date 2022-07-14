@@ -8,7 +8,7 @@ namespace Intersect.Enums
 
         Defense,
 
-        MagicResist,
+        Vitality,
 
         Speed,
 

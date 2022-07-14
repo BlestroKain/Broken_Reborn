@@ -122,6 +122,11 @@ namespace Intersect.Editor.Forms.Editors
             nudDef.Maximum = Options.MaxStatValue;
             nudMR.Maximum = Options.MaxStatValue;
             nudSpd.Maximum = Options.MaxStatValue;
+
+            cmbDeathAnimation.Items.Clear();
+            cmbDeathAnimation.Items.Add(Strings.General.none);
+            cmbDeathAnimation.Items.AddRange(AnimationBase.Names);
+
             InitLocalization();
             UpdateEditor();
         }
@@ -252,7 +257,8 @@ namespace Intersect.Editor.Forms.Editors
             chkTaunt.Text = Strings.NpcEditor.Immunities[StatusTypes.Taunt];
             chkSleep.Text = Strings.NpcEditor.Immunities[StatusTypes.Sleep];
             lblTenacity.Text = Strings.NpcEditor.Tenacity;
-
+            grpAnimation.Text = Strings.NpcEditor.additionalanimationgroup;
+            lblDeathAnimation.Text = Strings.NpcEditor.deathanimation;
             btnSave.Text = Strings.NpcEditor.save;
             btnCancel.Text = Strings.NpcEditor.cancel;
         }
@@ -372,6 +378,8 @@ namespace Intersect.Editor.Forms.Editors
                 nudTenacity.Value = (decimal) mEditorItem.Tenacity;
 
                 UpdateImmunities();
+
+                cmbDeathAnimation.SelectedIndex = AnimationBase.ListIndex(mEditorItem.DeathAnimationId) + 1;
             }
             else
             {
@@ -1104,6 +1112,18 @@ namespace Intersect.Editor.Forms.Editors
         private void nudTenacity_ValueChanged(object sender, EventArgs e)
         {
             mEditorItem.Tenacity = (double)nudTenacity.Value;
+        }
+
+        private void cmbDeathAnimation_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            mEditorItem.DeathAnimation =
+                AnimationBase.Get(AnimationBase.IdFromList(cmbDeathAnimation.SelectedIndex - 1));
+        }
+
+        private void cmbDeathAnimation_SelectedIndexChanged_1(object sender, EventArgs e)
+        {
+            mEditorItem.DeathAnimation =
+                AnimationBase.Get(AnimationBase.IdFromList(cmbDeathAnimation.SelectedIndex - 1));
         }
     }
 

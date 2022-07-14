@@ -1,4 +1,4 @@
-﻿namespace Intersect.Client.Core.Controls
+namespace Intersect.Client.Core.Controls
 {
 
     public enum Control
@@ -66,7 +66,15 @@
 
         OpenAdminPanel,
 
-        ToggleGui
+        ToggleGui,
+
+        TargetParty1,
+
+        TargetParty2,
+
+        TargetParty3,
+
+        TargetParty4,
 
     }
 

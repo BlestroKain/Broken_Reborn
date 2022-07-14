@@ -686,7 +686,12 @@ namespace Intersect.Client.Entities
                 if (Inventory[index].Quantity > 1)
                 {
                     int[] userData = new int[2] { index, bankSlot };
-
+                   
+                    if (Globals.InputManager.KeyDown(Keys.Shift))
+                    {
+                        PacketSender.SendDepositItem(index, Inventory[index].Quantity);
+                        return;
+                    }
                     InputBox.Open(
                         title: Strings.Bank.deposititem,
                         prompt: Strings.Bank.deposititemprompt.ToString(ItemBase.Get(Inventory[index].ItemId).Name),
@@ -735,7 +740,11 @@ namespace Intersect.Client.Entities
                 if (Globals.Bank[index].Quantity > 1)
                 {
                     int[] userData = new int[2] { index, invSlot };
-
+                    if (Globals.InputManager.KeyDown(Keys.Shift))
+                    {
+                        PacketSender.SendWithdrawItem(index, Globals.Bank[index].Quantity);
+                        return;
+                    }
                     InputBox.Open(
                         title: Strings.Bank.withdrawitem,
                         prompt: Strings.Bank.withdrawitemprompt.ToString(ItemBase.Get(Globals.Bank[index].ItemId).Name),
@@ -773,7 +782,6 @@ namespace Intersect.Client.Entities
                 if (Inventory[invSlot].Quantity > 1)
                 {
                     int[] userData = new int[2] { invSlot, bagSlot };
-
                     var iBox = new InputBox(
                         Strings.Bags.storeitem,
                         Strings.Bags.storeitemprompt.ToString(ItemBase.Get(Inventory[invSlot].ItemId).Name), true,
@@ -1160,6 +1168,20 @@ namespace Intersect.Client.Entities
 
             //Something is null.. return a value that is out of range :)
             return 9999;
+        }
+        public void TargetPartyMember(int idx)
+        {
+            if (Globals.Me.IsInParty() && idx < Globals.Me.Party.Count)
+            {
+                if (Globals.Entities.TryGetValue(Globals.Me.Party[idx].Id, out var partyMember) && GetDistanceTo(partyMember) <= Options.Instance.CombatOpts.PartyTargetDistance)
+                {
+                    TryTarget(partyMember);
+                }
+            }
+            else if (idx == 0)
+            {
+                TryTarget(this);
+            }
         }
 
         public void AutoTarget()

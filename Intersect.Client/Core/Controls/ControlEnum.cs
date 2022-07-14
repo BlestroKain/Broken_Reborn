@@ -1,4 +1,4 @@
-﻿namespace Intersect.Client.Core.Controls
+namespace Intersect.Client.Core.Controls
 {
 
     public enum Control
@@ -79,6 +79,15 @@
         HoldToZoomOut,
 
         ToggleFullscreen,
+
+        TargetParty1,
+
+        TargetParty2,
+
+        TargetParty3,
+
+        TargetParty4,
+
 
     }
 

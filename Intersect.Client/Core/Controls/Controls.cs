@@ -99,6 +99,10 @@ namespace Intersect.Client.Core.Controls
             CreateControlMap(Control.HoldToZoomIn, ControlValue.Default, ControlValue.Default);
             CreateControlMap(Control.HoldToZoomOut, ControlValue.Default, ControlValue.Default);
             CreateControlMap(Control.ToggleFullscreen, new ControlValue(Keys.Alt, Keys.Enter), ControlValue.Default);
+			CreateControlMap(Control.TargetParty1, new ControlValue(Keys.None, Keys.NumPad1), new ControlValue(Keys.None, Keys.None));
+            CreateControlMap(Control.TargetParty2, new ControlValue(Keys.None, Keys.NumPad2), new ControlValue(Keys.None, Keys.None));
+            CreateControlMap(Control.TargetParty3, new ControlValue(Keys.None, Keys.NumPad3), new ControlValue(Keys.None, Keys.None));
+            CreateControlMap(Control.TargetParty4, new ControlValue(Keys.None, Keys.NumPad4), new ControlValue(Keys.None, Keys.None));
         }
 
         private static void MigrateControlBindings(Control control)

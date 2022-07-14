@@ -1129,7 +1129,7 @@ namespace Intersect.Server.Entities
         {
             return (int) (Options.MaxAttackRate +
                           (float) ((Options.MinAttackRate - Options.MaxAttackRate) *
-                                   (((float) Options.MaxStatValue - Stat[(int) Stats.Speed].Value()) /
+                                   (((float) Options.MaxStatValue - Stat[(int) Stats.Agility].Value()) /
                                     (float) Options.MaxStatValue)));
         }
 
@@ -1848,6 +1848,13 @@ namespace Intersect.Server.Entities
                         case DamageType.True:
                             PacketSender.SendActionMsg(
                                 enemy, Strings.Combat.removesymbol + (int) baseDamage, CustomColors.Combat.TrueDamage
+                            );
+
+                            break;
+
+                        case DamageType.Cure:
+                            PacketSender.SendActionMsg(
+                                enemy, Strings.Combat.removesymbol + (int)baseDamage, CustomColors.Combat.Cure
                             );
 
                             break;

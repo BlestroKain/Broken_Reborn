@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -1526,6 +1526,10 @@ namespace Intersect.Editor.Forms.Editors
 
         #endregion
 
+        private void NudAgi_ValueChanged(object sender, EventArgs e)
+        {
+            mEditorItem.BaseStat[(int)Stats.Agility] = (int)NudAgi.Value;
+        }
     }
 
 }

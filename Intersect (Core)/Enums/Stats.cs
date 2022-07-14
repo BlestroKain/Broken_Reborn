@@ -18,8 +18,6 @@ namespace Intersect.Enums
 
         Potency, // porcentual siempre
 
-        Fixeddamage,// Daños fijos
-
         Cures, // bonus de cura 
 
         // Elementales

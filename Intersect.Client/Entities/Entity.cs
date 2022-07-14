@@ -790,7 +790,7 @@ namespace Intersect.Client.Entities
             //Otherwise return the legacy attack speed calculation
             return (int)(Options.MaxAttackRate +
                           (float)((Options.MinAttackRate - Options.MaxAttackRate) *
-                                   (((float)Options.MaxStatValue - Stat[(int)Stats.Speed]) /
+                                   (((float)Options.MaxStatValue - Stat[(int)Stats.Agility]) /
                                     (float)Options.MaxStatValue)));
         }
 

@@ -213,6 +213,8 @@ namespace Intersect
 
             public Color TrueDamage = new Color(255, 255, 255, 255);
 
+            public Color Cure = new Color(255, 51, 255, 190);
+
         }
 
         public sealed partial class ItemsNamespace

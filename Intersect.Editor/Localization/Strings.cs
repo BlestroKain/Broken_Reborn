@@ -4469,6 +4469,10 @@ Tick timer saved in server config.json.";
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public static LocalizedString Tenacity = @"Tenacity (%):";
 
+            public static LocalizedString additionalanimationgroup = @"Animations:";
+
+            public static LocalizedString deathanimation = @"Death Animation:";
+
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public static Dictionary<SpellEffect, LocalizedString> Immunities = new Dictionary<SpellEffect, LocalizedString>
             {

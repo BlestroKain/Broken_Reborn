@@ -265,6 +265,9 @@ namespace Intersect.Server.Entities
         public object EntityLock = new object();
 
         [NotMapped, JsonIgnore]
+        public Guid DeathAnimation = Guid.Empty;
+
+        [NotMapped, JsonIgnore]
         public bool VitalsUpdated
         {
             get => !GetVitals().SequenceEqual(mOldVitals) || !GetMaxVitals().SequenceEqual(mOldMaxVitals);
@@ -2827,6 +2830,17 @@ namespace Intersect.Server.Entities
 
             return Options.Instance.MapOpts.EnableDiagonalMovement && dx == 1 && dy == 1;
         }
+        protected void PlayDeathAnimation()
+        {
+            if (DeathAnimation != Guid.Empty)
+            {
+                PacketSender.SendAnimationToProximity(DeathAnimation, -1, Id, MapId, (byte)X, (byte)Y, (sbyte)Directions.Up, MapInstanceId);
+            }
+            if (this is Player)
+            {
+                PacketSender.SendAnimationToProximity(new Guid(Options.PlayerDeathAnimationId), -1, Id, MapId, (byte)X, (byte)Y, (sbyte)Directions.Up, MapInstanceId);
+            }
+        }
 
         //Spawning/Dying
         public virtual void Die(bool dropItems = true, Entity killer = null)
@@ -2835,6 +2849,7 @@ namespace Intersect.Server.Entities
             {
                 return;
             }
+            PlayDeathAnimation();
 
             // Run events and other things.
             killer?.KilledEntity(this);

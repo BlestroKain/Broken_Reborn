@@ -124,7 +124,7 @@ namespace Intersect.Editor.Forms.Editors
             nudSpd.Maximum = Options.MaxStatValue;
 
             cmbDeathAnimation.Items.Clear();
-            cmbDeathAnimation.Items.Add(Strings.General.None);
+            cmbDeathAnimation.Items.Add(Strings.General.none);
             cmbDeathAnimation.Items.AddRange(AnimationBase.Names);
 
             InitLocalization();

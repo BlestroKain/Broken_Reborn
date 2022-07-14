@@ -146,6 +146,8 @@ namespace Intersect
 
         public static int MaxDashSpeed => Instance.CombatOpts.MaxDashSpeed;
 
+        public static string PlayerDeathAnimationId => Instance.CombatOpts.PlayerDeathAnimationId;
+
         public static int GameBorderStyle => Instance.MapOpts.GameBorderStyle;
 
         public static bool ZDimensionVisible => Instance.MapOpts.ZDimensionVisible;

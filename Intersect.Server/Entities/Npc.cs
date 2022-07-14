@@ -102,6 +102,7 @@ namespace Intersect.Server.Entities
         /// </summary>
         public int AggroCenterZ;
 
+
         public Npc(NpcBase myBase, bool despawnable = false) : base()
         {
             Name = myBase.Name;
@@ -146,6 +147,11 @@ namespace Intersect.Server.Entities
 
             Range = (byte) myBase.SightRange;
             mPathFinder = new Pathfinder(this);
+            
+            if (myBase.DeathAnimation != null)
+            {
+                DeathAnimation = myBase.DeathAnimation.Id;
+            }
         }
 
         public NpcBase Base { get; private set; }

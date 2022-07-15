@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -87,6 +87,10 @@ namespace Intersect.Client.Core.Controls
             CreateControlMap(Control.OpenDebugger, new ControlValue(Keys.None, Keys.F2), new ControlValue(Keys.None, Keys.None));
             CreateControlMap(Control.OpenAdminPanel, new ControlValue(Keys.None, Keys.Insert), new ControlValue(Keys.None, Keys.None));
             CreateControlMap(Control.ToggleGui, new ControlValue(Keys.None, Keys.F11), new ControlValue(Keys.None, Keys.None));
+            CreateControlMap(Control.TargetParty1, new ControlValue(Keys.None, Keys.NumPad1), new ControlValue(Keys.None, Keys.None));
+            CreateControlMap(Control.TargetParty2, new ControlValue(Keys.None, Keys.NumPad2), new ControlValue(Keys.None, Keys.None));
+            CreateControlMap(Control.TargetParty3, new ControlValue(Keys.None, Keys.NumPad3), new ControlValue(Keys.None, Keys.None));
+            CreateControlMap(Control.TargetParty4, new ControlValue(Keys.None, Keys.NumPad4), new ControlValue(Keys.None, Keys.None));
         }
 
         public void Save()

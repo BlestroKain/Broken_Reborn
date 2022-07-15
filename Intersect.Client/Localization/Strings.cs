@@ -311,9 +311,14 @@ namespace Intersect.Client.Localization
             public static LocalizedString withdrawitem = @"Withdraw Item";
 
             public static LocalizedString withdrawitemprompt = @"How many/much {00} would you like to withdraw?";
+            
+            public static LocalizedString sort = @"Sort";
 
+            public static LocalizedString bankvalue = @"Bank Value: {00}";
+
+            public static LocalizedString bankvaluefull = @"{00} Gold Coins";
         }
-
+    
         public partial struct BanMute
         {
 
@@ -373,6 +378,14 @@ namespace Intersect.Client.Localization
             public static LocalizedString stat3 = @"{00}: {01}";
 
             public static LocalizedString stat4 = @"{00}: {01}";
+
+            public static LocalizedString stat5 = @"{00}: {01}";
+
+            public static LocalizedString stat6 = @"{00}: {01}";
+
+            public static LocalizedString stat7 = @"{00}: {01}";
+
+            public static LocalizedString stat8 = @"{00}: {01}";
 
             public static LocalizedString stats = @"Stats:";
 
@@ -500,15 +513,21 @@ namespace Intersect.Client.Localization
 
             public static LocalizedString exp = @"Experience";
 
-            public static LocalizedString stat0 = @"Attack";
+            public static LocalizedString stat0 = @"STR";
 
-            public static LocalizedString stat1 = @"Ability Power";
+            public static LocalizedString stat1 = @"INT";
 
-            public static LocalizedString stat2 = @"Defense";
+            public static LocalizedString stat2 = @"DEF";
 
             public static LocalizedString stat3 = @"Magic Resist";
 
-            public static LocalizedString stat4 = @"Speed";
+            public static LocalizedString stat4 = @"MOV";
+
+            public static LocalizedString stat5 = @"AGI";
+
+            public static LocalizedString stat6 = @"Bonus Damage";
+
+            public static LocalizedString stat7 = @"Bonus Cures";
 
             public static LocalizedString targetoutsiderange = @"Target too far away!";
 
@@ -568,7 +587,11 @@ namespace Intersect.Client.Localization
                 {"opensettings", @"Open Settings:"},
                 {"opendebugger", @"Open Debugger:"},
                 {"openadminpanel", @"Open Admin Panel:"},
-                {"togglegui", @"Toggle Interface:"}
+                {"togglegui", @"Toggle Interface:"},
+                {"targetparty1", @"Target Self/Party 1:"},
+                {"targetparty2", @"Target Party 2:"},
+                {"targetparty3", @"Target Party 3:"},
+                {"targetparty4", @"Target Party 4:"},
             };
 
             public static LocalizedString listening = @"Listening";
@@ -1105,7 +1128,8 @@ namespace Intersect.Client.Localization
             {
                 { 0, @"Physical" },
                 { 1, @"Magic" },
-                { 2, @"True" }
+                { 2, @"True" },
+                { 3, @"Cures" }
             };
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -1139,7 +1163,10 @@ namespace Intersect.Client.Localization
                 {1, @"Ability Power"},
                 {2, @"Defense"},
                 {3, @"Magic Resist"},
-                {4, @"Speed"}
+                {4, @"Speed"},
+                {5, @"Agility"},
+                {6, @"Damage"},
+                {7, @"Cures"}
             };
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -1149,7 +1176,10 @@ namespace Intersect.Client.Localization
                 {1, @"Ability Power:"},
                 {2, @"Defense:"},
                 {3, @"Magic Resist:"},
-                {4, @"Speed:"}
+                {4, @"Speed"},
+                {5, @"Agility"},
+                {6, @"Damage"},
+                {7, @"Cures"}
             };
             
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -1928,7 +1958,8 @@ namespace Intersect.Client.Localization
             {
                 { 0, @"Physical" },
                 { 1, @"Magic" },
-                { 2, @"True" }
+                { 2, @"True" },
+                { 3, @"Cures" }
             };
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -1944,7 +1975,10 @@ namespace Intersect.Client.Localization
                 {1, @"Ability Power"},
                 {2, @"Defense"},
                 {3, @"Magic Resist"},
-                {4, @"Speed"}
+                {4, @"Speed"},
+                {5, @"Agility"},
+                {6, @"Damage"},
+                {7, @"Cures"}
             };
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -1996,7 +2030,10 @@ namespace Intersect.Client.Localization
                 {1, @"Ability Power:"},
                 {2, @"Defense:"},
                 {3, @"Magic Resist:"},
-                {4, @"Speed:"}
+                {4, @"Speed"},
+                {5, @"Agility"},
+                {6, @"Damage"},
+                {7, @"Cures"}
             };
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

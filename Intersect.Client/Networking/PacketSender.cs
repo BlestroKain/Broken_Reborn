@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 using Intersect.Admin.Actions;
 using Intersect.Client.Entities.Events;
@@ -426,6 +426,10 @@ namespace Intersect.Client.Networking
             {
                 Network.SendPacket(new PictureClosedPacket(eventId));
             }
+        }
+        public static void SendBankSortPacket()
+        {
+            Network.SendPacket(new BankSortPacket());
         }
 
     }

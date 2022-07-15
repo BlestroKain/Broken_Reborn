@@ -336,13 +336,17 @@ namespace Intersect.Editor.Forms.Editors
                 nudDef.Value = mEditorItem.StatsGiven[2];
                 nudMR.Value = mEditorItem.StatsGiven[3];
                 nudSpd.Value = mEditorItem.StatsGiven[4];
+                NudAgi.Value = mEditorItem.StatsGiven[5];
+                nudBdam.Value = mEditorItem.StatsGiven[6];
+                nudBcures.Value = mEditorItem.StatsGiven[7];
 
                 nudStrPercentage.Value = mEditorItem.PercentageStatsGiven[0];
                 nudMagPercentage.Value = mEditorItem.PercentageStatsGiven[1];
                 nudDefPercentage.Value = mEditorItem.PercentageStatsGiven[2];
                 nudMRPercentage.Value = mEditorItem.PercentageStatsGiven[3];
                 nudSpdPercentage.Value = mEditorItem.PercentageStatsGiven[4];
-
+                NudAgiPercentage.Value = mEditorItem.PercentageStatsGiven[5];
+                
                 nudHealthBonus.Value = mEditorItem.VitalsGiven[0];
                 nudManaBonus.Value = mEditorItem.VitalsGiven[1];
                 nudHPPercentage.Value = mEditorItem.PercentageVitalsGiven[0];
@@ -1292,6 +1296,25 @@ namespace Intersect.Editor.Forms.Editors
 
         #endregion
 
+        private void nudBdam_ValueChanged(object sender, EventArgs e)
+        {
+            mEditorItem.StatsGiven[6] = (int)nudBdam.Value;
+        }
+
+        private void nudBcures_ValueChanged(object sender, EventArgs e)
+        {
+            mEditorItem.StatsGiven[7] = (int)nudBcures.Value;
+        }
+
+        private void NudAgi_ValueChanged(object sender, EventArgs e)
+        {
+            mEditorItem.StatsGiven[5] = (int)NudAgi.Value;
+        }
+
+        private void NudAgiPercentage_ValueChanged(object sender, EventArgs e)
+        {
+            mEditorItem.PercentageStatsGiven[5] = (int)NudAgiPercentage.Value;
+        }
     }
 
 }

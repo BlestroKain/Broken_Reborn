@@ -1937,7 +1937,17 @@ namespace Intersect.Server.Networking
 
             player?.BankInterface?.SwapBankItems(packet.Slot1, packet.Slot2);
         }
+        public void HandlePacket(Client client, BankSortPacket packet)
+        {
+            var player = client?.Entity;
 
+            if (player == null || client.IsEditor)
+            {
+                return;
+            }
+
+            player.BankInterface.SortBank();
+        }
         //PartyInvitePacket
         public void HandlePacket(Client client, PartyInvitePacket packet)
         {

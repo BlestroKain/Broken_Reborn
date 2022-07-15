@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 using Intersect.Client.Core;
@@ -23,6 +23,14 @@ namespace Intersect.Client.Interface.Game.Character
         public List<EquipmentItem> Items = new List<EquipmentItem>();
 
         Label mAbilityPwrLabel;
+
+        Label mAgilityLabel;
+
+        Button mAddAgilityBtn;
+
+        Label mBonusDamageLabel;
+
+        Label mBonusCuresLabel;
 
         Button mAddAbilityPwrBtn;
 
@@ -112,8 +120,12 @@ namespace Intersect.Client.Interface.Game.Character
             mAddDefenseBtn.Clicked += _addDefenseBtn_Clicked;
 
             mSpeedLabel = new Label(mCharacterWindow, "SpeedLabel");
-            mAddSpeedBtn = new Button(mCharacterWindow, "IncreaseSpeedButton");
-            mAddSpeedBtn.Clicked += _addSpeedBtn_Clicked;
+           /* mAddSpeedBtn = new Button(mCharacterWindow, "IncreaseSpeedButton");
+            mAddSpeedBtn.Clicked += _addSpeedBtn_Clicked;*/
+
+            mAgilityLabel = new Label(mCharacterWindow, "AgilityLabel");
+            mAddAgilityBtn = new Button(mCharacterWindow, "IncreaseAgilityButton");
+            mAddAgilityBtn.Clicked += _addAgilityBtn_Clicked;
 
             mAbilityPwrLabel = new Label(mCharacterWindow, "AbilityPowerLabel");
             mAddAbilityPwrBtn = new Button(mCharacterWindow, "IncreaseAbilityPowerButton");
@@ -122,6 +134,10 @@ namespace Intersect.Client.Interface.Game.Character
             mMagicRstLabel = new Label(mCharacterWindow, "MagicResistLabel");
             mAddMagicResistBtn = new Button(mCharacterWindow, "IncreaseMagicResistButton");
             mAddMagicResistBtn.Clicked += _addMagicResistBtn_Clicked;
+
+            mBonusDamageLabel = new Label(mCharacterWindow, "BonusDamageLabel");
+
+            mBonusCuresLabel = new Label(mCharacterWindow, "BonusCuresLabel");
 
             mPointsLabel = new Label(mCharacterWindow, "PointsLabel");
 
@@ -138,7 +154,7 @@ namespace Intersect.Client.Interface.Game.Character
         //Update Button Event Handlers
         void _addMagicResistBtn_Clicked(Base sender, ClickedEventArgs arguments)
         {
-            PacketSender.SendUpgradeStat((int) Stats.MagicResist);
+            PacketSender.SendUpgradeStat((int) Stats.Vitality);
         }
 
         void _addAbilityPwrBtn_Clicked(Base sender, ClickedEventArgs arguments)
@@ -146,11 +162,14 @@ namespace Intersect.Client.Interface.Game.Character
             PacketSender.SendUpgradeStat((int) Stats.AbilityPower);
         }
 
-        void _addSpeedBtn_Clicked(Base sender, ClickedEventArgs arguments)
+        /*void _addSpeedBtn_Clicked(Base sender, ClickedEventArgs arguments)
         {
             PacketSender.SendUpgradeStat((int) Stats.Speed);
+        }*/
+        void _addAgilityBtn_Clicked(Base sender, ClickedEventArgs arguments)
+        {
+            PacketSender.SendUpgradeStat((int)Stats.Agility);
         }
-
         void _addDefenseBtn_Clicked(Base sender, ClickedEventArgs arguments)
         {
             PacketSender.SendUpgradeStat((int) Stats.Defense);
@@ -293,12 +312,23 @@ namespace Intersect.Client.Interface.Game.Character
                 Strings.Character.stat4.ToString(Strings.Combat.stat4, Globals.Me.Stat[(int) Stats.Speed])
             );
 
+            mAgilityLabel.SetText(
+                Strings.Character.stat5.ToString(Strings.Combat.stat5, Globals.Me.Stat[(int)Stats.Agility])
+            );
+            mBonusDamageLabel.SetText(
+                Strings.Character.stat6.ToString(Strings.Combat.stat6, Globals.Me.Stat[(int)Stats.Potency])
+            );
+
+            mBonusCuresLabel.SetText(
+                Strings.Character.stat7.ToString(Strings.Combat.stat7, Globals.Me.Stat[(int)Stats.Cures])
+            );
+
             mAbilityPwrLabel.SetText(
                 Strings.Character.stat1.ToString(Strings.Combat.stat1, Globals.Me.Stat[(int) Stats.AbilityPower])
             );
 
             mMagicRstLabel.SetText(
-                Strings.Character.stat3.ToString(Strings.Combat.stat3, Globals.Me.Stat[(int) Stats.MagicResist])
+                Strings.Character.stat3.ToString(Strings.Combat.stat3, Globals.Me.Stat[(int) Stats.Vitality])
             );
 
             mPointsLabel.SetText(Strings.Character.points.ToString(Globals.Me.StatPoints));
@@ -312,10 +342,10 @@ namespace Intersect.Client.Interface.Game.Character
                                       Globals.Me.Stat[(int) Stats.Defense] == Options.MaxStatValue;
 
             mAddMagicResistBtn.IsHidden = Globals.Me.StatPoints == 0 ||
-                                          Globals.Me.Stat[(int) Stats.MagicResist] == Options.MaxStatValue;
+                                          Globals.Me.Stat[(int) Stats.Vitality] == Options.MaxStatValue;
 
-            mAddSpeedBtn.IsHidden =
-                Globals.Me.StatPoints == 0 || Globals.Me.Stat[(int) Stats.Speed] == Options.MaxStatValue;
+            mAddAgilityBtn.IsHidden =
+                Globals.Me.StatPoints == 0 || Globals.Me.Stat[(int) Stats.Agility] == Options.MaxStatValue;
 
             for (var i = 0; i < Options.EquipmentSlots.Count; i++)
             {

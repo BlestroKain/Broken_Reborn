@@ -228,7 +228,7 @@ namespace Intersect.Client.Interface.Game.DescriptionWindows
                 if (mItem.AttackSpeedModifier == 0)
                 {
                     // No modifier, assuming base attack rate? We have to calculate the speed stat manually here though..!
-                    var speed = Globals.Me.Stat[(int)Stats.Speed];
+                    var speed = Globals.Me.Stat[(int)Stats.Agility];
 
                     // Remove currently equipped weapon stats.. We want to create a fair display!
                     var weaponSlot = Globals.Me.MyEquipment[Options.WeaponIndex];
@@ -238,18 +238,18 @@ namespace Intersect.Client.Interface.Game.DescriptionWindows
                         var weapon = ItemBase.Get(Globals.Me.Inventory[weaponSlot].ItemId);
                         if (weapon != null && statBuffs != null)
                         {
-                            speed = (int) Math.Round(speed / ((100 + weapon.PercentageStatsGiven[(int)Stats.Speed]) / 100f));
-                            speed -= weapon.StatsGiven[(int)Stats.Speed];
-                            speed -= statBuffs[(int)Stats.Speed];
+                            speed = (int) Math.Round(speed / ((100 + weapon.PercentageStatsGiven[(int)Stats.Agility]) / 100f));
+                            speed -= weapon.StatsGiven[(int)Stats.Agility];
+                            speed -= statBuffs[(int)Stats.Agility];
                         }
                     }
 
                     // Add current item's speed stats!
                     if (mStatBuffs != null)
                     {
-                        speed += mItem.StatsGiven[(int) Stats.Speed];
-                        speed += mStatBuffs[(int) Stats.Speed];
-                        speed += (int) Math.Floor(speed * (mItem.PercentageStatsGiven[(int)Stats.Speed] / 100f));
+                        speed += mItem.StatsGiven[(int) Stats.Agility];
+                        speed += mStatBuffs[(int) Stats.Agility];
+                        speed += (int) Math.Floor(speed * (mItem.PercentageStatsGiven[(int)Stats.Agility] / 100f));
                     }
 
                     // Display the actual speed this weapon would have based off of our calculated speed stat.

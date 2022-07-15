@@ -1,4 +1,4 @@
-﻿namespace Intersect.Config
+namespace Intersect.Config
 {
 
     public partial class CombatOptions
@@ -11,9 +11,9 @@
         public int MaxAttackRate = 200; //5 attacks per second
 
         public int MaxDashSpeed = 200;
-
+        public int PartyTargetDistance = 10;
         public int MinAttackRate = 500; //2 attacks per second
-
+        public string PlayerDeathAnimationId = "95f735e1-0c32-46a8-9a9a-b472a7a3fedd";
         //Combat
         public int RegenTime = 3000; //3 seconds
         

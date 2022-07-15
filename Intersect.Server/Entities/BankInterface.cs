@@ -1,4 +1,4 @@
-﻿using Intersect.Enums;
+using Intersect.Enums;
 using Intersect.GameObjects;
 using Intersect.Network.Packets.Server;
 using Intersect.Server.Database;
@@ -26,6 +26,8 @@ namespace Intersect.Server.Entities
 
         private int mMaxSlots;
 
+        private int mBankValue;
+
         public BankInterface(Player player, IList<Item> bank, object bankLock, Guild guild, int maxSlots)
         {
             mPlayer = player;
@@ -33,12 +35,13 @@ namespace Intersect.Server.Entities
             mGuild = guild;
             mLock = bankLock;
             mMaxSlots = maxSlots;
+            mBankValue = 0;
         }
 
         public void SendOpenBank()
         {
             var items = new List<BankUpdatePacket>();
-
+            mBankValue = 0;
             for (var slot = 0; slot < mMaxSlots; slot++)
             {
                 if (mBank[slot] != null && mBank[slot].ItemId != Guid.Empty && mBank[slot].Quantity > 0)
@@ -49,6 +52,7 @@ namespace Intersect.Server.Entities
                             mBank[slot].StatBuffs
                         )
                     );
+                    mBankValue += ItemBase.Get(mBank[slot].ItemId).Price;
                 }
                 else
                 {
@@ -56,7 +60,7 @@ namespace Intersect.Server.Entities
                 }
             }
 
-            mPlayer?.SendPacket(new BankPacket(false, mGuild != null, mMaxSlots, items.ToArray()));
+            mPlayer?.SendPacket(new BankPacket(false, mGuild != null, mMaxSlots, items.ToArray(), mBankValue));
         }
 
         //BankUpdatePacket
@@ -81,11 +85,12 @@ namespace Intersect.Server.Entities
             {
                 mPlayer?.SendPacket(new BankUpdatePacket(slot, Guid.Empty, 0, null, null));
             }
+            UpdateBankValue();
         }
 
         public void SendCloseBank()
         {
-            mPlayer?.SendPacket(new BankPacket(true, false, -1, null));
+            mPlayer?.SendPacket(new BankPacket(true, false, -1, null, -1));
         }
 
 
@@ -719,7 +724,7 @@ namespace Intersect.Server.Entities
             }
         }
 
-        public void SwapBankItems(int item1, int item2)
+        public void SwapBankItems(int item1, int item2,bool sendUpdate = true)
         {
             //Permission Check
             if (mGuild != null)
@@ -764,16 +769,141 @@ namespace Intersect.Server.Entities
                 }
             }
 
-            SendBankUpdate(item1);
-            SendBankUpdate(item2);
+            if (sendUpdate)
+            {
+                SendBankUpdate(item1);
+                SendBankUpdate(item2);
+            }
         }
 
+        public void SortBank()
+        {
+            // This really bubbles my sorts - sort() isn't implemented on ILists, and I was having some horrible things happen if I tried converting mBank to some sortable list, then
+            // back again. So tada!
+            for (var slot = 0; slot < mMaxSlots - 1; slot++)
+            {
+                for (var compareSlot = 0; compareSlot < mMaxSlots - slot - 1; compareSlot++)
+                {
+                    if (CompareBankItems(mBank[compareSlot], mBank[compareSlot + 1]) == -1) // Descending order - hence "-1" here
+                    {
+                        SwapBankItems(compareSlot, compareSlot + 1, false); // Don't update the client while we're doing this - WAY faster this way, then we can tell them afterward.
+                    }
+                }
+            }
+
+            SendOpenBank(); // Refresh the entire bank, so the Client knows what's up.
+        }
+        private static int CompareBankItems(Item currentItem, Item comparedItem)
+        {
+            var x = ItemBase.Get(currentItem.ItemId);
+            var y = ItemBase.Get(comparedItem.ItemId);
+
+            if (x == null)
+            {
+                if (y == null)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return -1;
+                }
+            }
+            else
+            {
+                if (y == null)
+                {
+                    return 1;
+                }
+                else
+                {
+                    if (x.ItemType == y.ItemType)
+                    {
+                        return x.Name.CompareTo(y.Name) * -1;
+                    }
+                    else
+                    {
+                        switch (x.ItemType)
+                        {
+                            case ItemTypes.Currency:
+                                return 1;
+                            case ItemTypes.Equipment:
+                                if (y.ItemType == ItemTypes.Currency)
+                                {
+                                    return -1;
+                                }
+                                else
+                                {
+                                    return 1;
+                                }
+                            case ItemTypes.Bag:
+                                if (y.ItemType == ItemTypes.Currency || y.ItemType == ItemTypes.Equipment)
+                                {
+                                    return -1;
+                                }
+                                else
+                                {
+                                    return 1;
+                                }
+                            case ItemTypes.Event:
+                                if (y.ItemType == ItemTypes.Currency
+                                    || y.ItemType == ItemTypes.Equipment
+                                    || y.ItemType == ItemTypes.Bag)
+                                {
+                                    return -1;
+                                }
+                                else
+                                {
+                                    return 1;
+                                }
+                            case ItemTypes.Spell:
+                                if (y.ItemType == ItemTypes.Currency
+                                    || y.ItemType == ItemTypes.Equipment
+                                    || y.ItemType == ItemTypes.Bag
+                                    || y.ItemType == ItemTypes.Event)
+                                {
+                                    return -1;
+                                }
+                                else
+                                {
+                                    return 1;
+                                }
+                            case ItemTypes.None:
+                                if (y.ItemType != ItemTypes.Consumable)
+                                {
+                                    return -1;
+                                }
+                                else
+                                {
+                                    return 1;
+                                }
+                            case ItemTypes.Consumable:
+                            default:
+                                return -1;
+                        }
+                    }
+                }
+            }
+        }
 
         public void Dispose()
         {
             SendCloseBank();
             mPlayer.GuildBank = false;
             mPlayer.BankInterface = null;
+        }
+        public void UpdateBankValue()
+        {
+            mBankValue = 0;
+            for (var slot = 0; slot < mMaxSlots - 1; slot++)
+            {
+                if (mBank[slot] != null && mBank[slot].ItemId != Guid.Empty)
+                {
+                    mBankValue += ItemBase.Get(mBank[slot].ItemId).Price;
+                }
+            }
+
+            mPlayer?.SendPacket(new BankUpdateValuePacket(mBankValue));
         }
     }
 }

@@ -1000,6 +1000,7 @@ Tick timer saved in server config.json.";
                 {0, @"Physical"},
                 {1, @"Magic"},
                 {2, @"True"},
+                {3, @"Cures"},
             };
 
             public static LocalizedString exp = @"Experience";
@@ -1011,6 +1012,9 @@ Tick timer saved in server config.json.";
                 {2, @"Defense"},
                 {3, @"Magic Resist"},
                 {4, @"Speed"},
+                {5, @"Agility"},
+                {6, @"Damage"},
+                {7, @"Cures"}
             };
 
             public static Dictionary<int, LocalizedString> vitals = new Dictionary<int, LocalizedString>
@@ -4083,6 +4087,10 @@ Tick timer saved in server config.json.";
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public static LocalizedString Tenacity = @"Tenacity (%):";
+
+            public static LocalizedString additionalanimationgroup = @"Animations:";
+
+            public static LocalizedString deathanimation = @"Death Animation:";
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public static Dictionary<StatusTypes, LocalizedString> Immunities = new Dictionary<StatusTypes, LocalizedString>

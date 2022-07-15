@@ -1565,6 +1565,7 @@ namespace Intersect.Client.Networking
                 }
                 Globals.BankSlots = packet.Slots;
                 Interface.Interface.GameUi.NotifyOpenBank();
+                Globals.BankValue = packet.BankValue;
             }
             else
             {
@@ -1573,6 +1574,11 @@ namespace Intersect.Client.Networking
         }
 
         //BankUpdatePacket
+        //BankUpdateValuePacket
+        public void HandlePacket(IPacketSender packetSender, BankUpdateValuePacket packet)
+        {
+            Globals.BankValue = packet.BankValue;
+        }
         public void HandlePacket(IPacketSender packetSender, BankUpdatePacket packet)
         {
             var slot = packet.Slot;

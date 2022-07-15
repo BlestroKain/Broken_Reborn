@@ -1470,10 +1470,11 @@ namespace Intersect.Server.Entities
             {
                 return false;
             }
-            
-            if (spell?.Combat?.TargetType == SpellTargetType.Self ||
-                spell?.Combat?.TargetType == SpellTargetType.Projectile ||
-                spell?.SpellType == SpellType.Dash
+           
+            if (spell?.Combat?.TargetType == SpellTargetTypes.Self ||
+                spell?.Combat?.TargetType == SpellTargetTypes.Projectile ||
+                spell?.Combat.TargetType == SpellTargetTypes.Trap ||
+                spell?.SpellType == SpellTypes.Dash
                 )
             {
                 return true;
@@ -1953,7 +1954,7 @@ namespace Intersect.Server.Entities
                                 lock (EntityLock)
                                 {
                                     member.WarpToLastOverworldLocation(false);
-                                    PacketSender.SendChatMsg(member, Strings.Parties.InstanceFailed, ChatMessageType.Party, CustomColors.Chat.PartyChat);
+                                    PacketSender.SendChatMsg(member, Strings.Parties.instancefailed, ChatMessageType.Party, CustomColors.Chat.PartyChat);
                                 }
                             }
                         }

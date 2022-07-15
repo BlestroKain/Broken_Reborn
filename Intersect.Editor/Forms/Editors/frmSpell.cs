@@ -103,6 +103,9 @@ namespace Intersect.Editor.Forms.Editors
             cmbHitAnimation.Items.Clear();
             cmbHitAnimation.Items.Add(Strings.General.None);
             cmbHitAnimation.Items.AddRange(AnimationBase.Names);
+            cmbTrapAnimation.Items.Clear();
+            cmbTrapAnimation.Items.Add(Strings.General.none);
+            cmbTrapAnimation.Items.AddRange(AnimationBase.Names);
             cmbEvent.Items.Clear();
             cmbEvent.Items.Add(Strings.General.None);
             cmbEvent.Items.AddRange(EventBase.Names);
@@ -176,6 +179,7 @@ namespace Intersect.Editor.Forms.Editors
             lblCastAnimation.Text = Strings.SpellEditor.castanimation;
             lblSpriteCastAnimation.Text = Strings.SpellEditor.CastSpriteOverride;
             lblHitAnimation.Text = Strings.SpellEditor.hitanimation;
+            lblTrapAnimation.Text = Strings.SpellEditor.TrapAnimation;
             chkBound.Text = Strings.SpellEditor.bound;
 
             grpRequirements.Text = Strings.SpellEditor.requirements;
@@ -300,6 +304,8 @@ namespace Intersect.Editor.Forms.Editors
                 cmbCastSprite.SelectedIndex = cmbCastSprite.FindString(
                         TextUtils.NullToNone(mEditorItem.CastSpriteOverride)
                 );
+
+                cmbTrapAnimation.SelectedIndex = AnimationBase.ListIndex(mEditorItem.TrapAnimationId) + 1;
 
                 chkBound.Checked = mEditorItem.Bound;
 
@@ -441,6 +447,8 @@ namespace Intersect.Editor.Forms.Editors
             cmbProjectile.Hide();
             lblDuration.Hide();
             nudDuration.Hide();
+            lblTrapAnimation.Hide();
+            cmbTrapAnimation.Hide();
 
             if (cmbTargetType.SelectedIndex == (int) SpellTargetType.Single)
             {
@@ -489,6 +497,9 @@ namespace Intersect.Editor.Forms.Editors
                 lblDuration.Show();
                 nudDuration.Show();
                 nudDuration.Value = mEditorItem.Combat.TrapDuration;
+                lblTrapAnimation.Show();
+                cmbTrapAnimation.Show();
+                cmbTrapAnimation.SelectedIndex = AnimationBase.ListIndex(mEditorItem.TrapAnimationId) + 1;
             }
         }
 
@@ -1104,6 +1115,12 @@ namespace Intersect.Editor.Forms.Editors
         {
             Guid animationId = AnimationBase.IdFromList(cmbTickAnimation.SelectedIndex - 1);
             mEditorItem.TickAnimation = AnimationBase.Get(animationId);
+        }
+
+        private void cmbTrapAnimation_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Guid animationId = AnimationBase.IdFromList(cmbTrapAnimation.SelectedIndex - 1);
+            mEditorItem.TrapAnimation = AnimationBase.Get(animationId);
         }
     }
 

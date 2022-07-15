@@ -24,6 +24,7 @@ using Intersect.Server.Localization;
 using Intersect.Server.Maps;
 using Intersect.Utilities;
 using Newtonsoft.Json;
+using Intersect.Server.Classes.Maps;
 
 namespace Intersect.Server.Networking
 {
@@ -197,6 +198,7 @@ namespace Intersect.Server.Networking
                 {
                     mapPacket.MapItems = GenerateMapItemsPacket(client.Entity, mapId);
                     mapPacket.MapEntities = GenerateMapEntitiesPacket(mapId, client.Entity);
+                    mapPacket.MapTrapPackets = GenerateMapTrapsPacket(mapId, client.Entity);
 
                     return mapPacket;
                 }
@@ -299,6 +301,23 @@ namespace Intersect.Server.Networking
             }
 
             SendDataToEditors(packet);
+        }
+        public static List<MapTrapPacket> GenerateMapTrapsPacket(Guid mapId, Player forPlayer)
+        {
+            var trapPackets = new List<MapTrapPacket>();
+            if (MapController.TryGetInstanceFromMap(mapId, forPlayer.MapInstanceId, out var mapInstance))
+            {
+                var traps = new List<MapTrapInstance>();
+
+                traps.AddRange(mapInstance.MapTraps.Values);
+
+                foreach (var trap in traps)
+                {
+                    trapPackets.Add(new MapTrapPacket(trap.MapId, trap.Id, trap.ParentSpell.TrapAnimationId, trap.Owner.Id, trap.X, trap.Y, false));
+                }
+            }
+
+            return trapPackets;
         }
 
         //MapEntitiesPacket
@@ -2192,7 +2211,10 @@ namespace Intersect.Server.Networking
                 }
             }
         }
-
+        public static void SendMapTrapPacket(Player player, Guid mapId, Guid trapId, Guid animationId, Guid ownerId, byte x, byte y, bool remove = false)
+        {
+            player?.SendPacket(new MapTrapPacket(mapId, trapId, animationId, ownerId, x, y, remove));
+        }
     }
 
 }

@@ -1428,6 +1428,7 @@ namespace Intersect.Server.Entities
             // If self-cast, AoE, Projectile or Dash.. always accept.
             if (spell?.Combat?.TargetType == SpellTargetTypes.Self ||
                 spell?.Combat?.TargetType == SpellTargetTypes.Projectile ||
+                spell?.Combat.TargetType == SpellTargetTypes.Trap ||
                 spell?.SpellType == SpellTypes.Dash
                 )
             {
@@ -1917,7 +1918,7 @@ namespace Intersect.Server.Entities
                                 lock (EntityLock)
                                 {
                                     member.WarpToLastOverworldLocation(false);
-                                    PacketSender.SendChatMsg(member, Strings.Parties.InstanceFailed, ChatMessageType.Party, CustomColors.Chat.PartyChat);
+                                    PacketSender.SendChatMsg(member, Strings.Parties.instancefailed, ChatMessageType.Party, CustomColors.Chat.PartyChat);
                                 }
                             }
                         }

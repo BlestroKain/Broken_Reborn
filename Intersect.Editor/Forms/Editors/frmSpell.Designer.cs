@@ -34,6 +34,8 @@ namespace Intersect.Editor.Forms.Editors
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmSpell));
             this.pnlContainer = new System.Windows.Forms.Panel();
             this.grpGeneral = new DarkUI.Controls.DarkGroupBox();
+            this.cmbTrapAnimation = new DarkUI.Controls.DarkComboBox();
+            this.lblTrapAnimation = new System.Windows.Forms.Label();
             this.btnAddFolder = new DarkUI.Controls.DarkButton();
             this.lblFolder = new System.Windows.Forms.Label();
             this.cmbFolder = new DarkUI.Controls.DarkComboBox();
@@ -243,6 +245,8 @@ namespace Intersect.Editor.Forms.Editors
             // 
             this.grpGeneral.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
             this.grpGeneral.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
+            this.grpGeneral.Controls.Add(this.cmbTrapAnimation);
+            this.grpGeneral.Controls.Add(this.lblTrapAnimation);
             this.grpGeneral.Controls.Add(this.btnAddFolder);
             this.grpGeneral.Controls.Add(this.lblFolder);
             this.grpGeneral.Controls.Add(this.cmbFolder);
@@ -267,6 +271,36 @@ namespace Intersect.Editor.Forms.Editors
             this.grpGeneral.TabIndex = 17;
             this.grpGeneral.TabStop = false;
             this.grpGeneral.Text = "General";
+            // 
+            // cmbTrapAnimation
+            // 
+            this.cmbTrapAnimation.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(69)))), ((int)(((byte)(73)))), ((int)(((byte)(74)))));
+            this.cmbTrapAnimation.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
+            this.cmbTrapAnimation.BorderStyle = System.Windows.Forms.ButtonBorderStyle.Solid;
+            this.cmbTrapAnimation.ButtonColor = System.Drawing.Color.FromArgb(((int)(((byte)(43)))), ((int)(((byte)(43)))), ((int)(((byte)(43)))));
+            this.cmbTrapAnimation.DrawDropdownHoverOutline = false;
+            this.cmbTrapAnimation.DrawFocusRectangle = false;
+            this.cmbTrapAnimation.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.cmbTrapAnimation.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbTrapAnimation.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.cmbTrapAnimation.ForeColor = System.Drawing.Color.Gainsboro;
+            this.cmbTrapAnimation.FormattingEnabled = true;
+            this.cmbTrapAnimation.Location = new System.Drawing.Point(90, 270);
+            this.cmbTrapAnimation.Name = "cmbTrapAnimation";
+            this.cmbTrapAnimation.Size = new System.Drawing.Size(111, 21);
+            this.cmbTrapAnimation.TabIndex = 61;
+            this.cmbTrapAnimation.Text = null;
+            this.cmbTrapAnimation.TextPadding = new System.Windows.Forms.Padding(2);
+            this.cmbTrapAnimation.SelectedIndexChanged += new System.EventHandler(this.cmbTrapAnimation_SelectedIndexChanged);
+            // 
+            // lblTrapAnimation
+            // 
+            this.lblTrapAnimation.AutoSize = true;
+            this.lblTrapAnimation.Location = new System.Drawing.Point(6, 273);
+            this.lblTrapAnimation.Name = "lblTrapAnimation";
+            this.lblTrapAnimation.Size = new System.Drawing.Size(81, 13);
+            this.lblTrapAnimation.TabIndex = 60;
+            this.lblTrapAnimation.Text = "Trap Animation:";
             // 
             // btnAddFolder
             // 
@@ -312,7 +346,7 @@ namespace Intersect.Editor.Forms.Editors
             // 
             this.chkBound.AutoSize = true;
             this.chkBound.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.chkBound.Location = new System.Drawing.Point(9, 270);
+            this.chkBound.Location = new System.Drawing.Point(138, 100);
             this.chkBound.Name = "chkBound";
             this.chkBound.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
             this.chkBound.Size = new System.Drawing.Size(63, 17);
@@ -2570,5 +2604,7 @@ namespace Intersect.Editor.Forms.Editors
         private System.Windows.Forms.Label lblManaDamage;
         private System.Windows.Forms.Label lblTickAnimation;
         private DarkComboBox cmbTickAnimation;
+        private DarkComboBox cmbTrapAnimation;
+        private System.Windows.Forms.Label lblTrapAnimation;
     }
 }

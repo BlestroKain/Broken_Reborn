@@ -224,7 +224,14 @@ namespace Intersect.Client.Networking
                 {
                     HandlePacket(packet.MapItems);
                 }
-
+                map.DisposeTraps();
+                if (packet.MapTrapPackets.Count > 0)
+                {
+                    foreach (var trapPacket in packet.MapTrapPackets)
+                    {
+                        HandlePacket(trapPacket);
+                    }
+                }
                 if (Globals.PendingEvents.ContainsKey(mapId))
                 {
                     foreach (var evt in Globals.PendingEvents[mapId])
@@ -402,6 +409,7 @@ namespace Intersect.Client.Networking
                     Globals.EntitiesToDispose.AddRange(map.LocalEntities.Values
                         .ToList()
                         .Select(en => en.Id));
+                        map.DisposeTraps();
                 }
             }
         }
@@ -2077,7 +2085,21 @@ namespace Intersect.Client.Networking
                 null
             );
         }
+        //MapTrapPacket
+        public void HandlePacket(IPacketSender packetSender, MapTrapPacket packet)
+        {
+            var map = MapInstance.Get(packet.MapId);
+            if (map == null) return;
 
+            if (!packet.Remove)
+            {
+                map.AddTrap(packet.TrapId, packet.AnimationId, packet.OwnerId, packet.X, packet.Y);
+            }
+            else
+            {
+                map.RemoveTrap(packet.TrapId);
+            }
+        }
     }
 
 }

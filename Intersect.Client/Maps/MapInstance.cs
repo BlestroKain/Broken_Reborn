@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Diagnostics;
 using System.Collections.Concurrent;
@@ -114,6 +114,9 @@ namespace Intersect.Client.Maps
         private Dictionary<string, Dictionary<object, GameTileBuffer[]>> mTileBufferDict = new Dictionary<string, Dictionary<object, GameTileBuffer[]>>(); //[Layer][?][?]
 
         private Dictionary<string, GameTileBuffer[][]> mTileBuffers = new Dictionary<string, GameTileBuffer[][]>(); //[Layer][Autotile Frame][Buffer Index]
+                                                                                                                    // Traps
+        private Dictionary<Guid, MapTrapInstance> mMapTraps = new Dictionary<Guid, MapTrapInstance>();
+
 
         //Initialization
         public MapInstance(Guid id) : base(id)
@@ -238,6 +241,27 @@ namespace Intersect.Client.Maps
 
                     critter.Value.Update();
                 }
+                foreach (var trap in mMapTraps.Values)
+                {
+                    if (trap.TrapAnimation == null)
+                    {
+                        continue;
+                    }
+
+                    // Always display traps on safe zones.
+                    if (ZoneType != MapZones.Safe)
+                    {
+                        var isNpc = !(trap.Owner is Player);
+                        var inGuild = ((Player)trap.Owner).Guild == Globals.Me.Guild;
+                        var inParty = Globals.Me.Party.FindIndex(member => member.Id == ((Player)trap.Owner).Id) >= 0;
+
+                        // Hide trap if it's an unfriendly player's
+                        trap.TrapAnimation.Hidden = !isNpc && !inGuild && !inParty;
+                    }
+
+                    trap.TrapAnimation.Update();
+                }
+
 
                 for (var i = 0; i < LocalEntitiesToDispose.Count; i++)
                 {
@@ -252,7 +276,7 @@ namespace Intersect.Client.Maps
                 {
                     Dispose();
                 }
-
+                DisposeTraps();
                 HideActiveAnimations();
             }
         }
@@ -616,7 +640,7 @@ namespace Intersect.Client.Maps
             var animBase = AnimationBase.Get(animId);
             if (animBase == null)
             {
-                return;
+                return default;
             }
 
             var anim = new MapAnimation(animBase, tileX, tileY, dir, owner as Entity);
@@ -625,6 +649,7 @@ namespace Intersect.Client.Maps
                 GetX() + tileX * Options.TileWidth + Options.TileWidth / 2,
                 GetY() + tileY * Options.TileHeight + Options.TileHeight / 2, tileX, tileY, Id, dir
             );
+            return anim;
         }
 
         private void HideActiveAnimations()
@@ -1293,6 +1318,44 @@ namespace Intersect.Client.Maps
                 }
             }
         }
+        public void AddTrap(Guid trapId, Guid animationId, Guid ownerId, byte x, byte y)
+        {
+            // If we already have this trap, ignore
+            if (mMapTraps.ContainsKey(trapId))
+            {
+                return;
+            }
+            if (!Globals.Entities.TryGetValue(ownerId, out var owner))
+            {
+                return;
+            }
+            var anim = AnimationBase.Get(animationId);
+            if (anim == null)
+            {
+                return;
+            }
+
+            MapTrapInstance mapTrapInstance;
+
+            // Else, add the trap's animation
+            mapTrapInstance.TrapAnimation = new Animation(anim, true);
+            mapTrapInstance.TrapAnimation.SetPosition(
+                GetX() + x * Options.TileWidth + Options.TileWidth / 2,
+                GetY() + y * Options.TileHeight + Options.TileHeight / 2, x, y, Id, 0
+            );
+            mapTrapInstance.Owner = owner;
+
+            mMapTraps.Add(trapId, mapTrapInstance);
+        }
+
+        public void RemoveTrap(Guid trapId)
+        {
+            if (mMapTraps.TryGetValue(trapId, out var trapInstance))
+            {
+                trapInstance.TrapAnimation.Dispose();
+            }
+            mMapTraps.Remove(trapId);
+        }
 
         public new static MapInstance Get(Guid id)
         {
@@ -1317,7 +1380,14 @@ namespace Intersect.Client.Maps
                 Lookup.Delete(this);
             }
         }
-
+        public void DisposeTraps()
+        {
+            foreach (var trap in mMapTraps.Values)
+            {
+                trap.TrapAnimation.Dispose();
+            }
+            mMapTraps.Clear();
+        }
         //Dispose
         public void Dispose(bool prep = true, bool killentities = true)
         {
@@ -1352,6 +1422,7 @@ namespace Intersect.Client.Maps
             ClearMapAttributes();
             ClearAttributeSounds();
             DestroyVBOs();
+            DisposeTraps();
             Delete();
         }
 
@@ -1360,6 +1431,11 @@ namespace Intersect.Client.Maps
         public static void UpdateMapRequestTime(Guid mapId)
         {
             MapRequests[mapId] = Timing.Global.Milliseconds + 2000;
+        }
+
+        void IMapInstance.AddTileAnimation(Guid animId, int tileX, int tileY, int dir, IEntity owner)
+        {
+            throw new NotImplementedException();
         }
     }
 

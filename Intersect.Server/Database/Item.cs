@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
 using Intersect.Enums;
@@ -121,6 +121,18 @@ namespace Intersect.Server.Database
         public bool TryGetBag(out Bag bag)
         {
             bag = Bag;
+          
+            if (bag != null)
+            {
+                //Remove any items from this bag that have been removed from the game
+                foreach (var itm in bag.Slots)
+                {
+                    if (itm.ItemId != Guid.Empty && ItemBase.Get(itm.ItemId) == null)
+                    {
+                        itm.Set(new Item());
+                    }
+                }
+            }
 
             // ReSharper disable once InvertIf Justification: Do not introduce two different return points that assert a value state
             if (bag == null)

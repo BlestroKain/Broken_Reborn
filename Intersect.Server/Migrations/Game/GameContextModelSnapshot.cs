@@ -519,6 +519,9 @@ namespace Intersect.Server.Migrations.Game
 
                     b.Property<bool>("GrappleHook");
 
+                    b.Property<string>("GrappleHookOptionsJson")
+                        .HasColumnName("GrappleHookOptions");
+
                     b.Property<bool>("IgnoreActiveResources");
 
                     b.Property<bool>("IgnoreExhaustedResources");

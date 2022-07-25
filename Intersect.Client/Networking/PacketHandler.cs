@@ -1022,10 +1022,16 @@ namespace Intersect.Client.Networking
                 return;
             }
 
-            if (attackTimer > -1 && en != Globals.Me)
+            var isSelf = en == Globals.Me;
+            en.IsBlocking = packet.IsBlocking;
+
+            if (attackTimer > -1)
             {
                 en.AttackTimer = Timing.Global.Ticks / TimeSpan.TicksPerMillisecond + attackTimer;
-                en.AttackTime = attackTimer;
+                if (!isSelf)
+                {
+                    en.AttackTime = attackTimer;
+                }
             }
         }
 
@@ -1363,9 +1369,9 @@ namespace Intersect.Client.Networking
             {
                 foreach (var projDeath in packet.ProjectileDeaths)
                 {
-                    if (Globals.Entities.ContainsKey(projDeath) && Globals.Entities[projDeath].GetType() == typeof(Projectile))
+                    if (Globals.Entities.ContainsKey(projDeath) && Globals.Entities[projDeath] is Projectile projectile)
                     {
-                        Globals.Entities[projDeath]?.Dispose();
+                        projectile.Dispose();
                         Globals.EntitiesToDispose?.Add(projDeath);
                     }
                 }
@@ -1374,9 +1380,9 @@ namespace Intersect.Client.Networking
             {
                 foreach (var spawnDeath in packet.SpawnDeaths)
                 {
-                    if (Globals.Entities.ContainsKey(spawnDeath.Key) && Globals.Entities[spawnDeath.Key].GetType() == typeof(Projectile))
+                    if (Globals.Entities.ContainsKey(spawnDeath.Key) && Globals.Entities[spawnDeath.Key] is Projectile projectile)
                     {
-                        ((Projectile)Globals.Entities[spawnDeath.Key]).SpawnDead(spawnDeath.Value);
+                        projectile.SpawnDead(spawnDeath.Value);
                     }
                 }
             }

@@ -273,11 +273,11 @@ namespace Intersect.Server.Networking
                 //TODO - Include Aggression and Equipment in ENTITY DATA PACKETS!
                 //SendMapEntityEquipmentTo(client, sendEntities); //Send the equipment of each player
 
-                //for (var i = 0; i < sendEntities.Count; i++)
+                //foreach (var sendEntity in sendEntities)
                 //{
-                //    if (sendEntities[i].GetType() == typeof(Npc))
+                //    if (sendEntity is Npc npc)
                 //    {
-                //        SendNpcAggressionTo(client.Entity, (Npc)sendEntities[i]);
+                //        SendNpcAggressionTo(client.Entity, npc);
                 //    }
                 //}
             }
@@ -350,19 +350,19 @@ namespace Intersect.Server.Networking
         }
 
         //EntityPacket
-        public static void SendEntityDataTo(Player player, Entity en)
+        public static void SendEntityDataTo(Player player, Entity entity)
         {
-            if (en == null)
+            if (entity == null)
             {
                 return;
             }
 
-            var packet = en.EntityPacket(null, player);
-            packet.IsSelf = en == player;
+            var packet = entity.EntityPacket(null, player);
+            packet.IsSelf = entity == player;
 
             player.SendPacket(packet);
 
-            if (en == player)
+            if (entity == player)
             {
                 SendExperience(player);
                 SendInventory(player);
@@ -374,15 +374,17 @@ namespace Intersect.Server.Networking
                 SendSpellCooldowns(player);
             }
 
-            //If a player, send equipment to all (for paperdolls)
-            if (en.GetType() == typeof(Player))
+            switch (entity)
             {
-                SendPlayerEquipmentTo(player, (Player) en);
-            }
+                //If a player, send equipment to all (for paperdolls)
+                case Player entityPlayer:
+                    SendPlayerEquipmentTo(player, entityPlayer);
+                    break;
 
-            if (en.GetType() == typeof(Npc))
-            {
-                SendNpcAggressionTo(player, (Npc) en);
+                case Npc npc:
+                    SendNpcAggressionTo(player, npc);
+                    break;
+
             }
         }
 
@@ -411,11 +413,11 @@ namespace Intersect.Server.Networking
 
             SendMapEntityEquipmentTo(player, sendEntities); //Send the equipment of each player
 
-            for (var i = 0; i < sendEntities.Count; i++)
+            foreach (var sendEntity in sendEntities)
             {
-                if (sendEntities[i].GetType() == typeof(Npc))
+                if (sendEntity is Npc npc)
                 {
-                    SendNpcAggressionTo(player, (Npc) sendEntities[i]);
+                    SendNpcAggressionTo(player, npc);
                 }
             }
         }
@@ -441,14 +443,14 @@ namespace Intersect.Server.Networking
 
         public static void SendMapEntityEquipmentTo(Player player, List<Entity> entities)
         {
-            for (var i = 0; i < entities.Count; i++)
+            foreach (var entity in entities)
             {
-                if (entities[i] != null && entities[i] != player)
+                if (entity != null && entity != player)
                 {
                     //If a player, send equipment to all (for paperdolls)
-                    if (entities[i].GetType() == typeof(Player) && player != entities[i])
+                    if (entity is Player entityPlayer && player != entity)
                     {
-                        SendPlayerEquipmentTo(player, (Player) entities[i]);
+                        SendPlayerEquipmentTo(player, entityPlayer);
                     }
                 }
             }
@@ -479,15 +481,16 @@ namespace Intersect.Server.Networking
 
             SendEntityStats(en);
 
-            //If a player, send equipment to all (for paperdolls)
-            if (en.GetType() == typeof(Player))
+            switch (en)
             {
-                SendPlayerEquipmentToProximity((Player) en);
-            }
+                // If a player, send equipment to all (for paperdolls)
+                case Player player:
+                    SendPlayerEquipmentToProximity(player);
+                    break;
 
-            if (en.GetType() == typeof(Npc))
-            {
-                SendNpcAggressionToProximity((Npc) en);
+                case Npc npc:
+                    SendNpcAggressionToProximity(npc);
+                    break;
             }
         }
 
@@ -516,15 +519,16 @@ namespace Intersect.Server.Networking
 
             SendEntityStats(en);
 
-            //If a player, send equipment to all (for paperdolls)
-            if (en.GetType() == typeof(Player))
+            switch (en)
             {
-                SendPlayerEquipmentToProximity((Player) en);
-            }
+                // If a player, send equipment to all (for paperdolls)
+                case Player player:
+                    SendPlayerEquipmentToProximity(player);
+                    break;
 
-            if (en.GetType() == typeof(Npc))
-            {
-                SendNpcAggressionToProximity((Npc) en);
+                case Npc npc:
+                    SendNpcAggressionToProximity(npc);
+                    break;
             }
         }
 
@@ -974,9 +978,9 @@ namespace Intersect.Server.Networking
         }
 
         //EntityAttackPacket
-        public static void SendEntityAttack(Entity en, int attackTime)
+        public static void SendEntityAttack(Entity en, int attackTime, bool isBlocking = false)
         {
-            SendDataToProximityOnMapInstance(en.MapId, en.MapInstanceId, new EntityAttackPacket(en.Id, en.GetEntityType(), en.MapId, attackTime), null, TransmissionMode.Any);
+            SendDataToProximityOnMapInstance(en.MapId, en.MapInstanceId, new EntityAttackPacket(en.Id, en.GetEntityType(), en.MapId, attackTime, isBlocking), null, TransmissionMode.Any);
         }
 
         //EntityDiePacket

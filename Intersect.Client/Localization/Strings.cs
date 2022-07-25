@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+
 using Intersect.Enums;
 using Intersect.Localization;
 
@@ -37,21 +39,21 @@ namespace Intersect.Client.Localization
                 else if (value >= 1000 && value <= 999999)
                 {
                     returnVal = value / 1000.0;
-                    postfix = Strings.Numbers.thousands;
+                    postfix = Numbers.thousands;
                 }
 
                 // millions
                 else if (value >= 1000000 && value <= 999999999)
                 {
                     returnVal = value / 1000000.0;
-                    postfix = Strings.Numbers.millions;
+                    postfix = Numbers.millions;
                 }
 
                 // billions
                 else if (value >= 1000000000 && value <= 999999999999)
                 {
                     returnVal = value / 1000000000.0;
-                    postfix = Strings.Numbers.billions;
+                    postfix = Numbers.billions;
                 }
                 else
                 {
@@ -71,7 +73,7 @@ namespace Intersect.Client.Localization
                     return returnVal.ToString("F1")
                                .TrimEnd(mQuantityTrimChars)
                                .ToString()
-                               .Replace(".", Strings.Numbers.dec) +
+                               .Replace(".", Numbers.dec) +
                            postfix;
                 }
             }
@@ -90,7 +92,7 @@ namespace Intersect.Client.Localization
 
                 var fields = new List<Type>();
                 fields.AddRange(
-                    type.GetNestedTypes(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)
+                    type.GetNestedTypes(BindingFlags.Static | BindingFlags.Public)
                 );
 
                 foreach (var p in fields)
@@ -101,48 +103,64 @@ namespace Intersect.Client.Localization
                     }
 
                     var dict = strings[p.Name];
-                    foreach (var fieldInfo in p.GetFields(
-                        System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public
-                    ))
+                    foreach (var fieldInfo in p.GetFields(BindingFlags.Public | BindingFlags.Static))
                     {
+                        if (!dict.TryGetValue(fieldInfo.Name, out var jsonValue))
+                        {
+                            var foundKey = dict.Keys.FirstOrDefault(key => string.Equals(fieldInfo.Name, key, StringComparison.OrdinalIgnoreCase));
+                            if (foundKey == default || !dict.TryGetValue(foundKey, out jsonValue))
+                            {
+                                continue;
+                            }
+                        }
+
                         var fieldValue = fieldInfo.GetValue(null);
-                        if (!dict.ContainsKey(fieldInfo.Name))
+                        switch (fieldValue)
                         {
-                            continue;
-                        }
-
-                        if (fieldValue is LocalizedString)
-                        {
-                            fieldInfo.SetValue(null, new LocalizedString((string) dict[fieldInfo.Name]));
-                        }
-                        else if (fieldValue is Dictionary<int, LocalizedString>)
-                        {
-                            var existingDict = (Dictionary<int, LocalizedString>) fieldInfo.GetValue(null);
-                            var values = ((JObject) dict[fieldInfo.Name]).ToObject<Dictionary<int, string>>();
-                            var dic = values.ToDictionary<KeyValuePair<int, string>, int, LocalizedString>(
-                                val => val.Key, val => val.Value
-                            );
-
-                            foreach (var val in dic)
-                            {
-                                existingDict[val.Key] = val.Value;
-                            }
-                        }
-                        else if (fieldValue is Dictionary<string, LocalizedString>)
-                        {
-                            var existingDict = (Dictionary<string, LocalizedString>) fieldInfo.GetValue(null);
-                            var pairs = ((JObject) dict[fieldInfo.Name])?.ToObject<Dictionary<string, string>>() ??
-                                        new Dictionary<string, string>();
-
-                            foreach (var pair in pairs)
-                            {
-                                if (pair.Key == null)
+                            case LocalizedString localizedString:
+                                var jsonString = (string)jsonValue;
+                                if (jsonString != default)
                                 {
-                                    continue;
+                                    fieldInfo.SetValue(null, new LocalizedString(jsonString));
                                 }
+                                break;
 
-                                existingDict[pair.Key] = pair.Value;
-                            }
+                            case Dictionary<int, LocalizedString> intDictionary:
+                                var jsonIntDictionary = (jsonValue as JObject).ToObject<Dictionary<int, string>>();
+                                if (jsonIntDictionary != default)
+                                {
+                                    var keys = intDictionary.Keys.ToList();
+                                    foreach (var key in keys)
+                                    {
+                                        if (!jsonIntDictionary.TryGetValue(key, out var jsonStringValue) || jsonStringValue == default)
+                                        {
+                                            continue;
+                                        }
+
+                                        intDictionary[key] = new LocalizedString(jsonStringValue);
+                                    }
+                                }
+                                break;
+
+                            case Dictionary<string, LocalizedString> stringDictionary:
+                                var jsonStringDictionary = (jsonValue as JObject).ToObject<Dictionary<string, string>>();
+                                if (jsonStringDictionary != default)
+                                {
+                                    var keys = stringDictionary.Keys.ToList();
+                                    foreach (var key in keys)
+                                    {
+                                        if (!jsonStringDictionary.TryGetValue(key, out var jsonStringValue) || jsonStringValue == default)
+                                        {
+                                            continue;
+                                        }
+
+                                        stringDictionary[key] = new LocalizedString(jsonStringValue);
+                                    }
+                                }
+                                break;
+
+                            default:
+                                throw new NotSupportedException($"Unsupported localization type {fieldInfo.FieldType.FullName}.");
                         }
                     }
                 }
@@ -159,39 +177,29 @@ namespace Intersect.Client.Localization
             var strings = new Dictionary<string, Dictionary<string, object>>();
             var type = typeof(Strings);
             var fields = type.GetNestedTypes(
-                System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public
+                BindingFlags.Static | BindingFlags.Public
             );
 
             foreach (var p in fields)
             {
                 var dict = new Dictionary<string, object>();
                 foreach (var p1 in p.GetFields(
-                    System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public
+                    BindingFlags.Static | BindingFlags.Public
                 ))
                 {
-                    if (p1.GetValue(null).GetType() == typeof(LocalizedString))
+                    switch (p1.GetValue(null))
                     {
-                        dict.Add(p1.Name, ((LocalizedString) p1.GetValue(null)).ToString());
-                    }
-                    else if (p1.GetValue(null).GetType() == typeof(Dictionary<int, LocalizedString>))
-                    {
-                        var dic = new Dictionary<int, string>();
-                        foreach (var val in (Dictionary<int, LocalizedString>) p1.GetValue(null))
-                        {
-                            dic.Add(val.Key, val.Value.ToString());
-                        }
+                        case LocalizedString localizedString:
+                            dict.Add(p1.Name, localizedString.ToString());
+                            break;
 
-                        dict.Add(p1.Name, dic);
-                    }
-                    else if (p1.GetValue(null).GetType() == typeof(Dictionary<string, LocalizedString>))
-                    {
-                        var dic = new Dictionary<string, string>();
-                        foreach (var val in (Dictionary<string, LocalizedString>) p1.GetValue(null))
-                        {
-                            dic.Add(val.Key, val.Value.ToString());
-                        }
+                        case Dictionary<int, LocalizedString> localizedIntKeyDictionary:
+                            dict.Add(p1.Name, localizedIntKeyDictionary.ToDictionary(pair => pair.Key, pair => pair.Value.ToString()));
+                            break;
 
-                        dict.Add(p1.Name, dic);
+                        case Dictionary<string, LocalizedString> localizedStringKeyDictionary:
+                            dict.Add(p1.Name, localizedStringKeyDictionary.ToDictionary(pair => pair.Key, pair => pair.Value.ToString()));
+                            break;
                     }
                 }
 
@@ -1302,6 +1310,21 @@ namespace Intersect.Client.Localization
 
         public partial struct Keys
         {
+            public static string FormatKeyName(Framework.GenericClasses.Keys modifier, Framework.GenericClasses.Keys key)
+            {
+                var formatted = keydict[Enum.GetName(typeof(Framework.GenericClasses.Keys), key).ToLower()];
+
+                if (modifier != Framework.GenericClasses.Keys.None)
+                {
+                    var modifierName = keydict[Enum.GetName(typeof(Framework.GenericClasses.Keys), modifier).ToLower()];
+                    formatted = KeyNameWithModifier.ToString(modifierName, formatted);
+                }
+
+                return formatted;
+            }
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public static LocalizedString KeyNameWithModifier = @"{00} + {01}";
 
             public static Dictionary<string, LocalizedString> keydict = new Dictionary<string, LocalizedString>()
             {

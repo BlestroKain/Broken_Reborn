@@ -32,8 +32,6 @@ namespace Intersect.Server.Classes.Maps
 
         public byte Z;
 
-        
-
         public MapTrapInstance(Entity owner, SpellBase parentSpell, Guid mapId, Guid mapInstanceId, byte x, byte y, byte z)
         {
             Owner = owner;
@@ -52,13 +50,16 @@ namespace Intersect.Server.Classes.Maps
             {
                 if (entity.MapId == MapId && entity.X == X && entity.Y == Y && entity.Z == Z)
                 {
-                    if (entity is Player player && Owner is Player)
+                    if (entity is Player entityPlayer && Owner is Player ownerPlayer)
                     {
                         //Don't detonate on yourself and party members on non-friendly spells!
-                        if (!ParentSpell.Combat.Friendly && (player.IsAllyOf(Owner) 
-                            || MapController.Get(MapId).ZoneType == Enums.MapZones.Safe))
+                        if (Owner == entity || ownerPlayer.InParty(entityPlayer) 
+                            || MapController.Get(MapId).ZoneType == Enums.MapZones.Safe)
                         {
-                             return;
+                            if (!ParentSpell.Combat.Friendly)
+                            {
+                                return;
+                            }
                         }
                     }
 

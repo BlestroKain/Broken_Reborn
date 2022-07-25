@@ -90,7 +90,7 @@ namespace Intersect.Editor.Forms.Editors
         private void frmNpc_Load(object sender, EventArgs e)
         {
             cmbSprite.Items.Clear();
-            cmbSprite.Items.Add(Strings.General.none);
+            cmbSprite.Items.Add(Strings.General.None);
             cmbSprite.Items.AddRange(
                 GameContentManager.GetSmartSortedTextureNames(GameContentManager.TextureType.Entity)
             );
@@ -100,16 +100,16 @@ namespace Intersect.Editor.Forms.Editors
             cmbHostileNPC.Items.Clear();
             cmbHostileNPC.Items.AddRange(NpcBase.Names);
             cmbDropItem.Items.Clear();
-            cmbDropItem.Items.Add(Strings.General.none);
+            cmbDropItem.Items.Add(Strings.General.None);
             cmbDropItem.Items.AddRange(ItemBase.Names);
             cmbAttackAnimation.Items.Clear();
-            cmbAttackAnimation.Items.Add(Strings.General.none);
+            cmbAttackAnimation.Items.Add(Strings.General.None);
             cmbAttackAnimation.Items.AddRange(AnimationBase.Names);
             cmbOnDeathEventKiller.Items.Clear();
-            cmbOnDeathEventKiller.Items.Add(Strings.General.none);
+            cmbOnDeathEventKiller.Items.Add(Strings.General.None);
             cmbOnDeathEventKiller.Items.AddRange(EventBase.Names);
             cmbOnDeathEventParty.Items.Clear();
-            cmbOnDeathEventParty.Items.Add(Strings.General.none);
+            cmbOnDeathEventParty.Items.Add(Strings.General.None);
             cmbOnDeathEventParty.Items.AddRange(EventBase.Names);
             cmbScalingStat.Items.Clear();
             for (var x = 0; x < (int)Stats.StatCount; x++)
@@ -338,7 +338,7 @@ namespace Intersect.Editor.Forms.Editors
                     }
                     else
                     {
-                        lstSpells.Items.Add(Strings.General.none);
+                        lstSpells.Items.Add(Strings.General.None);
                     }
                 }
 
@@ -360,7 +360,7 @@ namespace Intersect.Editor.Forms.Editors
                     }
                     else
                     {
-                        lstAggro.Items.Add(Strings.General.none);
+                        lstAggro.Items.Add(Strings.General.None);
                     }
                 }
 
@@ -531,7 +531,7 @@ namespace Intersect.Editor.Forms.Editors
                 }
                 else
                 {
-                    lstAggro.Items.Add(Strings.General.none);
+                    lstAggro.Items.Add(Strings.General.None);
                 }
             }
         }

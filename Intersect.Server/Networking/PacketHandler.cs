@@ -1026,7 +1026,7 @@ namespace Intersect.Server.Networking
                 return;
             }
 
-            //check if player is blinded or stunned
+            //check if player is stunned or sleeping
             var statuses = client.Entity.Statuses.Values.ToArray();
             foreach (var status in statuses)
             {
@@ -1569,6 +1569,12 @@ namespace Intersect.Server.Networking
                     foreach (var itemMap in map.FindSurroundingTiles(new Point(player.X, player.Y), Options.Loot.MaximumLootWindowDistance))
                     {
                         var tempMap = itemMap.Key;
+
+                        if (!tempMap.TryGetInstance(player.MapInstanceId, out var tempMapInstance))
+                        {
+                            continue;
+                        }
+                        
                         if (!giveItems.ContainsKey(itemMap.Key))
                         {
                             giveItems.Add(tempMap, new List<MapItem>());
@@ -1576,7 +1582,7 @@ namespace Intersect.Server.Networking
 
                         foreach (var itemLoc in itemMap.Value)
                         {
-                            giveItems[tempMap].AddRange(mapInstance.FindItemsAt(itemLoc));
+                            giveItems[tempMap].AddRange(tempMapInstance.FindItemsAt(itemLoc));
                         }
                     }
                 }
@@ -1590,59 +1596,49 @@ namespace Intersect.Server.Networking
                 foreach (var itemMap in giveItems)
                 {
                     var tempMap = itemMap.Key;
+                    if (!tempMap.TryGetInstance(player.MapInstanceId, out var tmpInstance))
+                    {
+                        continue;
+                    }
+
                     var toRemove = new List<MapItem>();
-                    foreach (var mapItem in itemMap.Value)
+
+                    // Remove null or missing map items from the list
+                    var validMapItems = itemMap.Value.Where(mapItem => mapItem != default && tmpInstance.FindItem(mapItem.UniqueId) != default);
+                    foreach (var mapItem in validMapItems)
                     {
-                        if (mapItem == null)
+                        // Can we actually take this item?
+                        // The player or nobody must be the owner, or the ownership time limit needs to have run out
+                        var canTake = mapItem.Owner == Guid.Empty || mapItem.Owner == player.Id || Timing.Global.Milliseconds > mapItem.OwnershipTime;
+
+                        if (!canTake)
                         {
+                            // Skip to the next item if the player can't take this one
                             continue;
                         }
 
-                    var canTake = false;
-                    // Can we actually take this item?
-                    if (mapItem.Owner == Guid.Empty || Timing.Global.Milliseconds > mapItem.OwnershipTime)
-                    {
-                        // The ownership time has run out, or there's no owner!
-                        canTake = true;
-                    }
-                    else if (mapItem.Owner == player.Id)
-                    {
-                        // The current player is the owner.
-                        canTake = true;
-                    }
+                        // Remove the item from the map now, because otherwise the overflow would just add to the existing quantity
+                        tmpInstance.RemoveItem(mapItem);
 
-                        // Does this item still exist, or did it somehow get picked up before we got there?
-                        if (mapInstance.FindItem(mapItem.UniqueId) == null)
+                        // Try to give the item to our player.
+                        if (player.TryGiveItem(mapItem, ItemHandling.Overflow, false, -1, true, mapItem.X, mapItem.Y))
                         {
-                            continue;
+                            if (ItemBase.TryGet(mapItem.ItemId, out var item))
+                            {
+                                PacketSender.SendActionMsg(player, item.Name, CustomColors.Items.Rarities[item.Rarity]);
+                            }
                         }
-
-                        if (canTake)
+                        else
                         {
-                            //Remove the item from the map now, because otherwise the overflow would just add to the existing quantity
-                            mapInstance.RemoveItem(mapItem);
-
-                            // Try to give the item to our player.
-                            if (player.TryGiveItem(mapItem, ItemHandling.Overflow, false, -1, true, mapItem.X, mapItem.Y))
-                            {
-                                var item = ItemBase.Get(mapItem.ItemId);
-                                if (item != null)
-                                {
-                                    PacketSender.SendActionMsg(player, item.Name, CustomColors.Items.Rarities[item.Rarity]);
-                                }
-                            }
-                            else
-                            {
-                                // We couldn't give the player their item, notify them.
-                                PacketSender.SendChatMsg(player, Strings.Items.InventoryNoSpace, ChatMessageType.Inventory, CustomColors.Alerts.Error);
-                            }
+                            // We couldn't give the player their item, notify them.
+                            PacketSender.SendChatMsg(player, Strings.Items.InventoryNoSpace, ChatMessageType.Inventory, CustomColors.Alerts.Error);
                         }
                     }
 
                     // Remove all items that were picked up.
                     foreach (var item in toRemove)
                     {
-                        mapInstance.RemoveItem(item);
+                        tmpInstance.RemoveItem(item);
                     }
                 }
             }
@@ -3270,7 +3266,7 @@ namespace Intersect.Server.Networking
                     }
                     else if (packet.ParentType == 0)
                     {
-                        parent = MapList.List.FindDir(packet.ParentId);
+                        parent = MapList.List.FindFolder(packet.ParentId);
                         if (parent == null)
                         {
                             MapList.List.AddFolder(Strings.Mapping.newfolder);
@@ -3299,7 +3295,7 @@ namespace Intersect.Server.Networking
                 case MapListUpdates.Rename:
                     if (packet.TargetType == 0)
                     {
-                        parent = MapList.List.FindDir(packet.TargetId);
+                        parent = MapList.List.FindFolder(packet.TargetId);
                         parent.Name = packet.Name;
                         PacketSender.SendMapListToAll();
                     }

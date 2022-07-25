@@ -232,14 +232,9 @@ namespace Intersect.Client.Entities
 
         public Pointf Origin => LatestMap == default ? Pointf.Empty : mOrigin;
 
-        public Pointf Center
-        {
-            get
-            {
-                var sprite = Globals.ContentManager.GetTexture(TextureType.Entity, Sprite);
-                return Origin - ((sprite == default) ? Pointf.Empty : (Pointf.UnitY * sprite.Center.Y / Options.Instance.Sprites.Directions));
-            }
-        }
+        protected virtual Pointf CenterOffset => (Texture == default) ? Pointf.Empty : (Pointf.UnitY * Texture.Center.Y / Options.Instance.Sprites.Directions);
+
+        public Pointf Center => Origin - CenterOffset;
 
         public byte Dir
         {
@@ -492,7 +487,7 @@ namespace Intersect.Client.Entities
         //Returns the amount of time required to traverse 1 tile
         public virtual float GetMovementTime()
         {
-            var time = 1000f / (float)(1 + Math.Log(Stat[(int)Stats.Speed]));
+            var time = 1000f / (float) (1 + Math.Log(Stat[(int) Stats.Speed]));
             if (IsBlocking)
             {
                 time += time * (float)Options.BlockingSlow;
@@ -1629,7 +1624,7 @@ namespace Intersect.Client.Entities
                 SpriteAnimation = SpriteAnimations.Normal;
                 LastActionTime = Timing.Global.Milliseconds;
             }
-            else if (AttackTimer > Timing.Global.Ticks / TimeSpan.TicksPerMillisecond) //Attacking
+            else if (AttackTimer > Timing.Global.Ticks / TimeSpan.TicksPerMillisecond && !IsBlocking) //Attacking
             {
                 var timeIn = CalculateAttackTime() - (AttackTimer - Timing.Global.Ticks / TimeSpan.TicksPerMillisecond);
                 LastActionTime = Timing.Global.Milliseconds;
@@ -1770,7 +1765,8 @@ namespace Intersect.Client.Entities
             ref IEntity blockedBy,
             bool ignoreAliveResources = true,
             bool ignoreDeadResources = true,
-            bool ignoreNpcAvoids = true
+            bool ignoreNpcAvoids = true,
+            bool projectileTrigger = false
         )
         {
             var mapInstance = Maps.MapInstance.Get(mapId);
@@ -1835,42 +1831,43 @@ namespace Intersect.Client.Entities
                             en.Value.Y == tmpY &&
                             en.Value.Z == Z)
                         {
-                            if (en.Value.GetType() != typeof(Projectile))
+                            if (!(en.Value is Projectile))
                             {
-                                if (en.Value.GetType() == typeof(Resource))
+                                switch (en.Value)
                                 {
-                                    var resourceBase = ((Resource)en.Value).BaseResource;
-                                    if (resourceBase != null)
-                                    {
-                                        if (!ignoreAliveResources && !((Resource)en.Value).IsDead)
+                                    case Resource resource:
+                                        var resourceBase = resource.BaseResource;
+                                        if (resourceBase != null)
                                         {
-                                            blockedBy = en.Value;
+                                            if (projectileTrigger)
+                                            {
+                                                bool isDead = resource.IsDead;
+                                                if (!ignoreAliveResources && !isDead || !ignoreDeadResources && isDead)
+                                                {
+                                                    blockedBy = en.Value;
 
-                                            return -6;
+                                                    return -6;
+                                                }
+
+                                                return -1;
+                                            }
+
+                                            if (resourceBase.WalkableAfter && resource.IsDead ||
+                                                resourceBase.WalkableBefore && !resource.IsDead)
+                                            {
+                                                continue;
+                                            }
                                         }
+                                        break;
 
-                                        if (!ignoreDeadResources && ((Resource)en.Value).IsDead)
-                                        {
-                                            blockedBy = en.Value;
-
-                                            return -6;
-                                        }
-
-                                        if (resourceBase.WalkableAfter && ((Resource)en.Value).IsDead ||
-                                            resourceBase.WalkableBefore && !((Resource)en.Value).IsDead)
+                                    case Player player:
+                                        //Return the entity key as this should block the player.  Only exception is if the MapZone this entity is on is passable.
+                                        var entityMap = Maps.MapInstance.Get(player.MapId);
+                                        if (Options.Instance.Passability.Passable[(int)entityMap.ZoneType])
                                         {
                                             continue;
                                         }
-                                    }
-                                }
-                                else if (en.Value.GetType() == typeof(Player))
-                                {
-                                    //Return the entity key as this should block the player.  Only exception is if the MapZone this entity is on is passable.
-                                    var entityMap = Maps.MapInstance.Get(en.Value.MapId);
-                                    if (Options.Instance.Passability.Passable[(int)entityMap.ZoneType])
-                                    {
-                                        continue;
-                                    }
+                                        break;
                                 }
 
                                 blockedBy = en.Value;

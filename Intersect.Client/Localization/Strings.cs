@@ -634,6 +634,9 @@ namespace Intersect.Client.Localization
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public static LocalizedString title = @"Crafting Table";
 
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public static LocalizedString recipe = @"{01}";
+
         }
 
         public partial struct Credits
@@ -1236,7 +1239,7 @@ namespace Intersect.Client.Localization
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public static Dictionary<int, LocalizedString> ItemTypes = new Dictionary<int, LocalizedString>
             {
-                {0, @"None"},
+                {0, @"Item"},
                 {1, @"Equipment"},
                 {2, @"Consumable"},
                 {3, @"Currency"},

@@ -1,4 +1,4 @@
-﻿using MessagePack;
+using MessagePack;
 using System;
 
 namespace Intersect.Network.Packets.Client
@@ -11,14 +11,16 @@ namespace Intersect.Network.Packets.Client
         {
         }
 
-        public CraftItemPacket(Guid craftId)
+        public CraftItemPacket(Guid craftId, int amount)
         {
             CraftId = craftId;
+            Amount = amount;
         }
 
         [Key(0)]
         public Guid CraftId { get; set; }
-
+        [Key(1)]
+        public int Amount { get; set; }
     }
 
 }

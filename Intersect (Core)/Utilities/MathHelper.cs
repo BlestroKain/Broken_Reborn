@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Intersect.Utilities
 {
@@ -55,6 +55,13 @@ namespace Intersect.Utilities
             return Math.Min(Math.Max(value, minimum), maximum);
         }
 
+        public static int RoundNearestMultiple(int value, int factor)
+        {
+            return (int)Math.Round(
+                (value / (double)factor),
+                MidpointRounding.AwayFromZero
+            ) * factor;
+        }
     }
 
 }

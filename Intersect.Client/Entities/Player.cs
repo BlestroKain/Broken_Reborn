@@ -22,6 +22,7 @@ using Intersect.GameObjects;
 using Intersect.GameObjects.Maps;
 using Intersect.Network.Packets.Server;
 using Intersect.Utilities;
+using Intersect.GameObjects.Crafting;
 
 namespace Intersect.Client.Entities
 {
@@ -1842,6 +1843,51 @@ namespace Intersect.Client.Entities
                                     (float)Options.MaxStatValue)));
         }
 
+        public Dictionary<Guid, int> GetInventoryItemsAndQuantities()
+        {
+            var itemsAndQuantities = new Dictionary<Guid, int>();
+            foreach (var item in Inventory)
+            {
+                if (item != null)
+                {
+                    if (itemsAndQuantities.ContainsKey(item.ItemId))
+                    {
+                        itemsAndQuantities[item.ItemId] += item.Quantity;
+                    }
+                    else
+                    {
+                        itemsAndQuantities.Add(item.ItemId, item.Quantity);
+                    }
+                }
+            }
+
+            return itemsAndQuantities;
+        }
+
+        public bool CanCraftItem(Guid craftId)
+        {
+            var inventoryItemsAndQuantities = GetInventoryItemsAndQuantities();
+            foreach (var craft in CraftBase.Get(craftId).Ingredients)
+            {
+                if (inventoryItemsAndQuantities.ContainsKey(craft.ItemId))
+                {
+                    if (inventoryItemsAndQuantities[craft.ItemId] >= craft.Quantity)
+                    {
+                        inventoryItemsAndQuantities[craft.ItemId] -= craft.Quantity;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
         //Movement Processing
         private void ProcessDirectionalInput()
         {

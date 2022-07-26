@@ -1,5 +1,6 @@
-﻿using System;
-
+using System;
+using System.Collections.Generic;
+using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.GenericClasses;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
@@ -8,12 +9,14 @@ using Intersect.Client.Framework.Input;
 using Intersect.Client.General;
 using Intersect.Client.Interface.Game.Chat;
 using Intersect.Client.Interface.Game.DescriptionWindows;
+using Intersect.Client.Items;
 using Intersect.Client.Localization;
 using Intersect.Client.Networking;
 using Intersect.Configuration;
 using Intersect.Enums;
 using Intersect.GameObjects;
 using Intersect.Utilities;
+using static Intersect.Client.Interface.Game.Bank.BankWindow;
 
 namespace Intersect.Client.Interface.Game.Bank
 {
@@ -66,11 +69,10 @@ namespace Intersect.Client.Interface.Game.Bank
             Pnl = new ImagePanel(Container, "BankItemIcon");
             Pnl.HoverEnter += pnl_HoverEnter;
             Pnl.HoverLeave += pnl_HoverLeave;
-            Pnl.RightClicked += Pnl_RightClicked;
+            Pnl.RightClicked += Pnl_DoubleClicked; //Allow withdrawing via double click OR right click
             Pnl.DoubleClicked += Pnl_DoubleClicked;
             Pnl.Clicked += pnl_Clicked;
         }
-
         private void Pnl_RightClicked(Base sender, ClickedEventArgs arguments)
         {
             if (ClientConfiguration.Instance.EnableContextMenus)
@@ -87,7 +89,7 @@ namespace Intersect.Client.Interface.Game.Bank
         {
             if (Globals.InBank)
             {
-                Globals.Me.TryWithdrawItem(mMySlot);
+                Globals.Me.TryWithdrawItem(SortedSlot);
             }
         }
 
@@ -117,10 +119,16 @@ namespace Intersect.Client.Interface.Game.Bank
 
             mMouseOver = true;
             mCanDrag = true;
-            if (Globals.InputManager.MouseButtonDown(MouseButtons.Left))
+            if (!Globals.InputManager.MouseButtonDown(MouseButtons.Left))
             {
                 mCanDrag = false;
-
+                mMouseX = -1;
+                mMouseY = -1;
+                if (Timing.Global.Milliseconds < mClickTime)
+                {
+                    //Globals.Me.TryUseItem(_mySlot);
+                    mClickTime = 0;
+                }
                 return;
             }
 
@@ -130,11 +138,11 @@ namespace Intersect.Client.Interface.Game.Bank
                 mDescWindow = null;
             }
 
-            if (Globals.Bank[mMySlot]?.Base != null)
+            if (SortedBank[mMySlot]?.Item.Base != null)
             {
                 mDescWindow = new ItemDescriptionWindow(
-                    Globals.Bank[mMySlot].Base, Globals.Bank[mMySlot].Quantity, mBankWindow.X, mBankWindow.Y,
-                    Globals.Bank[mMySlot].StatBuffs
+                    SortedBank[mMySlot].Item.Base, SortedBank[mMySlot].Item.Quantity, mBankWindow.X, mBankWindow.Y,
+                    SortedBank[mMySlot].Item.StatBuffs
                 );
             }
         }
@@ -154,10 +162,10 @@ namespace Intersect.Client.Interface.Game.Bank
 
         public void Update()
         {
-            if (Globals.Bank[mMySlot].ItemId != mCurrentItemId)
+            if (SortedBank[mMySlot].Item.ItemId != mCurrentItemId)
             {
-                mCurrentItemId = Globals.Bank[mMySlot].ItemId;
-                var item = ItemBase.Get(Globals.Bank[mMySlot].ItemId);
+                mCurrentItemId = SortedBank[mMySlot].Item.ItemId;
+                var item = ItemBase.Get(SortedBank[mMySlot].Item.ItemId);
                 if (item != null)
                 {
                     var itemTex = Globals.ContentManager.GetTexture(Framework.Content.TextureType.Item, item.Icon);
@@ -282,7 +290,7 @@ namespace Intersect.Client.Interface.Game.Bank
 
                                 if (allowed)
                                 {
-                                    PacketSender.SendMoveBankItems(bestIntersectIndex, mMySlot);
+                                    PacketSender.SendMoveBankItems(bestIntersectIndex, SortedSlot);
                                 }
 
                                 //Globals.Me.SwapItems(bestIntersectIndex, _mySlot);
@@ -317,12 +325,18 @@ namespace Intersect.Client.Interface.Game.Bank
                             }
                         }
                     }
-
                     mDragIcon.Dispose();
                 }
             }
         }
 
+    }
+
+    public partial class BankItem
+    {
+        public List<BankSlot> SortedBank => Interface.GameUi.GetSortedBank();
+
+        public int SortedSlot => SortedBank[mMySlot].SlotId;
     }
 
 }

@@ -1574,6 +1574,11 @@ namespace Intersect.Server.Networking
             player.SendPacket(new CraftingTablePacket(null, true));
         }
 
+        public static void SendCraftingStatusPacket(Player player, int amountRemaining)
+        {
+            player?.SendPacket(new CraftStatusPacket(amountRemaining));
+        }
+
         //GameObjectPacket
         public static void SendGameObjects(Client client, GameObjectType type, List<GameObjectPacket> packetList = null)
         {

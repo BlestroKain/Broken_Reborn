@@ -104,7 +104,7 @@ namespace Intersect.Editor.Forms.Editors
             cmbHitAnimation.Items.Add(Strings.General.None);
             cmbHitAnimation.Items.AddRange(AnimationBase.Names);
             cmbTrapAnimation.Items.Clear();
-            cmbTrapAnimation.Items.Add(Strings.General.none);
+            cmbTrapAnimation.Items.Add(Strings.General.None);
             cmbTrapAnimation.Items.AddRange(AnimationBase.Names);
             cmbEvent.Items.Clear();
             cmbEvent.Items.Add(Strings.General.None);

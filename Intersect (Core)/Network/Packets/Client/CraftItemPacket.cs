@@ -19,6 +19,7 @@ namespace Intersect.Network.Packets.Client
 
         [Key(0)]
         public Guid CraftId { get; set; }
+
         [Key(1)]
         public int Amount { get; set; }
     }

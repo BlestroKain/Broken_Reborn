@@ -72,6 +72,8 @@ namespace Intersect.Client.Interface.Game
 
         private bool mShouldOpenCraftingTable;
 
+        private bool mShouldUpdateCraftingTable;
+
         private bool mShouldOpenShop;
 
         private bool mShouldOpenTrading;
@@ -246,6 +248,19 @@ namespace Intersect.Client.Interface.Game
         public void NotifyOpenCraftingTable()
         {
             mShouldOpenCraftingTable = true;
+        }
+
+        public void UpdateCraftingTable()
+        {
+            mShouldUpdateCraftingTable = true;
+        }
+
+        public void UpdateCraftStatus(int amount)
+        {
+            if (mCraftingWindow != null && mCraftingWindow.IsVisible())
+            {
+                mCraftingWindow.ReceiveStatusUpdate(amount);
+            }
         }
 
         public void NotifyCloseCraftingTable()
@@ -424,6 +439,7 @@ namespace Intersect.Client.Interface.Game
             mShouldCloseBag = false;
 
             //Crafting station update
+            //Crafting station update
             if (mShouldOpenCraftingTable)
             {
                 OpenCraftingTable();
@@ -439,6 +455,11 @@ namespace Intersect.Client.Interface.Game
                 else
                 {
                     mCraftingWindow.Update();
+                    if (mShouldUpdateCraftingTable)
+                    {
+                        mShouldUpdateCraftingTable = false;
+                        mCraftingWindow.Refresh = true;
+                    }
                 }
             }
 

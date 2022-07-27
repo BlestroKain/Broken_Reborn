@@ -217,7 +217,22 @@ namespace Intersect
 
         }
 
-        public sealed partial class ItemsNamespace
+        public sealed class ItemDescNamespace
+        {
+            public Color Primary = Color.White;
+            
+            public Color Muted = new Color(255, 160, 160, 160);
+
+            public Color Better = new Color(255, 129, 186, 40);
+
+            public Color Worse = new Color(255, 222, 124, 112);
+            
+            public Color Notice = new Color(255, 217, 218, 157);
+            
+            public Color Special = new Color(255, 206, 109, 241);
+        }
+
+        public sealed class ItemsNamespace
         {
 
             public Color Bound = Color.Red;
@@ -326,6 +341,10 @@ namespace Intersect
 
             public readonly QuestWindowNamespace QuestWindow = new QuestWindowNamespace();
 
+           
+            
+            public readonly ItemDescNamespace ItemDesc = new ItemDescNamespace();
+
         }
 
         // ReSharper restore MemberHidesStaticFromOuterClass
@@ -348,7 +367,10 @@ namespace Intersect
 
         public static ItemsNamespace Items => Root.Items;
 
-        #endregion
+               
+        public static ItemDescNamespace ItemDesc => Root.ItemDesc;
+
+       #endregion
 
     }
 

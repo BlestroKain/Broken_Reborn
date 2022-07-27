@@ -1,5 +1,6 @@
 using System;
-
+using System.Collections.Generic;
+using System.Text;
 using Intersect.Enums;
 
 namespace Intersect.GameObjects.Events
@@ -136,6 +137,77 @@ namespace Intersect.GameObjects.Events
 
         public bool IgnoreBuffs { get; set; }
 
+        public string GetPrettyString()
+        {
+            StringBuilder retString = new StringBuilder();
+            if (ComparingLevel)
+            {
+                retString.Append("Level");
+            }
+            else
+            {
+                switch (Stat)
+                {
+                    case (Stats.Attack):
+                        retString.Append("STR");
+                        break;
+                    case (Stats.AbilityPower):
+                        retString.Append("INT");
+                        break;
+                    case (Stats.Vitality):
+                        retString.Append("VIT");
+                        break;
+                    case (Stats.Defense):
+                        retString.Append("DEF");
+                        break;
+                    case (Stats.Speed):
+                        retString.Append("MOV");
+                        break;
+                    case (Stats.Agility):
+                        retString.Append("AGI");
+                        break;
+                    case (Stats.Cures):
+                        retString.Append("CURES");
+                        break;
+                    case (Stats.Potency):
+                        retString.Append("DMG");
+                        break;
+                }
+            }
+
+            switch (Comparator)
+            {
+                case VariableComparators.Equal:
+                    retString.Append($" = {Value}");
+                    break;
+                case VariableComparators.Less:
+                    retString.Append($" < {Value}");
+                    break;
+                case VariableComparators.Greater:
+                    retString.Append($" > {Value}");
+                    break;
+                case VariableComparators.GreaterOrEqual:
+                    retString.Append($" >= {Value}");
+                    break;
+                case VariableComparators.LesserOrEqual:
+                    retString.Append($" <= {Value}");
+                    break;
+                case VariableComparators.NotEqual:
+                    retString.Append($" is not {Value}");
+                    break;
+            }
+
+            if (IgnoreBuffs && !ComparingLevel)
+            {
+                retString.Append(" (raw)");
+            }
+            else if (!ComparingLevel)
+            {
+                retString.Append(" (w/ mod)");
+            }
+
+            return retString.ToString();
+        }
     }
 
     public partial class SelfSwitchCondition : Condition
@@ -300,7 +372,7 @@ namespace Intersect.GameObjects.Events
         public MapZones ZoneType { get; set; }
     }
 
-    public partial class VariableCompaison
+    public partial class VariableCompaison 
     {
 
     }

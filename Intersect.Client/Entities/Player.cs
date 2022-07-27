@@ -22,6 +22,10 @@ using Intersect.GameObjects;
 using Intersect.GameObjects.Maps;
 using Intersect.Network.Packets.Server;
 using Intersect.Utilities;
+using Intersect.Client.Items;
+using Intersect.Client.Interface.Game.Chat;
+using Intersect.Config.Guilds;
+using Intersect.Client.Interface.Game.DescriptionWindows;
 
 namespace Intersect.Client.Entities
 {
@@ -50,6 +54,8 @@ namespace Intersect.Client.Entities
         IReadOnlyDictionary<Guid, long> IPlayer.ItemCooldowns => ItemCooldowns;
 
         public Dictionary<Guid, long> ItemCooldowns { get; set; } = new Dictionary<Guid, long>();
+
+        private ItemDescriptionWindow mItemTargetBox;
 
         private Entity mLastBumpedEvent = null;
 

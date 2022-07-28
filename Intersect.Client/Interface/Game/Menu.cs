@@ -1,4 +1,4 @@
-﻿using Intersect.Client.Core;
+using Intersect.Client.Core;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Graphics;
 using Intersect.Client.Framework.Gwen.Control;
@@ -8,6 +8,7 @@ using Intersect.Client.Interface.Game.Character;
 using Intersect.Client.Interface.Game.Chat;
 using Intersect.Client.Interface.Game.Inventory;
 using Intersect.Client.Interface.Game.Spells;
+using Intersect.Client.Interface.Game.Friends;
 using Intersect.Client.Localization;
 using Intersect.Client.Networking;
 using Intersect.Enums;
@@ -61,8 +62,6 @@ namespace Intersect.Client.Interface.Game
         private readonly Button mSpellsButton;
 
         private readonly SpellsWindow mSpellsWindow;
-
-        private readonly MapItemWindow mMapItemWindow;
 
         private readonly ImagePanel mGuildBackground;
 
@@ -140,7 +139,6 @@ namespace Intersect.Client.Interface.Game
             mSpellsWindow = new SpellsWindow(gameCanvas);
             mCharacterWindow = new CharacterWindow(gameCanvas);
             mQuestsWindow = new QuestsWindow(gameCanvas);
-            mMapItemWindow = new MapItemWindow(gameCanvas);
             mGuildWindow = new GuildWindow(gameCanvas);
         }
 
@@ -153,7 +151,6 @@ namespace Intersect.Client.Interface.Game
             mPartyWindow.Update();
             mFriendsWindow.Update();
             mQuestsWindow.Update(updateQuestLog);
-            mMapItemWindow.Update();
             mGuildWindow.Update();
         }
 
@@ -198,7 +195,7 @@ namespace Intersect.Client.Interface.Game
 
         public bool ToggleFriendsWindow()
         {
-            if (mFriendsWindow.IsVisible)
+            if (mFriendsWindow.IsVisible())
             {
                 mFriendsWindow.Hide();
             }
@@ -210,7 +207,7 @@ namespace Intersect.Client.Interface.Game
                 mFriendsWindow.Show();
             }
 
-            return mFriendsWindow.IsVisible;
+            return mFriendsWindow.IsVisible();
         }
 
         public bool ToggleGuildWindow()
@@ -323,7 +320,7 @@ namespace Intersect.Client.Interface.Game
                 windowsOpen = true;
             }
 
-            if (mFriendsWindow.IsVisible)
+            if (mFriendsWindow.IsVisible())
             {
                 windowsOpen = true;
             }

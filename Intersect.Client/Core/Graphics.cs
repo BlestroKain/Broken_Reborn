@@ -1490,5 +1490,10 @@ namespace Intersect.Client.Core
         }
 
     }
+    public static partial class Graphics
+    {
+        public static GameFont HUDFont;
 
+        public static GameFont HUDFontSmall;
+    }
 }

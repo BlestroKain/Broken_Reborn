@@ -984,5 +984,26 @@ namespace Intersect.Client.MonoGame.Graphics
         }
 
     }
+    public partial class MonoRenderer : GameRenderer
+    {
+        public override int GetMaxCharsWithinWidth(string text, GameFont gameFont, float fontScale, int maxWidth)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                return 0;
+            }
 
+            int maxChars = text.Length;
+            var tmpNameWidth = MeasureText(text, gameFont, fontScale).X;
+            var tmpStr = text;
+            while (tmpNameWidth > maxWidth)
+            {
+                maxChars--;
+                tmpStr = tmpStr.Substring(0, maxChars);
+                tmpNameWidth = MeasureText(tmpStr, gameFont, 1).X;
+            }
+
+            return maxChars;
+        }
+    }
 }

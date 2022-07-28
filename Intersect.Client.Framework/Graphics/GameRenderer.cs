@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -187,5 +187,8 @@ namespace Intersect.Client.Framework.Graphics
         }
 
     }
-
+    public abstract partial class GameRenderer
+    {
+        public abstract int GetMaxCharsWithinWidth(string text, GameFont gameFont, float fontScale, int maxLen);
+    }
 }

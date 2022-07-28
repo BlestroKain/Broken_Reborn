@@ -2219,6 +2219,22 @@ namespace Intersect.Server.Networking
         {
             player?.SendPacket(new MapTrapPacket(mapId, trapId, animationId, ownerId, x, y, remove));
         }
+        
+    }
+
+    public static partial class PacketSender
+    {
+        
+        public static void SendTradeAcceptPacketTo(Player player)
+        {
+            if (player == null)
+            {
+                return;
+            }
+
+            player?.SendPacket(new TradeAcceptedPacket());
+        }
+
     }
 
 }

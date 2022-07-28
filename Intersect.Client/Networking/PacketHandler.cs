@@ -2108,4 +2108,17 @@ namespace Intersect.Client.Networking
         }
     }
 
+    internal sealed partial class PacketHandler
+    {
+        
+        public void HandlePacket(IPacketSender packetSender, TradeAcceptedPacket packet)
+        {
+            if (Globals.Me == null)
+            {
+                return;
+            }
+
+            Globals.TradeAccepted = true;
+        }
+    }
 }

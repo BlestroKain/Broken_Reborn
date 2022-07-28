@@ -235,4 +235,8 @@ namespace Intersect.Client.General
 
     }
 
+    public static partial class Globals
+    {
+        public static bool TradeAccepted { get; set; }
+    }
 }

@@ -46,7 +46,7 @@ namespace Intersect.Config.Guilds
         {
             new GuildRank()
             {
-                Title = "Master",
+                Title = "Lider",
                 Limit = 1,
                 Permissions = new GuildPermissions()
                 {
@@ -61,7 +61,7 @@ namespace Intersect.Config.Guilds
             },
             new GuildRank()
             {
-                Title = "Officer",
+                Title = "Oficial",
                 Limit = 10,
                 Permissions = new GuildPermissions()
                 {
@@ -76,7 +76,7 @@ namespace Intersect.Config.Guilds
             },
             new GuildRank()
             {
-                Title = "Member",
+                Title = "Miembro",
                 Limit = -1,
                 Permissions = new GuildPermissions()
                 {
@@ -91,7 +91,7 @@ namespace Intersect.Config.Guilds
             },
             new GuildRank()
             {
-                Title = "Newbie",
+                Title = "Novato",
                 Limit = -1,
                 Permissions = new GuildPermissions()
                 {
@@ -117,12 +117,12 @@ namespace Intersect.Config.Guilds
         {
             if (Ranks.Length < 2)
             {
-                throw new Exception("Must have at least 2 guild ranks defined!");
+                throw new Exception("Debes tener almenos 2 rangos de guild definidos!");
             }
 
             if (Ranks[0].Limit != 1)
             {
-                throw new Exception(Ranks[0].Title + " is considered a guild leader (first rank) so the limit should be 1.");
+                throw new Exception(Ranks[0].Title + " es considerado un lider de guild (primer rango) asi que el limite debe ser 1.");
             }
 
             //Leader is always going to be the first rank, just make sure they can invite or kick

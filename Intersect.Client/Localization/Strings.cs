@@ -1296,9 +1296,6 @@ namespace Intersect.Client.Localization
             public static LocalizedString Amount = @"Amount:";
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-            public static LocalizedString DropOnDeath = @"Drop chance on death:";
-
-            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public static LocalizedString BlockChance = @"Block Chance:";
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -1306,6 +1303,16 @@ namespace Intersect.Client.Localization
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public static LocalizedString BlockAbsorption = @"Block Absorption:";
+			
+			[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public static LocalizedString DropOnDeath = @"Death Drop %:";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public static LocalizedString Restriction = @"Requirements:";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public static LocalizedString RestrictionOr = @"OR {00}";
+
         }
 
         public partial struct Keys
@@ -2009,6 +2016,9 @@ namespace Intersect.Client.Localization
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public static LocalizedString ScalingPercentage = @"Scaling Percentage:";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public static LocalizedString WeaponSkill = @"+ WEAPON STATS";
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public static LocalizedString HoT = @"Heals over Time";

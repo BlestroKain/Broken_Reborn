@@ -2145,6 +2145,9 @@ namespace Intersect.Client.Localization
 
             public static LocalizedString youroffer = @"Your Offer:";
 
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public static LocalizedString OtherPlayer = @"The other player has accepted the trade.";
+
         }
 
         public partial struct EscapeMenu

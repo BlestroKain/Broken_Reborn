@@ -899,7 +899,7 @@ namespace Intersect.Server.Entities
             {
                 if (mBank[slot] != null && mBank[slot].ItemId != Guid.Empty)
                 {
-                    mBankValue += ItemBase.Get(mBank[slot].ItemId).Price;
+                    mBankValue += ItemBase.Get(mBank[slot].ItemId).Price * mBank[slot].Quantity;
                 }
             }
 

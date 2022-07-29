@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 using Intersect.Models;
 using Intersect.GameObjects.Events;
-
+using Intersect.GameObjects.Conditions;
 using Newtonsoft.Json;
 
 namespace Intersect.GameObjects.Crafting
@@ -14,6 +14,9 @@ namespace Intersect.GameObjects.Crafting
     {
 
         [NotMapped] public List<CraftIngredient> Ingredients = new List<CraftIngredient>();
+        
+        /*[NotMapped]
+        public ConditionLists Requirements { get; set; } = new ConditionLists();*/
 
         [JsonConstructor]
         public CraftBase(Guid id) : base(id)

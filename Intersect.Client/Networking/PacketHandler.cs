@@ -1566,6 +1566,11 @@ namespace Intersect.Client.Networking
             }
         }
 
+        public void HandlePacket(IPacketSender packetSender, CraftStatusPacket packet)
+        {
+            Interface.Interface.GameUi.UpdateCraftStatus(packet.AmountRemaining);
+        }
+
         //BankPacket
         public void HandlePacket(IPacketSender packetSender, BankPacket packet)
         {
@@ -1605,6 +1610,7 @@ namespace Intersect.Client.Networking
             {
                 Globals.Bank[slot] = null;
             }
+            Interface.Interface.GameUi.RefreshBank();
         }
 
         //GameObjectPacket

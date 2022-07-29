@@ -1,11 +1,11 @@
-﻿using Intersect.Client.Framework.GenericClasses;
+using Intersect.Client.Framework.GenericClasses;
 
 namespace Intersect.Client.Framework.Input
 {
 
     public abstract partial class GameInput : IGameInput
     {
-
+     
         public abstract bool MouseButtonDown(MouseButtons mb);
 
         public abstract bool KeyDown(Keys key);

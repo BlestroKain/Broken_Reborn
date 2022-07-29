@@ -52,7 +52,7 @@ namespace Intersect.Server.Entities
                             mBank[slot].StatBuffs
                         )
                     );
-                    mBankValue += ItemBase.Get(mBank[slot].ItemId).Price;
+                    mBankValue += ItemBase.Get(mBank[slot].ItemId).Price * mBank[slot].Quantity; ;
                 }
                 else
                 {

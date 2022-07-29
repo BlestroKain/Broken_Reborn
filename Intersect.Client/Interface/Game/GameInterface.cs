@@ -15,6 +15,9 @@ using Intersect.Client.Interface.Game.Trades;
 using Intersect.Client.Networking;
 using Intersect.Enums;
 using Intersect.GameObjects;
+using Intersect.Client.Items;
+using System.Collections.Generic;
+using static Intersect.Client.Interface.Game.Bank.BankWindow;
 
 namespace Intersect.Client.Interface.Game
 {
@@ -68,6 +71,8 @@ namespace Intersect.Client.Interface.Game
         private bool mShouldOpenBank;
 
         private bool mShouldOpenCraftingTable;
+
+        private bool mShouldUpdateCraftingTable;
 
         private bool mShouldOpenShop;
 
@@ -243,6 +248,19 @@ namespace Intersect.Client.Interface.Game
         public void NotifyOpenCraftingTable()
         {
             mShouldOpenCraftingTable = true;
+        }
+
+        public void UpdateCraftingTable()
+        {
+            mShouldUpdateCraftingTable = true;
+        }
+
+        public void UpdateCraftStatus(int amount)
+        {
+            if (mCraftingWindow != null && mCraftingWindow.IsVisible())
+            {
+                mCraftingWindow.ReceiveStatusUpdate(amount);
+            }
         }
 
         public void NotifyCloseCraftingTable()
@@ -421,6 +439,7 @@ namespace Intersect.Client.Interface.Game
             mShouldCloseBag = false;
 
             //Crafting station update
+            //Crafting station update
             if (mShouldOpenCraftingTable)
             {
                 OpenCraftingTable();
@@ -436,6 +455,11 @@ namespace Intersect.Client.Interface.Game
                 else
                 {
                     mCraftingWindow.Update();
+                    if (mShouldUpdateCraftingTable)
+                    {
+                        mShouldUpdateCraftingTable = false;
+                        mCraftingWindow.Refresh = true;
+                    }
                 }
             }
 
@@ -500,7 +524,15 @@ namespace Intersect.Client.Interface.Game
                 UnfocusChat = false;
             }
         }
+        public List<BankSlot> GetSortedBank()
+        {
+            return mBankWindow.SortedBank;
+        }
 
+        public void RefreshBank()
+        {
+            mBankWindow.InitRefreshBank();
+        }
         public void Draw()
         {
             GameCanvas.RenderCanvas();

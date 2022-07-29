@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 using Intersect.Client.Framework.GenericClasses;
 using Intersect.Client.Framework.Gwen.Control;
@@ -66,12 +66,12 @@ namespace Intersect.Client.Interface.Game.Bank
             Pnl = new ImagePanel(Container, "BankItemIcon");
             Pnl.HoverEnter += pnl_HoverEnter;
             Pnl.HoverLeave += pnl_HoverLeave;
-            Pnl.RightClicked += Pnl_RightClicked;
+            Pnl.RightClicked += Pnl_DoubleClicked;
             Pnl.DoubleClicked += Pnl_DoubleClicked;
             Pnl.Clicked += pnl_Clicked;
         }
 
-        private void Pnl_RightClicked(Base sender, ClickedEventArgs arguments)
+       /* private void Pnl_RightClicked(Base sender, ClickedEventArgs arguments)
         {
             if (ClientConfiguration.Instance.EnableContextMenus)
             {
@@ -81,7 +81,7 @@ namespace Intersect.Client.Interface.Game.Bank
             {
                 Pnl_DoubleClicked(sender, arguments);
             }
-        }
+        }*/
 
         private void Pnl_DoubleClicked(Base sender, ClickedEventArgs arguments)
         {
@@ -130,11 +130,11 @@ namespace Intersect.Client.Interface.Game.Bank
                 mDescWindow = null;
             }
 
-            if (Globals.Bank[mMySlot]?.Base != null)
+            if (SortedBank[mMySlot]?.Item.Base != null)
             {
                 mDescWindow = new ItemDescriptionWindow(
-                    Globals.Bank[mMySlot].Base, Globals.Bank[mMySlot].Quantity, mBankWindow.X, mBankWindow.Y,
-                    Globals.Bank[mMySlot].StatBuffs
+                    SortedBank[mMySlot].Item.Base, SortedBank[mMySlot].Item.Quantity, mBankWindow.X, mBankWindow.Y,
+                    SortedBank[mMySlot].Item.StatBuffs
                 );
             }
         }

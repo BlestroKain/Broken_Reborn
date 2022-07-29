@@ -4,13 +4,16 @@ using System.Collections.Generic;
 using Intersect.Client.Core;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.GenericClasses;
-using Intersect.Client.Framework.Graphics;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.General;
 using Intersect.Client.Localization;
 using Intersect.GameObjects;
 using Intersect.Client.Networking;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
+using Intersect.Client.Items;
+using System.Linq;
+using Intersect.Client.Utilities;
+using Intersect.Enums;
 
 namespace Intersect.Client.Interface.Game.Bank
 {
@@ -29,11 +32,11 @@ namespace Intersect.Client.Interface.Game.Bank
 
         private ScrollControl mItemContainer;
 
+        private List<Label> mValues = new List<Label>();
+
         private Button mSortButton;
 
         private Label mValueLabel;
-
-        private List<Label> mValues = new List<Label>();
 
         //Location
         public int X;
@@ -41,11 +44,6 @@ namespace Intersect.Client.Interface.Game.Bank
         public int Y;
 
         private bool mOpen;
-
-        // Context menu
-        private Framework.Gwen.Control.Menu mContextMenu;
-
-        private MenuItem mWithdrawContextItem;
 
         //Init
         public BankWindow(Canvas gameCanvas)
@@ -56,7 +54,7 @@ namespace Intersect.Client.Interface.Game.Bank
 
             mItemContainer = new ScrollControl(mBankWindow, "ItemContainer");
             mItemContainer.EnableScroll(false, true);
-            
+
             mSortButton = new Button(mBankWindow, "SortButton");
             mSortButton.SetText(Strings.Bank.sort);
             mSortButton.Clicked += sort_Clicked;
@@ -65,50 +63,19 @@ namespace Intersect.Client.Interface.Game.Bank
             mValueLabel.SetText(Strings.Bank.bankvalue.ToString(Strings.FormatQuantityAbbreviated(Globals.BankValue)));
             mValueLabel.SetToolTipText(Strings.Bank.bankvalue.ToString(Globals.BankValue.ToString("N0").Replace(",", Strings.Numbers.comma)));
 
+            _BankWindow();
+
             mBankWindow.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+
             InitItemContainer();
             Close();
-
-            // Generate our context menu with basic options.
-            mContextMenu = new Framework.Gwen.Control.Menu(gameCanvas, "BankContextMenu");
-            mContextMenu.IsHidden = true;
-            mContextMenu.IconMarginDisabled = true;
-            //TODO: Is this a memory leak?
-            mContextMenu.Children.Clear();
-            mWithdrawContextItem = mContextMenu.AddItem(Strings.BankContextMenu.Withdraw);
-            mWithdrawContextItem.Clicked += MWithdrawContextItem_Clicked;
-            mContextMenu.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
-        }
-
-        public void OpenContextMenu(int slot)
-        {
-            var item = ItemBase.Get(Globals.Bank[slot].ItemId);
-
-            // No point showing a menu for blank space.
-            if (item == null)
-            {
-                return;
-            }
-
-            mWithdrawContextItem.SetText(Strings.BankContextMenu.Withdraw.ToString(item.Name));
-
-            // Set our spell slot as userdata for future reference.
-            mContextMenu.UserData = slot;
-
-            mContextMenu.SizeToChildren();
-            mContextMenu.Open(Framework.Gwen.Pos.None);
-        }
-
-        private void MWithdrawContextItem_Clicked(Base sender, Framework.Gwen.Control.EventArguments.ClickedEventArgs arguments)
-        {
-            var slot = (int)sender.Parent.UserData;
-            Globals.Me.TryWithdrawItem(slot);
         }
 
         public void Close()
         {
             mBankWindow.IsHidden = true;
             mOpen = false;
+            _Close();
         }
 
         public void Open()
@@ -130,6 +97,7 @@ namespace Intersect.Client.Interface.Game.Bank
 
             mBankWindow.IsHidden = false;
             mOpen = true;
+            FillSortedBank();
         }
 
         public bool IsVisible()
@@ -148,6 +116,8 @@ namespace Intersect.Client.Interface.Game.Bank
 
                 return;
             }
+
+            UpdateBank();
             mValueLabel.SetText(Strings.Bank.bankvalue.ToString(Strings.FormatQuantityAbbreviated(Globals.BankValue)));
             mValueLabel.SetToolTipText(Strings.Bank.bankvaluefull.ToString(Globals.BankValue.ToString("N0").Replace(",", Strings.Numbers.comma)));
             X = mBankWindow.X;
@@ -156,7 +126,7 @@ namespace Intersect.Client.Interface.Game.Bank
             {
                 var bankItem = Items[i];
                 var bankLabel = mValues[i];
-                var globalBankItem = Globals.Bank[i];
+                var globalBankItem = SortedBank[i]?.Item;
 
                 bankItem.Container.Show();
                 SetItemPosition(i);
@@ -192,12 +162,14 @@ namespace Intersect.Client.Interface.Game.Bank
                 }
             }
         }
+
         void sort_Clicked(Base sender, ClickedEventArgs arguments)
         {
             if (mBankWindow.IsHidden) return;
 
             PacketSender.SendBankSortPacket();
         }
+
         private void InitItemContainer()
         {
             for (var slotIndex = 0; slotIndex < Options.Instance.Bank.MaxSlots; slotIndex++)
@@ -211,7 +183,7 @@ namespace Intersect.Client.Interface.Game.Bank
                 bankLabel.Text = "";
 
                 bankItem.Container.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
-                
+
                 Items.Add(bankItem);
                 mValues.Add(bankLabel);
             }
@@ -262,4 +234,111 @@ namespace Intersect.Client.Interface.Game.Bank
 
     }
 
+
+    public partial class BankWindow
+    {
+        private TextBox mSearch;
+        private ImagePanel mTextboxBg;
+        private Label mSearchLabel;
+        private Button mClearButton;
+        public List<BankSlot> SortedBank;
+        private bool RefreshBank = false;
+
+        public class BankSlot
+        {
+            public int SlotId { get; set; }
+            public Item Item { get; set; }
+
+            public BankSlot(int slotId, Item item)
+            {
+                SlotId = slotId;
+                Item = item;
+            }
+        }
+
+        private void _BankWindow()
+        {
+            mSearchLabel = new Label(mBankWindow, "SearchLabel");
+            mSearchLabel.Text = "Search:";
+            mClearButton = new Button(mBankWindow, "ClearButton");
+            mClearButton.Pressed += mClear_Pressed;
+            mClearButton.Text = "Clear";
+            mTextboxBg = new ImagePanel(mBankWindow, "Textbox");
+            mSearch = new TextBox(mTextboxBg, "SearchBox");
+            mSearch.TextChanged += mSearch_textChanged;
+        }
+
+        private void FillSortedBank()
+        {
+            SortedBank = new List<BankSlot>();
+            for (var i = 0; i < Globals.Bank.Length; i++)
+            {
+                var item = Globals.Bank[i];
+                SortedBank.Add(new BankSlot(i, item));
+            }
+        }
+
+        private void UpdateBank()
+        {
+            if (!RefreshBank)
+            {
+                return;
+            }
+
+            FillSortedBank();
+            if (!string.IsNullOrEmpty(mSearch.Text))
+            {
+                SortedBank = SortedBank
+                    .Select((bankSlot) =>
+                    {
+                        var slotItem = bankSlot.Item;
+                        if (slotItem == null)
+                        {
+                            return null;
+                        }
+                        var item = ItemBase.Get(slotItem.ItemId);
+                        if (!ItemIsSearchable(item))
+                        {
+                            return null;
+                        }
+                        return bankSlot;
+                    })
+                    .OrderByDescending(bankItem => bankItem != null && ItemIsSearchable(ItemBase.Get(bankItem.Item.ItemId)))
+                    .ToList();
+            }
+            RefreshBank = false;
+        }
+
+        private bool ItemIsSearchable(ItemBase item)
+        {
+            string itemType = Enum.GetName(typeof(ItemTypes), item.ItemType).ToLower();
+            return SearchHelper.IsSearchable(item?.Name, mSearch.Text) || SearchHelper.IsSearchable(itemType, mSearch.Text);
+        }
+
+        public void _Close()
+        {
+            if (mSearch == null)
+            {
+                return;
+            }
+            mSearch.Text = string.Empty;
+        }
+
+        private void mSearch_textChanged(Base control, EventArgs args)
+        {
+            mItemContainer.ScrollToTop();
+            InitRefreshBank();
+        }
+
+        private void mClear_Pressed(Base control, EventArgs args)
+        {
+            mSearch.Text = string.Empty;
+            InitRefreshBank();
+        }
+
+        public void InitRefreshBank()
+        {
+            RefreshBank = true;
+        }
+    }
 }

@@ -152,7 +152,8 @@ namespace Intersect.Server.General
             var negate = false;
             if (baseDamage < 0)
             {
-                baseDamage = Math.Abs(baseDamage);
+                //baseDamage = Math.Abs(baseDamage);
+                baseDamage = 0
                 negate = true;
             }
 

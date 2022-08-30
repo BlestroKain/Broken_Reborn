@@ -158,7 +158,7 @@ namespace Intersect.Client.Interface.Game.Trades
                     if (Globals.Trade[n, i] != null && Globals.Trade[n, i].ItemId != Guid.Empty)
                     {
                         var item = ItemBase.Get(Globals.Trade[n, i].ItemId);
-                        if (item != null)
+                        if (item == null)
                         {
                             if (item.ItemType == Enums.ItemTypes.Currency && item.Name.ToLower().Contains("gold"))
                             {
@@ -186,7 +186,30 @@ namespace Intersect.Client.Interface.Game.Trades
                             }
 
                             TradeSegment[n].Items[i].Update();
+
+                            continue;
                         }
+
+                        g += item.Price * Globals.Trade[n, i].Quantity;
+                        TradeSegment[n].Items[i].Pnl.IsHidden = false;
+                        if (item.IsStackable)
+                        {
+                            TradeSegment[n].Values[i].IsHidden = Globals.Trade[n, i].Quantity <= 1;
+                            TradeSegment[n].Values[i].Text =
+                                Strings.FormatQuantityAbbreviated(Globals.Trade[n, i].Quantity);
+                        }
+                        else
+                        {
+                            TradeSegment[n].Values[i].IsHidden = true;
+                        }
+
+                        if (TradeSegment[n].Items[i].IsDragging)
+                        {
+                            TradeSegment[n].Items[i].Pnl.IsHidden = true;
+                            TradeSegment[n].Values[i].IsHidden = true;
+                        }
+
+                        TradeSegment[n].Items[i].Update();
                     }
                     else
                     {

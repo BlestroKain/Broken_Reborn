@@ -6,6 +6,7 @@ using Intersect.Models;
 using Intersect.GameObjects.Events;
 using Intersect.GameObjects.Conditions;
 using Newtonsoft.Json;
+using Intersect.GameObjects.Conditions;
 
 namespace Intersect.GameObjects.Crafting
 {
@@ -66,6 +67,17 @@ namespace Intersect.GameObjects.Crafting
         {
             get => EventBase.Get(EventId);
             set => EventId = value?.Id ?? Guid.Empty;
+        }
+
+        [NotMapped] public ConditionLists CraftingRequirements = new ConditionLists();
+
+        //Requirements
+        [Column("CraftingRequirements")]
+        [JsonIgnore]
+        public string JsonCraftingRequirements
+        {
+            get => CraftingRequirements.Data();
+            set => CraftingRequirements.Load(value ?? "[]");
         }
 
     }

@@ -3670,6 +3670,180 @@ namespace Intersect.Server.Entities
         //Craft a new item
         private static Dictionary<Guid, int> GetAllItemsAndQuantities(List<InventorySlot> items)
         {
+
+            if (CraftingTableId == Guid.Empty)
+            {
+                return;
+            }
+
+            var table = CraftingTableBase.Get(CraftingTableId);
+            if (table == null)
+            {
+                return;
+            }
+
+            if (!table.Crafts.Contains(id))
+            {
+                return;
+            }
+
+            var craftDescriptor = CraftBase.Get(id);
+
+            if (craftDescriptor == null)
+            {
+                return;
+            }
+
+            if (!Conditions.MeetsConditionLists(craftDescriptor.CraftingRequirements, this, null))
+            {
+                PacketSender.SendChatMsg(this, Strings.Crafting.RequirementsNotMet.ToString(), ChatMessageType.Error);
+
+                return;
+            }
+
+            var backupItems = new List<Item>();
+            foreach (var backupItem in Items)
+            {
+                backupItems.Add(backupItem.Clone());
+            }
+
+            var craft = CraftBase.Get(id);
+            var craftItem = ItemBase.Get(craft.ItemId);
+            if (craftItem == null)
+            {
+                PacketSender.SendChatMsg(this, Strings.Errors.UnknownErrorTryAgain, ChatMessageType.Error, CustomColors.Alerts.Error);
+                Log.Error($"Unable to find item descriptor {craftItem.Id} for craft {craft.Id}.");
+                return;
+            }
+
+            //Quickly Look through the inventory and create a catalog of what items we have, and how many
+            var inventoryItems = new Dictionary<Guid, int>();
+            foreach (var inventoryItem in Items)
+            {
+                if (inventoryItem != null)
+                {
+                    var quantity = inventoryItem.Quantity;
+                    if (inventoryItems.ContainsKey(inventoryItem.ItemId))
+                    {
+                        quantity += inventoryItems[inventoryItem.ItemId];
+                    }
+                    inventoryItems[inventoryItem.ItemId] = quantity;
+                }
+            }
+
+            //Check the player actually has the items
+            foreach (var ingredient in craft.Ingredients)
+            {
+                if (!inventoryItems.ContainsKey(ingredient.ItemId))
+                {
+                    CraftId = Guid.Empty;
+                    return;
+                }
+
+                var currentQuantity = inventoryItems[ingredient.ItemId];
+                if (currentQuantity < ingredient.Quantity)
+                {
+                    CraftId = Guid.Empty;
+                    return;
+                }
+                inventoryItems[ingredient.ItemId] = currentQuantity - ingredient.Quantity;
+            }
+
+            //Return true if the craft was a success
+            if (Randomization.Next(0, 101) > craft.FailureChance)
+            {
+                //Take the items
+                foreach (var ingredient in craft.Ingredients)
+                {
+                    if (TryTakeItem(ingredient.ItemId, ingredient.Quantity))
+                    {
+                        continue;
+                    }
+
+                    for (var slotIndex = 0; slotIndex < backupItems.Count; slotIndex++)
+                    {
+                        Items[slotIndex].Set(backupItems[slotIndex]);
+                    }
+
+                    PacketSender.SendInventory(this);
+                    CraftId = Guid.Empty;
+
+                    return;
+                }
+
+                //Give them the craft
+                var quantity = Math.Max(craft.Quantity, 1);
+                if (!craftItem.IsStackable)
+                {
+                    quantity = 1;
+                }
+
+                if (TryGiveItem(craftItem.Id, quantity))
+                {
+                    PacketSender.SendChatMsg(
+                        this, Strings.Crafting.crafted.ToString(craftItem.Name), ChatMessageType.Crafting,
+                        CustomColors.Alerts.Success
+                    );
+
+                    if (craft.Event != default)
+                    {
+                        StartCommonEvent(craft.Event);
+                    }
+                }
+                else
+                {
+                    for (var i = 0; i < backupItems.Count; i++)
+                    {
+                        Items[i].Set(backupItems[i]);
+                    }
+
+                    PacketSender.SendInventory(this);
+                    PacketSender.SendChatMsg(
+                        this, Strings.Crafting.nospace.ToString(craftItem.Name), ChatMessageType.Crafting,
+                        CustomColors.Alerts.Error
+                    );
+                }
+            }
+            else
+            {
+                var message = Strings.Crafting.CraftFailure;
+
+                //Returns true if items should be taken from the player
+                if (Randomization.Next(0, 101) < craft.ItemLossChance)
+                {
+                    //Take the items
+                    foreach (var ingredient in craft.Ingredients)
+                    {
+                        if (TryTakeItem(ingredient.ItemId, ingredient.Quantity))
+                        {
+                            continue;
+                        }
+
+                        for (var i = 0; i < backupItems.Count; i++)
+                        {
+                            Items[i].Set(backupItems[i]);
+                        }
+
+                        PacketSender.SendInventory(this);
+                        CraftId = Guid.Empty;
+
+                        return;
+                    }
+
+                    message = Strings.Crafting.CraftFailureLostItems;
+                }
+
+                PacketSender.SendInventory(this);
+                PacketSender.SendChatMsg(this, message.ToString(craftItem.Name), ChatMessageType.Crafting, CustomColors.Alerts.Error);
+            }
+
+            CraftId = Guid.Empty;
+        }
+
+        public bool CheckCrafting(Guid id)
+        {
+            //See if we have lost the items needed for our current craft, if so end the crafting session
+            //Quickly Look through the inventory and create a catalog of what items we have, and how many
             var itemdict = new Dictionary<Guid, int>();
             foreach (var item in items)
             {

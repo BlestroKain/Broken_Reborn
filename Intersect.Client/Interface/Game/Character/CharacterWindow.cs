@@ -394,6 +394,8 @@ namespace Intersect.Client.Interface.Game.Character
 
             UpdateExtraBuffs();
 
+            UpdateExtraBuffs();
+
             for (var i = 0; i < Options.EquipmentSlots.Count; i++)
             {
                 if (Globals.Me.MyEquipment[i] > -1 && Globals.Me.MyEquipment[i] < Options.MaxInvItems)

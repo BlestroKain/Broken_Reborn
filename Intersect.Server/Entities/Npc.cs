@@ -188,7 +188,7 @@ namespace Intersect.Server.Entities
         protected override bool ShouldDropItem(Entity killer, ItemBase itemDescriptor, Item item, float dropRateModifier, out Guid lootOwner)
         {
             lootOwner = (killer as Player)?.Id ?? Id;
-            return ShouldDropItem(killer, itemDescriptor, item, dropRateModifier, out _);
+            return base.ShouldDropItem(killer, itemDescriptor, item, dropRateModifier, out _);
         }
 
         public bool TargetHasStealth(Entity target)

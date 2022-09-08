@@ -138,9 +138,6 @@ namespace Intersect.Server.Migrations.Game
 
                     b.Property<int>("ItemLossChance");
 
-                    b.Property<string>("JsonCraftingRequirements")
-                        .HasColumnName("CraftingRequirements");
-
                     b.Property<string>("Name");
 
                     b.Property<int>("Quantity");

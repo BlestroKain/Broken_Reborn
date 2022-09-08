@@ -1,10 +1,12 @@
 using System;
-
+using System.Collections.Generic;
+using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.GenericClasses;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
 using Intersect.Client.Framework.Gwen.Input;
 using Intersect.Client.Framework.Input;
+using Intersect.Client.Items;
 using Intersect.Client.General;
 using Intersect.Client.Interface.Game.Chat;
 using Intersect.Client.Interface.Game.DescriptionWindows;
@@ -13,6 +15,7 @@ using Intersect.Client.Networking;
 using Intersect.Configuration;
 using Intersect.Enums;
 using Intersect.GameObjects;
+using static Intersect.Client.Interface.Game.Bank.BankWindow;
 using Intersect.Utilities;
 
 namespace Intersect.Client.Interface.Game.Bank
@@ -87,7 +90,7 @@ namespace Intersect.Client.Interface.Game.Bank
         {
             if (Globals.InBank)
             {
-                Globals.Me.TryWithdrawItem(mMySlot);
+                Globals.Me.TryWithdrawItem(SortedSlot);
             }
         }
 
@@ -156,8 +159,8 @@ namespace Intersect.Client.Interface.Game.Bank
         {
             if (Globals.Bank[mMySlot].ItemId != mCurrentItemId)
             {
-                mCurrentItemId = Globals.Bank[mMySlot].ItemId;
-                var item = ItemBase.Get(Globals.Bank[mMySlot].ItemId);
+                mCurrentItemId = SortedBank[mMySlot].Item.ItemId;
+                var item = ItemBase.Get(SortedBank[mMySlot].Item.ItemId);
                 if (item != null)
                 {
                     var itemTex = Globals.ContentManager.GetTexture(Framework.Content.TextureType.Item, item.Icon);
@@ -282,7 +285,7 @@ namespace Intersect.Client.Interface.Game.Bank
 
                                 if (allowed)
                                 {
-                                    PacketSender.SendMoveBankItems(bestIntersectIndex, mMySlot);
+                                    PacketSender.SendMoveBankItems(bestIntersectIndex, SortedSlot);
                                 }
 
                                 //Globals.Me.SwapItems(bestIntersectIndex, _mySlot);
@@ -323,6 +326,12 @@ namespace Intersect.Client.Interface.Game.Bank
             }
         }
 
+    }
+    public partial class BankItem
+    {
+        public List<BankSlot> SortedBank => Interface.GameUi.GetSortedBank();
+
+        public int SortedSlot => SortedBank[mMySlot].SlotId;
     }
 
 }

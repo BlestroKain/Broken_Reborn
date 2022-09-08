@@ -199,7 +199,7 @@ namespace Intersect.Client.Interface.Game.Character
         //Update Button Event Handlers
         void _addMagicResistBtn_Clicked(Base sender, ClickedEventArgs arguments)
         {
-            PacketSender.SendUpgradeStat((int) Stats.MagicResist);
+            PacketSender.SendUpgradeStat((int) Stats.Vitality);
         }
 
         void _addAbilityPwrBtn_Clicked(Base sender, ClickedEventArgs arguments)
@@ -373,7 +373,7 @@ namespace Intersect.Client.Interface.Game.Character
             );
 
             mMagicRstLabel.SetText(
-                Strings.Character.stat3.ToString(Strings.Combat.stat3, Globals.Me.Stat[(int) Stats.MagicResist])
+                Strings.Character.stat3.ToString(Strings.Combat.stat3, Globals.Me.Stat[(int) Stats.Vitality])
             );
 
             mPointsLabel.SetText(Strings.Character.points.ToString(Globals.Me.StatPoints));
@@ -387,7 +387,7 @@ namespace Intersect.Client.Interface.Game.Character
                                       Globals.Me.Stat[(int) Stats.Defense] == Options.MaxStatValue;
 
             mAddMagicResistBtn.IsHidden = Globals.Me.StatPoints == 0 ||
-                                          Globals.Me.Stat[(int) Stats.MagicResist] == Options.MaxStatValue;
+                                          Globals.Me.Stat[(int) Stats.Vitality] == Options.MaxStatValue;
 
             mAddAgilityBtn.IsHidden =
                 Globals.Me.StatPoints == 0 || Globals.Me.Stat[(int) Stats.Agility] == Options.MaxStatValue;

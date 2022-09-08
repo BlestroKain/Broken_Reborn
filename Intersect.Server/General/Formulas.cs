@@ -173,7 +173,7 @@ namespace Intersect.Server.General
                 expression.Parameters["A_Speed"] = attacker.Stat[(int) Stats.Speed].Value();
                 expression.Parameters["A_Agility"] = attacker.Stat[(int)Stats.Agility].Value();
                 expression.Parameters["A_AbilityPwr"] = attacker.Stat[(int) Stats.AbilityPower].Value();
-                expression.Parameters["A_MagicResist"] = attacker.Stat[(int) Stats.MagicResist].Value();
+                expression.Parameters["A_MagicResist"] = attacker.Stat[(int) Stats.Vitality].Value();
                 expression.Parameters["A_CureBonus"] = attacker.Stat[(int)Stats.Cures].Value();
                //expression.Parameters["A_DamageBonus"] = attacker.Stat[(int)Stats.Fixeddamage].Value();
                 expression.Parameters["A_Potency"] = attacker.Stat[(int)Stats.Potency].Value();
@@ -181,7 +181,7 @@ namespace Intersect.Server.General
                 expression.Parameters["V_Defense"] = victim.Stat[(int) Stats.Defense].Value();
                 expression.Parameters["V_Speed"] = victim.Stat[(int) Stats.Speed].Value();
                 expression.Parameters["V_AbilityPwr"] = victim.Stat[(int) Stats.AbilityPower].Value();
-                expression.Parameters["V_MagicResist"] = victim.Stat[(int) Stats.MagicResist].Value();
+                expression.Parameters["V_MagicResist"] = victim.Stat[(int) Stats.Vitality].Value();
                 expression.EvaluateFunction += delegate(string name, FunctionArgs args)
                 {
                     if (args == null)

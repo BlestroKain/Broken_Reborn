@@ -256,12 +256,13 @@ namespace Intersect.Client.Interface.Game.Crafting
 
         private void DetermineCraftAllVisibility(int quantity)
         {
+            var craft = CraftBase.Get(mCraftId);
             if (quantity > 1)
-            //Show crafting time and chances
+                //Show crafting time and chances
             mLblCraftingTime.Text = Strings.Crafting.CraftingTime.ToString(craft.Time / 1000.0);
             mLblCraftingChance.Text = Strings.Crafting.CraftChance.ToString(craft.FailureChance);
             mLblDestroyMaterialsChance.Text = Strings.Crafting.DestroyMaterialsChance.ToString(craft.ItemLossChance);
-
+           
             //If crafting & we no longer have the items for the craft then stop!
             if (Crafting)
             {

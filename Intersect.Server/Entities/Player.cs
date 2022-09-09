@@ -1951,7 +1951,7 @@ namespace Intersect.Server.Entities
                                 lock (EntityLock)
                                 {
                                     member.WarpToLastOverworldLocation(false);
-                                    PacketSender.SendChatMsg(member, Strings.Parties.instancefailed, ChatMessageType.Party, CustomColors.Chat.PartyChat);
+                                    PacketSender.SendChatMsg(member, Strings.Parties.InstanceFailed, ChatMessageType.Party, CustomColors.Chat.PartyChat);
                                 }
                             }
                         }

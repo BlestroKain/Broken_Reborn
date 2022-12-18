@@ -7,6 +7,7 @@ using Intersect.Client.Framework.Input;
 using Intersect.Client.General;
 using Intersect.Client.Interface.Game;
 using Intersect.Client.Maps;
+using Intersect.Client.Minigames;
 using Intersect.Client.Networking;
 using Intersect.Logging;
 using Intersect.Utilities;
@@ -487,6 +488,10 @@ namespace Intersect.Client.Core
             {
                 return;
             }
+
+            // TODO remove this of course - for mini game testing
+            MinigameService.ToggleGame(new FishCatcherGame());
+            return;
 
             var x = (int) Math.Floor(Globals.InputManager.GetMousePosition().X + Graphics.CurrentView.Left);
             var y = (int) Math.Floor(Globals.InputManager.GetMousePosition().Y + Graphics.CurrentView.Top);

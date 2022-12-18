@@ -209,6 +209,11 @@ namespace Intersect.Client.MonoGame.File_Management
             LoadTextureGroup("misc", mMiscDict);
         }
 
+        public override void LoadMinigames()
+        {
+            LoadTextureGroup("minigames", mMinigameDict);
+        }
+
         public override void LoadFonts()
         {
             mFontDict.Clear();

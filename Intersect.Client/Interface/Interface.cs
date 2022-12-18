@@ -13,7 +13,7 @@ using Intersect.Client.Interface.Game;
 using Intersect.Client.Interface.Game.Toasts;
 using Intersect.Client.Interface.Menu;
 using Intersect.Client.Interface.Shared.Errors;
-
+using Intersect.Client.Minigames;
 using Base = Intersect.Client.Framework.Gwen.Renderer.Base;
 
 namespace Intersect.Client.Interface
@@ -176,12 +176,16 @@ namespace Intersect.Client.Interface
             sGameCanvas.RestrictToParent = false;
             if (Globals.GameState == GameStates.Menu)
             {
-                MenuUi.Draw();
+                MenuUi?.Draw();
             }
             else if (Globals.GameState == GameStates.InGame &&
                      ((!Interface.GameUi?.EscapeMenu?.IsHidden ?? true) || !HideUi))
             {
-                GameUi.Draw();
+                GameUi?.Draw();
+                if (MinigameService.IsActive)
+                {
+                    MinigameService.RunGame();
+                }
                 ToastService.Draw();
             }
         }

@@ -137,6 +137,13 @@ namespace Intersect.Utilities
 
             return a | b;
         }
+
+        public static double AngleBetween(float x1, float y1, float x2, float y2)
+        {
+            var y = y2 - y1;
+            var x = x2 - x1;
+            return Math.Atan2(y, x) * (180.0 / Math.PI);
+        }
     }
 
 }

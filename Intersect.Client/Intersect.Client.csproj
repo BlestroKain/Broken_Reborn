@@ -170,6 +170,7 @@
     <Compile Include="Interface\Game\ExpToast.cs" />
     <Compile Include="Interface\Game\GuildWindow.cs" />
     <Compile Include="Interface\Game\HarvestBonusWindow.cs" />
+    <Compile Include="Interface\Game\Minigames\MinigameBackdrop.cs" />
     <Compile Include="Interface\Game\Toasts\Toast.cs" />
     <Compile Include="Interface\Game\Toasts\ToastService.cs" />
     <Compile Include="Interface\Game\Toasts\ToastWindow.cs" />
@@ -203,6 +204,11 @@
     <Compile Include="Maps\MapInstance.cs" />
     <Compile Include="Maps\MapTrapInstance.cs" />
     <Compile Include="Maps\WeatherParticle.cs" />
+    <Compile Include="Minigames\FishCatcher\FishCatcherGame.cs" />
+    <Compile Include="Minigames\FishCatcher\Hook.cs" />
+    <Compile Include="Minigames\Minigame.cs" />
+    <Compile Include="Minigames\MinigameEntity.cs" />
+    <Compile Include="Minigames\MinigameService.cs" />
     <Compile Include="MonoGame\Audio\MonoAudioInstance.cs" />
     <Compile Include="MonoGame\Graphics\MonoTileBuffer.cs" />
     <Compile Include="MonoGame\Input\MonoClipboard.cs" />

@@ -4,6 +4,7 @@ using Intersect.Client.Framework.Graphics;
 using Intersect.Client.General;
 using Intersect.Client.Interface.Game.Chat;
 using Intersect.Client.Interface.Game.Minigames;
+using Intersect.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,13 @@ namespace Intersect.Client.Minigames
         MinigameType Type { get; }
 
         MinigameBackdrop Background { get; set; }
+
+        GameTexture GameBackground { get; set; }
+
+        float X { get; set; }
+        float Y { get; set; }
+        int Width { get; set; }
+        int Height { get; set; }
 
         bool Done { get; set; }
 
@@ -39,18 +47,37 @@ namespace Intersect.Client.Minigames
         public abstract bool Done { get; set; }
         public abstract MinigameBackdrop Background { get; set; }
         public long LastUpdate { get; set; }
-        public long Delta { get; set; }
+
+        private long _delta;
+        public float Delta
+        {
+            get => _delta / (float)1000; 
+        }
+
+        public float X { get; set; }
+        public float Y { get; set; }
+        public int Width { get; set; }
+        public int Height { get; set; }
+        public abstract GameTexture GameBackground { get; set; }
 
         public abstract void Start();
         public abstract void Update(long timeMs);
         public abstract void Draw(long timeMs);
         public void Run(long timeMs)
         {
-            Delta = timeMs - LastUpdate;
+            // I have no idea why this is necessary - but some times this function gets called twice at the same time,
+            // which fucks up the delta calc. Soooo this is a way around it :>)
+            var delta = timeMs - LastUpdate;
+            if (delta != 0)
+            {
+                _delta = timeMs - LastUpdate;
+            }
+
             Update(timeMs);
             Draw(timeMs);
             LastUpdate = timeMs;
         }
+
         public abstract void End();
 
         public void Kill()

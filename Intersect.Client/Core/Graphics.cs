@@ -10,6 +10,7 @@ using Intersect.Client.Framework.Graphics;
 using Intersect.Client.General;
 using Intersect.Client.Interface.Game.HUD;
 using Intersect.Client.Maps;
+using Intersect.Client.Minigames;
 using Intersect.Configuration;
 using Intersect.Enums;
 using Intersect.GameObjects;
@@ -601,6 +602,11 @@ namespace Intersect.Client.Core
             }
 
             Interface.Interface.DrawGui();
+
+            if (MinigameService.IsActive)
+            {
+                MinigameService.RunGame();
+            }
 
             if (FadeService.FadeInstead)
             {

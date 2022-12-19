@@ -20,17 +20,11 @@ namespace Intersect.Client.Minigames
         public override MinigameBackdrop Background { get; set; }
         public override bool Done { get; set; }
 
-        public GameTexture GameBackground { get; set; }
+        private Hook Hook;
+        public override GameTexture GameBackground { get; set; }
         private FloatRect GameBgSrc;
 
-        private Hook Hook;
-
         public Pointf MousePos { get; set; }
-
-        public float X { get; set; }
-        public float Y { get; set; }
-        public int Width { get; set; }
-        public int Height { get; set; }
 
         public FishCatcherGame()
         {
@@ -62,6 +56,7 @@ namespace Intersect.Client.Minigames
         public override void Update(long timeMs)
         {
             MousePos = UiHelper.GetViewMousePos();
+            Hook.Update(timeMs);
         }
 
         public override void End()

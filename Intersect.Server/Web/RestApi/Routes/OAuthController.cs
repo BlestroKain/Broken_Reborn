@@ -1,11 +1,10 @@
 using System;
 using System.Linq;
 using System.Net;
-using System.Text.Json.Serialization;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 
+using Intersect.Server.Database.PlayerData;
 using Intersect.Server.Database.PlayerData.Api;
 using Intersect.Server.Web.RestApi.Attributes;
 
@@ -14,110 +13,76 @@ namespace Intersect.Server.Web.RestApi.Routes
 
     [RoutePrefix("oauth")]
     [ConfigurableAuthorize]
-    public sealed partial class OAuthController : IntersectApiController
+    public sealed partial class OAuthController : ApiController
     {
-
-        private class UsernameAndTokenResponse
-        {
-            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-            public Guid TokenId { get; set; } = default;
-
-            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-            public string Username { get; set; } = default;
-        }
-
-        [HttpDelete]
-        [Route("tokens/{tokenId:guid}")]
-        public async Task<IHttpActionResult> DeleteTokenById(Guid tokenId)
-        {
-            var actor = IntersectUser;
-            if (actor == default)
-            {
-                return Unauthorized();
-            }
-
-            if (!RefreshToken.TryFind(tokenId, out var refreshToken))
-            {
-                return Unauthorized();
-            }
-
-            if (refreshToken.Id != tokenId)
-            {
-                return InternalServerError();
-            }
-
-            if (refreshToken.UserId != actor.Id && !actor.Power.ApiRoles.UserManage)
-            {
-                return Unauthorized();
-            }
-
-            if (!RefreshToken.Remove(refreshToken))
-            {
-                return InternalServerError();
-            }
-
-            return Ok(new UsernameAndTokenResponse { TokenId = tokenId });
-        }
 
         [Authorize]
         [HttpDelete]
-        [Route("tokens/{username}")]
-        public async Task<IHttpActionResult> DeleteTokensForUsername(string username, CancellationToken cancellationToken)
+        [Route("token/{username}")]
+        public async Task<IHttpActionResult> DeleteToken(string username)
         {
-            var user = Database.PlayerData.User.Find(username);
+            User user;
+
+            user = Database.PlayerData.User.Find(username);
 
             if (user == null)
             {
                 return Unauthorized();
             }
 
-            var actor = IntersectUser;
-            if (actor == default)
-            {
-                return Unauthorized();
-            }
+            var refreshToken = RefreshToken.FindForUser(user).FirstOrDefault();
 
-            if (!actor.Power.ApiRoles.UserManage && actor.Id != user.Id)
-            {
-                return Unauthorized();
-            }
-
-            if (!RefreshToken.HasTokens(user))
+            if (refreshToken == null)
             {
                 return StatusCode(HttpStatusCode.Gone);
             }
 
-            var success = await RefreshToken.RemoveForUserAsync(user.Id, cancellationToken).ConfigureAwait(false);
-            return success ? (IHttpActionResult)Ok(new { Username = username }) : StatusCode(HttpStatusCode.Unauthorized);
+            if (RefreshToken.Remove(refreshToken))
+            {
+                return Ok(
+                    new
+                    {
+                        username
+                    }
+                );
+            }
+
+            return StatusCode(HttpStatusCode.Gone);
         }
 
+        [AllowAnonymous]
         [HttpDelete]
-        [Route("tokens/{username}/{tokenId:guid}")]
-        public async Task<IHttpActionResult> DeleteTokenForUsernameById(string username, Guid tokenId)
+        [Route("token/{username}/{tokenId:guid}")]
+        public async Task<IHttpActionResult> DeleteToken(string username, Guid tokenId)
         {
-            var user = Database.PlayerData.User.Find(username);
+            User user;
+
+            user = Database.PlayerData.User.Find(username);
 
             if (user == null)
             {
                 return Unauthorized();
             }
 
-            if (IntersectUser?.Id != user.Id && !IntersectUser.Power.ApiRoles.UserManage)
+            var refreshToken = RefreshToken.FindForUser(user).FirstOrDefault();
+
+            if (refreshToken?.Id != tokenId)
             {
                 return Unauthorized();
             }
 
-            if (!RefreshToken.TryFind(tokenId, out _))
+            if (RefreshToken.Remove(refreshToken))
             {
-                return StatusCode(HttpStatusCode.Gone);
+                return Ok(
+                    new
+                    {
+                        username,
+                        tokenId
+                    }
+                );
             }
 
-            if (!RefreshToken.Remove(tokenId))
-            {
-                return InternalServerError();
-            }
-
-            return Ok(new UsernameAndTokenResponse { TokenId = tokenId, Username = username });
+            return StatusCode(HttpStatusCode.Gone);
         }
 
     }

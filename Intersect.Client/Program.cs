@@ -27,6 +27,7 @@ namespace Intersect.Client
         static void Main(string[] args)
         {
             CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-US");
+            CosturaUtility.Initialize();
 
             ExportDependencies();
             Assembly.LoadFile(Path.Combine(Environment.CurrentDirectory, "MonoGame.Framework.Client.dll"));

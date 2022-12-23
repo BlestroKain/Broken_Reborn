@@ -1,6 +1,8 @@
 ﻿using Intersect.Core;
 using Intersect.Logging;
 using Intersect.Network;
+using Intersect.Crypto;
+using Intersect.Crypto.Formats;
 using Intersect.Server.Core.Services;
 using Intersect.Server.Database;
 using Intersect.Server.Localization;
@@ -22,9 +24,10 @@ using Intersect.Factories;
 using Intersect.Plugins;
 using Intersect.Server.Plugins;
 using Intersect.Server.General;
+using Intersect.Logging.Output;
+using System.Collections.Immutable;
 using System.Collections.Generic;
 using Intersect.Plugins.Interfaces;
-using Intersect.Rsa;
 using Intersect.Server.Database.PlayerData.Players;
 
 #if WEBSOCKETS
@@ -224,7 +227,7 @@ namespace Intersect.Server.Core
             var assembly = Assembly.GetExecutingAssembly();
             using (var stream = assembly.GetManifestResourceStream("Intersect.Server.network.handshake.bkey"))
             {
-                var rsaKey = new RsaKey(stream ?? throw new InvalidOperationException());
+                var rsaKey = EncryptionKey.FromStream<RsaKey>(stream ?? throw new InvalidOperationException());
                 Debug.Assert(rsaKey != null, "rsaKey != null");
                 network = new ServerNetwork(this, packetHelper, new NetworkConfiguration(Options.ServerPort), rsaKey.Parameters);
             }

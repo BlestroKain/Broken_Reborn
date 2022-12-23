@@ -12,7 +12,6 @@ namespace Intersect.Server.Core
     /// </summary>
     public static partial class Program
     {
-        private const string LdLibraryPath = "LD_LIBRARY_PATH";
 
         [STAThread]
         public static void Main(string[] args)

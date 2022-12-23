@@ -7,13 +7,14 @@ using Intersect.Configuration;
 using Intersect.Editor.General;
 using Intersect.Logging;
 using Intersect.Network;
+using Intersect.Crypto;
+using Intersect.Crypto.Formats;
 using Intersect.Network.Events;
 using Intersect.Core;
 using System.Collections.Generic;
 using Intersect.Threading;
 using Intersect.Plugins.Helpers;
 using Intersect.Plugins.Interfaces;
-using Intersect.Rsa;
 
 namespace Intersect.Editor.Networking
 {
@@ -55,7 +56,7 @@ namespace Intersect.Editor.Networking
                 var assembly = Assembly.GetExecutingAssembly();
                 using (var stream = assembly.GetManifestResourceStream("Intersect.Editor.network.handshake.bkey.pub"))
                 {
-                    var rsaKey = new RsaKey(stream);
+                    var rsaKey = EncryptionKey.FromStream<RsaKey>(stream);
                     Debug.Assert(rsaKey != null, "rsaKey != null");
                     EditorLidgrenNetwork = new ClientNetwork(packetHelper, config, rsaKey.Parameters);
                 }

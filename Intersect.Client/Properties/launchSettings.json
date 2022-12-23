@@ -1,31 +1,8 @@
 {
   "profiles": {
-    "Development": {
+    "Intersect.Client": {
       "commandName": "Project",
-      "commandLineArgs": "",
-      "environmentVariables": {
-        "DOTNET_ENVIRONMENT": "Development",
-        "LD_LIBRARY_PATH": "."
-      },
-      "workingDirectory": "$(ProjectDir)../assets/development/client"
-    },
-    "Staging": {
-      "commandName": "Project",
-      "commandLineArgs": "",
-      "environmentVariables": {
-        "DOTNET_ENVIRONMENT": "Staging",
-        "LD_LIBRARY_PATH": "."
-      },
-      "workingDirectory": "$(ProjectDir)../assets/staging/client"
-    },
-    "Production": {
-      "commandName": "Project",
-      "commandLineArgs": "",
-      "environmentVariables": {
-        "DOTNET_ENVIRONMENT": "Production",
-        "LD_LIBRARY_PATH": "."
-      },
-      "workingDirectory": "$(ProjectDir)../assets/production/client"
+      "workingDirectory": "..\\assets\\development\\client"
     }
   }
 }

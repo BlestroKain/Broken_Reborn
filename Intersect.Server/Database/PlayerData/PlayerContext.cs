@@ -157,18 +157,6 @@ namespace Intersect.Server.Database.PlayerData
             }
         }
 
-        public void DetachExcept<TEntity>(params TEntity[] entities)
-        {
-            var entriesToDetach = ChangeTracker.Entries().Where(entry => entry.State != EntityState.Detached && entry.State != EntityState.Unchanged && entry.Entity is TEntity).ToList();
-            foreach (var entry in entriesToDetach)
-            {
-                if (entry.Entity is TEntity other && !entities.Contains(other))
-                {
-                    entry.State = EntityState.Detached;
-                }
-            }
-        }
-
         public void StopTrackingUsersExcept(User user)
         {
             //We don't want to be saving this players friends or anything....

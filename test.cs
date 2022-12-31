@@ -1,1 +1,3 @@
-garbage test file
+class Test {
+
+}

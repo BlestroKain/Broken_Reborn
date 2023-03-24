@@ -6,6 +6,11 @@ using Intersect.GameObjects;
 using Intersect.Client.General;
 using Intersect.Client.Localization;
 using Intersect.Logging;
+using Intersect.Client.Framework.Gwen.Control.EventArguments;
+using Intersect.Client.Framework.Gwen.Control;
+using Intersect.Client.Framework.Gwen.Input;
+using Intersect.Client.Framework.Input;
+using Intersect.Client.Framework.Gwen;
 
 namespace Intersect.Client.Interface.Game.DescriptionWindows
 {
@@ -22,6 +27,8 @@ namespace Intersect.Client.Interface.Game.DescriptionWindows
         protected string mValueLabel;
 
         protected SpellDescriptionWindow mSpellDescWindow;
+
+        public Action<Base, ClickedEventArgs> RightClicked { get;set; }
 
         public ItemDescriptionWindow(
             ItemBase item,
@@ -478,5 +485,6 @@ namespace Intersect.Client.Interface.Game.DescriptionWindows
             base.Dispose();
             mSpellDescWindow?.Dispose();
         }
+
     }
 }

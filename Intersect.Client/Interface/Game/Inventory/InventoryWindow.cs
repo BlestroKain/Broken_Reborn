@@ -1,12 +1,18 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Interop;
 using Intersect.Client.Core;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.GenericClasses;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.General;
+using Intersect.Client.Interface.Game.Chat;
 using Intersect.Client.Localization;
+using Intersect.Client.Networking;
+using Intersect.Enums;
 using Intersect.GameObjects;
+using Intersect.GameObjects.Events.Commands;
+using Intersect.Network.Packets.Server;
 
 namespace Intersect.Client.Interface.Game.Inventory
 {
@@ -36,6 +42,8 @@ namespace Intersect.Client.Interface.Game.Inventory
 
         private MenuItem mDropItemContextItem;
 
+        private MenuItem mShowItemContextItem;
+
         //Init
         public InventoryWindow(Canvas gameCanvas)
         {
@@ -58,6 +66,8 @@ namespace Intersect.Client.Interface.Game.Inventory
             mDropItemContextItem.Clicked += MDropItemContextItem_Clicked;
             mActionItemContextItem = mContextMenu.AddItem(Strings.ItemContextMenu.Bank);
             mActionItemContextItem.Clicked += MActionItemContextItem_Clicked;
+            mShowItemContextItem = mContextMenu.AddItem(Strings.ItemContextMenu.Show);
+            mShowItemContextItem.Clicked += MShowItemContextItem_Clicked;
             mContextMenu.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
 
         }
@@ -68,6 +78,7 @@ namespace Intersect.Client.Interface.Game.Inventory
             mContextMenu.RemoveChild(mUseItemContextItem, false);
             mContextMenu.RemoveChild(mActionItemContextItem, false);
             mContextMenu.RemoveChild(mDropItemContextItem, false);
+            mContextMenu.RemoveChild(mShowItemContextItem, false);
             mContextMenu.Children.Clear();
 
             var item = ItemBase.Get(Globals.Me.Inventory[slot].ItemId);
@@ -90,11 +101,15 @@ namespace Intersect.Client.Interface.Game.Inventory
                 case Enums.ItemTypes.Consumable:
                     mContextMenu.AddChild(mUseItemContextItem);
                     mUseItemContextItem.SetText(Strings.ItemContextMenu.Use.ToString(item.Name));
+                    mContextMenu.AddChild(mShowItemContextItem);
+                    mShowItemContextItem.SetText(Strings.ItemContextMenu.Show.ToString(item.Name));
                     break;
 
                 case Enums.ItemTypes.Bag:
                     mContextMenu.AddChild(mUseItemContextItem);
                     mUseItemContextItem.SetText(Strings.ItemContextMenu.Open.ToString(item.Name));
+                    mContextMenu.AddChild(mShowItemContextItem);
+                    mShowItemContextItem.SetText(Strings.ItemContextMenu.Show.ToString(item.Name));
                     break;
 
                 case Enums.ItemTypes.Equipment:
@@ -108,7 +123,9 @@ namespace Intersect.Client.Interface.Game.Inventory
                     {
                         mUseItemContextItem.SetText(Strings.ItemContextMenu.Equip.ToString(item.Name));
                     }
-                    
+                    mShowItemContextItem.SetText(Strings.ItemContextMenu.Show.ToString(item.Name));
+                    mContextMenu.AddChild(mShowItemContextItem);
+                   
                     break;
             }
 
@@ -117,21 +134,29 @@ namespace Intersect.Client.Interface.Game.Inventory
             {
                 mContextMenu.AddChild(mActionItemContextItem);
                 mActionItemContextItem.SetText(Strings.ItemContextMenu.Bag.ToString(item.Name));
+                mContextMenu.AddChild(mShowItemContextItem);
+                mShowItemContextItem.SetText(Strings.ItemContextMenu.Show.ToString(item.Name));
             }
             else if (Globals.InBank && (item.CanBank || item.CanGuildBank))
             {
                 mContextMenu.AddChild(mActionItemContextItem);
                 mActionItemContextItem.SetText(Strings.ItemContextMenu.Bank.ToString(item.Name));
+                mContextMenu.AddChild(mShowItemContextItem);
+                mShowItemContextItem.SetText(Strings.ItemContextMenu.Show.ToString(item.Name));
             }
             else if (Globals.InTrade && item.CanTrade)
             {
                 mContextMenu.AddChild(mActionItemContextItem);
                 mActionItemContextItem.SetText(Strings.ItemContextMenu.Trade.ToString(item.Name));
+                mContextMenu.AddChild(mShowItemContextItem);
+                mShowItemContextItem.SetText(Strings.ItemContextMenu.Show.ToString(item.Name));
             }
             else if (Globals.GameShop != null && item.CanSell)
             {
                 mContextMenu.AddChild(mActionItemContextItem);
                 mActionItemContextItem.SetText(Strings.ItemContextMenu.Sell.ToString(item.Name));
+                mContextMenu.AddChild(mShowItemContextItem);
+                mShowItemContextItem.SetText(Strings.ItemContextMenu.Show.ToString(item.Name));
             }
 
             // Can we drop this item? if so show the user!
@@ -178,10 +203,28 @@ namespace Intersect.Client.Interface.Game.Inventory
                 Globals.Me.TryTradeItem(slot);
             }
         }
+        private void MShowItemContextItem_Clicked(Base sender, Framework.Gwen.Control.EventArguments.ClickedEventArgs arguments)
+        {
+            int slot = (int)sender.Parent.UserData;
 
+            var item = Globals.Me.Inventory[slot];
+
+            if (item == null)
+            {
+                return;
+            }
+
+            var itemName = ItemBase.Get(item.ItemId).Name;
+            var itemDescription = ItemBase.Get(item.ItemId).Description;
+
+            string message = $"[{itemName}]";
+            ChatboxMsg.AddMessage(new ChatboxMsg(message, Color.White, ChatMessageType.Global, itemName));
+            
+            PacketSender.SendChatMsg(message,1);
+        }
         private void MDropItemContextItem_Clicked(Base sender, Framework.Gwen.Control.EventArguments.ClickedEventArgs arguments)
         {
-            var slot = (int) sender.Parent.UserData;
+            var slot = (int)sender.Parent.UserData;
             Globals.Me.TryDropItem(slot);
         }
 

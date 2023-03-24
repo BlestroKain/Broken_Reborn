@@ -8,12 +8,15 @@ using Intersect.Client.Framework.GenericClasses;
 using Intersect.Client.Framework.Graphics;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
+using Intersect.Client.Framework.Gwen.ControlInternal;
 using Intersect.Client.Framework.Input;
 using Intersect.Client.General;
+using Intersect.Client.Interface.Game.DescriptionWindows;
 using Intersect.Client.Localization;
 using Intersect.Client.Networking;
 using Intersect.Configuration;
 using Intersect.Enums;
+using Intersect.GameObjects;
 using Intersect.Localization;
 using Intersect.Utilities;
 
@@ -23,7 +26,7 @@ namespace Intersect.Client.Interface.Game.Chat
     public partial class Chatbox
     {
 
-        private ComboBox mChannelCombobox;
+        public ComboBox mChannelCombobox;
 
         private Label mChannelLabel;
 
@@ -85,6 +88,10 @@ namespace Intersect.Client.Interface.Game.Chat
         private MenuItem mPartyInviteContextItem;
 
         private MenuItem mGuildInviteContextItem;
+
+        private MenuItem mShowItemContextItem;
+        private ItemDescriptionWindow descriptionWindow;
+
 
         //Init
         public Chatbox(Canvas gameCanvas, GameInterface gameUi)
@@ -179,7 +186,14 @@ namespace Intersect.Client.Interface.Game.Chat
             mPartyInviteContextItem.Clicked += MPartyInviteContextItem_Clicked;
             mGuildInviteContextItem = mContextMenu.AddItem(Strings.ChatContextMenu.GuildInvite);
             mGuildInviteContextItem.Clicked += MGuildInviteContextItem_Clicked;
+
+            mShowItemContextItem = mContextMenu.AddItem(Strings.ItemContextMenu.ShowDesc);
+            mShowItemContextItem.Clicked += MShowItemContextItem_Clicked;
             mContextMenu.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+        }
+
+        public Chatbox(WindowControl mInventoryWindow)
+        {
         }
 
         public void OpenContextMenu(string name)
@@ -189,6 +203,7 @@ namespace Intersect.Client.Interface.Game.Chat
             mContextMenu.RemoveChild(mFriendInviteContextItem, false);
             mContextMenu.RemoveChild(mPartyInviteContextItem, false);
             mContextMenu.RemoveChild(mGuildInviteContextItem, false);
+            mContextMenu.RemoveChild(mShowItemContextItem, false);
             mContextMenu.Children.Clear();
 
             // No point showing a menu for blank space.
@@ -221,17 +236,53 @@ namespace Intersect.Client.Interface.Game.Chat
                 mContextMenu.AddChild(mGuildInviteContextItem);
                 mGuildInviteContextItem.SetText(Strings.ChatContextMenu.GuildInvite.ToString(name));
             }
-
+            if (Globals.Me.Inventory.Any(i => i != null && ItemBase.Get(i.ItemId).Name == name))
+            {
+                mContextMenu.RemoveChild(mPMContextItem, true);
+                mContextMenu.RemoveChild(mGuildInviteContextItem, true);
+                mContextMenu.RemoveChild(mPartyInviteContextItem, true);
+                mContextMenu.RemoveChild(mFriendInviteContextItem, true);
+                mContextMenu.AddChild(mShowItemContextItem);
+                mShowItemContextItem.SetText(Strings.ChatContextMenu.ShowDesc.ToString(name));
+            }
             // Set our spell slot as userdata for future reference.
             mContextMenu.UserData = name;
 
             mContextMenu.SizeToChildren();
             mContextMenu.Open(Framework.Gwen.Pos.None);
         }
+        private void MShowItemContextItem_Clicked(Base sender, ClickedEventArgs arguments)
+        {
+            var name = (string)sender.Parent.UserData;
+            var item = Globals.Me.Inventory.FirstOrDefault(i => i != null && ItemBase.Get(i.ItemId).Name == name);
+
+            var itemStats = ItemBase.Get(item.ItemId).StatsGiven;
+            var itemName = ItemBase.Get(item.ItemId).Name;
+          
+            descriptionWindow = new ItemDescriptionWindow(ItemBase.Get(item.ItemId),
+                                                          1,
+                                                          mChatboxWindow.X,
+                                                          mChatboxWindow.Y,
+                                                          itemStats,
+                                                          itemName
+                                                      );
+
+            // Agregar manejador de eventos para hacer clic derecho                   
+            descriptionWindow.RightClicked += Right_clicked;
+
+            // Mostrar la ventana de descripción del ítem
+            descriptionWindow.Show();
+
+        }
+
+        private void Right_clicked(Base sender, ClickedEventArgs arguments)
+        {
+            descriptionWindow.Hide();
+        }
 
         private void MGuildInviteContextItem_Clicked(Base sender, ClickedEventArgs arguments)
         {
-            var name = (string) sender.Parent.UserData;
+            var name = (string)sender.Parent.UserData;
             PacketSender.SendInviteGuild(name);
         }
 
@@ -306,7 +357,7 @@ namespace Intersect.Client.Interface.Game.Chat
             {
                 case ChatboxTab.System:
                 case ChatboxTab.All:
-                        mChannelCombobox.SelectByUserData(mLastChatChannel[tab]);
+                    mChannelCombobox.SelectByUserData(mLastChatChannel[tab]);
                     break;
 
                 case ChatboxTab.Local:
@@ -406,7 +457,7 @@ namespace Intersect.Client.Interface.Game.Chat
                 if (ClientConfiguration.Instance.EnableContextMenus)
                 {
                     OpenContextMenu(target);
-                } 
+                }
                 else
                 {
                     SetChatboxText($"/pm {target} ");
@@ -425,8 +476,8 @@ namespace Intersect.Client.Interface.Game.Chat
 
         private void ChatboxRow_Clicked(Base sender, ClickedEventArgs arguments)
         {
-            var rw = (ListBoxRow) sender;
-            var target = (string) rw.UserData;
+            var rw = (ListBoxRow)sender;
+            var target = (string)rw.UserData;
             if (!string.IsNullOrWhiteSpace(target))
             {
                 if (mGameUi.AdminWindowOpen())
@@ -487,7 +538,7 @@ namespace Intersect.Client.Interface.Game.Chat
 
                 return;
             }
-            
+
             if (mLastChatTime > Timing.Global.MillisecondsUtc)
             {
                 ChatboxMsg.AddMessage(new ChatboxMsg(Strings.Chatbox.toofast, Color.Red, ChatMessageType.Error));
@@ -531,6 +582,21 @@ namespace Intersect.Client.Interface.Game.Chat
 
             return Strings.Chatbox.enterchat;
         }
+
+        /* public static void AddMsg(ChatboxMsg message)
+         {
+             var control = new ChatboxMsg(message);
+             control.AddClickHandler((sender, args) =>
+             {
+                 var item = ((ChatboxMsg)sender).Message.Item;
+                 if (item != null)
+                 {
+                     var descriptionWindow = new ItemDescriptionWindow();
+                     descriptionWindow.Show();
+                 }
+             });
+             Controls.Add(control);
+         }*/
 
     }
 

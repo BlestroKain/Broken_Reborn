@@ -1195,6 +1195,13 @@ namespace Intersect.Client.Localization
             public static LocalizedString Bank = @"Bank {00}";
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public static LocalizedString Show = @"Show {00} to chat";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public static LocalizedString ShowDesc = @"Show {00}";
+
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public static LocalizedString Bag = @"Bag {00}";
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -1241,6 +1248,9 @@ namespace Intersect.Client.Localization
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public static LocalizedString GuildInvite = @"Guild Invite {00}";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public static LocalizedString ShowDesc = @"Show {00} description";
         }
 
         public partial struct ShopContextMenu

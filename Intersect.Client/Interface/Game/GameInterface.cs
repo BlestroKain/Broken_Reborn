@@ -12,6 +12,7 @@ using Intersect.Client.Interface.Game.Hotbar;
 using Intersect.Client.Interface.Game.Inventory;
 using Intersect.Client.Interface.Game.Shop;
 using Intersect.Client.Interface.Game.Trades;
+using Intersect.Client.Interface.Game.HDV;
 using Intersect.Client.Networking;
 using Intersect.Enums;
 using Intersect.GameObjects;
@@ -36,6 +37,8 @@ namespace Intersect.Client.Interface.Game
         private BagWindow mBagWindow;
 
         private BankWindow mBankWindow;
+
+        private HDVWindow mHDVWindow;
 
         private Chatbox mChatBox;
 
@@ -190,7 +193,33 @@ namespace Intersect.Client.Interface.Game
             mShopWindow = new ShopWindow(GameCanvas);
             mShouldOpenShop = false;
         }
+        // HDV
 
+        public void OpenHDV()
+        {
+            if (mHDVWindow != null)
+            {
+                mHDVWindow.UpdateHDV();
+            }
+            else
+            {
+                mHDVWindow = new HDVWindow(GameCanvas);
+                mHDVWindow.UpdateItemListBySlot(-1);
+                mHDVWindow.UpdateHDV();
+            }
+            Globals.InHDV = true;
+        }
+
+        public void CloseHDV()
+        {
+            mHDVWindow?.Hide();
+            Globals.InHDV = false;
+        }
+
+        public void UpdateSellHDVItem(int slot)
+        {
+            mHDVWindow?.UpdateItemListBySlot(slot);
+        }
         //Bank
         public void NotifyOpenBank()
         {
@@ -382,6 +411,13 @@ namespace Intersect.Client.Interface.Game
             }
 
             mShouldCloseShop = false;
+
+            if (mHDVWindow != null && !mHDVWindow.IsVisible())
+            {
+                mHDVWindow?.Close();
+                mHDVWindow = null;
+                Globals.InHDV = false;
+            }
 
             //Bank Update
             if (mShouldOpenBank)

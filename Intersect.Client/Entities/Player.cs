@@ -220,6 +220,7 @@ namespace Intersect.Client.Entities
                      Globals.InBank == false &&
                      Globals.InCraft == false &&
                      Globals.InTrade == false &&
+                     Globals.InHDV == false &&
                      !Interface.Interface.HasInputFocus());
 
         public override bool Update()
@@ -999,7 +1000,14 @@ namespace Intersect.Client.Entities
                 PacketSender.SendRevokeTradeItem((int)((InputBox)sender).UserData, value);
             }
         }
-
+        // HDV
+        public void TrySellHDVItem(int index)
+        {
+            if (ItemBase.Get(Inventory[index].ItemId) != null)
+            {
+                Interface.Interface.GameUi.UpdateSellHDVItem(index);
+            }
+        }
         //Spell Processing
         public void SwapSpells(int fromSpellIndex, int toSpellIndex)
         {

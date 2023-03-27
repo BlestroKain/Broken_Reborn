@@ -15,6 +15,7 @@ using Intersect.Network.Packets.Server;
 using Intersect.Server.Core;
 using Intersect.Server.Database;
 using Intersect.Server.Database.Logging.Entities;
+using Intersect.Server.Database.PlayerData;
 using Intersect.Server.Database.PlayerData.Players;
 using Intersect.Server.Database.PlayerData.Security;
 using Intersect.Server.Entities;
@@ -2220,7 +2221,70 @@ namespace Intersect.Server.Networking
                 }
             }
         }
+        public static void SendItemHDV(Player player, Guid hdvID, HDV item, bool update = false)
+        {
+            if (!player.InHDV || player.HdvID != hdvID)
+            {
+                return;
+            }
+            Player seller = DbInterface.GetPlayer(item.SellerId);
+            if (seller == null)
+            {
+                return;
+            }
+            player.SendPacket(new HDVItemPacket(
+                item.Id,
+                seller.Name,
+                item.ItemId,
+                item.Quantity,
+                item.StatBuffs,
+                item.Price,
+                update
+            ));
+        }
 
+        public static void SendAddHDVItem(Player player, Guid hdvID, HDV item)
+        {
+            SendItemHDV(player, hdvID, item, true);
+        }
+
+        public static void SendRemoveHDVItem(Player player, Guid removeItem)
+        {
+            player.SendPacket(new RemoveHDVItemPacket(removeItem));
+        }
+
+        public static void SendOpenHDV(Player player, Guid hdvID)
+        {
+            player.HdvID = hdvID;
+            player.InHDV = true;
+            SendInventory(player);
+            HDV[] HDVItems = HDV.List(hdvID).ToArray<HDV>();
+            List<HDVItemPacket> hdvItemPackets = new List<HDVItemPacket>();
+            List<HDV> toRemove = new List<HDV>();
+            for (int i = 0; i < HDVItems.Length; i++)
+            {
+                Player seller = DbInterface.GetPlayer(HDVItems[i].SellerId);
+                if (seller == null)
+                {
+                    toRemove.Add(HDVItems[i]);
+                    continue;
+                }
+                hdvItemPackets.Add(new HDVItemPacket(
+                    HDVItems[i].Id,
+                    seller.Name,
+                    HDVItems[i].ItemId,
+                    HDVItems[i].Quantity,
+                    HDVItems[i].StatBuffs,
+                    HDVItems[i].Price
+                ));
+            }
+            if (toRemove.Count > 0)
+            {
+                DbInterface.GetPlayerContext().HDV.RemoveRange(toRemove);
+                DbInterface.SavePlayerDatabaseAsync();
+            }
+            player.SendPacket(new HDVPacket(hdvID, hdvItemPackets.ToArray<HDVItemPacket>()));
+        }
     }
 
 }

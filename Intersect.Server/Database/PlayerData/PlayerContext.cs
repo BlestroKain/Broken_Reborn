@@ -50,7 +50,7 @@ namespace Intersect.Server.Database.PlayerData
         public DbSet<BankSlot> Player_Bank { get; set; }
 
         public DbSet<Friend> Player_Friends { get; set; }
-
+        public DbSet<HDV> HDV { get; set; }
         public DbSet<HotbarSlot> Player_Hotbar { get; set; }
 
         public DbSet<InventorySlot> Player_Items { get; set; }

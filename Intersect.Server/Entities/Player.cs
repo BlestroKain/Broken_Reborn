@@ -44,10 +44,23 @@ namespace Intersect.Server.Entities
 
         [NotMapped]
         public bool Online => OnlinePlayers.ContainsKey(Id);
+        [NotMapped] 
+        public Guid HdvID = Guid.Empty;
+        [NotMapped]
+        public bool InHDV;
 
+        public void OpenHDV(Guid hdvID)
+        {
+            InHDV = true;
+            PacketSender.SendOpenHDV(this, hdvID);
+        }
+        public void CloseHDV()
+        {
+            InHDV = false;
+        }
         #region Chat
 
-        [JsonIgnore] [NotMapped] public Player ChatTarget = null;
+        [JsonIgnore][NotMapped] public Player ChatTarget = null;
 
         #endregion
 
@@ -61,7 +74,7 @@ namespace Intersect.Server.Entities
 
         #region Event Spawned Npcs
 
-        [JsonIgnore] [NotMapped] public List<Npc> SpawnedNpcs = new List<Npc>();
+        [JsonIgnore][NotMapped] public List<Npc> SpawnedNpcs = new List<Npc>();
 
         #endregion
 
@@ -186,7 +199,7 @@ namespace Intersect.Server.Entities
         /// <summary>
         /// References the in-memory copy of the guild for this player, reference this instead of the Guild property below.
         /// </summary>
-        [NotMapped] [JsonIgnore] public Guild Guild { get; set; }
+        [NotMapped][JsonIgnore] public Guild Guild { get; set; }
 
         /// <summary>
         /// This field is used for EF database fields only and should never be assigned to or used, instead the guild instance will be assigned to CachedGuild above
@@ -821,18 +834,18 @@ namespace Intersect.Server.Entities
 
             packet = base.EntityPacket(packet, forPlayer);
 
-            var pkt = (PlayerEntityPacket) packet;
+            var pkt = (PlayerEntityPacket)packet;
             pkt.Gender = Gender;
             pkt.ClassId = ClassId;
             pkt.Stats = GetStatValues();
 
             if (Power.IsAdmin)
             {
-                pkt.AccessLevel = (int) Access.Admin;
+                pkt.AccessLevel = (int)Access.Admin;
             }
             else if (Power.IsModerator)
             {
-                pkt.AccessLevel = (int) Access.Moderator;
+                pkt.AccessLevel = (int)Access.Moderator;
             }
             else
             {
@@ -846,7 +859,7 @@ namespace Intersect.Server.Entities
 
             if (forPlayer != null && this is Player thisPlayer)
             {
-                ((PlayerEntityPacket) packet).Equipment =
+                ((PlayerEntityPacket)packet).Equipment =
                     PacketSender.GenerateEquipmentPacket(forPlayer, thisPlayer);
             }
 
@@ -960,7 +973,7 @@ namespace Intersect.Server.Entities
                     continue;
                 }
 
-                var vitalId = (int) vital;
+                var vitalId = (int)vital;
                 var vitalValue = GetVital(vital);
                 var maxVitalValue = GetMaxVital(vital);
                 if (vitalValue >= maxVitalValue)
@@ -969,7 +982,7 @@ namespace Intersect.Server.Entities
                 }
 
                 var vitalRegenRate = (playerClass.VitalRegen[vitalId] + GetEquipmentVitalRegen(vital)) / 100f;
-                var regenValue = (int) Math.Max(1, maxVitalValue * vitalRegenRate) *
+                var regenValue = (int)Math.Max(1, maxVitalValue * vitalRegenRate) *
                                  Math.Abs(Math.Sign(vitalRegenRate));
 
                 AddVital(vital, regenValue);
@@ -984,8 +997,8 @@ namespace Intersect.Server.Entities
             {
                 if (classDescriptor.IncreasePercentage)
                 {
-                    classVital = (int) (classDescriptor.BaseVital[vital] *
-                                        Math.Pow(1 + (double) classDescriptor.VitalIncrease[vital] / 100, Level - 1));
+                    classVital = (int)(classDescriptor.BaseVital[vital] *
+                                        Math.Pow(1 + (double)classDescriptor.VitalIncrease[vital] / 100, Level - 1));
                 }
                 else
                 {
@@ -1003,18 +1016,18 @@ namespace Intersect.Server.Entities
             //                ) ?? 0;
             // Loop through equipment and see if any items grant vital buffs
 
-            foreach(var item in EquippedItems)
+            foreach (var item in EquippedItems)
             {
                 var descriptor = item.Descriptor;
                 classVital += descriptor.VitalsGiven[vital] + descriptor.PercentageVitalsGiven[vital] * baseVital / 100;
             }
 
             //Must have at least 1 hp and no less than 0 mp
-            if (vital == (int) Vitals.Health)
+            if (vital == (int)Vitals.Health)
             {
                 classVital = Math.Max(classVital, 1);
             }
-            else if (vital == (int) Vitals.Mana)
+            else if (vital == (int)Vitals.Mana)
             {
                 classVital = Math.Max(classVital, 0);
             }
@@ -1024,7 +1037,7 @@ namespace Intersect.Server.Entities
 
         public override int GetMaxVital(Vitals vital)
         {
-            return GetMaxVital((int) vital);
+            return GetMaxVital((int)vital);
         }
 
         public void FixVitals()
@@ -1114,7 +1127,7 @@ namespace Intersect.Server.Entities
 
         public void GiveExperience(long amount)
         {
-            Exp += (int) Math.Round(amount + (amount * (GetEquipmentBonusEffect(EffectType.EXP) / 100f)));
+            Exp += (int)Math.Round(amount + (amount * (GetEquipmentBonusEffect(EffectType.EXP) / 100f)));
             if (Exp < 0)
             {
                 Exp = 0;
@@ -1393,7 +1406,7 @@ namespace Intersect.Server.Entities
             if (weapon != null)
             {
                 base.TryAttack(
-                    target, weapon.Damage, (DamageType) weapon.DamageType, (Stats) weapon.ScalingStat, weapon.Scaling,
+                    target, weapon.Damage, (DamageType)weapon.DamageType, (Stats)weapon.ScalingStat, weapon.Scaling,
                     weapon.CritChance, weapon.CritMultiplier, null, null, weapon
                 );
             }
@@ -1403,7 +1416,7 @@ namespace Intersect.Server.Entities
                 if (classBase != null)
                 {
                     base.TryAttack(
-                        target, classBase.Damage, (DamageType) classBase.DamageType, (Stats) classBase.ScalingStat,
+                        target, classBase.Damage, (DamageType)classBase.DamageType, (Stats)classBase.ScalingStat,
                         classBase.Scaling, classBase.CritChance, classBase.CritMultiplier
                     );
                 }
@@ -1421,7 +1434,7 @@ namespace Intersect.Server.Entities
             {
                 return false;
             }
-            
+
             if (spell?.Combat?.TargetType == SpellTargetTypes.Self ||
                 spell?.Combat?.TargetType == SpellTargetTypes.Projectile ||
                 spell?.SpellType == SpellTypes.Dash
@@ -1564,14 +1577,14 @@ namespace Intersect.Server.Entities
 
             if (playerClass != null)
             {
-                for (var i = 0; i < (int) Stats.StatCount; i++)
+                for (var i = 0; i < (int)Stats.StatCount; i++)
                 {
                     var s = playerClass.BaseStat[i];
 
                     //Add class stat scaling
                     if (playerClass.IncreasePercentage) //% increase per level
                     {
-                        s = (int) (s * Math.Pow(1 + (double) playerClass.StatIncrease[i] / 100, Level - 1));
+                        s = (int)(s * Math.Pow(1 + (double)playerClass.StatIncrease[i] / 100, Level - 1));
                     }
                     else //Static value increase per level
                     {
@@ -1608,7 +1621,7 @@ namespace Intersect.Server.Entities
                         }
 
                         i++;
-                        if (i >= (int) Stats.StatCount)
+                        if (i >= (int)Stats.StatCount)
                         {
                             i = 0;
                         }
@@ -2047,7 +2060,7 @@ namespace Intersect.Server.Entities
             if (mapInstanceType != null) // If we're requesting an instance type change
             {
                 // Update our saved instance type - this helps us determine what to do on login, warps, etc
-                InstanceType = (MapInstanceType) mapInstanceType;
+                InstanceType = (MapInstanceType)mapInstanceType;
                 // Requests a new instance id, using the type of instance to determine creation logic
                 MapInstanceId = CreateNewInstanceIdFromType(mapInstanceType, fromLogin);
             }
@@ -2421,7 +2434,7 @@ namespace Intersect.Server.Entities
 
             // Get this information so we can use it later.
             var openSlots = FindOpenInventorySlots().Count;
-            var slotsRequired = (int)Math.Ceiling(item.Quantity / (double) item.Descriptor.MaxInventoryStack);
+            var slotsRequired = (int)Math.Ceiling(item.Quantity / (double)item.Descriptor.MaxInventoryStack);
 
             // How are we going to be handling this?
             var success = false;
@@ -2468,7 +2481,7 @@ namespace Intersect.Server.Entities
 
                         break;
                     }
-                    
+
                 case ItemHandling.UpTo:
                     if (CanGiveItem(item, slot)) // Can receive item under regular rules.
                     {
@@ -2483,7 +2496,7 @@ namespace Intersect.Server.Entities
                     }
                     break;
 
-                    // Did you forget to change this method when you added something? ;)
+                // Did you forget to change this method when you added something? ;)
                 default:
                     throw new NotImplementedException();
             }
@@ -2625,7 +2638,7 @@ namespace Intersect.Server.Entities
                     }
 
                     var openSlots = FindOpenInventorySlots();
-                    for (var slot = 0; toGive > 0 && slot < Math.Ceiling((double) item.Quantity / item.Descriptor.MaxInventoryStack); slot++)
+                    for (var slot = 0; toGive > 0 && slot < Math.Ceiling((double)item.Quantity / item.Descriptor.MaxInventoryStack); slot++)
                     {
                         var quantity = item.Descriptor.MaxInventoryStack <= toGive ?
                             item.Descriptor.MaxInventoryStack :
@@ -2891,7 +2904,7 @@ namespace Intersect.Server.Entities
                         {
                             case ConsumableType.Health:
                                 value = itemBase.Consumable.Value +
-                                        GetMaxVital((int) itemBase.Consumable.Type) *
+                                        GetMaxVital((int)itemBase.Consumable.Type) *
                                         itemBase.Consumable.Percentage /
                                         100;
 
@@ -2908,7 +2921,7 @@ namespace Intersect.Server.Entities
 
                             case ConsumableType.Mana:
                                 value = itemBase.Consumable.Value +
-                                        GetMaxVital((int) itemBase.Consumable.Type) *
+                                        GetMaxVital((int)itemBase.Consumable.Type) *
                                         itemBase.Consumable.Percentage /
                                         100;
 
@@ -2919,7 +2932,7 @@ namespace Intersect.Server.Entities
 
                             case ConsumableType.Experience:
                                 value = itemBase.Consumable.Value +
-                                        (int) (GetExperienceToNextLevel(Level) * itemBase.Consumable.Percentage / 100);
+                                        (int)(GetExperienceToNextLevel(Level) * itemBase.Consumable.Percentage / 100);
 
                                 GiveExperience(value);
                                 color = CustomColors.Items.ConsumeExp;
@@ -3244,7 +3257,7 @@ namespace Intersect.Server.Entities
             }
 
             // TODO: Stop using Int32 for item quantities
-            return itemCount >= Int32.MaxValue ? Int32.MaxValue : (int) itemCount;
+            return itemCount >= Int32.MaxValue ? Int32.MaxValue : (int)itemCount;
         }
 
         /// <summary>
@@ -3260,10 +3273,10 @@ namespace Intersect.Server.Entities
         /// </summary>
         /// <param name="slot">The <see cref="InventorySlot"/> to find</param>
         /// <returns>An <see cref="int"/>containing the relevant index, or -1 if not found</returns>
-        public int FindInventoryItemSlotIndex(InventorySlot slot) 
+        public int FindInventoryItemSlotIndex(InventorySlot slot)
         {
             return Items.FindIndex(sl => sl.Id == slot.Id);
-        } 
+        }
 
         /// <summary>
         /// Finds all inventory slots matching the desired item and quantity.
@@ -3327,7 +3340,7 @@ namespace Intersect.Server.Entities
 
         public override int GetWeaponDamage()
         {
-            if(!TryGetEquippedItem(Options.WeaponIndex, out var item))
+            if (!TryGetEquippedItem(Options.WeaponIndex, out var item))
             {
                 return 0;
             }
@@ -3344,7 +3357,7 @@ namespace Intersect.Server.Entities
         {
             var value = 0;
 
-            foreach(var item in EquippedItems)
+            foreach (var item in EquippedItems)
             {
                 if (!item.Descriptor.EffectsEnabled.Contains(effect))
                 {
@@ -3498,7 +3511,7 @@ namespace Intersect.Server.Entities
                         }
 
                         PacketSender.SendInventoryItemUpdate(this, currentSlotIndex);
-                        
+
                         amountRemaining -= amountFromSlot;
                         if (amountRemaining > 0)
                         {
@@ -4177,7 +4190,7 @@ namespace Intersect.Server.Entities
 
                 relevantSlots.Add(requestedSlot);
             }
-            
+
             // If the item is stackable, add slots that contain that item into the mix
             if (itemDescriptor.IsStackable)
             {
@@ -4327,7 +4340,7 @@ namespace Intersect.Server.Entities
 
         public bool HasFriend(string name)
         {
-            return CachedFriends.Values.Any(f => string.Equals(f, name,StringComparison.OrdinalIgnoreCase));
+            return CachedFriends.Values.Any(f => string.Equals(f, name, StringComparison.OrdinalIgnoreCase));
         }
 
         public Guid GetFriendId(string name)
@@ -5076,7 +5089,7 @@ namespace Intersect.Server.Entities
                 if (spell.CastAnimationId != Guid.Empty)
                 {
                     PacketSender.SendAnimationToProximity(
-                        spell.CastAnimationId, 1, base.Id, MapId, 0, 0, (sbyte) Dir, MapInstanceId
+                        spell.CastAnimationId, 1, base.Id, MapId, 0, 0, (sbyte)Dir, MapInstanceId
                     ); //Target Type 1 will be global entity
                 }
 
@@ -5197,7 +5210,7 @@ namespace Intersect.Server.Entities
                 }
                 equippedSlot++;
             }
-            
+
             equippedSlot = -1;
             return false;
         }
@@ -5386,7 +5399,7 @@ namespace Intersect.Server.Entities
         {
             Hotbar[index].ItemOrSpellId = Guid.Empty;
             Hotbar[index].BagId = Guid.Empty;
-            Hotbar[index].PreferredStatBuffs = new int[(int) Stats.StatCount];
+            Hotbar[index].PreferredStatBuffs = new int[(int)Stats.StatCount];
             if (type == 0) //Item
             {
                 var item = Items[slot];
@@ -5594,7 +5607,7 @@ namespace Intersect.Server.Entities
                                 continue;
                             }
 
-                            if (((StartQuestCommand) stackInfo.WaitingOnCommand).QuestId == questId)
+                            if (((StartQuestCommand)stackInfo.WaitingOnCommand).QuestId == questId)
                             {
                                 var tmpStack = new CommandInstance(stackInfo.Page, stackInfo.BranchIds[0]);
                                 evt.Value.CallStack.Peek().WaitingForResponse = CommandInstance.EventResponse.None;
@@ -5630,7 +5643,7 @@ namespace Intersect.Server.Entities
                             continue;
                         }
 
-                        if (((StartQuestCommand) stackInfo.WaitingOnCommand).QuestId == questId)
+                        if (((StartQuestCommand)stackInfo.WaitingOnCommand).QuestId == questId)
                         {
                             //Run failure branch
                             var tmpStack = new CommandInstance(stackInfo.Page, stackInfo.BranchIds[1]);
@@ -5949,7 +5962,8 @@ namespace Intersect.Server.Entities
         //Event Processing Methods
         public Event EventExists(MapTileLoc loc)
         {
-            if (EventTileLookup.TryGetValue(loc, out Event val)) {
+            if (EventTileLookup.TryGetValue(loc, out Event val))
+            {
                 return val;
             }
 
@@ -6504,7 +6518,7 @@ namespace Intersect.Server.Entities
                             instance.Z == z &&
                             !instance.Passable)
                         {
-                            return (int) EntityTypes.Event;
+                            return (int)EntityTypes.Event;
                         }
                     }
                 }
@@ -6710,7 +6724,7 @@ namespace Intersect.Server.Entities
             // Go through each item and spell to assign this cooldown.
             // Do not allow this to overwrite things that are still on a cooldown above our new cooldown though, don't want us to lower cooldowns!
             // We do however want to overwrite lower cooldowns than our new one, it is a GLOBAL cooldown after all!
-            foreach(var item in ItemBase.Lookup)
+            foreach (var item in ItemBase.Lookup)
             {
                 // Skip this item if it is unaffected by global cooldowns.
                 if (((ItemBase)item.Value).IgnoreGlobalCooldown)
@@ -7021,7 +7035,8 @@ namespace Intersect.Server.Entities
 
         public int DurationPerCraft { get; set; }
 
-        public long NextCraftCompletionTime { get; set; }
-    }
+        public long NextCraftCompletionTime { get; set; }                   
 
+    }
+   
 }

@@ -427,7 +427,20 @@ namespace Intersect.Client.Networking
                 Network.SendPacket(new PictureClosedPacket(eventId));
             }
         }
+        public static void SendCloseHDV()
+        {
+            Network.SendPacket(new CloseHDVPacket());
+        }
 
+        public static void SendAddToHDV(int slot, int quantity, int price)
+        {
+            Network.SendPacket(new AddHDVPacket(slot, quantity, price));
+        }
+
+        public static void SendActionHDV(Guid hdvItemID, int action)
+        {
+            Network.SendPacket(new ActionHDVPacket(hdvItemID, action));
+        }
     }
 
 }

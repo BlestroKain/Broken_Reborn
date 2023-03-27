@@ -752,6 +752,10 @@ namespace Intersect.Editor.Forms.Editors.Events
                     tmpCommand = new ResetStatPointAllocationsCommand();
 
                     break;
+                case EventCommandType.HDV:
+                    tmpCommand = new HDVCommand();
+
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -1349,6 +1353,9 @@ namespace Intersect.Editor.Forms.Editors.Events
                     break;
                 case EventCommandType.ResetStatPointAllocations:
 
+                    break;
+                case EventCommandType.HDV:
+                    cmdWindow = new EventCommand_HDV((HDVCommand)command, this);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

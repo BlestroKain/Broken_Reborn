@@ -1631,6 +1631,7 @@ namespace Intersect.Client.Networking
                 case GameObjectType.Event:
                     //Clients don't store event data, im an idiot.
                     break;
+
                 default:
                     var lookup = type.GetLookup();
                     if (deleted)
@@ -2084,7 +2085,49 @@ namespace Intersect.Client.Networking
                 null
             );
         }
+        // HDV
+        private static void HandlePacket(HDVItemPacket packet)
+        {
+            Globals.HDVObjet.Add(
+                new HDV(
+                    packet.Id,
+                    packet.Seller,
+                    packet.ItemId,
+                    packet.Quantity,
+                    packet.StatBuffs,
+                    packet.Price
+                )
+            );
+            if (packet.Update)
+            {
+                Interface.Interface.GameUi.OpenHDV();
+            }
+        }
 
+        private static void HandlePacket(RemoveHDVItemPacket packet)
+        {
+            if (Globals.InHDV == false)
+            {
+                return;
+            }
+            HDV item = Globals.HDVObjet.Where(i => i.Id == packet.RemoveItemHDVId).First();
+            if (item != null)
+            {
+                Globals.HDVObjet.Remove(item);
+            }
+            Interface.Interface.GameUi.OpenHDV();
+        }
+
+        private static void HandlePacket(HDVPacket packet)
+        {
+            Globals.HdvID = packet.HdvID;
+            Globals.HDVObjet.Clear();
+            foreach (HDVItemPacket item in packet.HdvItems)
+            {
+                HandlePacket((dynamic)item);
+            }
+            Interface.Interface.GameUi.OpenHDV();
+        }
     }
 
 }

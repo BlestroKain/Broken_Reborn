@@ -2154,6 +2154,16 @@ namespace Intersect.Server.Entities.Events
                 }
             }
         }
+        private static void ProcessCommand(
+            HDVCommand command,
+            Player player,
+            Event instance,
+            CommandInstance stackInfo,
+            Stack<CommandInstance> callStack
+        )
+        {
+            player.OpenHDV(command.HDVid);
+        }
 
     }
 

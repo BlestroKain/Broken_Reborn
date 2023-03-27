@@ -573,6 +573,9 @@ namespace Intersect.Server.Database
                     UserVariableBase.Lookup.Clear();
 
                     break;
+                case GameObjectType.HDVs:
+                    HDVBase.Lookup.Clear();
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }
@@ -719,6 +722,12 @@ namespace Intersect.Server.Database
                             }
 
                             break;
+                        case GameObjectType.HDVs:
+                            foreach (var psw in context.HDVs)
+                            {
+                                HDVBase.Lookup.Set(psw.Id, psw);
+                            }
+                            break;
                         default:
                             throw new ArgumentOutOfRangeException(nameof(gameObjectType), gameObjectType, null);
                     }
@@ -825,6 +834,11 @@ namespace Intersect.Server.Database
 
                 case GameObjectType.UserVariable:
                     dbObj = new UserVariableBase(predefinedid);
+
+                    break;
+                case GameObjectType.HDVs:
+                    dbObj= new HDVBase(predefinedid);
+                    HDVBase.Lookup.Set(dbObj.Id, dbObj);
 
                     break;
                 default:
@@ -952,6 +966,11 @@ namespace Intersect.Server.Database
                             UserVariableBase.Lookup.Set(dbObj.Id, dbObj);
 
                             break;
+                        case GameObjectType.HDVs:
+                            context.HDVs.Add((HDVBase)dbObj);
+                            HDVBase.Lookup.Set(dbObj.Id, dbObj);
+
+                            break;
 
                         default:
                             throw new ArgumentOutOfRangeException(nameof(gameObjectType), gameObjectType, null);
@@ -1077,6 +1096,10 @@ namespace Intersect.Server.Database
                             break;
                         case GameObjectType.UserVariable:
                             context.UserVariables.Remove((UserVariableBase)gameObject);
+
+                            break;
+                        case GameObjectType.HDVs:
+                            context.HDVs.Remove((HDVBase)gameObject);
 
                             break;
                     }
@@ -1801,6 +1824,9 @@ namespace Intersect.Server.Database
                     MigrateDbSet(context.PlayerVariables, newGameContext.PlayerVariables);
                     MigrateDbSet(context.Tilesets, newGameContext.Tilesets);
                     MigrateDbSet(context.Time, newGameContext.Time);
+                    MigrateDbSet(context.HDVs, newGameContext.HDVs);
+                 
+
                     newGameContext.ChangeTracker.DetectChanges();
                     newGameContext.SaveChanges();
                     newGameContext.Dispose();
@@ -1826,6 +1852,7 @@ namespace Intersect.Server.Database
                     MigrateDbSet(context.Bag_Items, newPlayerContext.Bag_Items);
                     MigrateDbSet(context.Mutes, newPlayerContext.Mutes);
                     MigrateDbSet(context.Bans, newPlayerContext.Bans);
+                    MigrateDbSet(context.HDV, newPlayerContext.HDV);
                     newPlayerContext.ChangeTracker.DetectChanges();
                     newPlayerContext.SaveChanges();
                     newPlayerContext.Dispose();

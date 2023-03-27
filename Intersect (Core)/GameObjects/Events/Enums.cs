@@ -236,7 +236,11 @@ namespace Intersect.GameObjects.Events
 
         //Reset Stats
         ResetStatPointAllocations,
+
         ChangeHair,
+
+        HDV,
+
     }
 
 }

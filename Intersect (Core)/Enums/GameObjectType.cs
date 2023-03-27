@@ -66,6 +66,9 @@ namespace Intersect.Enums
         [GameObjectInfo(typeof(UserVariableBase), "user_variables")]
         UserVariable,
 
+        [GameObjectInfo(typeof(HDVBase), "hdvs")]
+        HDVs,
+
     }
 
 }

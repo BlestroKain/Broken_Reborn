@@ -7063,6 +7063,8 @@ namespace Intersect.Server.Entities
             get => JsonConvert.SerializeObject(ItemCooldowns);
             set => ItemCooldowns = JsonConvert.DeserializeObject<ConcurrentDictionary<Guid, long>>(value ?? "{}");
         }
+        [NotMapped] public Guid HdvID = Guid.Empty;
+        [NotMapped] public bool InHDV;
 
         [JsonIgnore] public ConcurrentDictionary<Guid, long> ItemCooldowns = new ConcurrentDictionary<Guid, long>();
 

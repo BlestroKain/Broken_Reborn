@@ -204,7 +204,11 @@ namespace Intersect.GameObjects.Events.Commands
         public VariableMod Modification { get; set; }
 
     }
-
+    public class HDVCommand : EventCommand
+    {
+        public override EventCommandType Type { get; } = EventCommandType.HDV;
+        public Guid HDVid { get; set; }
+    }
     public partial class SetSelfSwitchCommand : EventCommand
     {
 

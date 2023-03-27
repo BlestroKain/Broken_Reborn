@@ -428,15 +428,16 @@ namespace Intersect.Client.Networking
                 Network.SendPacket(new PictureClosedPacket(eventId));
             }
         }
-        
-        public static void SendRespawn()
+
+        public static void SendAddToHDV(int slot, int quantity, int price)
         {
-            Network.SendPacket(new RespawnPacket());
+            Network.SendPacket(new AddHDVPacket(slot, quantity, price));
         }
 
-        public static void SendBankSortPacket()
+        public static void SendActionHDV(Guid hdvItemID, int action)
         {
-            Network.SendPacket(new BankSortPacket());
+            Network.SendPacket(new ActionHDVPacket(hdvItemID, action));
+
         }
 
     }

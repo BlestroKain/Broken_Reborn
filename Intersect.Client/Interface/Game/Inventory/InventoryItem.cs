@@ -106,10 +106,15 @@ namespace Intersect.Client.Interface.Game.Inventory
             {
                 Globals.Me.TryTradeItem(mMySlot);
             }
+            else if (Globals.InHDV)
+            {
+                Globals.Me.TrySellHDVItem(mMySlot);
+            }
             else
             {
                 Globals.Me.TryUseItem(mMySlot);
             }
+            
         }
 
         void pnl_Clicked(Base sender, ClickedEventArgs arguments)

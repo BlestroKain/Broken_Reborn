@@ -7,6 +7,7 @@ using Intersect.Client.Framework.Database;
 using Intersect.Client.Framework.Entities;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Graphics;
+using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Input;
 using Intersect.Client.Framework.Sys;
 using Intersect.Client.Items;
@@ -159,7 +160,11 @@ namespace Intersect.Client.General
         public static bool InShop => GameShop != null;
 
         public static bool InTrade = false;
+        public static Guid HdvID = Guid.Empty;
+        public static HDVBase HDV { get => HDVBase.Get(HdvID); }
+        public static List<HDV> HDVObjet = new List<HDV>();
 
+        public static bool InHDV = false;
         public static bool CanCloseInventory => !(InBag || InBank || InCraft || InShop || InTrade);
 
         public static GameInput InputManager;

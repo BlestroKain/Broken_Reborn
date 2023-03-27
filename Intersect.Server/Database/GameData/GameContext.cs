@@ -53,7 +53,7 @@ namespace Intersect.Server.Database.GameData
 
         //Events
         public DbSet<EventBase> Events { get; set; }
-
+        public DbSet<HDVBase> HDVs { get; set; }
         //Items
         public DbSet<ItemBase> Items { get; set; }
 

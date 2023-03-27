@@ -3739,7 +3739,12 @@ namespace Intersect.Server.Networking
                     obj = UserVariableBase.Get(id);
 
                     break;
-
+                case GameObjectType.HDVs:
+                    foreach (var obj in HDVBase.Lookup)
+                    {
+                        SendGameObject(client, obj.Value, false, false, packetList);
+                    }
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -4041,6 +4046,7 @@ namespace Intersect.Server.Networking
         }
 
         #endregion
+
         public void HandlePacket(Client client, BankSortPacket packet)
         {
             var player = client?.Entity;
@@ -4051,6 +4057,177 @@ namespace Intersect.Server.Networking
             }
 
             player.BankInterface.SortBank();
+		}
+
+        // HDV
+        public void HandlePacket(Client client, Player player, CloseHDVPacket packet)
+        {
+            if (player == null)
+            {
+                return;
+            }
+            if (player.InHDV)
+            {
+                player.InHDV = false;
+                player.HdvID = Guid.Empty;
+            }
+        }
+        public void HandlePacket(Client client, Player player, ActionHDVPacket packet)
+        {
+            if (player == null || player.HdvID == Guid.Empty || !player.InHDV)
+            {
+                return;
+            }
+            HDVBase hdbBase = HDVBase.Get(player.HdvID);
+            if (hdbBase == null)
+            {
+                PacketSender.SendChatMsg(player, "HDV Introuvable !",ChatMessageType.Trading, CustomColors.Alerts.Declined);
+                return;
+            }
+            HDV hdvItem = HDV.Get(packet.HdvItemId);
+            if (hdvItem != null)
+            {
+                Guid id = hdvItem.Id;
+                switch (packet.Action)
+                {
+                    case -1:
+                        if (hdvItem.SellerId == player.Id)
+                        {
+                            Item nItem = new Item(hdvItem.ItemId, hdvItem.Quantity, false);
+                            nItem.StatBuffs = hdvItem.StatBuffs;
+                     
+
+                            if (player.TryGiveItem(nItem))
+                            {
+                                HDV.Remove(hdvItem);
+                                PacketSender.SendChatMsg(player, "Vous avez recupere votre objet",ChatMessageType.Trading, CustomColors.Alerts.Accepted);
+                                PacketSender.SendRemoveHDVItem(player, id);
+                                DbInterface.SavePlayerDatabaseAsync();
+                            }
+                            else
+                            {
+                                PacketSender.SendChatMsg(player, "Vous n'avez pas assez de place pour recuperer cette Objet.", ChatMessageType.Trading, CustomColors.Alerts.Declined);
+                            }
+                        }
+                        return;
+                    case 0:
+                    case 1:
+                        int price = hdvItem.Price;
+
+                        int currencySlot = player.FindItem(hdbBase.Currency.Id, hdvItem.Quantity);
+                        if (currencySlot > -1 && player.TakeItemsBySlot(currencySlot, hdvItem.Quantity))
+                        {
+                            var seller = DbInterface.GetPlayer(hdvItem.SellerId);
+
+                            player.MailBoxs.Add(new MailBox(seller, player, hdbBase.Name, "Message Automatique de l'HDV", hdvItem.ItemId, hdvItem.Quantity, hdvItem.StatBuffs));
+
+                            seller.MailBoxs.Add(new MailBox(player, seller, hdbBase.Name, "Message Automatique de l'HDV", hdbBase.Currency.Id, price,
+                                new int[(int)Enums.Stats.StatCount],
+                                new Dictionary<string, int>(),
+                                new Dictionary<string, string>()));
+
+                            ItemBase item = ItemBase.Get(hdvItem.ItemId);
+
+                            PacketSender.SendChatMsg(player, "L'objet vous a ete envoye par Lettre.", ChatMessageType.Trading, CustomColors.Alerts.Accepted);
+
+                            if (Globals.OnlineList.Select(p => p.Id == seller.Id) != null)
+                            {
+                                PacketSender.SendChatMsg(seller, $"Vous avez vendu {item.Name}", CustomColors.Alerts.Accepted);
+                            }
+
+                            PacketSender.SendRemoveHDVItem(player, id);
+                            HDV.Remove(hdvItem);
+                            DbInterface.SavePlayerDatabaseAsync();
+                        }
+                        else
+                        {
+                            PacketSender.SendChatMsg(player, $"Vous n'avez pas assez de {hdbBase.Currency.Name} pour acheter cette objet.", ChatMessageType.Trading, CustomColors.Alerts.Declined);
+                        }
+                        return;
+                }
+            }
+
+        }
+        public void HandlePacket(Client client, Player player, AddHDVPacket packet)
+        {
+            if (player == null || player.HdvID == Guid.Empty || !player.InHDV)
+            {
+                return;
+            }
+            int slotID = packet.Slot;
+            if (slotID >= player.Items.Count)
+            {
+                return;
+            }
+            HDVBase hdbBase = HDVBase.Get(player.HdvID);
+            if (hdbBase == null)
+            {
+                PacketSender.SendChatMsg(player, "HDV Introuvable !", ChatMessageType.Trading, CustomColors.Alerts.Declined);
+                return;
+            }
+            if (slotID >= 0)
+            {
+                InventorySlot slot = player.Items[slotID];
+                if (slot.ItemId != Guid.Empty)
+                {
+                    if (hdbBase.isWhiteList)
+                    {
+                        if (hdbBase.ItemListed.Contains(slot.ItemId) == false)
+                        {
+                            PacketSender.SendChatMsg(player, $"Cette objet ne peu pas etre vendu ici !", ChatMessageType.Trading, CustomColors.Alerts.Declined);
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        if (hdbBase.ItemListed.Contains(slot.ItemId))
+                        {
+                            PacketSender.SendChatMsg(player, $"Cette objet ne peu pas etre vendu ici !", ChatMessageType.Trading, CustomColors.Alerts.Declined);
+                            return;
+                        }
+                    }
+
+
+                    if (packet.Price <= 0)
+                    {
+                        // Erreur de prix
+                        PacketSender.SendChatMsg(player, "Prix invalide !", ChatMessageType.Trading, CustomColors.Alerts.Declined);
+                        return;
+                    }
+                    Guid itemID = slot.ItemId;
+
+                    if (itemID == hdbBase.CurrencyId)
+                    {
+                        PacketSender.SendChatMsg(player, $"Cette objet ne peu pas etre vendu ici !", ChatMessageType.Trading, CustomColors.Alerts.Declined);
+                        return;
+                    }
+
+                    int[] statBuffs = slot.StatBuffs;
+                  
+                    if (player.TakeItemsBySlot(slotID, packet.Quantity))
+                    {
+                        HDV nHDV = new HDV(player.HdvID, player.Id, itemID, packet.Quantity, statBuffs, packet.Price);
+                        DbInterface.GetPlayerContext().HDV.Add(nHDV);
+                        PacketSender.SendChatMsg(player, "Votre objet a bien ete mis en vente.", ChatMessageType.Trading, CustomColors.Alerts.Accepted);
+                        PacketSender.SendAddHDVItem(player, player.HdvID, nHDV);
+                        PacketSender.SendInventory(player);
+                        DbInterface.SavePlayerDatabaseAsync();
+                    }
+                    else
+                    {
+                        PacketSender.SendChatMsg(player, "Impossible de vendre cette objet !", ChatMessageType.Trading, CustomColors.Alerts.Declined);
+                    }
+                }
+                else
+                {
+                    PacketSender.SendChatMsg(player, "Objet introuvable!", ChatMessageType.Trading, CustomColors.Alerts.Declined);
+                }
+            }
+            else
+            {
+                PacketSender.SendChatMsg(player, "Objet introuvable dans votre inventaire!", ChatMessageType.Trading, CustomColors.Alerts.Declined);
+            }
+
         }
     }
 }

@@ -680,6 +680,19 @@ namespace Intersect.Editor.Networking
                     }
 
                     break;
+                case GameObjectType.HDVs:
+                    if (deleted)
+                    {
+                        var hdv = HDVBase.Get(id);
+                        hdv.Delete();
+                    }
+                    else
+                    {
+                        var hdv = new HDVBase(id);
+                        hdv.Load(json);
+                        HDVBase.Lookup.Set(id, hdv);
+                    }
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }

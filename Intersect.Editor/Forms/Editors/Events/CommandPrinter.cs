@@ -52,11 +52,11 @@ namespace Intersect.Editor.Forms.Editors.Events
                     switch (commandList[i].Type)
                     {
                         case EventCommandType.ShowOptions:
-                            var cmd = (ShowOptionsCommand) commandList[i];
+                            var cmd = (ShowOptionsCommand)commandList[i];
                             lstEventCommands.Items.Add(
                                 indent +
                                 Strings.EventCommandList.linestart +
-                                GetCommandText((dynamic) commandList[i], map)
+                                GetCommandText((dynamic)commandList[i], map)
                             );
 
                             clp = new CommandListProperties
@@ -112,11 +112,11 @@ namespace Intersect.Editor.Forms.Editors.Events
 
                             break;
                         case EventCommandType.InputVariable:
-                            var cid = (InputVariableCommand) commandList[i];
+                            var cid = (InputVariableCommand)commandList[i];
                             lstEventCommands.Items.Add(
                                 indent +
                                 Strings.EventCommandList.linestart +
-                                GetCommandText((dynamic) commandList[i], map)
+                                GetCommandText((dynamic)commandList[i], map)
                             );
 
                             clp = new CommandListProperties
@@ -166,11 +166,11 @@ namespace Intersect.Editor.Forms.Editors.Events
 
                             break;
                         case EventCommandType.ConditionalBranch:
-                            var cnd = (ConditionalBranchCommand) commandList[i];
+                            var cnd = (ConditionalBranchCommand)commandList[i];
                             lstEventCommands.Items.Add(
                                 indent +
                                 Strings.EventCommandList.linestart +
-                                GetCommandText((dynamic) commandList[i], map)
+                                GetCommandText((dynamic)commandList[i], map)
                             );
 
                             clp = new CommandListProperties
@@ -202,7 +202,8 @@ namespace Intersect.Editor.Forms.Editors.Events
                             if (cnd.Condition.ElseEnabled)
                             {
                                 lstEventCommands.Items.Add(indent + "      : " + Strings.EventCommandList.conditionalelse);
-                                clp = new CommandListProperties {
+                                clp = new CommandListProperties
+                                {
                                     Editable = false,
                                     MyIndex = i,
                                     MyList = commandList,
@@ -222,7 +223,7 @@ namespace Intersect.Editor.Forms.Editors.Events
                                     mCommandProperties, map
                                 );
                             }
-                            
+
                             lstEventCommands.Items.Add(indent + "      : " + Strings.EventCommandList.conditionalend);
                             clp = new CommandListProperties
                             {
@@ -237,11 +238,11 @@ namespace Intersect.Editor.Forms.Editors.Events
 
                             break;
                         case EventCommandType.ChangeSpells:
-                            var spl = (ChangeSpellsCommand) commandList[i];
+                            var spl = (ChangeSpellsCommand)commandList[i];
                             lstEventCommands.Items.Add(
                                 indent +
                                 Strings.EventCommandList.linestart +
-                                GetCommandText((dynamic) commandList[i], map)
+                                GetCommandText((dynamic)commandList[i], map)
                             );
 
                             clp = new CommandListProperties
@@ -303,11 +304,11 @@ namespace Intersect.Editor.Forms.Editors.Events
 
                             break;
                         case EventCommandType.ChangeItems:
-                            var itm = (ChangeItemsCommand) commandList[i];
+                            var itm = (ChangeItemsCommand)commandList[i];
                             lstEventCommands.Items.Add(
                                 indent +
                                 Strings.EventCommandList.linestart +
-                                GetCommandText((dynamic) commandList[i], map)
+                                GetCommandText((dynamic)commandList[i], map)
                             );
 
                             clp = new CommandListProperties
@@ -370,11 +371,11 @@ namespace Intersect.Editor.Forms.Editors.Events
                             break;
 
                         case EventCommandType.StartQuest:
-                            var qst = (StartQuestCommand) commandList[i];
+                            var qst = (StartQuestCommand)commandList[i];
                             lstEventCommands.Items.Add(
                                 indent +
                                 Strings.EventCommandList.linestart +
-                                GetCommandText((dynamic) commandList[i], map)
+                                GetCommandText((dynamic)commandList[i], map)
                             );
 
                             clp = new CommandListProperties
@@ -443,7 +444,8 @@ namespace Intersect.Editor.Forms.Editors.Events
                                 GetCommandText((dynamic)commandList[i], map)
                             );
 
-                            clp = new CommandListProperties {
+                            clp = new CommandListProperties
+                            {
                                 Editable = true,
                                 MyIndex = i,
                                 MyList = commandList,
@@ -455,7 +457,8 @@ namespace Intersect.Editor.Forms.Editors.Events
 
                             //When the name was successfully changed:
                             lstEventCommands.Items.Add(indent + "      : " + Strings.EventCommandList.namesucceeded);
-                            clp = new CommandListProperties {
+                            clp = new CommandListProperties
+                            {
                                 Editable = false,
                                 MyIndex = i,
                                 MyList = commandList,
@@ -471,7 +474,8 @@ namespace Intersect.Editor.Forms.Editors.Events
 
                             //When the name failed to change:
                             lstEventCommands.Items.Add(indent + "      : " + Strings.EventCommandList.namefailed);
-                            clp = new CommandListProperties {
+                            clp = new CommandListProperties
+                            {
                                 Editable = false,
                                 MyIndex = i,
                                 MyList = commandList,
@@ -486,7 +490,8 @@ namespace Intersect.Editor.Forms.Editors.Events
                             );
 
                             lstEventCommands.Items.Add(indent + "      : " + Strings.EventCommandList.endname);
-                            clp = new CommandListProperties {
+                            clp = new CommandListProperties
+                            {
                                 Editable = false,
                                 MyIndex = i,
                                 MyList = commandList,
@@ -501,7 +506,7 @@ namespace Intersect.Editor.Forms.Editors.Events
                             lstEventCommands.Items.Add(
                                 indent +
                                 Strings.EventCommandList.linestart +
-                                GetCommandText((dynamic) commandList[i], map)
+                                GetCommandText((dynamic)commandList[i], map)
                             );
 
                             clp = new CommandListProperties
@@ -655,7 +660,7 @@ namespace Intersect.Editor.Forms.Editors.Events
             }
 
             lstEventCommands.Items.Add(indent + Strings.EventCommandList.linestart);
-            clp = new CommandListProperties {Editable = true, MyIndex = -1, MyList = commandList};
+            clp = new CommandListProperties { Editable = true, MyIndex = -1, MyList = commandList };
             mCommandProperties.Add(clp);
         }
 
@@ -713,7 +718,7 @@ namespace Intersect.Editor.Forms.Editors.Events
 
         private static string GetCommandText(SetVariableCommand command, MapInstance map)
         {
-            return GetVariableModText(command, (dynamic) command.Modification);
+            return GetVariableModText(command, (dynamic)command.Modification);
         }
 
         private static string GetCommandText(SetSelfSwitchCommand command, MapInstance map)
@@ -736,14 +741,14 @@ namespace Intersect.Editor.Forms.Editors.Events
             {
                 return Strings.EventCommandList.conditionalbranch.ToString(
                     Strings.EventConditionDesc.negated.ToString(
-                        Strings.GetEventConditionalDesc((dynamic) command.Condition)
+                        Strings.GetEventConditionalDesc((dynamic)command.Condition)
                     )
                 );
             }
             else
             {
                 return Strings.EventCommandList.conditionalbranch.ToString(
-                    Strings.GetEventConditionalDesc((dynamic) command.Condition)
+                    Strings.GetEventConditionalDesc((dynamic)command.Condition)
                 );
             }
         }
@@ -926,7 +931,8 @@ namespace Intersect.Editor.Forms.Editors.Events
                 return Strings.EventCommandList.InstancedWarp.ToString(
                     mapName, command.X, command.Y, Strings.Direction.dir[(Direction)command.Direction - 1], command.InstanceType.ToString()
                 );
-            } else
+            }
+            else
             {
                 return Strings.EventCommandList.warp.ToString(
                     mapName, command.X, command.Y, Strings.Direction.dir[(Direction)command.Direction - 1]
@@ -1015,6 +1021,7 @@ namespace Intersect.Editor.Forms.Editors.Events
                             NpcBase.GetName(command.NpcId),
                             Strings.EventCommandList.spawnonmap.ToString(
                                 orderedMap.Name, command.X, command.Y, Strings.Direction.dir?[command.Dir]
+
                             )
                         );
                     }
@@ -1078,6 +1085,7 @@ namespace Intersect.Editor.Forms.Editors.Events
                             Strings.EventCommandList.animationonmap.ToString(
                                 MapList.OrderedMaps[i].Name, command.X, command.Y,
                                 Strings.Direction.dir[(Direction) command.Dir]
+
                             )
                         );
                     }
@@ -1674,6 +1682,11 @@ namespace Intersect.Editor.Forms.Editors.Events
             }
 
             return Strings.EventCommandList.invalid;
+        }
+        private static string GetCommandText(HDVCommand command, MapInstance map)
+        {
+            HDVBase hdv = HDVBase.Get(command.HDVid);
+            return $"Open Auction House {hdv?.Name ?? string.Empty}";
         }
 
     }

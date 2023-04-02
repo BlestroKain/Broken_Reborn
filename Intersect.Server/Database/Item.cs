@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 
 using Intersect.Enums;
@@ -43,12 +44,32 @@ namespace Intersect.Server.Database
             {
                 return;
             }
-
+           
             for (var i = 0; i < (int) Stats.StatCount; i++)
             {
                 // TODO: What the fuck?
-                StatBuffs[i] = Randomization.Next(-descriptor.StatGrowth, descriptor.StatGrowth + 1);
+                
+                int maxstat = descriptor.StatsGiven[i];
+                var minstat = (int)Math.Ceiling(maxstat/2.0);
+                if (maxstat !=0)
+                {
+                    if (minstat == maxstat)
+                    {
+                        StatBuffs[i] = minstat;
+                    }
+                    else if (maxstat > minstat)
+                    {
+                        StatBuffs[i] = Randomization.Next(minstat, maxstat + 1);
+                    }
+                    else
+                    {
+                        StatBuffs[i] = 0;
+                    }
+
+                }                                                               
+                
             }
+            //AdjustStatBuffs();
         }
 
         public Item(Item item) : this(item.ItemId, item.Quantity, item.BagId, item.Bag)
@@ -146,7 +167,24 @@ namespace Intersect.Server.Database
 
             return default != bag;
         }
+      /*  public void AdjustStatBuffs()
+        {
+            var descriptor = Descriptor;
 
+            if (descriptor?.ItemType != ItemTypes.Equipment)
+            {
+                return;
+            }
+
+            for (var i = 0; i < (int)Stats.StatCount; i++)
+            {
+                var maxstat = descriptor.StatsGiven[i];
+                if (maxstat != 0 && StatBuffs[i] > maxstat)
+                {
+                    StatBuffs[i] = maxstat;
+                }
+            }
+        }*/
     }
 
 }

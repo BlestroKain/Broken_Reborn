@@ -979,6 +979,71 @@ namespace Intersect.Server.Networking
                     PacketSender.SendChatMsg(player, Strings.Player.offline, ChatMessageType.PM, CustomColors.Alerts.Error);
                 }
             }
+            // Agrega esta linea a la lista de comandos reconocidos
+            else if (cmd.StartsWith(Strings.Chat.job))
+            {
+                if (client?.Power.IsAdmin ?? false)
+                {
+                    string[] parameters = cmd.Split(',');
+                    if (parameters.Length != 3)
+                    {
+                        PacketSender.SendChatMsg(player, "Comando incorrecto, por favor usa: /job,jobname,expamount", ChatMessageType.Error, Color.Orange);
+                    }
+                    else
+                    {
+                        string jobName = parameters[1];
+                        long expAmount;
+                        bool isNumeric = long.TryParse(parameters[2], out expAmount);
+                        if (!isNumeric)
+                        {
+                            PacketSender.SendChatMsg(player, "La cantidad de experiencia debe ser un número válido.", ChatMessageType.Error, Color.Orange);
+                        }
+                        else
+                        {
+                            switch (jobName.ToLower())
+                            {
+                                case "farming":
+                                    player.GiveFarmingExperience(expAmount);
+                                    PacketSender.SendChatMsg(player, $"Has recibido {expAmount} puntos de experiencia en Granjero.", ChatMessageType.Notice, CustomColors.Chat.PlayerMsg);
+                                    break;
+                                case "mining":
+                                    player.GiveMiningExperience(expAmount);
+                                    PacketSender.SendChatMsg(player, $"Has recibido {expAmount} puntos de experiencia en Minería.", ChatMessageType.Notice, CustomColors.Chat.PlayerMsg);
+                                    break;
+                                case "fishing":
+                                    player.GiveFishingExperience(expAmount);
+                                    PacketSender.SendChatMsg(player, $"Has recibido {expAmount} puntos de experiencia en Pesca.", ChatMessageType.Notice, CustomColors.Chat.PlayerMsg);
+                                    break;
+                                case "wood":
+                                    player.GiveWoodExperience(expAmount);
+                                    PacketSender.SendChatMsg(player, $"Has recibido {expAmount} puntos de experiencia en Leñador.", ChatMessageType.Notice, CustomColors.Chat.PlayerMsg);
+                                    break;
+                                case "hunting":
+                                    player.GiveHuntingExperience(expAmount);
+                                    PacketSender.SendChatMsg(player, $"Has recibido {expAmount} puntos de experiencia en Caza.", ChatMessageType.Notice, CustomColors.Chat.PlayerMsg);
+                                    break;
+                                case "alchemy":
+                                    player.GiveAlchemyExperience(expAmount);
+                                    PacketSender.SendChatMsg(player, $"Has recibido {expAmount} puntos de experiencia en Alquimia.", ChatMessageType.Notice, CustomColors.Chat.PlayerMsg);
+                                    break;
+                                case "blacksmith":
+                                    player.GiveBlacksmithExperience(expAmount);
+                                    PacketSender.SendChatMsg(player, $"Has recibido {expAmount} puntos de experiencia en Herrería.", ChatMessageType.Notice, CustomColors.Chat.PlayerMsg);
+                                    break;
+                                case "cooking":
+                                    player.GiveCookingExperience(expAmount);
+                                    PacketSender.SendChatMsg(player, $"Has recibido {expAmount} puntos de experiencia en Cocina.", ChatMessageType.Notice, CustomColors.Chat.PlayerMsg);
+                                    break;
+                                default:
+                                    PacketSender.SendChatMsg(player, $"No se reconoce el trabajo {jobName}.", ChatMessageType.Error, Color.Orange);
+                                    break;
+                            }
+                        }
+                    }
+                }
+                   
+            }
+
             else if (cmd == Strings.Chat.replycmd || cmd == Strings.Chat.rcmd)
             {
                 if (msg.Trim().Length == 0)

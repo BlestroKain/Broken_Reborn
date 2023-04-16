@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Windows.Forms;
 using DarkUI.Controls;
 
@@ -154,6 +154,10 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode62,
             treeNode63,
             treeNode64});
+            System.Windows.Forms.TreeNode treeNode66 = new System.Windows.Forms.TreeNode("Give Job Experience");
+            System.Windows.Forms.TreeNode treeNode67 = new System.Windows.Forms.TreeNode("Jobs", new System.Windows.Forms.TreeNode[] {
+            treeNode66
+            });
             this.lblName = new System.Windows.Forms.Label();
             this.txtEventname = new DarkUI.Controls.DarkTextBox();
             this.grpEntityOptions = new DarkUI.Controls.DarkGroupBox();
@@ -1039,6 +1043,11 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode64.Text = "Set Guild Bank Slots Count";
             treeNode65.Name = "guilds";
             treeNode65.Text = "Guilds";
+            treeNode66.Name = "givejobexperience";
+            treeNode66.Tag = "200";
+            treeNode66.Text = "Give Job Experience";
+            treeNode67.Name = "jobs";
+            treeNode67.Text = "Jobs";
             this.lstCommands.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             treeNode5,
             treeNode13,
@@ -1048,7 +1057,8 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode54,
             treeNode56,
             treeNode60,
-            treeNode65});
+            treeNode65,
+             treeNode67});
             this.lstCommands.Size = new System.Drawing.Size(445, 465);
             this.lstCommands.TabIndex = 2;
             this.lstCommands.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.lstCommands_NodeMouseDoubleClick);

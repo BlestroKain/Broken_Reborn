@@ -1994,6 +1994,15 @@ Tick timer saved in server config.json.";
 
             public static LocalizedString giveexp = @"Give Player {00} Experience";
 
+            public static LocalizedString giveFarmingexp = @"Give Player {00}  Farming Experience";
+            public static LocalizedString giveMiningexp = @"Give Player {00}  Mining Experience";
+            public static LocalizedString giveWoodexp = @"Give Player {00}  Wood Experience";
+            public static LocalizedString giveFishingexp = @"Give Player {00}  Fishing Experience";
+            public static LocalizedString giveHuntingexp = @"Give Player {00}  Hunting Experience";
+            public static LocalizedString giveAlchemyexp = @"Give Player {00}  Alchemy Experience";
+            public static LocalizedString giveCookingexp = @"Give Player {00}  Cooking Experience";
+            public static LocalizedString giveBlacksmithexp = @"Give Player {00}  Blacksmith Experience";
+
             public static LocalizedString globalswitch = @"Set Global Switch {00} to {01}";
 
             public static LocalizedString globalvariable = @"Set Global Variable {00} ({01})";
@@ -2307,6 +2316,7 @@ Tick timer saved in server config.json.";
                 {"openguildbank", @"Open Guild Bank"},
                 {"setguildbankslots", @"Set Guild Bank Slots Count"},
                 {"resetstatallocations", @"Reset Stat Point Allocations"},
+                {"givejobexperience",@"Give Job Experience"},
             };
 
         }

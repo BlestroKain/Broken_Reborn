@@ -54,6 +54,23 @@ namespace Intersect.Client.Entities
         public long Experience { get; set; } = 0;
 
         public long ExperienceToNextLevel { get; set; } = 0;
+        public long FarmingExperience { get; set; } = 0;
+        public long ExperienceToFarmingNextLevel { get; set; } = 0;
+        public long MiningExperience { get; set; } = 0;
+        public long ExperienceToMiningNextLevel { get; set; } = 0;
+        public long FishingExperience { get; set; } = 0;
+        public long ExperienceToFishingNextLevel { get; set; } = 0;
+        public long WoodExperience { get; set; } = 0;
+        public long ExperienceToWoodNextLevel { get; set; } = 0;
+        public long HuntingExperience { get; set; } = 0;
+        public long ExperienceToHuntingNextLevel { get; set; } = 0;
+        public long AlchemyExperience { get; set; } = 0;
+        public long ExperienceToAlchemyNextLevel { get; set; } = 0;
+        public long CookingExperience { get; set; } = 0;
+        public long ExperienceToCookingNextLevel { get; set; } = 0;
+        public long BlacksmithExperience { get; set; } = 0;
+        public long ExperienceToBlacksmithNextLevel { get; set; } = 0;
+
 
         IReadOnlyList<IFriendInstance> IPlayer.Friends => Friends;
 
@@ -1936,12 +1953,12 @@ namespace Intersect.Client.Entities
             return false;
         }
 
-        //Forumlas
+        //Formulas
         public long GetNextLevelExperience()
         {
             return ExperienceToNextLevel;
         }
-
+       
         public override int CalculateAttackTime()
         {
             ItemBase weapon = null;
@@ -2543,6 +2560,7 @@ namespace Intersect.Client.Entities
             for (var direction = 0; direction < Options.Instance.MapOpts.MovementDirections; direction++)
             {
                 if (!Controls.KeyDown(Control.TurnAround) || direction != (int)Globals.Me.MoveDir)
+
                 {
                     continue;
                 }
@@ -2554,6 +2572,7 @@ namespace Intersect.Client.Entities
                     PacketSender.SendDirection(Dir);
                     Globals.Me.MoveDir = Direction.None;
                     PickLastDirection(Dir);
+
                 }
 
                 // Hold the player in place if the requested direction is the same as the current one.
@@ -2622,6 +2641,18 @@ namespace Intersect.Client.Entities
                     return false;
             }
         }
+                
+
+        //Professions
+        public int FarmingLevel { get; set; } = 1;
+        public int MiningLevel { get; set; } = 1;
+        public int FishingLevel { get; set; } = 1;
+        public int WoodLevel { get; set; } = 1;
+        public int HunterLevel { get; set; } = 1;
+        public int BlacksmithLevel { get; set; } = 1;
+        public int CookingLevel { get; set; } = 1;
+        public int AlchemyLevel { get; set; } = 1;
+
     }
 
 }

@@ -236,6 +236,10 @@ namespace Intersect.GameObjects.Events
 
         //Reset Stats
         ResetStatPointAllocations,
+
+        //Job
+     
+        GiveJobExperience=200,
         ChangeHair,
     }
 

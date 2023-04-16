@@ -656,7 +656,30 @@ namespace Intersect.Client.Localization
             };
 
         }
-
+        public struct Job
+        {
+            public static LocalizedString skill0 = @"Farming";
+            public static LocalizedString skill1 = @"Mining";
+            public static LocalizedString skill2 = @"Woodcutter";
+            public static LocalizedString skill3 = @"Fishing";
+            public static LocalizedString skill4 = @"Hunter";
+            public static LocalizedString skill5 = @"Smithing";
+            public static LocalizedString skill6 = @"Cooking";
+            public static LocalizedString skill7 = @"Alquemy";
+            public static LocalizedString skill8 = @"Jewerly";
+            public static LocalizedString skill9 = @"Tailor";
+            public static LocalizedString skill10 = @"Cobbler";
+            public static LocalizedString level = @"Lv: {00}";
+            //descriptions
+            public static LocalizedString FarmingDesc = @"Esta habilidad te permite cultivar plantas y cosechar sus frutos para obtener recursos valiosos.";
+            public static LocalizedString MiningDesc = @"Esta habilidad te permite extraer minerales y rocas para obtener recursos valiosos y utilizarlos en diferentes actividades.";
+            public static LocalizedString LumberjackDesc = @"Un leñador es una persona que tala árboles, corta y transporta madera para la construcción y otros fines.";
+            public static LocalizedString FishingDesc = @"La pesca es una actividad recreativa que implica la captura de peces en un cuerpo de agua utilizando una caña de pescar, carrete, línea, anzuelos y cebo.";
+            public static LocalizedString HuntingDesc = @"Esta habilidad te permite cazar animales para obtener carne, pieles y otros recursos valiosos.";
+            public static LocalizedString BlacksmithDesc = @"Esta habilidad te permite crear y mejorar herramientas y armas de metal.";
+            public static LocalizedString AlchemyDesc = @"Esta habilidad te permite crear pociones y elixires para curar enfermedades y mejorar habilidades.";
+            public static LocalizedString CookingDesc = @"Esta habilidad te permite preparar alimentos nutritivos y deliciosos para mejorar la salud y el bienestar.";
+        }
         public partial struct Combat
         {
             public static LocalizedString AttackWhileCastingDeny = @"You are currently casting a spell, you cannot attack.";
@@ -669,7 +692,7 @@ namespace Intersect.Client.Localization
 
             public static LocalizedString stat2 = @"DEF";
 
-            public static LocalizedString stat3 = @"Magic Resist";
+            public static LocalizedString stat3 = @"VIT";
 
             public static LocalizedString stat4 = @"MOV";
 
@@ -1020,6 +1043,8 @@ namespace Intersect.Client.Localization
             public static LocalizedString quest = @"Quest Log";
 
             public static LocalizedString spells = @"Spell Book";
+
+            public static LocalizedString skills = @"Skills Journey";
 
         }
 
@@ -2298,7 +2323,14 @@ namespace Intersect.Client.Localization
             public static LocalizedString title = @"Spells";
 
         }
-
+        public struct Skills
+        {
+            public static LocalizedString skill = @"Skills:";
+            public static LocalizedString recoskill = @" Recolection Skills:";
+            public static LocalizedString craftskill = @" Crafting Skills:";
+            public static LocalizedString skill0 = @"{00}";
+        
+        }
         public partial struct Trading
         {
 

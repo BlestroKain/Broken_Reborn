@@ -1408,6 +1408,81 @@ namespace Intersect.Client.Networking
             }
         }
 
+        //JobsExperiencePacket
+        public void HandlePacket(IPacketSender packetSender, FarmingInfoPacket packet)
+        {
+            if (Globals.Me != null)
+            {
+                Globals.Me.FarmingExperience = packet.FarmingExperience;
+                Globals.Me.ExperienceToFarmingNextLevel = packet.ExperienceToFarmingNextLevel;
+                Globals.Me.FarmingLevel = packet.FarmingLevel;
+            }
+        }
+        public void HandlePacket(IPacketSender packetSender, MiningInfoPacket packet)
+        {
+            if (Globals.Me != null)
+            {
+                Globals.Me.MiningExperience = packet.MiningExperience;
+                Globals.Me.ExperienceToMiningNextLevel = packet.ExperienceToMiningNextLevel;
+                Globals.Me.MiningLevel = packet.MiningLevel;
+            }
+        }
+
+        public void HandlePacket(IPacketSender packetSender, FishingInfoPacket packet)
+        {
+            if (Globals.Me != null)
+            {
+                Globals.Me.FishingExperience = packet.FishingExperience;
+                Globals.Me.ExperienceToFishingNextLevel = packet.ExperienceToFishingNextLevel;
+                Globals.Me.FishingLevel = packet.FishingLevel;
+
+            }
+        }
+        public void HandlePacket(IPacketSender packetSender, WoodInfoPacket packet)
+        {
+            if (Globals.Me != null)
+            {
+                Globals.Me.WoodExperience = packet.WoodExperience;
+                Globals.Me.ExperienceToWoodNextLevel = packet.ExperienceToWoodNextLevel;
+                Globals.Me.WoodLevel = packet.WoodLevel;
+            }
+        }
+        public void HandlePacket(IPacketSender packetSender, HuntingInfoPacket packet)
+        {
+            if (Globals.Me != null)
+            {
+                Globals.Me.HuntingExperience = packet.HuntingExperience;
+                Globals.Me.ExperienceToHuntingNextLevel = packet.ExperienceToHuntingNextLevel;
+                Globals.Me.HunterLevel = packet.HuntingLevel;
+            }
+        }
+        public void HandlePacket(IPacketSender packetSender, AlchemyInfoPacket packet)
+        {
+            if (Globals.Me != null)
+            {
+                Globals.Me.AlchemyExperience = packet.AlchemyExperience;
+                Globals.Me.ExperienceToAlchemyNextLevel = packet.ExperienceToAlchemyNextLevel;
+                Globals.Me.AlchemyLevel = packet.AlchemyLevel;
+            }
+        }
+        public void HandlePacket(IPacketSender packetSender, BlacksmithInfoPacket packet)
+        {
+            if (Globals.Me != null)
+            {
+                Globals.Me.BlacksmithExperience = packet.BlacksmithExperience;
+                Globals.Me.ExperienceToBlacksmithNextLevel = packet.ExperienceToBlacksmithNextLevel;
+                Globals.Me.BlacksmithLevel = packet.BlacksmithLevel;
+            }
+        }
+        public void HandlePacket(IPacketSender packetSender, CookingInfoPacket packet)
+        {
+            if (Globals.Me != null)
+            {
+                Globals.Me.CookingExperience = packet.CookingExperience;
+                Globals.Me.ExperienceToCookingNextLevel = packet.ExperienceToCookingNextLevel;
+                Globals.Me.CookingLevel = packet.CookingLevel;
+            }
+        }
         //ProjectileDeadPacket
         public void HandlePacket(IPacketSender packetSender, ProjectileDeadPacket packet)
         {

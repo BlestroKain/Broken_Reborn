@@ -532,7 +532,21 @@ namespace Intersect.Client.Localization
             };
 
         }
+        public struct Job
+        {
+            public static LocalizedString skill0 = @"Farming";
+            public static LocalizedString skill1 = @"Mining";
+            public static LocalizedString skill2 = @"Woodcutter";
+            public static LocalizedString skill3 = @"Fishing";
+            public static LocalizedString skill4 = @"Hunter";
+            public static LocalizedString skill5 = @"Smithing";
+            public static LocalizedString skill6 = @"Cooking";
+            public static LocalizedString skill7 = @"Alquemy";
+            public static LocalizedString skill8 = @"Jewerly";
+            public static LocalizedString skill9 = @"Tailor";
+            public static LocalizedString skill10 = @"Cobbler";
 
+        }
         public partial struct Combat
         {
             public static LocalizedString AttackWhileCastingDeny = @"You are currently casting a spell, you cannot attack.";
@@ -545,7 +559,7 @@ namespace Intersect.Client.Localization
 
             public static LocalizedString stat2 = @"DEF";
 
-            public static LocalizedString stat3 = @"Magic Resist";
+            public static LocalizedString stat3 = @"VIT";
 
             public static LocalizedString stat4 = @"MOV";
 
@@ -916,6 +930,8 @@ namespace Intersect.Client.Localization
             public static LocalizedString quest = @"Quest Log";
 
             public static LocalizedString spells = @"Spell Book";
+
+            public static LocalizedString skills = @"Skills Journey";
 
         }
 
@@ -2170,7 +2186,25 @@ namespace Intersect.Client.Localization
             public static LocalizedString title = @"Spells";
 
         }
-
+        public struct Skills
+        {
+            public static LocalizedString skill = @"Skills:";
+            public static LocalizedString recoskill = @" Recolection Skills:";
+            public static LocalizedString craftskill = @" Crafting Skills:";
+            public static LocalizedString skill0 = @"{00}: {01}";
+            public static LocalizedString skill1 = @"{00}: {01}";
+            public static LocalizedString skill2 = @"{00}: {01}";
+            public static LocalizedString skill3 = @"{00}: {01}";
+            public static LocalizedString skill4 = @"{00}: {01}";
+            public static LocalizedString skill5 = @"{00}: {01}";
+            public static LocalizedString skill6 = @"{00}: {01}";
+            public static LocalizedString skill7 = @"{00}: {01}";
+            public static LocalizedString skill8 = @"{00}: {01}";
+            public static LocalizedString skill9 = @"{00}: {01}";
+            public static LocalizedString skill10 = @"{00}: {01}";
+            public static LocalizedString skill11 = @"{00}: {01}";
+            public static LocalizedString skill12 = @"{00}: {01}";
+        }
         public partial struct Trading
         {
 

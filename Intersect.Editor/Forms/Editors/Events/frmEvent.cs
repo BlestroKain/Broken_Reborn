@@ -752,6 +752,11 @@ namespace Intersect.Editor.Forms.Editors.Events
                     tmpCommand = new ResetStatPointAllocationsCommand();
 
                     break;
+
+                case EventCommandType.GiveJobExperience:
+                    tmpCommand = new GiveJobExperienceCommand();
+
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -1348,6 +1353,10 @@ namespace Intersect.Editor.Forms.Editors.Events
 
                     break;
                 case EventCommandType.ResetStatPointAllocations:
+
+                    break;
+                case EventCommandType.GiveJobExperience:
+                    cmdWindow = new EventCommandGiveJobExperience((GiveJobExperienceCommand)command, this);
 
                     break;
                 default:

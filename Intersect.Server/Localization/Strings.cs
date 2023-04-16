@@ -1168,6 +1168,15 @@ namespace Intersect.Server.Localization
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public readonly LocalizedString levelup = @"You have leveled up! You are now level {00}!";
 
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public readonly LocalizedString Farminglevelup = @"Your Farming Job are now level {00}!";
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public readonly LocalizedString Cookinglevelup = @"Your Cooking Job are now level {00}!";
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public readonly LocalizedString Huntinglevelup = @"Your Hunting Job are now level {00}!";
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public readonly LocalizedString Blacksmithlevelup = @"Your Blacksmith Job are now level {00}!";
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public readonly LocalizedString Alchemylevelup = @"Your Alchemy Job are now level {00}!";
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public readonly LocalizedString Woodlevelup = @"Your Wood Job are now level {00}!";
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public readonly LocalizedString Fishinglevelup = @"Your Fishing Job are now level {00}!";
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public readonly LocalizedString Mininglevelup = @"Your Mining Job are now level {00}!";
+           
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public readonly LocalizedString mod = @"{00} has been given moderation powers!";
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

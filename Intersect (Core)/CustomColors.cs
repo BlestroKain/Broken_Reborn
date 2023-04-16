@@ -195,6 +195,8 @@ namespace Intersect
 
             public Color LevelUp = Color.Cyan;
 
+            public Color SkillLevelUp = Color.Yellow;
+
             public Color MagicDamage = new Color(255, 255, 0, 255);
 
             public Color Missed = new Color(255, 255, 255, 255);

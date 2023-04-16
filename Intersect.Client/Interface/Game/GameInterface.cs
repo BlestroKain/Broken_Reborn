@@ -9,6 +9,7 @@ using Intersect.Client.Interface.Game.Chat;
 using Intersect.Client.Interface.Game.Crafting;
 using Intersect.Client.Interface.Game.EntityPanel;
 using Intersect.Client.Interface.Game.Hotbar;
+using Intersect.Client.Interface.Game;
 using Intersect.Client.Interface.Game.Inventory;
 using Intersect.Client.Interface.Game.Shop;
 using Intersect.Client.Interface.Game.Trades;
@@ -40,6 +41,8 @@ namespace Intersect.Client.Interface.Game
 
         private BankWindow mBankWindow;
 
+        private SkillsWindow mSkillsWindow;
+
         private Chatbox mChatBox;
 
         private CraftingWindow mCraftingWindow;
@@ -62,11 +65,15 @@ namespace Intersect.Client.Interface.Game
 
         private bool mShouldCloseShop;
 
+        private bool mShouldCloseSkills;
+
         private bool mShouldCloseTrading;
 
         private bool mShouldOpenAdminWindow;
 
         private bool mShouldOpenBag;
+
+        private bool mShouldOpenSkills;
 
         private bool mShouldOpenBank;
 

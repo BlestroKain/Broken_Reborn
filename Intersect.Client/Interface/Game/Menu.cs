@@ -42,6 +42,13 @@ namespace Intersect.Client.Interface.Game
 
         private readonly Button mMenuButton;
 
+        private readonly ImagePanel mSkillsBackground;
+
+        private readonly Button mSkillsButton;
+
+        private readonly SkillsWindow mSkillsWindow;
+
+
         //Menu Container
         private readonly ImagePanel mMenuContainer;
 
@@ -125,6 +132,11 @@ namespace Intersect.Client.Interface.Game
             mGuildButton.SetToolTipText(Strings.Guilds.Guild);
             mGuildButton.Clicked += GuildBtn_Clicked;
 
+            mSkillsBackground = new ImagePanel(mMenuContainer, "SkillsContainer");
+            mSkillsButton = new Button(mSkillsBackground, "SkillsButton");
+            mSkillsButton.SetToolTipText(Strings.GameMenu.skills);
+            mSkillsButton.Clicked += SkillsBtn_Clicked;
+
             mMenuBackground = new ImagePanel(mMenuContainer, "MenuContainer");
             mMenuButton = new Button(mMenuBackground, "MenuButton");
             mMenuButton.SetToolTipText(Strings.GameMenu.Menu);
@@ -140,6 +152,7 @@ namespace Intersect.Client.Interface.Game
             mCharacterWindow = new CharacterWindow(gameCanvas);
             mQuestsWindow = new QuestsWindow(gameCanvas);
             mGuildWindow = new GuildWindow(gameCanvas);
+            mSkillsWindow = new SkillsWindow(gameCanvas);
         }
 
         //Methods
@@ -152,6 +165,7 @@ namespace Intersect.Client.Interface.Game
             mFriendsWindow.Update();
             mQuestsWindow.Update(updateQuestLog);
             mGuildWindow.Update();
+            mSkillsWindow.Update();
         }
 
         public void UpdateFriendsList()
@@ -178,6 +192,7 @@ namespace Intersect.Client.Interface.Game
             mQuestsWindow.Hide();
             mSpellsWindow.Hide();
             mGuildWindow.Hide();
+            mSkillsWindow.Hide();
         }
 
         public void ToggleCharacterWindow()
@@ -226,7 +241,20 @@ namespace Intersect.Client.Interface.Game
 
             return mGuildWindow.IsVisible();
         }
+        public void ToggleSkillsWindow()
+        {
+            if (mSkillsWindow.IsVisible())
+            {
+                mSkillsWindow.Hide();
+            }
+            else
+            {
+                HideWindows();
 
+                mSkillsWindow.Show();
+            }
+            
+        }
         public void HideGuildWindow()
         {
             mGuildWindow.Hide();
@@ -309,6 +337,8 @@ namespace Intersect.Client.Interface.Game
             mPartyWindow.Hide();
 
             mGuildWindow.Hide();
+
+            mSkillsWindow.Hide();
         }
 
         public bool HasWindowsOpen()
@@ -350,6 +380,11 @@ namespace Intersect.Client.Interface.Game
                 windowsOpen = true;
             }
 
+            if (mSkillsWindow.IsVisible())
+            {
+                windowsOpen = true;
+            }
+
             return windowsOpen;
         }
 
@@ -367,6 +402,11 @@ namespace Intersect.Client.Interface.Game
         private void FriendsBtn_Clicked(Base sender, ClickedEventArgs arguments)
         {
             ToggleFriendsWindow();
+        }
+
+        private void SkillsBtn_Clicked(Base sender, ClickedEventArgs arguments)
+        {
+            ToggleSkillsWindow();
         }
 
         private void GuildBtn_Clicked(Base sender, ClickedEventArgs arguments)

@@ -816,10 +816,39 @@ namespace Intersect.Editor.Forms.Editors.Events
 
                 return Strings.EventCommandList.giveexp.ToString(exp);
             }
+
             else
             {
-                return Strings.EventCommandList.giveexp.ToString(command.Exp);
+               return Strings.EventCommandList.giveexp.ToString(command.Exp);                           
+               
             }
+           
+        }
+
+        private static string GetCommandText(GiveJobExperienceCommand command, MapInstance map)
+        {
+            switch (command)
+            {
+                case var c when c.FarmingExp != 0:
+                    return Strings.EventCommandList.giveFarmingexp.ToString(c.FarmingExp);
+                case var c when c.MiningExp != 0:
+                    return Strings.EventCommandList.giveMiningexp.ToString(c.MiningExp);
+                case var c when c.FishingExp != 0:
+                    return Strings.EventCommandList.giveFishingexp.ToString(c.FishingExp);
+                case var c when c.WoodExp != 0:
+                    return Strings.EventCommandList.giveWoodexp.ToString(c.WoodExp);
+                case var c when c.BlacksmithExp != 0:
+                    return Strings.EventCommandList.giveBlacksmithexp.ToString(c.BlacksmithExp);
+                case var c when c.CookingExp != 0:
+                    return Strings.EventCommandList.giveCookingexp.ToString(c.CookingExp);
+                case var c when c.HuntingExp != 0:
+                    return Strings.EventCommandList.giveHuntingexp.ToString(c.HuntingExp);
+                case var c when c.AlchemyExp != 0:
+                    return Strings.EventCommandList.giveAlchemyexp.ToString(c.AlchemyExp);
+                default:
+                    return null;
+            }
+
         }
 
         private static string GetCommandText(ChangeLevelCommand command, MapInstance map)

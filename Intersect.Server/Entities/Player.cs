@@ -79,6 +79,14 @@ namespace Intersect.Server.Entities
         public Gender Gender { get; set; }
 
         public long Exp { get; set; }
+        public long FarmingExp { get; set; }
+        public long MiningExp { get; set; }
+        public long FishingExp { get; set; }
+        public long WoodExp { get; set; }
+        public long CookingExp { get; set; }
+        public long HuntingExp { get; set; }
+        public long BlacksmithExp { get; set; }
+        public long AlchemyExp { get; set; }
 
         public int StatPoints { get; set; }
 
@@ -146,6 +154,25 @@ namespace Intersect.Server.Entities
 
         [NotMapped]
         public long ExperienceToNextLevel => GetExperienceToNextLevel(Level);
+
+        [NotMapped]
+        public long ExperienceToFarmingNextLevel => GetExperienceToFarmingNextLevel(FarmingLevel);
+
+        [NotMapped]
+        public long ExperienceToMiningNextLevel => GetExperienceToMiningNextLevel(MiningLevel);
+        [NotMapped]
+        public long ExperienceToFishingNextLevel => GetExperienceToFishingNextLevel(FishingLevel);
+        [NotMapped]
+        public long ExperienceToWoodNextLevel => GetExperienceToWoodNextLevel(WoodLevel);
+        [NotMapped]
+        public long ExperienceToAlchemyNextLevel => GetExperienceToAlchemyNextLevel(AlchemyLevel);
+        [NotMapped]
+        public long ExperienceToBlacksmithNextLevel => GetExperienceToBlacksmithNextLevel(BlacksmithLevel);
+        [NotMapped]
+        public long ExperienceToHuntingNextLevel => GetExperienceToHuntingNextLevel(HuntingLevel);
+        [NotMapped]
+        public long ExperienceToCookingNextLevel => GetExperienceToCookingNextLevel(CookingLevel);
+
 
         [NotMapped, JsonIgnore]
         public long ClientAttackTimer { get; set; }
@@ -271,6 +298,121 @@ namespace Intersect.Server.Entities
             var classBase = ClassBase.Get(ClassId);
 
             return classBase?.ExperienceToNextLevel(level) ?? ClassBase.DEFAULT_BASE_EXPERIENCE;
+        }
+        private long GetExperienceToFarmingNextLevel(int FarmingLevel)
+        {
+            if (FarmingLevel >= Options.MaxLevel)
+            {
+                return -1;
+            }
+
+            var skillBase = 8;
+            var Gain = 3;
+            var level = FarmingLevel;
+
+
+            return (long)Math.Floor(skillBase + ((4 * (Math.Pow(level - 1, Gain))) / 5));
+        }
+
+        private long GetExperienceToMiningNextLevel(int MiningLevel)
+        {
+            if (MiningLevel >= Options.MaxLevel)
+            {
+                return -1;
+            }
+
+            var skillBase = 8;
+            var Gain = 3;
+            var level = MiningLevel;
+
+
+            return (long)Math.Floor(skillBase + ((4 * (Math.Pow(level - 1, Gain))) / 5));
+        }
+
+        private long GetExperienceToFishingNextLevel(int FishingLevel)
+        {
+            if (FishingLevel >= Options.MaxLevel)
+            {
+                return -1;
+            }
+
+            var skillBase = 8;
+            var Gain = 3;
+            var level = FishingLevel;
+
+
+            return (long)Math.Floor(skillBase + ((4 * (Math.Pow(level - 1, Gain))) / 5));
+        }
+
+        private long GetExperienceToWoodNextLevel(int WoodLevel)
+        {
+            if (WoodLevel >= Options.MaxLevel)
+            {
+                return -1;
+            }
+
+            var skillBase = 8;
+            var Gain = 3;
+            var level = WoodLevel;
+
+
+            return (long)Math.Floor(skillBase + ((4 * (Math.Pow(level - 1, Gain))) / 5));
+        }
+        private long GetExperienceToCookingNextLevel(int CookingLevel)
+        {
+            if (CookingLevel >= Options.MaxLevel)
+            {
+                return -1;
+            }
+
+            var skillBase = 8;
+            var Gain = 3;
+            var level = CookingLevel;
+
+
+            return (long)Math.Floor(skillBase + ((4 * (Math.Pow(level - 1, Gain))) / 5));
+        }
+        private long GetExperienceToHuntingNextLevel(int HuntingLevel)
+        {
+            if (HuntingLevel >= Options.MaxLevel)
+            {
+                return -1;
+            }
+
+            var skillBase = 8;
+            var Gain = 3;
+            var level = HuntingLevel;
+
+
+            return (long)Math.Floor(skillBase + ((4 * (Math.Pow(level - 1, Gain))) / 5));
+        }
+        private long GetExperienceToBlacksmithNextLevel(int BlacksmithLevel)
+        {
+            if (BlacksmithLevel >= Options.MaxLevel)
+            {
+                return -1;
+            }
+
+            var skillBase = 8;
+            var Gain = 3;
+            var level = BlacksmithLevel;
+
+
+            return (long)Math.Floor(skillBase + ((4 * (Math.Pow(level - 1, Gain))) / 5));
+        }
+        private long GetExperienceToAlchemyNextLevel(int AlchemyLevel)
+        {
+            if (AlchemyLevel >= Options.MaxLevel)
+            {
+                return -1;
+            }
+
+            var skillBase = 8;
+            var Gain = 3;
+            var level = AlchemyLevel;
+
+
+            return (long)Math.Floor(skillBase + ((4 * (Math.Pow(level - 1, Gain))) / 5));
         }
 
         public void SetOnline()
@@ -1089,7 +1231,134 @@ namespace Intersect.Server.Entities
             PacketSender.SendEntityDataToProximity(this);
             PacketSender.SendExperience(this);
         }
+        public void SetFarmingLevel(int Farminglevel, bool resetExperience = false)
+        {
+            if (Farminglevel < 1)
+            {
+                return;
+            }
 
+            FarmingLevel = Math.Min(Options.MaxLevel, Farminglevel);
+            if (resetExperience)
+            {
+                FarmingExp = 0;
+            }
+
+            PacketSender.SendEntityDataToProximity(this);
+            PacketSender.SendFarmingExperience(this);
+        }
+        public void SetMiningLevel(int Mininglevel, bool resetExperience = false)
+        {
+            if (Mininglevel < 1)
+            {
+                return;
+            }
+
+            MiningLevel = Math.Min(Options.MaxLevel, Mininglevel);
+            if (resetExperience)
+            {
+                MiningExp = 0;
+            }
+
+            PacketSender.SendEntityDataToProximity(this);
+            PacketSender.SendMiningExperience(this);
+        }
+        public void SetFishingLevel(int Fishinglevel, bool resetExperience = false)
+        {
+            if (Fishinglevel < 1)
+            {
+                return;
+            }
+
+            FishingLevel = Math.Min(Options.MaxLevel, Fishinglevel);
+            if (resetExperience)
+            {
+                FishingExp = 0;
+            }
+
+            PacketSender.SendEntityDataToProximity(this);
+            PacketSender.SendFishingExperience(this);
+        }
+        public void SetWoodLevel(int Woodlevel, bool resetExperience = false)
+        {
+            if (Woodlevel < 1)
+            {
+                return;
+            }
+
+            WoodLevel = Math.Min(Options.MaxLevel, Woodlevel);
+            if (resetExperience)
+            {
+                WoodExp = 0;
+            }
+
+            PacketSender.SendEntityDataToProximity(this);
+            PacketSender.SendWoodExperience(this);
+        }
+        public void SetCookingLevel(int Cookinglevel, bool resetExperience = false)
+        {
+            if (Cookinglevel < 1)
+            {
+                return;
+            }
+
+            CookingLevel = Math.Min(Options.MaxLevel, Cookinglevel);
+            if (resetExperience)
+            {
+                CookingExp = 0;
+            }
+
+            PacketSender.SendEntityDataToProximity(this);
+            PacketSender.SendCookingExperience(this);
+        }
+        public void SetAlchemyLevel(int Alchemylevel, bool resetExperience = false)
+        {
+            if (Alchemylevel < 1)
+            {
+                return;
+            }
+
+            AlchemyLevel = Math.Min(Options.MaxLevel, Alchemylevel);
+            if (resetExperience)
+            {
+                AlchemyExp = 0;
+            }
+
+            PacketSender.SendEntityDataToProximity(this);
+            PacketSender.SendAlchemyExperience(this);
+        }
+        public void SetBlacksmithLevel(int Blacksmithlevel, bool resetExperience = false)
+        {
+            if (Blacksmithlevel < 1)
+            {
+                return;
+            }
+
+            BlacksmithLevel = Math.Min(Options.MaxLevel, Blacksmithlevel);
+            if (resetExperience)
+            {
+                BlacksmithExp = 0;
+            }
+
+            PacketSender.SendEntityDataToProximity(this);
+            PacketSender.SendBlacksmithExperience(this);
+        }
+        public void SetHuntingLevel(int Huntinglevel, bool resetExperience = false)
+        {
+            if (Huntinglevel < 1)
+            {
+                return;
+            }
+
+            HuntingLevel = Math.Min(Options.MaxLevel, Huntinglevel);
+            if (resetExperience)
+            {
+                HuntingExp = 0;
+            }
+
+            PacketSender.SendEntityDataToProximity(this);
+            PacketSender.SendHuntingExperience(this);
+        }
         public void LevelUp(bool resetExperience = true, int levels = 1)
         {
             var messages = new List<string>();
@@ -1147,6 +1416,174 @@ namespace Intersect.Server.Entities
             //Search for level up activated events and run them
             StartCommonEventsWithTrigger(CommonEventTrigger.LevelUp);
         }
+        public void FarmingLevelUp(bool resetExperience = true, int levels = 1)
+        {
+            var messages = new List<string>();
+            if (FarmingLevel < Options.MaxLevel)
+            {
+                for (var i = 0; i < levels; i++)
+                {
+                    SetFarmingLevel(FarmingLevel + 1, resetExperience);
+                }
+            }
+            PacketSender.SendChatMsg(this, Strings.Player.Farminglevelup.ToString(FarmingLevel), ChatMessageType.Experience, CustomColors.Combat.SkillLevelUp, Name);
+                     
+            //PacketSender.SendActionMsg(this, Strings.Combat.levelup, CustomColors.Combat.LevelUp);
+            foreach (var message in messages)
+            {
+                PacketSender.SendChatMsg(this, message, ChatMessageType.Experience, CustomColors.Alerts.Info, Name);
+            }
+            PacketSender.SendFarmingExperience(this);
+            PacketSender.SendEntityDataToProximity(this);
+
+        }
+        public void MiningLevelUp(bool resetExperience = true, int levels = 1)
+        {
+            var messages = new List<string>();
+            if (MiningLevel < Options.MaxLevel)
+            {
+                for (var i = 0; i < levels; i++)
+                {
+                    SetMiningLevel(MiningLevel + 1, resetExperience);
+                }
+            }
+            PacketSender.SendChatMsg(this, Strings.Player.Mininglevelup.ToString(MiningLevel), ChatMessageType.Experience, CustomColors.Combat.SkillLevelUp, Name);
+
+            //PacketSender.SendActionMsg(this, Strings.Combat.levelup, CustomColors.Combat.LevelUp);
+            foreach (var message in messages)
+            {
+                PacketSender.SendChatMsg(this, message, ChatMessageType.Experience, CustomColors.Alerts.Info, Name);
+            }
+            PacketSender.SendMiningExperience(this);
+            PacketSender.SendEntityDataToProximity(this);
+
+        }
+        public void FishingLevelUp(bool resetExperience = true, int levels = 1)
+        {
+            var messages = new List<string>();
+            if (FishingLevel < Options.MaxLevel)
+            {
+                for (var i = 0; i < levels; i++)
+                {
+                    SetFishingLevel(FishingLevel + 1, resetExperience);
+                }
+            }
+            PacketSender.SendChatMsg(this, Strings.Player.Fishinglevelup.ToString(FishingLevel), ChatMessageType.Experience, CustomColors.Combat.SkillLevelUp, Name);
+
+            //PacketSender.SendActionMsg(this, Strings.Combat.levelup, CustomColors.Combat.LevelUp);
+            foreach (var message in messages)
+            {
+                PacketSender.SendChatMsg(this, message, ChatMessageType.Experience, CustomColors.Alerts.Info, Name);
+            }
+            PacketSender.SendFishingExperience(this);
+            PacketSender.SendEntityDataToProximity(this);
+
+        }
+        public void WoodLevelUp(bool resetExperience = true, int levels = 1)
+        {
+            var messages = new List<string>();
+            if (WoodLevel < Options.MaxLevel)
+            {
+                for (var i = 0; i < levels; i++)
+                {
+                    SetWoodLevel(WoodLevel + 1, resetExperience);
+                }
+            }
+            PacketSender.SendChatMsg(this, Strings.Player.Woodlevelup.ToString(WoodLevel), ChatMessageType.Experience, CustomColors.Combat.SkillLevelUp, Name);
+
+            //PacketSender.SendActionMsg(this, Strings.Combat.levelup, CustomColors.Combat.LevelUp);
+            foreach (var message in messages)
+            {
+                PacketSender.SendChatMsg(this, message, ChatMessageType.Experience, CustomColors.Alerts.Info, Name);
+            }
+            PacketSender.SendWoodExperience(this);
+            PacketSender.SendEntityDataToProximity(this);
+
+        }
+        public void HuntingLevelUp(bool resetExperience = true, int levels = 1)
+        {
+            var messages = new List<string>();
+            if (HuntingLevel < Options.MaxLevel)
+            {
+                for (var i = 0; i < levels; i++)
+                {
+                    SetHuntingLevel(HuntingLevel + 1, resetExperience);
+                }
+            }
+            PacketSender.SendChatMsg(this, Strings.Player.Huntinglevelup.ToString(HuntingLevel), ChatMessageType.Experience, CustomColors.Combat.SkillLevelUp, Name);
+
+            //PacketSender.SendActionMsg(this, Strings.Combat.levelup, CustomColors.Combat.LevelUp);
+            foreach (var message in messages)
+            {
+                PacketSender.SendChatMsg(this, message, ChatMessageType.Experience, CustomColors.Alerts.Info, Name);
+            }
+            PacketSender.SendHuntingExperience(this);
+            PacketSender.SendEntityDataToProximity(this);
+
+        }
+        public void AlchemyLevelUp(bool resetExperience = true, int levels = 1)
+        {
+            var messages = new List<string>();
+            if (AlchemyLevel < Options.MaxLevel)
+            {
+                for (var i = 0; i < levels; i++)
+                {
+                    SetAlchemyLevel(AlchemyLevel + 1, resetExperience);
+                }
+            }
+            PacketSender.SendChatMsg(this, Strings.Player.Alchemylevelup.ToString(AlchemyLevel), ChatMessageType.Experience, CustomColors.Combat.SkillLevelUp, Name);
+
+            //PacketSender.SendActionMsg(this, Strings.Combat.levelup, CustomColors.Combat.LevelUp);
+            foreach (var message in messages)
+            {
+                PacketSender.SendChatMsg(this, message, ChatMessageType.Experience, CustomColors.Alerts.Info, Name);
+            }
+            PacketSender.SendAlchemyExperience(this);
+            PacketSender.SendEntityDataToProximity(this);
+
+        }
+        public void BlacksmithLevelUp(bool resetExperience = true, int levels = 1)
+        {
+            var messages = new List<string>();
+            if (BlacksmithLevel < Options.MaxLevel)
+            {
+                for (var i = 0; i < levels; i++)
+                {
+                    SetBlacksmithLevel(BlacksmithLevel + 1, resetExperience);
+                }
+            }
+            PacketSender.SendChatMsg(this, Strings.Player.Blacksmithlevelup.ToString(BlacksmithLevel), ChatMessageType.Experience, CustomColors.Combat.SkillLevelUp, Name);
+
+            //PacketSender.SendActionMsg(this, Strings.Combat.levelup, CustomColors.Combat.LevelUp);
+            foreach (var message in messages)
+            {
+                PacketSender.SendChatMsg(this, message, ChatMessageType.Experience, CustomColors.Alerts.Info, Name);
+            }
+            PacketSender.SendBlacksmithExperience(this);
+            PacketSender.SendEntityDataToProximity(this);
+
+        }
+        public void CookingLevelUp(bool resetExperience = true, int levels = 1)
+        {
+            var messages = new List<string>();
+            if (CookingLevel < Options.MaxLevel)
+            {
+                for (var i = 0; i < levels; i++)
+                {
+                    SetCookingLevel(CookingLevel + 1, resetExperience);
+                }
+            }
+            PacketSender.SendChatMsg(this, Strings.Player.Cookinglevelup.ToString(CookingLevel), ChatMessageType.Experience, CustomColors.Combat.SkillLevelUp, Name);
+
+            //PacketSender.SendActionMsg(this, Strings.Combat.levelup, CustomColors.Combat.LevelUp);
+            foreach (var message in messages)
+            {
+                PacketSender.SendChatMsg(this, message, ChatMessageType.Experience, CustomColors.Alerts.Info, Name);
+            }
+            PacketSender.SendCookingExperience(this);
+            PacketSender.SendEntityDataToProximity(this);
+
+        }
 
         public void GiveExperience(long amount)
         {
@@ -1161,7 +1598,110 @@ namespace Intersect.Server.Entities
                 PacketSender.SendExperience(this);
             }
         }
+        public void GiveFarmingExperience(long amount)
+        {
+            FarmingExp += (int)(amount);
+            if (FarmingExp < 0)
+            {
+                FarmingExp = 0;
+            }
 
+            if (!CheckFarmingLevelUp())
+            {
+                PacketSender.SendFarmingExperience(this);
+            }
+        }
+        public void GiveMiningExperience(long amount)
+        {
+            MiningExp += (int)(amount);
+            if (MiningExp < 0)
+            {
+                MiningExp = 0;
+            }
+
+            if (!CheckMiningLevelUp())
+            {
+                PacketSender.SendMiningExperience(this);
+            }
+        }
+        public void GiveFishingExperience(long amount)
+        {
+            FishingExp += (int)(amount);
+            if (FishingExp < 0)
+            {
+                FishingExp = 0;
+            }
+
+            if (!CheckFishingLevelUp())
+            {
+                PacketSender.SendFishingExperience(this);
+            }
+        }
+        public void GiveWoodExperience(long amount)
+        {
+            WoodExp += (int)(amount);
+            if (WoodExp < 0)
+            {
+                WoodExp = 0;
+            }
+
+            if (!CheckWoodLevelUp())
+            {
+                PacketSender.SendWoodExperience(this);
+            }
+        }
+        public void GiveHuntingExperience(long amount)
+        {
+            HuntingExp += (int)(amount);
+            if (HuntingExp < 0)
+            {
+                HuntingExp = 0;
+            }
+
+            if (!CheckHuntingLevelUp())
+            {
+                PacketSender.SendHuntingExperience(this);
+            }
+        }
+        public void GiveBlacksmithExperience(long amount)
+        {
+            BlacksmithExp += (int)(amount);
+            if (BlacksmithExp < 0)
+            {
+                BlacksmithExp = 0;
+            }
+
+            if (!CheckBlacksmithLevelUp())
+            {
+                PacketSender.SendBlacksmithExperience(this);
+            }
+        }
+        public void GiveCookingExperience(long amount)
+        {
+            CookingExp += (int)(amount);
+            if (CookingExp < 0)
+            {
+                CookingExp = 0;
+            }
+
+            if (!CheckCookingLevelUp())
+            {
+                PacketSender.SendCookingExperience(this);
+            }
+        }
+        public void GiveAlchemyExperience(long amount)
+        {
+            AlchemyExp += (int)(amount);
+            if (AlchemyExp < 0)
+            {
+                AlchemyExp = 0;
+            }
+
+            if (!CheckAlchemyLevelUp())
+            {
+                PacketSender.SendAlchemyExperience(this);
+            }
+        }
         public void TakeExperience(long amount)
         {
             Exp -= amount;
@@ -1189,6 +1729,160 @@ namespace Intersect.Server.Entities
             }
 
             LevelUp(false, levelCount);
+
+            return true;
+        }
+        private bool CheckFarmingLevelUp()
+        {
+            var levelCount = 0;
+            while (FarmingExp >= GetExperienceToFarmingNextLevel(FarmingLevel + levelCount) &&
+                   GetExperienceToFarmingNextLevel(FarmingLevel + levelCount) > 0)
+            {
+                FarmingExp -= GetExperienceToFarmingNextLevel(FarmingLevel + levelCount);
+                levelCount++;
+            }
+
+            if (levelCount <= 0)
+            {
+                return false;
+            }
+
+            FarmingLevelUp(false, levelCount);
+
+            return true;
+        }
+        private bool CheckMiningLevelUp()
+        {
+            var levelCount = 0;
+            while (MiningExp >= GetExperienceToMiningNextLevel(MiningLevel + levelCount) &&
+                   GetExperienceToMiningNextLevel(MiningLevel + levelCount) > 0)
+            {
+                MiningExp -= GetExperienceToMiningNextLevel(MiningLevel + levelCount);
+                levelCount++;
+            }
+
+            if (levelCount <= 0)
+            {
+                return false;
+            }
+
+            MiningLevelUp(false, levelCount);
+
+            return true;
+        }
+
+        private bool CheckFishingLevelUp()
+        {
+            var levelCount = 0;
+            while (FishingExp >= GetExperienceToFishingNextLevel(FishingLevel + levelCount) &&
+                   GetExperienceToFishingNextLevel(FishingLevel + levelCount) > 0)
+            {
+                FishingExp -= GetExperienceToFishingNextLevel(FishingLevel + levelCount);
+                levelCount++;
+            }
+
+            if (levelCount <= 0)
+            {
+                return false;
+            }
+
+            FishingLevelUp(false, levelCount);
+
+            return true;
+        }
+
+        private bool CheckWoodLevelUp()
+        {
+            var levelCount = 0;
+            while (WoodExp >= GetExperienceToWoodNextLevel(WoodLevel + levelCount) &&
+                   GetExperienceToWoodNextLevel(WoodLevel + levelCount) > 0)
+            {
+                WoodExp -= GetExperienceToWoodNextLevel(WoodLevel + levelCount);
+                levelCount++;
+            }
+
+            if (levelCount <= 0)
+            {
+                return false;
+            }
+
+            WoodLevelUp(false, levelCount);
+
+            return true;
+        }
+        private bool CheckAlchemyLevelUp()
+        {
+            var levelCount = 0;
+            while (AlchemyExp >= GetExperienceToAlchemyNextLevel(AlchemyLevel + levelCount) &&
+                   GetExperienceToAlchemyNextLevel(AlchemyLevel + levelCount) > 0)
+            {
+                AlchemyExp -= GetExperienceToAlchemyNextLevel(AlchemyLevel + levelCount);
+                levelCount++;
+            }
+
+            if (levelCount <= 0)
+            {
+                return false;
+            }
+
+            AlchemyLevelUp(false, levelCount);
+
+            return true;
+        }
+        private bool CheckCookingLevelUp()
+        {
+            var levelCount = 0;
+            while (CookingExp >= GetExperienceToCookingNextLevel(CookingLevel + levelCount) &&
+                   GetExperienceToCookingNextLevel(CookingLevel + levelCount) > 0)
+            {
+                CookingExp -= GetExperienceToCookingNextLevel(CookingLevel + levelCount);
+                levelCount++;
+            }
+
+            if (levelCount <= 0)
+            {
+                return false;
+            }
+
+            CookingLevelUp(false, levelCount);
+
+            return true;
+        }
+        private bool CheckBlacksmithLevelUp()
+        {
+            var levelCount = 0;
+            while (BlacksmithExp >= GetExperienceToBlacksmithNextLevel(BlacksmithLevel + levelCount) &&
+                   GetExperienceToBlacksmithNextLevel(BlacksmithLevel + levelCount) > 0)
+            {
+                BlacksmithExp -= GetExperienceToBlacksmithNextLevel(BlacksmithLevel + levelCount);
+                levelCount++;
+            }
+
+            if (levelCount <= 0)
+            {
+                return false;
+            }
+
+            BlacksmithLevelUp(false, levelCount);
+
+            return true;
+        }
+        private bool CheckHuntingLevelUp()
+        {
+            var levelCount = 0;
+            while (HuntingExp >= GetExperienceToHuntingNextLevel(HuntingLevel + levelCount) &&
+                   GetExperienceToHuntingNextLevel(HuntingLevel + levelCount) > 0)
+            {
+                HuntingExp -= GetExperienceToHuntingNextLevel(HuntingLevel + levelCount);
+                levelCount++;
+            }
+
+            if (levelCount <= 0)
+            {
+                return false;
+            }
+
+            HuntingLevelUp(false, levelCount);
 
             return true;
         }
@@ -6933,6 +7627,14 @@ namespace Intersect.Server.Entities
             get => JsonConvert.SerializeObject(ItemCooldowns);
             set => ItemCooldowns = JsonConvert.DeserializeObject<ConcurrentDictionary<Guid, long>>(value ?? "{}");
         }
+        public int FarmingLevel { get; set; }
+        public int MiningLevel { get; set; }
+        public int FishingLevel { get; set; }
+        public int WoodLevel { get; set; }
+        public int AlchemyLevel { get; set; }
+        public int BlacksmithLevel { get;set; }
+        public int HuntingLevel { get; set; }   
+        public int CookingLevel { get; set; }   
 
         [JsonIgnore] public ConcurrentDictionary<Guid, long> ItemCooldowns = new ConcurrentDictionary<Guid, long>();
 

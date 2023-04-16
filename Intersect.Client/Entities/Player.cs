@@ -42,6 +42,23 @@ namespace Intersect.Client.Entities
         public long Experience { get; set; } = 0;
 
         public long ExperienceToNextLevel { get; set; } = 0;
+        public long FarmingExperience { get; set; } = 0;
+        public long ExperienceToFarmingNextLevel { get; set; } = 0;
+        public long MiningExperience { get; set; } = 0;
+        public long ExperienceToMiningNextLevel { get; set; } = 0;
+        public long FishingExperience { get; set; } = 0;
+        public long ExperienceToFishingNextLevel { get; set; } = 0;
+        public long WoodExperience { get; set; } = 0;
+        public long ExperienceToWoodNextLevel { get; set; } = 0;
+        public long HuntingExperience { get; set; } = 0;
+        public long ExperienceToHuntingNextLevel { get; set; } = 0;
+        public long AlchemyExperience { get; set; } = 0;
+        public long ExperienceToAlchemyNextLevel { get; set; } = 0;
+        public long CookingExperience { get; set; } = 0;
+        public long ExperienceToCookingNextLevel { get; set; } = 0;
+        public long BlacksmithExperience { get; set; } = 0;
+        public long ExperienceToBlacksmithNextLevel { get; set; } = 0;
+
 
         IReadOnlyList<IFriendInstance> IPlayer.Friends => Friends;
 
@@ -1786,12 +1803,40 @@ namespace Intersect.Client.Entities
             return false;
         }
 
-        //Forumlas
+        //Formulas
         public long GetNextLevelExperience()
         {
             return ExperienceToNextLevel;
         }
+        public long GetNextFarmingLevelExperience()
+        {
+            return ExperienceToFarmingNextLevel;
+        }
 
+        public long GetNextMiningLevelExperience()
+        {
+            return ExperienceToMiningNextLevel;
+        }
+        public long GetNextFishingLevelExperience()
+        {
+            return ExperienceToFishingNextLevel;
+        }
+        public long GetNextWoodLevelExperience()
+        {
+            return ExperienceToWoodNextLevel;
+        }
+        public long GetNextBlacksmithLevelExperience()
+        {
+            return ExperienceToBlacksmithNextLevel;
+        }
+        public long GetNextCookingLevelExperience()
+        {
+            return ExperienceToCookingNextLevel;
+        }
+        public long GetNextAlchemyLevelExperience()
+        {
+            return ExperienceToAlchemyNextLevel;
+        }
         public override int CalculateAttackTime()
         {
             ItemBase weapon = null;
@@ -2442,6 +2487,41 @@ namespace Intersect.Client.Entities
             public int DistanceTo;
         }
 
+        private void TurnAround()
+        {
+            // If players hold the 'TurnAround' Control Key and tap to any direction, they will turn on their own axis.
+            for (var direction = 0; direction < Options.Instance.Sprites.Directions; direction++)
+            {
+                if (!Controls.KeyDown(Control.TurnAround) || direction != Globals.Me.MoveDir)
+                {
+                    continue;
+                }
+
+                // Turn around and hold the player in place if the requested direction is different from the current one.
+                if (!Globals.Me.IsMoving && Dir != Globals.Me.MoveDir)
+                {
+                    Dir = (byte)Globals.Me.MoveDir;
+                    PacketSender.SendDirection(Dir);
+                    Globals.Me.MoveDir = -1;
+                }
+
+                // Hold the player in place if the requested direction is the same as the current one.
+                if (!Globals.Me.IsMoving && Dir == Globals.Me.MoveDir)
+                {
+                    Globals.Me.MoveDir = -1;
+                }
+            }
+        }
+
+        //Professions
+        public int FarmingLevel { get; set; } = 1;
+        public int MiningLevel { get; set; } = 1;
+        public int FishingLevel { get; set; } = 1;
+        public int WoodLevel { get; set; } = 1;
+        public int HunterLevel { get; set; } = 1;
+        public int BlacksmithLevel { get; set; } = 1;
+        public int CookingLevel { get; set; } = 1;
+        public int AlchemyLevel { get; set; } = 1;
     }
 
 }

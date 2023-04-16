@@ -817,9 +817,52 @@ namespace Intersect.Editor.Forms.Editors.Events
 
                 return Strings.EventCommandList.giveexp.ToString(exp);
             }
+
             else
             {
-                return Strings.EventCommandList.giveexp.ToString(command.Exp);
+               return Strings.EventCommandList.giveexp.ToString(command.Exp);                           
+               
+            }
+           
+        }
+
+        private static string GetCommandText(GiveJobExperienceCommand command, MapInstance map)
+        {
+            if (command.FarmingExp != 0)
+            {
+                return Strings.EventCommandList.giveFarmingexp.ToString(command.FarmingExp);
+            }
+            else if (command.MiningExp != 0)
+            {
+                return Strings.EventCommandList.giveMiningexp.ToString(command.MiningExp);
+            }
+            else if (command.FishingExp != 0)
+            {
+                return Strings.EventCommandList.giveFishingexp.ToString(command.FishingExp);
+            }
+            else if (command.WoodExp != 0)
+            {
+                return Strings.EventCommandList.giveWoodexp.ToString(command.WoodExp);
+            }
+            else if (command.BlacksmithExp != 0)
+            {
+                return Strings.EventCommandList.giveBlacksmithexp.ToString(command.BlacksmithExp);
+            }
+            else if (command.CookingExp != 0)
+            {
+                return Strings.EventCommandList.giveCookingexp.ToString(command.CookingExp);
+            }
+            else if (command.HuntingExp != 0)
+            {
+                return Strings.EventCommandList.giveHuntingexp.ToString(command.HuntingExp);
+            }
+            else if (command.AlchemyExp != 0)
+            {
+                return Strings.EventCommandList.giveAlchemyexp.ToString(command.AlchemyExp);
+            }
+            else
+            {
+                return null;
             }
         }
 

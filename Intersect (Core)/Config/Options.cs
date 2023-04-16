@@ -62,6 +62,9 @@ namespace Intersect
         [JsonProperty("Party")]
         public PartyOptions PartyOpts = new PartyOptions();
 
+        [JsonProperty("Jobs")] 
+		public JobsOptions JobsOpts = new JobsOptions();
+
         [JsonProperty("Security")]
         public SecurityOptions SecurityOpts = new SecurityOptions();
 
@@ -118,7 +121,15 @@ namespace Intersect
         public static int MaxStatValue => Instance.PlayerOpts.MaxStat;
 
         public static int MaxLevel => Instance.PlayerOpts.MaxLevel;
-
+        public static int MaxJobLevel => Instance.JobsOpts.MaxJobLevel;
+        public static int BaseFarmingExp => Instance.JobsOpts.BaseFarmingExp;
+        public static int BaseMiningExp => Instance.JobsOpts.BaseMiningExp;
+        public static int BaseFishingExp => Instance.JobsOpts.BaseFishingExp;
+        public static int BaseLumberjackExp => Instance.JobsOpts.BaseLumberjackExp;
+        public static int BaseHuntingExp => Instance.JobsOpts.BaseHuntingExp;
+        public static int BaseAlchemyExp => Instance.JobsOpts.BaseAlchemyExp;
+        public static int BaseBlacksmithExp => Instance.JobsOpts.BaseBlacksmithExp;
+        public static int BaseCookingExp => Instance.JobsOpts.BaseCookingExp;
         public static int MaxInvItems => Instance.PlayerOpts.MaxInventory;
 
         public static int MaxPlayerSkills => Instance.PlayerOpts.MaxSpells;

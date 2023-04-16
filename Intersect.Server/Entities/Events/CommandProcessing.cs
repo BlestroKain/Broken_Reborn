@@ -421,9 +421,26 @@ namespace Intersect.Server.Entities.Events
                 }
             }
 
-            player.GiveExperience(quantity);
+            player.GiveExperience(quantity); 
         }
-
+        //Give Job Experience Command
+        private static void ProcessCommand(
+            GiveJobExperienceCommand command,
+            Player player,
+            Event instance,
+            CommandInstance stackInfo,
+            Stack<CommandInstance> callStack
+        )
+        {                     
+            player.GiveFarmingExperience(command.FarmingExp);
+            player.GiveMiningExperience(command.MiningExp);
+            player.GiveFishingExperience(command.FishingExp);
+            player.GiveWoodExperience(command.WoodExp);
+            player.GiveHuntingExperience(command.HuntingExp);
+            player.GiveAlchemyExperience(command.AlchemyExp);
+            player.GiveBlacksmithExperience(command.BlacksmithExp);
+            player.GiveCookingExperience(command.CookingExp);
+        }
         //Change Level Command
         private static void ProcessCommand(
             ChangeLevelCommand command,

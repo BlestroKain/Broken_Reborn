@@ -371,6 +371,14 @@ namespace Intersect.Server.Networking
             if (entity == player)
             {
                 SendExperience(player);
+                SendFarmingExperience(player);
+                SendMiningExperience(player);
+                SendFishingExperience(player);
+                SendWoodExperience(player);
+                SendCookingExperience(player);
+                SendHuntingExperience(player);
+                SendBlacksmithExperience(player);
+                SendAlchemyExperience(player);
                 SendInventory(player);
                 SendPlayerSpells(player);
                 SendPointsTo(player);
@@ -1481,6 +1489,38 @@ namespace Intersect.Server.Networking
         public static void SendExperience(Player player)
         {
             player.SendPacket(new ExperiencePacket(player.Exp, player.ExperienceToNextLevel), TransmissionMode.Any);
+        }
+        public static void SendFarmingExperience(Player player)
+        {
+            player.SendPacket(new FarmingInfoPacket(player.FarmingExp, player.ExperienceToFarmingNextLevel,player.FarmingLevel), TransmissionMode.Any);
+        }
+        public static void SendAlchemyExperience(Player player)
+        {
+            player.SendPacket(new AlchemyInfoPacket(player.AlchemyExp, player.ExperienceToAlchemyNextLevel,player.AlchemyLevel), TransmissionMode.Any);
+        }
+        public static void SendBlacksmithExperience(Player player)
+        {
+            player.SendPacket(new BlacksmithInfoPacket(player.BlacksmithExp, player.ExperienceToBlacksmithNextLevel,player.BlacksmithLevel), TransmissionMode.Any);
+        }
+        public static void SendHuntingExperience(Player player)
+        {
+            player.SendPacket(new HuntingInfoPacket(player.HuntingExp, player.ExperienceToHuntingNextLevel,player.HuntingLevel), TransmissionMode.Any);
+        }
+        public static void SendCookingExperience(Player player)
+        {
+            player.SendPacket(new CookingInfoPacket(player.CookingExp, player.ExperienceToCookingNextLevel, player.CookingLevel), TransmissionMode.Any);
+        }
+        public static void SendWoodExperience(Player player)
+        {
+            player.SendPacket(new WoodInfoPacket(player.WoodExp, player.ExperienceToWoodNextLevel,player.WoodLevel), TransmissionMode.Any);
+        }
+        public static void SendFishingExperience(Player player)
+        {
+            player.SendPacket(new FishingInfoPacket(player.FishingExp, player.ExperienceToFishingNextLevel,player.FishingLevel), TransmissionMode.Any);
+        }
+        public static void SendMiningExperience(Player player)
+        {
+            player.SendPacket(new MiningInfoPacket(player.MiningExp, player.ExperienceToMiningNextLevel, player.MiningLevel), TransmissionMode.Any);
         }
 
         //PlayAnimationPacket

@@ -312,7 +312,7 @@ namespace Intersect.GameObjects.Events.Commands
 
         public long Exp { get; set; }
 
-        /// <summary>
+               /// <summary>
         /// Defines whether this event command will use a variable for processing or not.
         /// </summary>
         public bool UseVariable { get; set; } = false;
@@ -327,7 +327,27 @@ namespace Intersect.GameObjects.Events.Commands
         /// </summary>
         public Guid VariableId { get; set; }
     }
+    public partial class GiveJobExperienceCommand : EventCommand
+    {
 
+        public override EventCommandType Type { get; } = EventCommandType.GiveJobExperience;
+
+               //Recolection Jobs
+        public long FarmingExp { get; set; }
+        public long FishingExp { get; set; }
+        public long MiningExp { get; set; }
+        public long WoodExp { get; set; }
+        public long HuntingExp { get; set; }
+
+        //Crafting Jobs
+        public long CookingExp { get; set; }
+        public long BlacksmithExp { get; set; }
+        public long AlchemyExp { get; set; }
+        /*public long JewellerExp { get; set; }
+        public long ShoemakerExp { get; set; }
+        public long TailorExp { get; set; }*/
+
+    }
     public partial class ChangeLevelCommand : EventCommand
     {
         public override EventCommandType Type { get; } = EventCommandType.ChangeLevel;

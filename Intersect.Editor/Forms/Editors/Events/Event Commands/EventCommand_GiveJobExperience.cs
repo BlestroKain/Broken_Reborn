@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Intersect.GameObjects.Events.Commands;
-using static Intersect.Editor.Localization.Strings;
 using System;
 using System.Windows.Forms;
 using Intersect.Config;
@@ -39,38 +38,7 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
             "Hunting",
             "Alchemy",
             "Blacksmith",
-            "Cooking"});
-
-            switch (cmbJob.SelectedIndex)
-            {
-                case 1:
-                    nudExperience.Value = Math.Max(1, mMyCommand.FarmingExp);
-                    break;
-                case 2:
-                    nudExperience.Value = Math.Max(1, mMyCommand.MiningExp);
-                    break;
-                case 3:
-                    nudExperience.Value = Math.Max(1, mMyCommand.FishingExp);
-                    break;
-                case 4:
-                    nudExperience.Value = Math.Max(1, mMyCommand.WoodExp);
-                    break;
-                case 5:
-                    nudExperience.Value = Math.Max(1, mMyCommand.HuntingExp);
-                    break;
-                case 6:
-                    nudExperience.Value = Math.Max(1, mMyCommand.AlchemyExp);
-                    break;
-                case 7:
-                    nudExperience.Value = Math.Max(1, mMyCommand.BlacksmithExp);
-                    break;
-                case 8:
-                    nudExperience.Value = Math.Max(1, mMyCommand.CookingExp);
-                    break;
-                default:
-                    break;
-            }                                  
-           
+            "Cooking"});                     
         }
         private void InitLocalization()
         {
@@ -115,6 +83,16 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
         {
 
             mEventEditor.CancelCommandEdit();
+        }
+
+        private void btnSave_Click_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnCancel_Click_1(object sender, EventArgs e)
+        {
+
         }
     }
 }

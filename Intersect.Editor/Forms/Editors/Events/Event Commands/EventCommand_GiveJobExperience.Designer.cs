@@ -29,10 +29,10 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
         private void InitializeComponent()
         {
             this.grpGiveExperience = new DarkUI.Controls.DarkGroupBox();
-            this.btnCancel = new DarkUI.Controls.DarkButton();
-            this.btnSave = new DarkUI.Controls.DarkButton();
             this.cmbJob = new DarkUI.Controls.DarkComboBox();
             this.nudExperience = new DarkUI.Controls.DarkNumericUpDown();
+            this.btnCancel = new DarkUI.Controls.DarkButton();
+            this.btnSave = new DarkUI.Controls.DarkButton();
             this.grpGiveExperience.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudExperience)).BeginInit();
             this.SuspendLayout();
@@ -52,24 +52,6 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
             this.grpGiveExperience.TabIndex = 18;
             this.grpGiveExperience.TabStop = false;
             this.grpGiveExperience.Text = "Give Experience:";
-            // 
-            // btnCancel
-            // 
-            this.btnCancel.Location = new System.Drawing.Point(87, 94);
-            this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Padding = new System.Windows.Forms.Padding(5);
-            this.btnCancel.Size = new System.Drawing.Size(75, 23);
-            this.btnCancel.TabIndex = 20;
-            this.btnCancel.Text = "Cancel";
-            // 
-            // btnSave
-            // 
-            this.btnSave.Location = new System.Drawing.Point(6, 94);
-            this.btnSave.Name = "btnSave";
-            this.btnSave.Padding = new System.Windows.Forms.Padding(5);
-            this.btnSave.Size = new System.Drawing.Size(75, 23);
-            this.btnSave.TabIndex = 19;
-            this.btnSave.Text = "Ok";
             // 
             // cmbJob
             // 
@@ -119,6 +101,26 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
             0,
             0,
             0});
+            // 
+            // btnCancel
+            // 
+            this.btnCancel.Location = new System.Drawing.Point(87, 94);
+            this.btnCancel.Name = "btnCancel";
+            this.btnCancel.Padding = new System.Windows.Forms.Padding(5);
+            this.btnCancel.Size = new System.Drawing.Size(75, 23);
+            this.btnCancel.TabIndex = 20;
+            this.btnCancel.Text = "Cancel";
+            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+            // 
+            // btnSave
+            // 
+            this.btnSave.Location = new System.Drawing.Point(6, 94);
+            this.btnSave.Name = "btnSave";
+            this.btnSave.Padding = new System.Windows.Forms.Padding(5);
+            this.btnSave.Size = new System.Drawing.Size(75, 23);
+            this.btnSave.TabIndex = 19;
+            this.btnSave.Text = "Ok";
+            this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
             // 
             // EventCommandGiveJobExperience
             // 

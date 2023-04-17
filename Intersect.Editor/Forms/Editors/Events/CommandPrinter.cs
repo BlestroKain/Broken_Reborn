@@ -827,28 +827,42 @@ namespace Intersect.Editor.Forms.Editors.Events
 
         private static string GetCommandText(GiveJobExperienceCommand command, MapInstance map)
         {
-            switch (command)
+            if (command.FarmingExp != 0)
             {
-                case var c when c.FarmingExp != 0:
-                    return Strings.EventCommandList.giveFarmingexp.ToString(c.FarmingExp);
-                case var c when c.MiningExp != 0:
-                    return Strings.EventCommandList.giveMiningexp.ToString(c.MiningExp);
-                case var c when c.FishingExp != 0:
-                    return Strings.EventCommandList.giveFishingexp.ToString(c.FishingExp);
-                case var c when c.WoodExp != 0:
-                    return Strings.EventCommandList.giveWoodexp.ToString(c.WoodExp);
-                case var c when c.BlacksmithExp != 0:
-                    return Strings.EventCommandList.giveBlacksmithexp.ToString(c.BlacksmithExp);
-                case var c when c.CookingExp != 0:
-                    return Strings.EventCommandList.giveCookingexp.ToString(c.CookingExp);
-                case var c when c.HuntingExp != 0:
-                    return Strings.EventCommandList.giveHuntingexp.ToString(c.HuntingExp);
-                case var c when c.AlchemyExp != 0:
-                    return Strings.EventCommandList.giveAlchemyexp.ToString(c.AlchemyExp);
-                default:
-                    return null;
+                return Strings.EventCommandList.giveFarmingexp.ToString(command.FarmingExp);
             }
-
+            else if (command.MiningExp != 0)
+            {
+                return Strings.EventCommandList.giveMiningexp.ToString(command.MiningExp);
+            }
+            else if (command.FishingExp != 0)
+            {
+                return Strings.EventCommandList.giveFishingexp.ToString(command.FishingExp);
+            }
+            else if (command.WoodExp != 0)
+            {
+                return Strings.EventCommandList.giveWoodexp.ToString(command.WoodExp);
+            }
+            else if (command.BlacksmithExp != 0)
+            {
+                return Strings.EventCommandList.giveBlacksmithexp.ToString(command.BlacksmithExp);
+            }
+            else if (command.CookingExp != 0)
+            {
+                return Strings.EventCommandList.giveCookingexp.ToString(command.CookingExp);
+            }
+            else if (command.HuntingExp != 0)
+            {
+                return Strings.EventCommandList.giveHuntingexp.ToString(command.HuntingExp);
+            }
+            else if (command.AlchemyExp != 0)
+            {
+                return Strings.EventCommandList.giveAlchemyexp.ToString(command.AlchemyExp);
+            }
+            else
+            {
+                return null;
+            }
         }
 
         private static string GetCommandText(ChangeLevelCommand command, MapInstance map)

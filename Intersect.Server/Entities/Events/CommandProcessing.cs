@@ -409,7 +409,7 @@ namespace Intersect.Server.Entities.Events
 
             player.GiveExperience(quantity); 
         }
-        //Give Experience Command
+        //Give Job Experience Command
         private static void ProcessCommand(
             GiveJobExperienceCommand command,
             Player player,

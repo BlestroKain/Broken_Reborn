@@ -393,7 +393,7 @@ namespace Intersect.Server.Entities
                 return -1;
             }
 
-            var skillBase = 8;
+            var skillBase = 10;
             var Gain = 3;
             var level = BlacksmithLevel;
 
@@ -407,7 +407,7 @@ namespace Intersect.Server.Entities
                 return -1;
             }
 
-            var skillBase = 8;
+            var skillBase = 10;
             var Gain = 3;
             var level = AlchemyLevel;
 

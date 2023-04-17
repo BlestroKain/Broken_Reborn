@@ -3,7 +3,20 @@ namespace Intersect.Config
     /// <summary>
     /// Contains configurable options pertaining to the way Players are handled by the engine.
     /// </summary>
-    public partial class PlayerOptions
+    /// 
+    public partial class JobsOptions
+    {
+        public int MaxJobLevel { get; set; } = 100;
+        public int BaseFarmingExp { get; set; } = 15;
+        public int BaseFishingExp { get; set; } = 15;
+        public int BaseMiningExp { get; set; } = 15;
+        public int BaseLumberjackExp { get; set; } = 15;
+        public int BaseHuntingExp { get; set; } = 15;
+        public int BaseCookingExp { get; set; } = 30;
+        public int BaseAlchemyExp { get; set; } = 30;
+        public int BaseBlacksmithExp { get; set; } = 30;
+    }
+        public partial class PlayerOptions
     {
         /// <summary>
         /// Intersect default for initial player bank slots
@@ -67,6 +80,7 @@ namespace Intersect.Config
         /// Max level a player can achieve.
         /// </summary>
         public int MaxLevel { get; set; } = 100;
+    
 
         /// <summary>
         /// Number of spell slots a player has.

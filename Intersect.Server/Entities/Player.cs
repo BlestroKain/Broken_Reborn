@@ -79,14 +79,14 @@ namespace Intersect.Server.Entities
         public Gender Gender { get; set; }
 
         public long Exp { get; set; }
-        public long FarmingExp { get; set; }
-        public long MiningExp { get; set; }
-        public long FishingExp { get; set; }
-        public long WoodExp { get; set; }
-        public long CookingExp { get; set; }
-        public long HuntingExp { get; set; }
-        public long BlacksmithExp { get; set; }
-        public long AlchemyExp { get; set; }
+        public long FarmingExp { get; set; } = 1;
+        public long MiningExp { get; set; } = 1;
+        public long FishingExp { get; set; } = 1;
+        public long WoodExp { get; set; } = 1;
+        public long CookingExp { get; set; } = 1;
+        public long HuntingExp { get; set; } = 1;
+        public long BlacksmithExp { get; set; } = 1;
+        public long AlchemyExp { get; set; } = 1;
 
         public int StatPoints { get; set; }
 
@@ -301,12 +301,12 @@ namespace Intersect.Server.Entities
         }
         private long GetExperienceToFarmingNextLevel(int FarmingLevel)
         {
-            if (FarmingLevel >= Options.MaxLevel)
+            if (FarmingLevel >= Options.MaxJobLevel)
             {
                 return -1;
             }
 
-            var skillBase = 8;
+            var skillBase = Options.BaseFarmingExp;
             var Gain = 3;
             var level = FarmingLevel;
 
@@ -316,12 +316,12 @@ namespace Intersect.Server.Entities
 
         private long GetExperienceToMiningNextLevel(int MiningLevel)
         {
-            if (MiningLevel >= Options.MaxLevel)
+            if (MiningLevel >= Options.MaxJobLevel)
             {
                 return -1;
             }
 
-            var skillBase = 8;
+            var skillBase = Options.BaseMiningExp;
             var Gain = 3;
             var level = MiningLevel;
 
@@ -331,12 +331,12 @@ namespace Intersect.Server.Entities
 
         private long GetExperienceToFishingNextLevel(int FishingLevel)
         {
-            if (FishingLevel >= Options.MaxLevel)
+            if (FishingLevel >= Options.MaxJobLevel)
             {
                 return -1;
             }
 
-            var skillBase = 8;
+            var skillBase = Options.BaseFishingExp;
             var Gain = 3;
             var level = FishingLevel;
 
@@ -346,12 +346,12 @@ namespace Intersect.Server.Entities
 
         private long GetExperienceToWoodNextLevel(int WoodLevel)
         {
-            if (WoodLevel >= Options.MaxLevel)
+            if (WoodLevel >= Options.MaxJobLevel)
             {
                 return -1;
             }
 
-            var skillBase = 8;
+            var skillBase = Options.BaseLumberjackExp;
             var Gain = 3;
             var level = WoodLevel;
 
@@ -360,12 +360,12 @@ namespace Intersect.Server.Entities
         }
         private long GetExperienceToCookingNextLevel(int CookingLevel)
         {
-            if (CookingLevel >= Options.MaxLevel)
+            if (CookingLevel >= Options.MaxJobLevel)
             {
                 return -1;
             }
 
-            var skillBase = 8;
+            var skillBase = Options.BaseCookingExp;
             var Gain = 3;
             var level = CookingLevel;
 
@@ -374,12 +374,12 @@ namespace Intersect.Server.Entities
         }
         private long GetExperienceToHuntingNextLevel(int HuntingLevel)
         {
-            if (HuntingLevel >= Options.MaxLevel)
+            if (HuntingLevel >= Options.MaxJobLevel)
             {
                 return -1;
             }
 
-            var skillBase = 8;
+            var skillBase = Options.BaseHuntingExp;
             var Gain = 3;
             var level = HuntingLevel;
 
@@ -388,12 +388,12 @@ namespace Intersect.Server.Entities
         }
         private long GetExperienceToBlacksmithNextLevel(int BlacksmithLevel)
         {
-            if (BlacksmithLevel >= Options.MaxLevel)
+            if (BlacksmithLevel >= Options.MaxJobLevel)
             {
                 return -1;
             }
 
-            var skillBase = 10;
+            var skillBase = Options.BaseBlacksmithExp;
             var Gain = 3;
             var level = BlacksmithLevel;
 
@@ -402,12 +402,12 @@ namespace Intersect.Server.Entities
         }
         private long GetExperienceToAlchemyNextLevel(int AlchemyLevel)
         {
-            if (AlchemyLevel >= Options.MaxLevel)
+            if (AlchemyLevel >= Options.MaxJobLevel)
             {
                 return -1;
             }
 
-            var skillBase = 10;
+            var skillBase = Options.BaseAlchemyExp;
             var Gain = 3;
             var level = AlchemyLevel;
 

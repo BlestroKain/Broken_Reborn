@@ -1808,35 +1808,7 @@ namespace Intersect.Client.Entities
         {
             return ExperienceToNextLevel;
         }
-        public long GetNextFarmingLevelExperience()
-        {
-            return ExperienceToFarmingNextLevel;
-        }
-
-        public long GetNextMiningLevelExperience()
-        {
-            return ExperienceToMiningNextLevel;
-        }
-        public long GetNextFishingLevelExperience()
-        {
-            return ExperienceToFishingNextLevel;
-        }
-        public long GetNextWoodLevelExperience()
-        {
-            return ExperienceToWoodNextLevel;
-        }
-        public long GetNextBlacksmithLevelExperience()
-        {
-            return ExperienceToBlacksmithNextLevel;
-        }
-        public long GetNextCookingLevelExperience()
-        {
-            return ExperienceToCookingNextLevel;
-        }
-        public long GetNextAlchemyLevelExperience()
-        {
-            return ExperienceToAlchemyNextLevel;
-        }
+       
         public override int CalculateAttackTime()
         {
             ItemBase weapon = null;

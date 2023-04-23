@@ -546,6 +546,15 @@ namespace Intersect.Client.Localization
             public static LocalizedString skill9 = @"Tailor";
             public static LocalizedString skill10 = @"Cobbler";
 
+            //descriptions
+            public static LocalizedString FarmingDesc = @"Esta habilidad te permite cultivar plantas y cosechar sus frutos para obtener recursos valiosos.";
+            public static LocalizedString MiningDesc = @"Esta habilidad te permite extraer minerales y rocas para obtener recursos valiosos y utilizarlos en diferentes actividades.";
+            public static LocalizedString LumberjackDesc = @"Un leñador es una persona que tala árboles, corta y transporta madera para la construcción y otros fines.";
+            public static LocalizedString FishingDesc = @"La pesca es una actividad recreativa que implica la captura de peces en un cuerpo de agua utilizando una caña de pescar, carrete, línea, anzuelos y cebo.";
+            public static LocalizedString HuntingDesc = @"Esta habilidad te permite cazar animales para obtener carne, pieles y otros recursos valiosos.";
+            public static LocalizedString BlacksmithDesc = @"Esta habilidad te permite crear y mejorar herramientas y armas de metal.";
+            public static LocalizedString AlchemyDesc = @"Esta habilidad te permite crear pociones y elixires para curar enfermedades y mejorar habilidades.";
+            public static LocalizedString CookingDesc = @"Esta habilidad te permite preparar alimentos nutritivos y deliciosos para mejorar la salud y el bienestar.";
         }
         public partial struct Combat
         {
@@ -1746,6 +1755,13 @@ namespace Intersect.Client.Localization
             public static LocalizedString TargetFps = @"Target FPS:";
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public static LocalizedString TargetingSettings = @"Targeting";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public static LocalizedString AutoTurnToTarget = @"Auto-turn to target";
+
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public static LocalizedString Title = @"Settings";
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -2191,19 +2207,8 @@ namespace Intersect.Client.Localization
             public static LocalizedString skill = @"Skills:";
             public static LocalizedString recoskill = @" Recolection Skills:";
             public static LocalizedString craftskill = @" Crafting Skills:";
-            public static LocalizedString skill0 = @"{00}: {01}";
-            public static LocalizedString skill1 = @"{00}: {01}";
-            public static LocalizedString skill2 = @"{00}: {01}";
-            public static LocalizedString skill3 = @"{00}: {01}";
-            public static LocalizedString skill4 = @"{00}: {01}";
-            public static LocalizedString skill5 = @"{00}: {01}";
-            public static LocalizedString skill6 = @"{00}: {01}";
-            public static LocalizedString skill7 = @"{00}: {01}";
-            public static LocalizedString skill8 = @"{00}: {01}";
-            public static LocalizedString skill9 = @"{00}: {01}";
-            public static LocalizedString skill10 = @"{00}: {01}";
-            public static LocalizedString skill11 = @"{00}: {01}";
-            public static LocalizedString skill12 = @"{00}: {01}";
+            public static LocalizedString skill0 = @"{00}";
+        
         }
         public partial struct Trading
         {

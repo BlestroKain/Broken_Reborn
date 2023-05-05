@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  intersect:
+    build: ./src
+    ports:
+      # Uncomment if you enable the API
+      # - 5400:5400/tcp
+      - 5400:5400/udp
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./resources:/root/server/resources
+      - ./logs:/root/server/logs
+volumes:
+  saved:

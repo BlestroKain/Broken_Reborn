@@ -1090,11 +1090,21 @@ namespace Intersect.GameObjects.Events.Commands
         public Guid VariableId { get; set; }
 
     }
-
+   
     public partial class ResetStatPointAllocationsCommand : EventCommand
     {
 
         public override EventCommandType Type { get; } = EventCommandType.ResetStatPointAllocations;
 
     }
+
+    public class ChangeHairCommand : EventCommand
+    {
+
+        public override EventCommandType Type { get; } = EventCommandType.ChangeHair;
+
+        public string Hair { get; set; } = "";
+
+    }
+
 }

@@ -7,5 +7,8 @@ namespace Intersect.Enums
         Magic,
 
         True,
+
+        Cure,
+
     }
 }

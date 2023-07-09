@@ -342,12 +342,18 @@ namespace Intersect.Editor.Forms.Editors
                 nudDef.Value = mEditorItem.StatsGiven[2];
                 nudMR.Value = mEditorItem.StatsGiven[3];
                 nudSpd.Value = mEditorItem.StatsGiven[4];
+                nudAgi.Value = mEditorItem.StatsGiven[5];
+                nudDmg.Value = mEditorItem.StatsGiven[6];
+                nudCur.Value = mEditorItem.StatsGiven[7];
 
                 nudStrPercentage.Value = mEditorItem.PercentageStatsGiven[0];
                 nudMagPercentage.Value = mEditorItem.PercentageStatsGiven[1];
                 nudDefPercentage.Value = mEditorItem.PercentageStatsGiven[2];
                 nudMRPercentage.Value = mEditorItem.PercentageStatsGiven[3];
                 nudSpdPercentage.Value = mEditorItem.PercentageStatsGiven[4];
+                nudAgiPercentage.Value = mEditorItem.PercentageStatsGiven[5];
+                nudDmgPercentage.Value = mEditorItem.PercentageStatsGiven[6];
+                nudCurPercentage.Value = mEditorItem.PercentageStatsGiven[7];
 
                 nudHealthBonus.Value = mEditorItem.VitalsGiven[0];
                 nudManaBonus.Value = mEditorItem.VitalsGiven[1];
@@ -1356,6 +1362,35 @@ namespace Intersect.Editor.Forms.Editors
             EffectValueUpdating = true;
             nudEffectPercent.Value = mEditorItem.GetEffectPercentage(selected);
             EffectValueUpdating = false;
+        }
+        private void nudAgi_ValueChanged_1(object sender, EventArgs e)
+        {
+            mEditorItem.StatsGiven[5] = (int)nudAgi.Value;
+        }
+
+        private void nudDmg_ValueChanged_1(object sender, EventArgs e)
+        {
+            mEditorItem.StatsGiven[6]= (int)nudDmg.Value;
+        }
+
+        private void nudCur_ValueChanged_1(object sender, EventArgs e)
+        {
+            mEditorItem.StatsGiven[7]= (int)nudCur.Value;
+        }
+
+        private void nudAgiPercentage_ValueChanged_1(object sender, EventArgs e)
+        {
+            mEditorItem.PercentageStatsGiven[5] = (int)nudAgiPercentage.Value;
+        }
+
+        private void nudDmgPercentage_ValueChanged_1(object sender, EventArgs e)
+        {
+            mEditorItem.PercentageStatsGiven[6] = (int)nudDmgPercentage.Value;
+        }
+
+        private void nudCurPercentage_ValueChanged_1(object sender, EventArgs e)
+        {
+            mEditorItem.PercentageStatsGiven[7] = (int)nudCurPercentage.Value;
         }
     }
 

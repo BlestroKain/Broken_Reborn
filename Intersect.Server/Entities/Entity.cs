@@ -1273,10 +1273,10 @@ namespace Intersect.Server.Entities
         //Combat
         public virtual int CalculateAttackTime()
         {
-            return (int)(Options.MaxAttackRate +
-                          (Options.MinAttackRate - Options.MaxAttackRate) *
-                          (((float)Options.MaxStatValue - Stat[(int)Enums.Stat.Speed].Value()) /
-                           Options.MaxStatValue));
+            return (int) (Options.MaxAttackRate +
+                          (float) ((Options.MinAttackRate - Options.MaxAttackRate) *
+                                   (((float) Options.MaxStatValue - Stat[(int) Stats.Agility].Value()) /
+                                    (float) Options.MaxStatValue)));
         }
 
         public void TryBlock(bool blocking)
@@ -1989,6 +1989,13 @@ namespace Intersect.Server.Entities
                         case DamageType.True:
                             PacketSender.SendActionMsg(
                                 enemy, Strings.Combat.removesymbol + baseDamage, CustomColors.Combat.TrueDamage
+                            );
+
+                            break;
+
+                        case DamageType.Cure:
+                            PacketSender.SendActionMsg(
+                                enemy, Strings.Combat.removesymbol + (int)baseDamage, CustomColors.Combat.Cure
                             );
 
                             break;

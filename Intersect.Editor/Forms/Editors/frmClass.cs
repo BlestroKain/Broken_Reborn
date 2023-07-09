@@ -153,10 +153,11 @@ namespace Intersect.Editor.Forms.Editors
                 pnlContainer.Show();
                 txtName.Text = mEditorItem.Name;
                 nudAttack.Value = mEditorItem.BaseStat[(int) Stats.Attack];
-                nudMag.Value = mEditorItem.BaseStat[(int) Stats.AbilityPower];
+                nudMag.Value = mEditorItem.BaseStat[(int) Stats.Intelligence];
                 nudDef.Value = mEditorItem.BaseStat[(int) Stats.Defense];
                 nudMR.Value = mEditorItem.BaseStat[(int) Stats.Vitality];
                 nudSpd.Value = mEditorItem.BaseStat[(int) Stats.Speed];
+                NudAgi.Value = mEditorItem.BaseStat[(int)Stats.Agility];
                 nudBaseHP.Value = Math.Max(
                     Math.Min(mEditorItem.BaseVital[(int) Vital.Health], nudBaseHP.Maximum), nudBaseHP.Minimum
                 );
@@ -318,6 +319,7 @@ namespace Intersect.Editor.Forms.Editors
             nudDef.Maximum = Options.MaxStatValue;
             nudMR.Maximum = Options.MaxStatValue;
             nudSpd.Maximum = Options.MaxStatValue;
+            NudAgi.Maximum = Options.MaxStatValue;
 
             InitLocalization();
             UpdateEditor();
@@ -789,7 +791,7 @@ namespace Intersect.Editor.Forms.Editors
 
             nudArmorIncrease.Value = Math.Min(nudArmorIncrease.Maximum, mEditorItem.StatIncrease[(int) Stat.Defense]);
             nudMagicIncrease.Value = Math.Min(
-                nudMagicIncrease.Maximum, mEditorItem.StatIncrease[(int) Stat.AbilityPower]
+                nudMagicIncrease.Maximum, mEditorItem.StatIncrease[(int) Stats.Intelligence]
             );
 
             nudMagicResistIncrease.Value = Math.Min(
@@ -976,7 +978,7 @@ namespace Intersect.Editor.Forms.Editors
 
         private void nudMag_ValueChanged(object sender, EventArgs e)
         {
-            mEditorItem.BaseStat[(int) Stat.AbilityPower] = (int) nudMag.Value;
+            mEditorItem.BaseStat[(int) Stats.Intelligence] = (int) nudMag.Value;
         }
 
         private void nudDef_ValueChanged(object sender, EventArgs e)
@@ -1066,7 +1068,7 @@ namespace Intersect.Editor.Forms.Editors
 
         private void nudMagicIncrease_ValueChanged(object sender, EventArgs e)
         {
-            mEditorItem.StatIncrease[(int) Stat.AbilityPower] = (int) nudMagicIncrease.Value;
+            mEditorItem.StatIncrease[(int) Stats.Intelligence] = (int) nudMagicIncrease.Value;
             UpdateIncreases();
         }
 
@@ -1540,6 +1542,12 @@ namespace Intersect.Editor.Forms.Editors
         }
 
         #endregion
+
+        private void NudAgi_ValueChanged(object sender, EventArgs e)
+        {
+            mEditorItem.BaseStat[(int)Stats.Agility] = (int)NudAgi.Value;
+        }
+
     }
 
 }

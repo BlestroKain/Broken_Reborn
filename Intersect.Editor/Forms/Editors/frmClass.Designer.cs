@@ -176,6 +176,9 @@ namespace Intersect.Editor.Forms.Editors
             this.toolStripItemUndo = new System.Windows.Forms.ToolStripButton();
             this.mnuExpGrid = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.btnExpPaste = new System.Windows.Forms.ToolStripMenuItem();
+            this.cmbAttackSprite = new DarkUI.Controls.DarkComboBox();
+            this.NudAgi = new DarkUI.Controls.DarkNumericUpDown();
+            this.lblAgi = new System.Windows.Forms.Label();
             this.grpClasses.SuspendLayout();
             this.grpBaseStats.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudBaseMana)).BeginInit();
@@ -226,6 +229,7 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)(this.nudStrengthIncrease)).BeginInit();
             this.toolStrip.SuspendLayout();
             this.mnuExpGrid.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.NudAgi)).BeginInit();
             this.SuspendLayout();
             // 
             // grpClasses
@@ -289,6 +293,8 @@ namespace Intersect.Editor.Forms.Editors
             // 
             this.grpBaseStats.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
             this.grpBaseStats.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
+            this.grpBaseStats.Controls.Add(this.NudAgi);
+            this.grpBaseStats.Controls.Add(this.lblAgi);
             this.grpBaseStats.Controls.Add(this.nudBaseMana);
             this.grpBaseStats.Controls.Add(this.nudBaseHP);
             this.grpBaseStats.Controls.Add(this.nudPoints);
@@ -1049,6 +1055,7 @@ namespace Intersect.Editor.Forms.Editors
             this.grpSpawnItems.Controls.Add(this.lblSpawnItem);
             this.grpSpawnItems.ForeColor = System.Drawing.Color.Gainsboro;
             this.grpSpawnItems.Location = new System.Drawing.Point(474, 491);
+
             this.grpSpawnItems.Name = "grpSpawnItems";
             this.grpSpawnItems.Size = new System.Drawing.Size(230, 150);
             this.grpSpawnItems.TabIndex = 32;
@@ -1665,6 +1672,7 @@ namespace Intersect.Editor.Forms.Editors
             this.grpExpGrid.Controls.Add(this.expGrid);
             this.grpExpGrid.ForeColor = System.Drawing.Color.Gainsboro;
             this.grpExpGrid.Location = new System.Drawing.Point(8, 175);
+
             this.grpExpGrid.Margin = new System.Windows.Forms.Padding(2);
             this.grpExpGrid.Name = "grpExpGrid";
             this.grpExpGrid.Padding = new System.Windows.Forms.Padding(2);
@@ -1743,8 +1751,10 @@ namespace Intersect.Editor.Forms.Editors
             this.grpLeveling.Controls.Add(this.lblExpIncrease);
             this.grpLeveling.Controls.Add(this.lblBaseExp);
             this.grpLeveling.Controls.Add(this.grpLevelBoosts);
+            this.grpLeveling.Controls.Add(this.grpExpGrid);
             this.grpLeveling.ForeColor = System.Drawing.Color.Gainsboro;
             this.grpLeveling.Location = new System.Drawing.Point(8, 175);
+
             this.grpLeveling.Margin = new System.Windows.Forms.Padding(2);
             this.grpLeveling.Name = "grpLeveling";
             this.grpLeveling.Padding = new System.Windows.Forms.Padding(2);
@@ -2277,6 +2287,57 @@ namespace Intersect.Editor.Forms.Editors
             this.btnExpPaste.Text = "Paste";
             this.btnExpPaste.Click += new System.EventHandler(this.btnPaste_Click);
             // 
+            // cmbAttackSprite
+            // 
+            this.cmbAttackSprite.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(69)))), ((int)(((byte)(73)))), ((int)(((byte)(74)))));
+            this.cmbAttackSprite.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
+            this.cmbAttackSprite.BorderStyle = System.Windows.Forms.ButtonBorderStyle.Solid;
+            this.cmbAttackSprite.ButtonColor = System.Drawing.Color.FromArgb(((int)(((byte)(43)))), ((int)(((byte)(43)))), ((int)(((byte)(43)))));
+            this.cmbAttackSprite.DrawDropdownHoverOutline = false;
+            this.cmbAttackSprite.DrawFocusRectangle = false;
+            this.cmbAttackSprite.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.cmbAttackSprite.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbAttackSprite.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.cmbAttackSprite.ForeColor = System.Drawing.Color.Gainsboro;
+            this.cmbAttackSprite.FormattingEnabled = true;
+            this.cmbAttackSprite.Location = new System.Drawing.Point(12, 283);
+            this.cmbAttackSprite.Name = "cmbAttackSprite";
+            this.cmbAttackSprite.Size = new System.Drawing.Size(192, 21);
+            this.cmbAttackSprite.TabIndex = 68;
+            this.cmbAttackSprite.Text = null;
+            this.cmbAttackSprite.TextPadding = new System.Windows.Forms.Padding(2);
+            this.cmbAttackSprite.SelectedIndexChanged += new System.EventHandler(this.cmbAttackSprite_SelectedIndexChanged);
+          
+  // NudAgi
+            // 
+            this.NudAgi.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(69)))), ((int)(((byte)(73)))), ((int)(((byte)(74)))));
+            this.NudAgi.ForeColor = System.Drawing.Color.Gainsboro;
+            this.NudAgi.Location = new System.Drawing.Point(10, 183);
+            this.NudAgi.Maximum = new decimal(new int[] {
+            255,
+            0,
+            0,
+            0});
+            this.NudAgi.Name = "NudAgi";
+            this.NudAgi.Size = new System.Drawing.Size(70, 20);
+            this.NudAgi.TabIndex = 37;
+            this.NudAgi.Value = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+            this.NudAgi.ValueChanged += new System.EventHandler(this.NudAgi_ValueChanged);
+            // 
+            // lblAgi
+            // 
+            this.lblAgi.AutoSize = true;
+            this.lblAgi.Location = new System.Drawing.Point(7, 167);
+            this.lblAgi.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.lblAgi.Name = "lblAgi";
+            this.lblAgi.Size = new System.Drawing.Size(37, 13);
+            this.lblAgi.TabIndex = 36;
+            this.lblAgi.Text = "Agility:";
+            // 
             // FrmClass
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -2363,6 +2424,7 @@ namespace Intersect.Editor.Forms.Editors
             this.toolStrip.ResumeLayout(false);
             this.toolStrip.PerformLayout();
             this.mnuExpGrid.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.NudAgi)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -2510,5 +2572,7 @@ namespace Intersect.Editor.Forms.Editors
         private System.Windows.Forms.Label lblSpriteAttack;
         private DarkComboBox cmbAttackSprite;
         private DarkGroupBox grpSpriteOptions;
+        private DarkNumericUpDown NudAgi;
+        private System.Windows.Forms.Label lblAgi;
     }
 }

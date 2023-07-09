@@ -754,6 +754,11 @@ namespace Intersect.Editor.Forms.Editors
             0,
             0,
             0});
+            this.nudDef.Minimum = new decimal(new int[] {
+            60,
+            0,
+            0,
+            -2147483648});
             this.nudDef.Name = "nudDef";
             this.nudDef.Size = new System.Drawing.Size(79, 20);
             this.nudDef.TabIndex = 40;
@@ -830,9 +835,9 @@ namespace Intersect.Editor.Forms.Editors
             this.lblDef.Location = new System.Drawing.Point(9, 107);
             this.lblDef.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblDef.Name = "lblDef";
-            this.lblDef.Size = new System.Drawing.Size(37, 13);
+            this.lblDef.Size = new System.Drawing.Size(50, 13);
             this.lblDef.TabIndex = 35;
-            this.lblDef.Text = "Armor:";
+            this.lblDef.Text = "Defense:";
             // 
             // lblMag
             // 

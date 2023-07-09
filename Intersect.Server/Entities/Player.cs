@@ -1049,11 +1049,11 @@ namespace Intersect.Server.Entities
             int bonus = 0;
             if (vital == (int)Vitals.Health)
             {
-                bonus = GetStatValue(Stats.Vitality) / Options.AttackHealthDivider;
+                bonus = GetStatValue(Stats.Vitality) * Options.VitalityHealthMultiplier;
             }
             if (vital == (int)Vitals.Mana)
             {
-                bonus = GetStatValue(Stats.AbilityPower) / Options.AbilityPowerManaDivider;
+                bonus = GetStatValue(Stats.Intelligence) * Options.IntelligenceManaMultiplier;
             }
             return bonus;
         }
@@ -1954,7 +1954,7 @@ namespace Intersect.Server.Entities
                                 lock (EntityLock)
                                 {
                                     member.WarpToLastOverworldLocation(false);
-                                    PacketSender.SendChatMsg(member, Strings.Parties.instancefailed, ChatMessageType.Party, CustomColors.Chat.PartyChat);
+                                    PacketSender.SendChatMsg(member, Strings.Parties.InstanceFailed, ChatMessageType.Party, CustomColors.Chat.PartyChat);
                                 }
                             }
                         }

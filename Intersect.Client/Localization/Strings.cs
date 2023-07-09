@@ -498,6 +498,14 @@ namespace Intersect.Client.Localization
 
             public static LocalizedString stat4 = @"{00}: {01}";
 
+            public static LocalizedString stat5 = @"{00}: {01}";
+
+            public static LocalizedString stat6 = @"{00}: {01}";
+
+            public static LocalizedString stat7 = @"{00}: {01}";
+
+            public static LocalizedString stat8 = @"{00}: {01}";
+
             public static LocalizedString stats = @"Stats:";
 
             public static LocalizedString title = @"Character";
@@ -648,15 +656,21 @@ namespace Intersect.Client.Localization
 
             public static LocalizedString exp = @"Experience";
 
-            public static LocalizedString stat0 = @"Attack";
+            public static LocalizedString stat0 = @"STR";
 
-            public static LocalizedString stat1 = @"Ability Power";
+            public static LocalizedString stat1 = @"INT";
 
-            public static LocalizedString stat2 = @"Defense";
+            public static LocalizedString stat2 = @"DEF";
 
             public static LocalizedString stat3 = @"Magic Resist";
 
-            public static LocalizedString stat4 = @"Speed";
+            public static LocalizedString stat4 = @"MOV";
+
+            public static LocalizedString stat5 = @"AGI";
+
+            public static LocalizedString stat6 = @"Bonus Damage";
+
+            public static LocalizedString stat7 = @"Bonus Cures";
 
             public static LocalizedString targetoutsiderange = @"Target too far away!";
 
@@ -1272,7 +1286,8 @@ namespace Intersect.Client.Localization
             {
                 { 0, @"Physical" },
                 { 1, @"Magic" },
-                { 2, @"True" }
+                { 2, @"True" },
+                { 3, @"Cures" }
             };
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -1306,7 +1321,10 @@ namespace Intersect.Client.Localization
                 {1, @"Ability Power"},
                 {2, @"Defense"},
                 {3, @"Magic Resist"},
-                {4, @"Speed"}
+                {4, @"Speed"},
+                {5, @"Agility"},
+                {6, @"Damage"},
+                {7, @"Cures"}
             };
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -1316,7 +1334,10 @@ namespace Intersect.Client.Localization
                 {1, @"Ability Power:"},
                 {2, @"Defense:"},
                 {3, @"Magic Resist:"},
-                {4, @"Speed:"}
+                {4, @"Speed"},
+                {5, @"Agility"},
+                {6, @"Damage"},
+                {7, @"Cures"}
             };
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -2147,7 +2168,8 @@ namespace Intersect.Client.Localization
             {
                 { 0, @"Physical" },
                 { 1, @"Magic" },
-                { 2, @"True" }
+                { 2, @"True" },
+                { 3, @"Cures" }
             };
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -2163,7 +2185,10 @@ namespace Intersect.Client.Localization
                 {1, @"Ability Power"},
                 {2, @"Defense"},
                 {3, @"Magic Resist"},
-                {4, @"Speed"}
+                {4, @"Speed"},
+                {5, @"Agility"},
+                {6, @"Damage"},
+                {7, @"Cures"}
             };
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -2215,7 +2240,10 @@ namespace Intersect.Client.Localization
                 {1, @"Ability Power:"},
                 {2, @"Defense:"},
                 {3, @"Magic Resist:"},
-                {4, @"Speed:"}
+                {4, @"Speed"},
+                {5, @"Agility"},
+                {6, @"Damage"},
+                {7, @"Cures"}
             };
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

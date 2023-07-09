@@ -124,7 +124,7 @@ namespace Intersect.Editor.Forms.Editors
             nudSpd.Maximum = Options.MaxStatValue;
 
             cmbDeathAnimation.Items.Clear();
-            cmbDeathAnimation.Items.Add(Strings.General.none);
+            cmbDeathAnimation.Items.Add(Strings.General.None);
             cmbDeathAnimation.Items.AddRange(AnimationBase.Names);
 
             InitLocalization();
@@ -303,7 +303,7 @@ namespace Intersect.Editor.Forms.Editors
                 cmbOnDeathEventParty.SelectedIndex = EventBase.ListIndex(mEditorItem.OnDeathPartyEventId) + 1;
 
                 nudStr.Value = mEditorItem.Stats[(int) Stats.Attack];
-                nudMag.Value = mEditorItem.Stats[(int) Stats.AbilityPower];
+                nudMag.Value = mEditorItem.Stats[(int) Stats.Intelligence];
                 nudDef.Value = mEditorItem.Stats[(int) Stats.Defense];
                 nudMR.Value = mEditorItem.Stats[(int) Stats.Vitality];
                 nudSpd.Value = mEditorItem.Stats[(int) Stats.Speed];
@@ -694,7 +694,7 @@ namespace Intersect.Editor.Forms.Editors
 
         private void nudMag_ValueChanged(object sender, EventArgs e)
         {
-            mEditorItem.Stats[(int) Stat.AbilityPower] = (int) nudMag.Value;
+            mEditorItem.Stats[(int) Stats.Intelligence] = (int) nudMag.Value;
         }
 
         private void nudDef_ValueChanged(object sender, EventArgs e)

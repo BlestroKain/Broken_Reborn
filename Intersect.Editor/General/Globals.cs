@@ -183,7 +183,7 @@ namespace Intersect.Editor.General
             {
                 case (int) Stat.Attack:
                     return "Attack";
-                case (int) Stat.AbilityPower:
+                case (int) Stats.Intelligence:
                     return "Ability Power";
                 case (int) Stat.Defense:
                     return "Defense";

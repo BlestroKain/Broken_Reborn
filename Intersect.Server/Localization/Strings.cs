@@ -279,7 +279,8 @@ namespace Intersect.Server.Localization
                     {
                         {0, @"Physical"},
                         {1, @"Magic"},
-                        {2, @"True"}
+                        {2, @"True"},
+                        {3, @"Cures"}
                     }
                 );
 
@@ -350,7 +351,10 @@ namespace Intersect.Server.Localization
                     {1, @"Ability Power"},
                     {2, @"Defense"},
                     {3, @"Magic Resist"},
-                    {4, @"Speed"}
+                    {4, @"Speed"},
+                    {5, @"Agility"},
+                    {6, @"Damage"},
+                    {7, @"Cures"}
                 }
             );
 

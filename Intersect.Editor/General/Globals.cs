@@ -184,12 +184,12 @@ namespace Intersect.Editor.General
                 case (int) Stat.Attack:
                     return "Attack";
                 case (int) Stats.Intelligence:
-                    return "Ability Power";
-                case (int) Stat.Defense:
+                    return "Intelligence";
+                case (int) Stats.Defense:
                     return "Defense";
                 case (int) Stats.Vitality:
-                    return "Magic Resist";
-                case (int) Stat.Speed:
+                    return "Vitality";
+                case (int) Stats.Speed:
                     return "Speed";
                 case (int)Stats.Agility:
                     return "Agility";

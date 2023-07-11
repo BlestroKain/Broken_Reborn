@@ -55,7 +55,8 @@ namespace Intersect.Server.Database
 			
 		/*	{
                 int maxstat = descriptor.StatsGiven[i];
-                var minstat = (int)Math.Ceiling(maxstat / 2.0);
+               // var minstat = (int)Math.Ceiling(maxstat / 2.0);
+               var  minstat = 0;
                 if (maxstat != 0)
                 {
                     if (minstat == maxstat)
@@ -65,7 +66,7 @@ namespace Intersect.Server.Database
                     else if (maxstat > minstat)
                     {
                         StatBuffs[i] = Randomization.Next(minstat, maxstat + 1);
-                        StatBuffs[i] = StatBuffs[i] / 2;
+                       
                     }
                     else
                     {

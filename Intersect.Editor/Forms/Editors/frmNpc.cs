@@ -307,6 +307,7 @@ namespace Intersect.Editor.Forms.Editors
                 nudDef.Value = mEditorItem.Stats[(int) Stats.Defense];
                 nudMR.Value = mEditorItem.Stats[(int) Stats.Vitality];
                 nudSpd.Value = mEditorItem.Stats[(int) Stats.Speed];
+                nudAgi.Value = mEditorItem.Stats[(int)Stats.Agility];
                 nudHp.Value = mEditorItem.MaxVital[(int) Vitals.Health];
                 nudMana.Value = mEditorItem.MaxVital[(int) Vitals.Mana];
                 nudExp.Value = mEditorItem.Experience;
@@ -1124,6 +1125,11 @@ namespace Intersect.Editor.Forms.Editors
         {
             mEditorItem.DeathAnimation =
                 AnimationBase.Get(AnimationBase.IdFromList(cmbDeathAnimation.SelectedIndex - 1));
+        }
+
+        private void nudAgi_ValueChanged(object sender, EventArgs e)
+        {
+            mEditorItem.Stats[(int)Stats.Agility] = (int)nudAgi.Value;
         }
     }
 

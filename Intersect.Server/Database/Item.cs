@@ -51,6 +51,32 @@ namespace Intersect.Server.Database
             {
                 Properties.StatModifiers[i] = Randomization.Next(-descriptor.StatGrowth, descriptor.StatGrowth + 1);
             }
+
+			
+		/*	{
+                int maxstat = descriptor.StatsGiven[i];
+               // var minstat = (int)Math.Ceiling(maxstat / 2.0);
+               var  minstat = 0;
+                if (maxstat != 0)
+                {
+                    if (minstat == maxstat)
+                    {
+                        StatBuffs[i] = minstat;
+                    }
+                    else if (maxstat > minstat)
+                    {
+                        StatBuffs[i] = Randomization.Next(minstat, maxstat + 1);
+                       
+                    }
+                    else
+                    {
+                        StatBuffs[i] = 0;
+                    }
+
+                }
+            
+        }*/
+
         }
 
         public Item(Item item) : this(item.ItemId, item.Quantity, item.BagId, item.Bag)

@@ -1276,10 +1276,10 @@ namespace Intersect.Server.Entities
         //Combat
         public virtual int CalculateAttackTime()
         {
-            return (int) (Options.MaxAttackRate +
-                          (float) ((Options.MinAttackRate - Options.MaxAttackRate) *
-                                   (((float) Options.MaxStatValue - Stat[(int) Stats.Agility].Value()) /
-                                    (float) Options.MaxStatValue)));
+            return (int)(Options.MaxAttackRate +
+                      (Options.MinAttackRate - Options.MaxAttackRate) *
+                      (((float)Options.MaxStatValue - Stat[(int)Enums.Stat.Agility].Value()) /
+                       Options.MaxStatValue));
         }
 
         public void TryBlock(bool blocking)
@@ -2844,11 +2844,11 @@ namespace Intersect.Server.Entities
         {
             if (DeathAnimation != Guid.Empty)
             {
-                PacketSender.SendAnimationToProximity(DeathAnimation, -1, Id, MapId, (byte)X, (byte)Y, (sbyte)Directions.Up, MapInstanceId);
+                PacketSender.SendAnimationToProximity(DeathAnimation, -1, Id, MapId, (byte)X, (byte)Y, (sbyte)Direction.Up, MapInstanceId);
             }
             if (this is Player)
             {
-                PacketSender.SendAnimationToProximity(new Guid(Options.PlayerDeathAnimationId), -1, Id, MapId, (byte)X, (byte)Y, (sbyte)Directions.Up, MapInstanceId);
+                PacketSender.SendAnimationToProximity(new Guid(Options.PlayerDeathAnimationId), -1, Id, MapId, (byte)X, (byte)Y, (sbyte)Direction.Up, MapInstanceId);
             }
         }
 

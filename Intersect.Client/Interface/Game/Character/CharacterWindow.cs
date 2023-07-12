@@ -30,7 +30,7 @@ namespace Intersect.Client.Interface.Game.Character
 
         Button mAddDefenseBtn;
 
-        Button mAddMagicResistBtn;
+        Button mAddVitalityBtn;
 
         Button mAddSpeedBtn;
 
@@ -156,9 +156,9 @@ namespace Intersect.Client.Interface.Game.Character
             mAddAbilityPwrBtn = new Button(mCharacterWindow, "IncreaseAbilityPowerButton");
             mAddAbilityPwrBtn.Clicked += _addAbilityPwrBtn_Clicked;
 
-            mMagicRstLabel = new Label(mCharacterWindow, "MagicResistLabel");
-            mAddMagicResistBtn = new Button(mCharacterWindow, "IncreaseMagicResistButton");
-            mAddMagicResistBtn.Clicked += _addMagicResistBtn_Clicked;
+            mMagicRstLabel = new Label(mCharacterWindow, "VitalityLabel");
+            mAddVitalityBtn = new Button(mCharacterWindow, "IncreaseVitalityButton");
+            mAddVitalityBtn.Clicked += _addVitalityBtn_Clicked;
 
             mPointsLabel = new Label(mCharacterWindow, "PointsLabel");
 
@@ -186,14 +186,14 @@ namespace Intersect.Client.Interface.Game.Character
         }
 
         //Update Button Event Handlers
-        void _addMagicResistBtn_Clicked(Base sender, ClickedEventArgs arguments)
+        void _addVitalityBtn_Clicked(Base sender, ClickedEventArgs arguments)
         {
-            PacketSender.SendUpgradeStat((int) Stat.MagicResist);
+            PacketSender.SendUpgradeStat((int) Stat.Vitality);
         }
 
         void _addAbilityPwrBtn_Clicked(Base sender, ClickedEventArgs arguments)
         {
-            PacketSender.SendUpgradeStat((int) Stat.AbilityPower);
+            PacketSender.SendUpgradeStat((int) Stat.Intelligence);
         }
 
         void _addSpeedBtn_Clicked(Base sender, ClickedEventArgs arguments)
@@ -338,16 +338,16 @@ namespace Intersect.Client.Interface.Game.Character
             );
 
             mAbilityPwrLabel.SetText(
-                Strings.Character.stat1.ToString(Strings.Combat.stat1, Globals.Me.Stat[(int) Stat.AbilityPower])
+                Strings.Character.stat1.ToString(Strings.Combat.stat1, Globals.Me.Stat[(int) Stat.Intelligence])
             );
 
             mMagicRstLabel.SetText(
-                Strings.Character.stat3.ToString(Strings.Combat.stat3, Globals.Me.Stat[(int) Stat.MagicResist])
+                Strings.Character.stat3.ToString(Strings.Combat.stat3, Globals.Me.Stat[(int) Stat.Vitality])
             );
 
             mPointsLabel.SetText(Strings.Character.points.ToString(Globals.Me.StatPoints));
             mAddAbilityPwrBtn.IsHidden = Globals.Me.StatPoints == 0 ||
-                                         Globals.Me.Stat[(int) Stat.AbilityPower] == Options.MaxStatValue;
+                                         Globals.Me.Stat[(int) Stat.Intelligence] == Options.MaxStatValue;
 
             mAddAttackBtn.IsHidden =
                 Globals.Me.StatPoints == 0 || Globals.Me.Stat[(int) Stat.Attack] == Options.MaxStatValue;
@@ -355,8 +355,8 @@ namespace Intersect.Client.Interface.Game.Character
             mAddDefenseBtn.IsHidden = Globals.Me.StatPoints == 0 ||
                                       Globals.Me.Stat[(int) Stat.Defense] == Options.MaxStatValue;
 
-            mAddMagicResistBtn.IsHidden = Globals.Me.StatPoints == 0 ||
-                                          Globals.Me.Stat[(int) Stat.MagicResist] == Options.MaxStatValue;
+            mAddVitalityBtn.IsHidden = Globals.Me.StatPoints == 0 ||
+                                          Globals.Me.Stat[(int) Stat.Vitality] == Options.MaxStatValue;
 
             mAddSpeedBtn.IsHidden =
                 Globals.Me.StatPoints == 0 || Globals.Me.Stat[(int) Stat.Speed] == Options.MaxStatValue;

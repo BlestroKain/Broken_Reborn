@@ -249,7 +249,7 @@ namespace Intersect.Client.Maps
                     }
 
                     // Always display traps on safe zones.
-                    if (ZoneType != MapZones.Safe)
+                    if (ZoneType != MapZone.Safe)
                     {
                         var isNpc = !(trap.Owner is Player);
                         var inGuild = ((Player)trap.Owner).Guild == Globals.Me.Guild;
@@ -635,7 +635,7 @@ namespace Intersect.Client.Maps
         }
 
         //Animations
-        public void AddTileAnimation(Guid animId, int tileX, int tileY, Direction dir = Direction.None, IEntity owner = null)
+        public MapAnimation AddTileAnimation(Guid animId, int tileX, int tileY, Direction dir = Direction.None, IEntity owner = null)
         {
             var animBase = AnimationBase.Get(animId);
             if (animBase == null)
@@ -1433,7 +1433,7 @@ namespace Intersect.Client.Maps
             MapRequests[mapId] = Timing.Global.Milliseconds + 2000;
         }
 
-        void IMapInstance.AddTileAnimation(Guid animId, int tileX, int tileY, int dir, IEntity owner)
+        void IMapInstance.AddTileAnimation(Guid animId, int tileX, int tileY, Direction dir, IEntity owner)
         {
             throw new NotImplementedException();
         }

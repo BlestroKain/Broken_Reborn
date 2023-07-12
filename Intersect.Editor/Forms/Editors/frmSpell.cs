@@ -361,22 +361,22 @@ namespace Intersect.Editor.Forms.Editors
                 nudHPDamage.Value = mEditorItem.Combat.VitalDiff[(int) Vital.Health];
                 nudMPDamage.Value = mEditorItem.Combat.VitalDiff[(int) Vital.Mana];
 
-                nudStr.Value = mEditorItem.Combat.StatDiff[(int) Stats.Attack];
-                nudDef.Value = mEditorItem.Combat.StatDiff[(int) Stats.Defense];
-                nudSpd.Value = mEditorItem.Combat.StatDiff[(int) Stats.Speed];
-                nudMag.Value = mEditorItem.Combat.StatDiff[(int) Stats.Intelligence];
-                nudMR.Value = mEditorItem.Combat.StatDiff[(int) Stats.Vitality];
-                nudAgi.Value = mEditorItem.Combat.StatDiff[(int)Stats.Agility];
-                nudDmg.Value = mEditorItem.Combat.StatDiff[(int)Stats.Potency];
-                nudCur.Value = mEditorItem.Combat.StatDiff[(int)Stats.Cures];
-                nudStrPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int) Stats.Attack];
-                nudDefPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int) Stats.Defense];
-                nudMagPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int) Stats.Intelligence];
-                nudMRPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int) Stats.Vitality];
-                nudSpdPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int) Stats.Speed];
-                nudAgiPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int)Stats.Agility];
-                nudDmgPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int)Stats.Potency];
-                nudCurPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int)Stats.Cures];
+                nudStr.Value = mEditorItem.Combat.StatDiff[(int) Stat.Attack];
+                nudDef.Value = mEditorItem.Combat.StatDiff[(int) Stat.Defense];
+                nudSpd.Value = mEditorItem.Combat.StatDiff[(int) Stat.Speed];
+                nudMag.Value = mEditorItem.Combat.StatDiff[(int) Stat.Intelligence];
+                nudMR.Value = mEditorItem.Combat.StatDiff[(int) Stat.Vitality];
+                nudAgi.Value = mEditorItem.Combat.StatDiff[(int)Stat.Agility];
+                nudDmg.Value = mEditorItem.Combat.StatDiff[(int)Stat.Potency];
+                nudCur.Value = mEditorItem.Combat.StatDiff[(int)Stat.Cures];
+                nudStrPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int) Stat.Attack];
+                nudDefPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int) Stat.Defense];
+                nudMagPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int) Stat.Intelligence];
+                nudMRPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int) Stat.Vitality];
+                nudSpdPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int) Stat.Speed];
+                nudAgiPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int)Stat.Agility];
+                nudDmgPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int)Stat.Potency];
+                nudCurPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int)Stat.Cures];
 
 
                 chkFriendly.Checked = Convert.ToBoolean(mEditorItem.Combat.Friendly);
@@ -859,7 +859,7 @@ namespace Intersect.Editor.Forms.Editors
 
         private void nudMag_ValueChanged(object sender, EventArgs e)
         {
-            mEditorItem.Combat.StatDiff[(int) Stats.Intelligence] = (int) nudMag.Value;
+            mEditorItem.Combat.StatDiff[(int) Stat.Intelligence] = (int) nudMag.Value;
         }
 
         private void nudDef_ValueChanged(object sender, EventArgs e)
@@ -869,7 +869,7 @@ namespace Intersect.Editor.Forms.Editors
 
         private void nudMR_ValueChanged(object sender, EventArgs e)
         {
-            mEditorItem.Combat.StatDiff[(int) Stats.Vitality] = (int) nudMR.Value;
+            mEditorItem.Combat.StatDiff[(int) Stat.Vitality] = (int) nudMR.Value;
         }
 
         private void nudSpd_ValueChanged(object sender, EventArgs e)
@@ -884,7 +884,7 @@ namespace Intersect.Editor.Forms.Editors
 
         private void nudMagPercentage_ValueChanged(object sender, EventArgs e)
         {
-            mEditorItem.Combat.PercentageStatDiff[(int) Stats.Intelligence] = (int) nudMagPercentage.Value;
+            mEditorItem.Combat.PercentageStatDiff[(int) Stat.Intelligence] = (int) nudMagPercentage.Value;
         }
 
         private void nudDefPercentage_ValueChanged(object sender, EventArgs e)
@@ -894,7 +894,7 @@ namespace Intersect.Editor.Forms.Editors
 
         private void nudMRPercentage_ValueChanged(object sender, EventArgs e)
         {
-            mEditorItem.Combat.PercentageStatDiff[(int) Stats.Vitality] = (int) nudMRPercentage.Value;
+            mEditorItem.Combat.PercentageStatDiff[(int) Stat.Vitality] = (int) nudMRPercentage.Value;
         }
 
         private void nudSpdPercentage_ValueChanged(object sender, EventArgs e)
@@ -1130,33 +1130,33 @@ namespace Intersect.Editor.Forms.Editors
 
         private void nudAgi_ValueChanged(object sender, EventArgs e)
         {
-            mEditorItem.Combat.StatDiff[(int)Stats.Agility] = (int)nudAgi.Value;
+            mEditorItem.Combat.StatDiff[(int)Stat.Agility] = (int)nudAgi.Value;
         }
 
         private void nudAgiPercentage_ValueChanged(object sender, EventArgs e)
         {
-            mEditorItem.Combat.PercentageStatDiff[(int)Stats.Agility] = (int)nudAgiPercentage.Value;
+            mEditorItem.Combat.PercentageStatDiff[(int)Stat.Agility] = (int)nudAgiPercentage.Value;
         }
 
         private void nudDmg_ValueChanged(object sender, EventArgs e)
         {
-            mEditorItem.Combat.StatDiff[(int)Stats.Potency] = (int)nudDmg.Value;
+            mEditorItem.Combat.StatDiff[(int)Stat.Potency] = (int)nudDmg.Value;
         }
 
         private void nudDmgPercentage_ValueChanged(object sender, EventArgs e)
         {
-            mEditorItem.Combat.PercentageStatDiff[(int)Stats.Potency] = (int)nudDmgPercentage.Value;
+            mEditorItem.Combat.PercentageStatDiff[(int)Stat.Potency] = (int)nudDmgPercentage.Value;
         }
 
 
         private void nudCur_ValueChanged(object sender, EventArgs e)
         {
-            mEditorItem.Combat.StatDiff[(int)Stats.Cures] = (int)nudCur.Value;
+            mEditorItem.Combat.StatDiff[(int)Stat.Cures] = (int)nudCur.Value;
         }
 
         private void nudCurPercentage_ValueChanged(object sender, EventArgs e)
         {
-            mEditorItem.Combat.PercentageStatDiff[(int)Stats.Cures] = (int)nudCurPercentage.Value;
+            mEditorItem.Combat.PercentageStatDiff[(int)Stat.Cures] = (int)nudCurPercentage.Value;
         }
     }
 

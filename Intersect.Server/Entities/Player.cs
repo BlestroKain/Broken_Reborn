@@ -1027,18 +1027,18 @@ namespace Intersect.Server.Entities
         public int CalculateVitalStatBonus(int vital)
         {
             int bonus = 0;
-            if (vital == (int)Vitals.Health)
+            if (vital == (int)Vital.Health)
             {
-                bonus = GetStatValue(Stats.Vitality) * Options.VitalityHealthMultiplier;
+                bonus = GetStatValue(Enums.Stat.Vitality) * Options.VitalityHealthMultiplier;
             }
-            if (vital == (int)Vitals.Mana)
+            if (vital == (int)Vital.Mana)
             {
-                bonus = GetStatValue(Stats.Intelligence) * Options.IntelligenceManaMultiplier;
+                bonus = GetStatValue(Enums.Stat.Intelligence) * Options.IntelligenceManaMultiplier;
             }
             return bonus;
         }
 
-        public int GetStatValue(Stats stat)
+        public int GetStatValue(Stat stat)
         {
             var playerClass = ClassBase.Get(ClassId);
             var statIncrease = BaseStats[(int)stat];
@@ -1053,7 +1053,7 @@ namespace Intersect.Server.Entities
 
             return StatPointAllocations[(int)stat] + statIncrease;
         }
-        public override int GetMaxVital(Vitals vital)
+        public override int GetMaxVital(Vital vital)
         {
             return GetMaxVital((int) vital);
         }
@@ -1451,10 +1451,10 @@ namespace Intersect.Server.Entities
                 return false;
             }
            
-            if (spell?.Combat?.TargetType == SpellTargetTypes.Self ||
-                spell?.Combat?.TargetType == SpellTargetTypes.Projectile ||
-                spell?.Combat.TargetType == SpellTargetTypes.Trap ||
-                spell?.SpellType == SpellTypes.Dash
+            if (spell?.Combat?.TargetType == SpellTargetType.Self ||
+                spell?.Combat?.TargetType == SpellTargetType.Projectile ||
+                spell?.Combat.TargetType == SpellTargetType.Trap ||
+                spell?.SpellType == SpellType.Dash
                 )
             {
                 return true;

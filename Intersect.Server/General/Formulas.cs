@@ -168,20 +168,20 @@ namespace Intersect.Server.General
                 expression.Parameters["ScalingStat"] = attacker.Stat[(int) scalingStat].Value();
                 expression.Parameters["ScaleFactor"] = scaling / 100f;
                 expression.Parameters["CritMultiplier"] = critMultiplier;
-                expression.Parameters["A_Attack"] = attacker.Stat[(int) Stats.Attack].Value();
-                expression.Parameters["A_Defense"] = attacker.Stat[(int) Stats.Defense].Value();
-                expression.Parameters["A_Speed"] = attacker.Stat[(int) Stats.Speed].Value();
-                expression.Parameters["A_Agility"] = attacker.Stat[(int)Stats.Agility].Value();
-                expression.Parameters["A_AbilityPwr"] = attacker.Stat[(int) Stats.Intelligence].Value();
-                expression.Parameters["A_MagicResist"] = attacker.Stat[(int) Stats.Vitality].Value();
-                expression.Parameters["A_CureBonus"] = attacker.Stat[(int)Stats.Cures].Value();
-               //expression.Parameters["A_DamageBonus"] = attacker.Stat[(int)Stats.Fixeddamage].Value();
-                expression.Parameters["A_Potency"] = attacker.Stat[(int)Stats.Potency].Value();
-                expression.Parameters["V_Attack"] = victim.Stat[(int) Stats.Attack].Value();
-                expression.Parameters["V_Defense"] = victim.Stat[(int) Stats.Defense].Value();
-                expression.Parameters["V_Speed"] = victim.Stat[(int) Stats.Speed].Value();
-                expression.Parameters["V_AbilityPwr"] = victim.Stat[(int) Stats.Intelligence].Value();
-                expression.Parameters["V_MagicResist"] = victim.Stat[(int) Stats.Vitality].Value();
+                expression.Parameters["A_Attack"] = attacker.Stat[(int) Stat.Attack].Value();
+                expression.Parameters["A_Defense"] = attacker.Stat[(int) Stat.Defense].Value();
+                expression.Parameters["A_Speed"] = attacker.Stat[(int) Stat.Speed].Value();
+                expression.Parameters["A_Agility"] = attacker.Stat[(int)Stat.Agility].Value();
+                expression.Parameters["A_AbilityPwr"] = attacker.Stat[(int) Stat.Intelligence].Value();
+                expression.Parameters["A_MagicResist"] = attacker.Stat[(int) Stat.Vitality].Value();
+                expression.Parameters["A_CureBonus"] = attacker.Stat[(int)Stat.Cures].Value();
+               //expression.Parameters["A_DamageBonus"] = attacker.Stat[(int)Stat.Fixeddamage].Value();
+                expression.Parameters["A_Potency"] = attacker.Stat[(int)Stat.Potency].Value();
+                expression.Parameters["V_Attack"] = victim.Stat[(int) Stat.Attack].Value();
+                expression.Parameters["V_Defense"] = victim.Stat[(int) Stat.Defense].Value();
+                expression.Parameters["V_Speed"] = victim.Stat[(int) Stat.Speed].Value();
+                expression.Parameters["V_AbilityPwr"] = victim.Stat[(int) Stat.Intelligence].Value();
+                expression.Parameters["V_MagicResist"] = victim.Stat[(int) Stat.Vitality].Value();
                 expression.EvaluateFunction += delegate(string name, FunctionArgs args)
                 {
                     if (args == null)

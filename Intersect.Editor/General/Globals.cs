@@ -183,19 +183,19 @@ namespace Intersect.Editor.General
             {
                 case (int) Stat.Attack:
                     return "Attack";
-                case (int) Stats.Intelligence:
+                case (int) Stat.Intelligence:
                     return "Intelligence";
-                case (int) Stats.Defense:
+                case (int) Stat.Defense:
                     return "Defense";
-                case (int) Stats.Vitality:
+                case (int) Stat.Vitality:
                     return "Vitality";
-                case (int) Stats.Speed:
+                case (int) Stat.Speed:
                     return "Speed";
-                case (int)Stats.Agility:
+                case (int)Stat.Agility:
                     return "Agility";
-                case (int) Stats.Potency :
+                case (int) Stat.Potency :
                     return "Bonus Damage";
-                case (int)Stats.Cures:
+                case (int)Stat.Cures:
                     return "Bonus Curas";
                 default:
                     return "Invalid Stat";

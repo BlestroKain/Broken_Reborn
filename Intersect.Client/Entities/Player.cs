@@ -367,6 +367,11 @@ namespace Intersect.Client.Entities
 
         public void TryDropItem(int inventorySlotIndex)
         {
+            if (this.IsDead())
+            {
+                return;
+            }
+            
             var inventorySlot = Inventory[inventorySlotIndex];
             if (!ItemBase.TryGet(inventorySlot.ItemId, out var itemDescriptor))
             {
@@ -435,6 +440,11 @@ namespace Intersect.Client.Entities
 
         public void TryUseItem(int index)
         {
+            if (this.IsDead())
+            {
+                return;
+            }
+
             if (!IsItemOnCooldown(index) &&
                 index >= 0 && index < Globals.Me.Inventory.Length && Globals.Me.Inventory[index]?.Quantity > 0)
             {
@@ -953,6 +963,10 @@ namespace Intersect.Client.Entities
         //Trade
         public void TryTradeItem(int index)
         {
+            if (this.IsDead())
+            {
+                return;
+            }
             var slot = Inventory[index];
             var quantity = slot.Quantity;
             var tradingItem = ItemBase.Get(slot.ItemId);
@@ -1060,6 +1074,11 @@ namespace Intersect.Client.Entities
 
         public void TryUseSpell(int index)
         {
+            if (this.IsDead())
+            {
+                return;
+            }
+            
             if (Spells[index].Id != Guid.Empty &&
                 (GetSpellRemainingCooldown(index) < Timing.Global.Milliseconds))
             {
@@ -1561,7 +1580,7 @@ namespace Intersect.Client.Entities
 
         public bool TryAttack()
         {
-            if (IsAttacking || IsBlocking || (IsMoving && !Options.Instance.PlayerOpts.AllowCombatMovement))
+            if (IsAttacking || IsBlocking || (IsMoving && !Options.Instance.PlayerOpts.AllowCombatMovement) || this.IsDead())
             {
                 return false;
             }
@@ -2007,6 +2026,11 @@ namespace Intersect.Client.Entities
         {
             //Check if player is crafting
             if (Globals.InCraft == true)
+            {
+                return;
+            }
+            
+            if (this.IsDead())
             {
                 return;
             }

@@ -1,4 +1,4 @@
-using Intersect.Network.Packets.Server;
+﻿using Intersect.Network.Packets.Server;
 using System;
 using Intersect.Client.Framework.Entities;
 using Intersect.Enums;
@@ -17,15 +17,15 @@ namespace Intersect.Client.Entities
 
         public Corpse(Guid id, Entity entityBase) : base(id, null, EntityType.Player)
         {
-            Id = id;
-            X = entityBase.X;
-            Y = entityBase.Y;
-            Name = entityBase.Name;
-            Sprite = entityBase.Sprite;
-            Texture = entityBase.Texture;
-            MapId = entityBase.MapId;
-            SpriteAnimation = SpriteAnimations.Death;
-            TickCount = Timing.Global.Milliseconds;
+            this.Id = id;
+            this.X = entityBase.X;
+            this.Y = entityBase.Y;
+            this.Name = entityBase.Name;
+            this.Sprite = entityBase.Sprite;
+            this.Texture = entityBase.Texture;
+            this.MapId = entityBase.MapId;
+            this.SpriteAnimation = SpriteAnimations.Death;
+            this.TickCount = Timing.Global.Milliseconds;
         }
     }
 }

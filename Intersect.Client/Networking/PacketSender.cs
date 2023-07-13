@@ -428,6 +428,11 @@ namespace Intersect.Client.Networking
                 Network.SendPacket(new PictureClosedPacket(eventId));
             }
         }
+        
+        public static void SendRespawn()
+        {
+            Network.SendPacket(new RespawnPacket());
+        }
 
     }
 

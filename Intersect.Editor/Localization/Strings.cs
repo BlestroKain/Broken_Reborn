@@ -5187,6 +5187,7 @@ Tick timer saved in server config.json.";
                 {2, @"Warp to Target"},
                 {3, @"Dash"},
                 {4, @"Event"},
+                {5, @"Ressurect"},
             };
 
             public static LocalizedString undo = @"Undo Changes";

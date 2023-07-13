@@ -316,6 +316,11 @@ namespace Intersect.Server.Entities
             {
                 return false;
             }
+            
+            if (entity.IsDead())
+            {
+                return false;
+            }
 
             if (entity is EventPageInstance)
             {

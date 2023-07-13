@@ -1878,7 +1878,7 @@ namespace Intersect.Server.Entities
             var damagingAttack = baseDamage > 0;
             var secondaryDamagingAttack = secondaryDamage > 0;
 
-            if (enemy == null)
+            if (enemy == null || enemy.IsDead())
             {
                 return;
             }
@@ -2116,6 +2116,8 @@ namespace Intersect.Server.Entities
             //Dead entity check
             if (enemy.GetVital(Vital.Health) <= 0)
             {
+                this.Target = null;
+                
                 if (enemy is Npc || enemy is Resource)
                 {
                     lock (enemy.EntityLock)
@@ -2255,7 +2257,7 @@ namespace Intersect.Server.Entities
             }
 
             // Check for target validity
-            var singleTargetSpell = (spell.SpellType == SpellType.CombatSpell && spell.Combat.TargetType == SpellTargetType.Single) || spell.SpellType == SpellType.WarpTo;
+            var singleTargetSpell = ((spell.SpellType == SpellType.CombatSpell || spell.SpellType == SpellType.Ressurect) && spell.Combat.TargetType == SpellTargetType.Single) || spell.SpellType == SpellType.WarpTo;
             if (target == null && singleTargetSpell)
             {
                 reason = SpellCastFailureReason.InvalidTarget;
@@ -2439,6 +2441,22 @@ namespace Intersect.Server.Entities
                         Convert.ToBoolean(spellBase.Dash.IgnoreInactiveResources),
                         Convert.ToBoolean(spellBase.Dash.IgnoreZDimensionAttributes)
                     );
+
+                    break;
+                case SpellType.Ressurect:
+                    
+                    if (CastTarget != null && CastTarget.IsDead())
+                    {
+                        if (CastTarget is Player targetPlayer)
+                        {
+                            PacketSender.SendAnimationToProximity(
+                                spellBase.HitAnimationId, 1, targetPlayer.Id, Target.MapId, 0, 0, Dir, CastTarget.MapInstanceId
+                            );
+
+                            targetPlayer.Reset();
+                            PacketSender.SendPlayerRespawn(targetPlayer);
+                        }
+                    }
 
                     break;
                 default:
@@ -2813,7 +2831,7 @@ namespace Intersect.Server.Entities
         //Spawning/Dying
         public virtual void Die(bool dropItems = true, Entity killer = null)
         {
-            if (IsDead() || Items == null)
+            if (Dead || Items == null)
             {
                 return;
             }
@@ -2942,7 +2960,7 @@ namespace Intersect.Server.Entities
 
         public bool IsDead()
         {
-            return Dead;
+            return Dead || this.GetVital(Vital.Health) <= 0;
         }
 
         public virtual void Reset()

@@ -553,12 +553,34 @@ namespace Intersect.Client.Entities
             {
                 LatestMap = Maps.MapInstance.Get(MapId);
             }
+            
+            // if (this is Corpse corpse) {
+            //     if (corpse.TickCount + Corpse.TIME_TO_RESPAWN < Timing.Global.Milliseconds || AnimatedTextures[SpriteAnimation] == null)
+            //     {
+            //         if (Globals.Entities?.ContainsKey(this.Id) ?? false)
+            //         {
+            //             Globals.Entities[this.Id]?.Dispose();
+            //         }
+            //     }
+            // }
 
             if (LatestMap == null || !LatestMap.InView())
             {
                 Globals.EntitiesToDispose.Add(Id);
 
                 return false;
+            }
+            
+            if (this.IsDead())
+            {
+                SpriteAnimation = SpriteAnimations.Death;
+            }
+            else
+            {
+                if (SpriteAnimation == SpriteAnimations.Death)
+                {
+                    SpriteAnimation = SpriteAnimations.Normal;
+                }
             }
 
             RenderList = DetermineRenderOrder(RenderList, LatestMap);
@@ -1537,6 +1559,11 @@ namespace Intersect.Client.Entities
             {
                 name = Strings.GameWindow.EntityNameAndLevel.ToString(Name, Level);
             }
+            
+            if (this.IsDead() && this is Player)
+            {
+                name = string.Format(Strings.EntityBox.dead, name);
+            }
 
             var textSize = Graphics.Renderer.MeasureText(name, Graphics.EntityNameFont, 1);
 
@@ -1904,7 +1931,7 @@ namespace Intersect.Client.Entities
         private void UpdateSpriteAnimation()
         {
             //Exit if textures haven't been loaded yet
-            if (AnimatedTextures.Count == 0)
+            if (AnimatedTextures.Count == 0 || SpriteAnimation == SpriteAnimations.Death)
             {
                 return;
             }
@@ -1983,6 +2010,7 @@ namespace Intersect.Client.Entities
                 {
                     case SpriteAnimations.Cast:
                     case SpriteAnimations.Idle:
+                    case SpriteAnimations.Death:
                     case SpriteAnimations.Normal:
                         break;
                     case SpriteAnimations.Attack:
@@ -2124,7 +2152,7 @@ namespace Intersect.Client.Entities
                         }
                     }
                     break;
-
+                case SpriteAnimations.Death:  break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(spriteAnimation));
             }
@@ -2428,6 +2456,11 @@ namespace Intersect.Client.Entities
             {
                 return -2;
             }
+        }
+        
+        public bool IsDead()
+        {
+            return this.Vital[(int)Enums.Vital.Health] <= 0;
         }
 
         ~Entity()

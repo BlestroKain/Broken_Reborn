@@ -44,6 +44,7 @@ namespace Intersect.Client.Interface.Game.DescriptionWindows
             {
                 case SpellType.CombatSpell:
                 case SpellType.WarpTo:
+                case SpellType.Ressurect:
                     SetupCombatInfo();
                     break;
                 case SpellType.Dash:

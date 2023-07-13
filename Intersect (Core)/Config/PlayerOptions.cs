@@ -104,5 +104,7 @@
         /// Distance (in tiles) between players in which a trade offer can be sent and accepted.
         /// </summary>
         public int TradeRange { get; set; } = 6;
+
+        public int DeathSeconds { get; set; } = 10;
     }
 }

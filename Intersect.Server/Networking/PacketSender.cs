@@ -102,6 +102,12 @@ namespace Intersect.Server.Networking
                 }
 
                 player.LoginWarp();
+                
+                if (player.IsDead())
+                {
+                    player.Reset();
+                    player.Respawn();
+                }
 
                 SendEntityDataTo(client.Entity, player);
 
@@ -1979,6 +1985,12 @@ namespace Intersect.Server.Networking
             SendDataToProximityOnMapInstance(en.MapId, en.MapInstanceId, new PlayerDeathPacket(en.Id));
         }
 
+        //PlayerRespawn
+        public static void SendPlayerRespawn(Player player)
+        {
+            player.SendPacket(new PlayerRespawnPacket());
+        }
+        
         //EntityZDimensionPacket
         public static void UpdateEntityZDimension(Entity en, byte z)
         {

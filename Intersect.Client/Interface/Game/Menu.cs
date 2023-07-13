@@ -69,6 +69,8 @@ namespace Intersect.Client.Interface.Game
         private readonly Button mGuildButton;
 
         private readonly GuildWindow mGuildWindow;
+        
+        private readonly DeathWindow mDeathWindow;
 
         private int mBackgroundHeight = 42;
 
@@ -142,6 +144,7 @@ namespace Intersect.Client.Interface.Game
             mQuestsWindow = new QuestsWindow(gameCanvas);
             mMapItemWindow = new MapItemWindow(gameCanvas);
             mGuildWindow = new GuildWindow(gameCanvas);
+            mDeathWindow = new DeathWindow(gameCanvas);
         }
 
         //Methods
@@ -155,6 +158,7 @@ namespace Intersect.Client.Interface.Game
             mQuestsWindow.Update(updateQuestLog);
             mMapItemWindow.Update();
             mGuildWindow.Update();
+            mDeathWindow.Update();
         }
 
         public void UpdateFriendsList()
@@ -181,6 +185,16 @@ namespace Intersect.Client.Interface.Game
             mQuestsWindow.Hide();
             mSpellsWindow.Hide();
             mGuildWindow.Hide();
+        }
+        
+        public void ShowDeathWindow()
+        {
+            mDeathWindow.Show();
+        }
+
+        public void HideDeathWindow()
+        {
+            mDeathWindow.Hide();
         }
 
         public void ToggleCharacterWindow()

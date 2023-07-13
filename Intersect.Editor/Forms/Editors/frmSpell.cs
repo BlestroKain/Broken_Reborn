@@ -423,6 +423,11 @@ namespace Intersect.Editor.Forms.Editors
                 cmbTargetType.Enabled = false;
                 UpdateTargetTypePanel();
             }
+            
+            if (cmbType.SelectedIndex == (int) SpellType.Ressurect)
+            {
+                grpTargetInfo.Show();
+            }
         }
 
         private void UpdateTargetTypePanel()

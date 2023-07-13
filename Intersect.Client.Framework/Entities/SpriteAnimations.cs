@@ -8,5 +8,6 @@
         Shoot,
         Cast,
         Weapon,
+        Death
     }
 }

@@ -37,7 +37,8 @@ namespace Intersect.Client.General
         public static int BankSlots;
         public static int BankValue;
         public static bool ConnectionLost;
-
+        // Mail
+        public static List<Mail> Mails = new List<Mail>();
         //Game Systems
         public static GameContentManager ContentManager;
 

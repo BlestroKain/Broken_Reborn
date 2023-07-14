@@ -173,7 +173,8 @@ namespace Intersect.Server.Entities
         //Variables
         [JsonIgnore]
         public virtual List<PlayerVariable> Variables { get; set; } = new List<PlayerVariable>();
-
+        [JsonIgnore]
+        public virtual List<MailBox> MailBoxs { get; set; } = new List<MailBox>();
         [JsonIgnore, NotMapped]
         public bool IsValidPlayer => !IsDisposed && Client?.Entity == this;
 
@@ -496,6 +497,7 @@ namespace Intersect.Server.Entities
             BankInterface?.Dispose();
             BankInterface = default;
             InShop = default;
+            InMailBox = false;
 
             //Clear cooldowns that have expired
             RemoveStaleItemCooldowns();
@@ -2588,6 +2590,26 @@ namespace Intersect.Server.Entities
             return bankOverflow && bankInterface.TryDepositItem(item, sendUpdate);
         }
 
+        public void OpenMailBox()
+        {
+            InMailBox = true;
+            PacketSender.SendOpenMailBox(this);
+        }
+
+        public void CloseMailBox()
+        {
+            if (InMailBox)
+            {
+                InMailBox = false;
+                PacketSender.SendCloseMailBox(this);
+            }
+        }
+
+        public void SendMail()
+        {
+            InMailBox = true;
+            PacketSender.SendOpenSendMail(this);
+        }
 
         /// <summary>
         /// Gives the player an item. NOTE: This method MAKES ZERO CHECKS to see if this is possible!
@@ -7097,6 +7119,8 @@ namespace Intersect.Server.Entities
 
         }
 
+
+
         //TODO: Clean all of this stuff up
 
         #region Temporary Values
@@ -7195,6 +7219,7 @@ namespace Intersect.Server.Entities
 
         [NotMapped][JsonIgnore] public BankInterface BankInterface;
 
+        [NotMapped] public bool InMailBox;
         #endregion
 
         #region Item Cooldowns

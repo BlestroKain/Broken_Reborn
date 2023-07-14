@@ -39,7 +39,7 @@ namespace Intersect.Client.Networking
 
             public VirtualPacketSender(IApplicationContext applicationContext) =>
                 ApplicationContext = applicationContext ?? throw new ArgumentNullException(nameof(applicationContext));
-            
+
             #region Implementation of IPacketSender
 
             /// <inheritdoc />
@@ -153,7 +153,7 @@ namespace Intersect.Client.Networking
             }
             else
             {
-                Network.Ping = (int) (Timing.Global.Milliseconds - PingTime) / 2;
+                Network.Ping = (int)(Timing.Global.Milliseconds - PingTime) / 2;
             }
         }
 
@@ -272,7 +272,7 @@ namespace Intersect.Client.Networking
                 en.Load(packet);
                 if (packet.IsSelf)
                 {
-                    Globals.Me = (Player) Globals.Entities[packet.EntityId];
+                    Globals.Me = (Player)Globals.Entities[packet.EntityId];
                 }
             }
             else
@@ -280,7 +280,7 @@ namespace Intersect.Client.Networking
                 Globals.Entities.Add(packet.EntityId, new Player(packet.EntityId, packet));
                 if (packet.IsSelf)
                 {
-                    Globals.Me = (Player) Globals.Entities[packet.EntityId];
+                    Globals.Me = (Player)Globals.Entities[packet.EntityId];
                 }
             }
         }
@@ -424,7 +424,7 @@ namespace Intersect.Client.Networking
                     Globals.EntitiesToDispose.AddRange(map.LocalEntities.Values
                         .ToList()
                         .Select(en => en.Id));
-                        map.DisposeTraps();
+                    map.DisposeTraps();
                 }
             }
         }
@@ -533,7 +533,7 @@ namespace Intersect.Client.Networking
         //AnnouncementPacket
         public void HandlePacket(IPacketSender packetSender, AnnouncementPacket packet)
         {
-            Interface.Interface.GameUi.AnnouncementWindow.ShowAnnouncement(packet.Message, packet.Duration);   
+            Interface.Interface.GameUi.AnnouncementWindow.ShowAnnouncement(packet.Message, packet.Duration);
         }
 
         //ActionMsgPackets
@@ -722,9 +722,9 @@ namespace Intersect.Client.Networking
             if (entityMap.Attributes[en.X, en.Y] != null &&
                 entityMap.Attributes[en.X, en.Y].Type == MapAttribute.ZDimension)
             {
-                if (((MapZDimensionAttribute) entityMap.Attributes[en.X, en.Y]).GatewayTo > 0)
+                if (((MapZDimensionAttribute)entityMap.Attributes[en.X, en.Y]).GatewayTo > 0)
                 {
-                    en.Z = (byte) (((MapZDimensionAttribute) entityMap.Attributes[en.X, en.Y]).GatewayTo - 1);
+                    en.Z = (byte)(((MapZDimensionAttribute)entityMap.Attributes[en.X, en.Y]).GatewayTo - 1);
                 }
             }
         }
@@ -1075,7 +1075,7 @@ namespace Intersect.Client.Networking
             var id = packet.Id;
             var type = packet.Type;
             var mapId = packet.MapId;
-            
+
             Entity en = null;
             if (type < EntityType.Event)
             {
@@ -1083,7 +1083,7 @@ namespace Intersect.Client.Networking
                 {
                     return;
                 }
-                
+
                 en = Globals.Entities[id];
             }
             else
@@ -1106,14 +1106,14 @@ namespace Intersect.Client.Networking
             {
                 return;
             }
-            
+
             // if (type == EntityType.GlobalEntity)
             // {
             //     // Create corpse
             //     var corpseId = Guid.NewGuid();
             //     Globals.Entities.Add(corpseId, new Corpse(corpseId, en));
             // }
-            
+
             if (en.Id == Globals.Me.Id)
             {
                 Interface.Interface.GameUi?.GameMenu?.ShowDeathWindow();
@@ -1186,10 +1186,10 @@ namespace Intersect.Client.Networking
             }
 
             map.MapItems.Clear();
-            foreach(var item in packet.Items)
+            foreach (var item in packet.Items)
             {
-                var mapItem = new MapItemInstance(item.TileIndex,item.Id, item.ItemId, item.BagId, item.Quantity, item.Properties);
-                
+                var mapItem = new MapItemInstance(item.TileIndex, item.Id, item.ItemId, item.BagId, item.Quantity, item.Properties);
+
                 if (!map.MapItems.ContainsKey(mapItem.TileIndex))
                 {
                     map.MapItems.Add(mapItem.TileIndex, new List<IMapItemInstance>());
@@ -1212,7 +1212,7 @@ namespace Intersect.Client.Networking
             if (packet.ItemId == Guid.Empty)
             {
                 // Find our item based on our unique Id and remove it.
-                foreach(var location in map.MapItems.Keys)
+                foreach (var location in map.MapItems.Keys)
                 {
                     var tempItem = map.MapItems[location].Where(item => item.Id == packet.Id).SingleOrDefault();
                     if (tempItem != null)
@@ -1244,7 +1244,7 @@ namespace Intersect.Client.Networking
                 {
                     // Reverse the array again to match server, add item.. then  reverse again to get the right render order.
                     map.MapItems[packet.TileIndex].Add(mapItem);
-                } 
+                }
             }
         }
 
@@ -1265,7 +1265,7 @@ namespace Intersect.Client.Networking
                 Globals.Me.Inventory[packet.Slot].Load(packet.ItemId, packet.Quantity, packet.BagId, packet.Properties);
                 Globals.Me.InventoryUpdatedDelegate?.Invoke();
             }
-               }
+        }
 
         //SpellsPacket
         public void HandlePacket(IPacketSender packetSender, SpellsPacket packet)
@@ -1812,7 +1812,7 @@ namespace Intersect.Client.Networking
             {
                 foreach (var map in MapInstance.Lookup.Values.ToArray())
                 {
-                    ((MapInstance) map).Dispose();
+                    ((MapInstance)map).Dispose();
                 }
             }
 
@@ -2177,7 +2177,7 @@ namespace Intersect.Client.Networking
         public void HandlePacket(IPacketSender packetSender, TargetOverridePacket packet)
         {
             if (Globals.Entities.ContainsKey(packet.TargetId))
-            { 
+            {
                 Globals.Me.TryTarget(Globals.Entities[packet.TargetId] as Entity, true);
             }
         }
@@ -2222,6 +2222,7 @@ namespace Intersect.Client.Networking
                 null
             );
         }
+
         //MapTrapPacket
         public void HandlePacket(IPacketSender packetSender, MapTrapPacket packet)
         {
@@ -2241,7 +2242,7 @@ namespace Intersect.Client.Networking
         public void HandlePacket(IPacketSender packetSender, BankUpdateValuePacket packet)
         {
             Globals.BankValue = packet.BankValue;
-          
+
         }
 
         // Screen Shake packet
@@ -2267,9 +2268,9 @@ namespace Intersect.Client.Networking
                 Audio.AddGameSound(flashSound, false);
             }
         }
-    
-    // Combat Effect packet
-    public void HandlePacket(IPacketSender packetSender, CombatEffectPacket packet)
+
+        // Combat Effect packet
+        public void HandlePacket(IPacketSender packetSender, CombatEffectPacket packet)
         {
             if (Globals.Me == null) return;
 
@@ -2307,6 +2308,37 @@ namespace Intersect.Client.Networking
                 Globals.Me.FlashEndTime = Timing.Global.Milliseconds + 200; // TODO config
             }
         }
-    }
+        // Mail
+        public void HandlePacket(IPacketSender packetSender, MailBoxsUpdatePacket packet)
+        {
+            Globals.Mails.Clear();
+            foreach (MailBoxUpdatePacket mail in packet.Mails)
+            {
+                Globals.Mails.Add(new Mail(mail.MailID, mail.Name, mail.Message, mail.SenderName, mail.Item == null ? Guid.Empty : mail.Item, mail.Quantity));
+            }
+        }
 
+        public void HandlePacket(IPacketSender packetSender, MailBoxPacket packet)
+        {
+            if (!packet.Close)
+            {
+                Interface.Interface.GameUi.CloseSendMailBox();
+                Interface.Interface.GameUi.CloseMailBox();
+            }
+            else
+            {
+                if (packet.Send)
+                {
+                    Interface.Interface.GameUi.OpenSendMailBox();
+                }
+                else
+                {
+                    Interface.Interface.GameUi.OpenMailBox();
+                }
+            }
+
+        }
+
+
+    }
 }

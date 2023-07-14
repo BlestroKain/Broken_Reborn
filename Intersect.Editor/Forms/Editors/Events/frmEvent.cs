@@ -760,7 +760,14 @@ namespace Intersect.Editor.Forms.Editors.Events
 
                 case EventCommandType.ChangeJobLevel:
                     tmpCommand = new ChangeJobLevelCommand();
+break;
+                case EventCommandType.SendMail:
+                    tmpCommand = new SendMailBoxCommand();
 
+                    break;
+
+                case EventCommandType.OpenMailBox:
+                    tmpCommand = new OpenMailBoxCommand();
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -1378,6 +1385,7 @@ namespace Intersect.Editor.Forms.Editors.Events
                 case EventCommandType.ResetStatPointAllocations:
 
                     break;
+
                 case EventCommandType.GiveJobExperience:
                     cmdWindow = new EventCommandGiveJobExperience((GiveJobExperienceCommand)command, this);
 
@@ -1385,6 +1393,10 @@ namespace Intersect.Editor.Forms.Editors.Events
 
                 case EventCommandType.ChangeJobLevel:
                     cmdWindow = new EventCommandChangeJobLevel((ChangeJobLevelCommand)command, this);
+break;
+                case EventCommandType.SendMail:
+                    break;
+                case EventCommandType.OpenMailBox:
 
                     break;
                 default:

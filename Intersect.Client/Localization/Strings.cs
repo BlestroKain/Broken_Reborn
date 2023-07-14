@@ -2454,6 +2454,25 @@ namespace Intersect.Client.Localization
             public static LocalizedString RespawnButton = "Respawn";
         }
 
+        public struct MailBox
+        {
+            public static LocalizedString title = @"Mail Box";
+            public static LocalizedString sendtitle = @"Send Mail";
+            public static LocalizedString send = @"Send";
+            public static LocalizedString close = @"Close";
+
+            public static LocalizedString itemnone = @"None";
+
+            public static LocalizedString mailto = @"To";
+            public static LocalizedString mailtitle = @"Title";
+            public static LocalizedString mailmsg = @"Message";
+            public static LocalizedString mailitem = @"Item";
+            public static LocalizedString mailquantity = @"Quantity";
+
+            public static LocalizedString mails = @"Mails";
+            public static LocalizedString sender = @"Sender";
+            public static LocalizedString take = @"Take Mail (Delete)";
+        }
     }
 
 }

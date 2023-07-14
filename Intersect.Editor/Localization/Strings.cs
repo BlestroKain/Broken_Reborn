@@ -2287,8 +2287,14 @@ Tick timer saved in server config.json.";
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public static LocalizedString resetstatpointallocations = @"Reset Player Stat Point Allocations";
-
+[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public static LocalizedString setJoblevel = @"Set {00} Level To: {01}";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public static LocalizedString sendmail = @"Send Mail";
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public static LocalizedString openmailbox = @"Open Mail Box";
+
         }
 
         public partial struct EventChangePlayerColor
@@ -2389,6 +2395,10 @@ Tick timer saved in server config.json.";
                 {"resetstatallocations", @"Reset Stat Point Allocations"},
                 {"givejobexperience", @"Give Job Experience"},
                 {"setjoblevel", @"Set Job Level"},
+                {"mailbox", @"Mail Box" },
+                {"sendmail", @"Send Mail"},
+                {"openmailbox", @"Open Mail Box"},
+
             };
 
         }

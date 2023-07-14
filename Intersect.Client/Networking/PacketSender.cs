@@ -439,6 +439,24 @@ namespace Intersect.Client.Networking
             Network.SendPacket(new BankSortPacket());
         }
 
+        public static void SendMail(string to, string title, string message, int slotID, int quantity)
+        {
+            Network.SendPacket(new MailBoxSendPacket(to, title, message, slotID, quantity));
+        }
+
+        public static void SendCloseMail()
+        {
+            Network.SendPacket(new MailBoxClosePacket());
+        }
+
+        public static void SendTakeMail(Guid mailID)
+        {
+            if (mailID == Guid.Empty)
+            {
+                return;
+            }
+            Network.SendPacket(new TakeMailPacket(mailID));
+        }
     }
 
 }

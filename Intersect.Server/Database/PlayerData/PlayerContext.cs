@@ -76,6 +76,8 @@ namespace Intersect.Server.Database.PlayerData
         public DbSet<GuildVariable> Guild_Variables { get; set; }
 
         public DbSet<UserVariable> User_Variables { get; set; }
+            
+        public DbSet<MailBox> Player_MailBox { get; set; }
 
         internal async ValueTask Commit(
             bool commit = false,
@@ -142,6 +144,8 @@ namespace Intersect.Server.Database.PlayerData
             modelBuilder.Entity<User>().HasMany(b => b.Variables).WithOne(p => p.User);
             modelBuilder.Entity<UserVariable>().HasKey(p => new { p.VariableId, UserId = p.UserId });
             modelBuilder.Entity<UserVariable>().Ignore(v => v.Id);
+            modelBuilder.Entity<Player>().HasMany(b => b.MailBoxs).WithOne(p => p.Player).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<MailBox>().HasOne(b => b.Sender).WithMany().OnDelete(DeleteBehavior.Cascade);
         }
 
         public void Seed()

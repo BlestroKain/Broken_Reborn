@@ -2308,6 +2308,7 @@ namespace Intersect.Server.Networking
                 }
             }
         }
+
         public static void SendMapTrapPacket(Player player, Guid mapId, Guid trapId, Guid animationId, Guid ownerId, byte x, byte y, bool remove = false)
         {
             player?.SendPacket(new MapTrapPacket(mapId, trapId, animationId, ownerId, x, y, remove));
@@ -2325,6 +2326,29 @@ namespace Intersect.Server.Networking
         public static void SendCombatEffectPacket(Client client, Guid targetId, float shakeAmount, Color entityFlashColor, string sound, float flashIntensity, float flashDuration, Color flashColor)
         {
             client?.Send(new CombatEffectPacket(targetId, shakeAmount, entityFlashColor, sound, flashIntensity, flashDuration, flashColor));
+		}
+        public static void SendOpenMailBox(Player player)
+        {
+            // TODO : Mail List
+            List<MailBoxUpdatePacket> mails = new List<MailBoxUpdatePacket>();
+
+            foreach (MailBox mail in player.MailBoxs)
+            {
+                MailBoxUpdatePacket m = new MailBoxUpdatePacket(mail.Id, mail.Title, mail.Message, mail.Sender.Name, mail.ItemId, mail.Quantity);
+                mails.Add(m);
+            }
+            player.SendPacket(new MailBoxsUpdatePacket(mails.ToArray<MailBoxUpdatePacket>()));
+            player.SendPacket(new MailBoxPacket(true, false));
+        }
+        public static void SendCloseMailBox(Player player)
+        {
+            player.SendPacket(new MailBoxPacket(false, false));
+        }
+
+        public static void SendOpenSendMail(Player player)
+        {
+            SendInventory(player);
+            player.SendPacket(new MailBoxPacket(true, true));
         }
     }
 

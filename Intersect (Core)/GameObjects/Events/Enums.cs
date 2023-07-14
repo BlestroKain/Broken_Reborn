@@ -235,10 +235,17 @@ namespace Intersect.GameObjects.Events
         //Reset Stats
         ResetStatPointAllocations,
 
+        ChangeHair,
+
+    
         //Job
      
         GiveJobExperience=200,
-        ChangeHair,
+       
         ChangeJobLevel,
+		    SendMail= 440,
+        OpenMailBox= 441
+
+
     }
 }

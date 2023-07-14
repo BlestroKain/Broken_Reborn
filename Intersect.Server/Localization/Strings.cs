@@ -1493,6 +1493,19 @@ namespace Intersect.Server.Localization
             public readonly LocalizedString tradenospace = @"There is no space left in the trade window for that item!";
 
         }
+        public sealed class MailNamespace : LocaleNamespace
+        {
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+       
+            public readonly LocalizedString inventoryfull = @"Not enough space in your inventory";
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+   
+            public readonly LocalizedString receiveitem = @"You received an object";
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    
+            public readonly LocalizedString playernotfound = @"Player Not Found!";
+        }
+
 
         public sealed partial class UpnpNamespace : LocaleNamespace
         {
@@ -1655,6 +1668,8 @@ namespace Intersect.Server.Localization
 
             public readonly GuildsNamespace Guilds = new GuildsNamespace();
 
+            public readonly MailNamespace Mails = new MailNamespace();
+
         }
 
         // ReSharper restore MemberHidesStaticFromOuterClass
@@ -1730,6 +1745,7 @@ namespace Intersect.Server.Localization
 
         public static UpnpNamespace Upnp => Root.Upnp;
 
+        public static MailNamespace Mails => Root.Mails;
         #endregion
 
     }

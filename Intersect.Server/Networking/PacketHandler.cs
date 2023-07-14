@@ -2062,6 +2062,125 @@ namespace Intersect.Server.Networking
 
             PacketSender.SendChatMsg(player, Strings.Parties.outofrange, ChatMessageType.Combat, CustomColors.Combat.NoTarget);
         }
+        // Mail Box
+        public void HandlePacket(Client client, MailBoxClosePacket packet)
+        {
+            var player = client?.Entity;
+            if (player == null)
+            {
+                return;
+            }
+
+            player.CloseMailBox();
+        }
+
+        public void HandlePacket(Client client, MailBoxSendPacket packet)
+        {
+            var player = client?.Entity;
+            var user = client?.User;
+            if (player == null)
+            {
+                return;
+            }
+
+            var character = Player.Find(packet.To);
+            if (character != null)
+            {
+                int slotID = packet.SlotID;
+                if (slotID >= player.Items.Count)
+                {
+                    player.CloseMailBox();
+                    return;
+                }
+                int quantity = 0;
+                int[] statBuffs = new int[(int)Stat.StatCount];
+                Dictionary<string, int> tags = new Dictionary<string, int>();
+                Guid itemID = Guid.Empty;
+                if (slotID >= 0)
+                {
+                    InventorySlot slot = player.Items[slotID];
+                    itemID = slot.ItemId;
+                    if (itemID != Guid.Empty)
+                    {
+                        quantity = packet.Quantity;
+                      //  statBuffs = slot.StatBuffs;
+
+
+                        if (player.TryTakeItem(slot, quantity,ItemHandling.Normal,false)) 
+                        {
+                            itemID = Guid.Empty;
+                            quantity = 0;
+                            statBuffs = new int[(int)Stat.StatCount];
+                            tags = new Dictionary<string, int>();
+                        }
+                     
+                    }
+                  
+
+                }
+
+                character.MailBoxs.Add(new MailBox(player, character, packet.Title, packet.Message, itemID, quantity, statBuffs));
+                if (Globals.OnlineList.Select(p => p.Id == character.Id) != null)
+                {
+                    PacketSender.SendChatMsg(character, $"Vous avez recu une Lettre",ChatMessageType.Trading, CustomColors.Alerts.Accepted);
+                }
+            }
+            else
+            {
+                PacketSender.SendChatMsg(player, $"{Strings.Mails.playernotfound} ({packet.To})", ChatMessageType.Error,CustomColors.Alerts.Info);
+            }
+
+
+            player.CloseMailBox();
+            user?.Save();
+        }
+
+        public void HandlePacket(Client client, TakeMailPacket packet)
+        {
+            var player = client?.Entity;
+            var user = client?.User;
+            if (player == null)
+            {
+                return;
+            }
+
+            MailBox mail = null;
+            foreach (MailBox mailbox in player.MailBoxs)
+            {
+                if (mailbox.Id == packet.MailID)
+                {
+                    mail = mailbox;
+                    break;
+                }
+            }
+            if (mail == null)
+            {
+                return;
+            }
+            if (mail.ItemId == Guid.Empty || mail.Quantity < 1)
+            {
+                player.MailBoxs.Remove(mail);
+                PacketSender.SendOpenMailBox(player);
+                user.Save();
+                return;
+            }
+            Item item = new Item(mail.ItemId, mail.Quantity);
+            //item.Properties = mail.StatBuffs;
+            if (player.TryGiveItem(item,-1))
+            {
+                var it = ItemBase.Get(mail.ItemId);
+                player.MailBoxs.Remove(mail);
+                PacketSender.SendChatMsg(player, $"{Strings.Mails.receiveitem} ({it?.Name})!",ChatMessageType.Bank,CustomColors.Chat.PartyChat);
+                PacketSender.SendOpenMailBox(player);
+                user.Save();
+            }
+            else
+            {
+                PacketSender.SendChatMsg(player, Strings.Mails.inventoryfull, ChatMessageType.Error,CustomColors.Alerts.Declined);
+            }
+
+        }
+
 
         //PartyInviteResponsePacket
         public void HandlePacket(Client client, PartyInviteResponsePacket packet)

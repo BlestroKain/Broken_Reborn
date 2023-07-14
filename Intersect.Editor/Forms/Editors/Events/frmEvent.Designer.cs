@@ -160,6 +160,13 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode66,
             treeNode67
             });
+
+            System.Windows.Forms.TreeNode treeNode69 = new System.Windows.Forms.TreeNode("Send Mail");
+            System.Windows.Forms.TreeNode treeNode70 = new System.Windows.Forms.TreeNode("Opend Mail Box");
+            System.Windows.Forms.TreeNode treeNode71 = new System.Windows.Forms.TreeNode("Mail Box", new System.Windows.Forms.TreeNode[] {
+            treeNode69,
+            treeNode70});
+
             this.lblName = new System.Windows.Forms.Label();
             this.txtEventname = new DarkUI.Controls.DarkTextBox();
             this.grpEntityOptions = new DarkUI.Controls.DarkGroupBox();
@@ -1053,6 +1060,15 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode67.Text = "Set Job Level";
             treeNode68.Name = "jobs";
             treeNode68.Text = "Jobs";
+            treeNode69.Name = "sendmail";
+            treeNode69.Tag = "440";
+            treeNode69.Text = "Send Mail";
+            treeNode70.Name = "openmailbox";
+            treeNode70.Tag = "441";
+            treeNode70.Text = "Opend Mail Box";
+            treeNode71.Name = "mailbox";
+            treeNode71.Text = "Mail Box";
+
             this.lstCommands.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             treeNode5,
             treeNode13,
@@ -1063,7 +1079,9 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode56,
             treeNode60,
             treeNode65,
-             treeNode68});
+             treeNode68,
+            treeNode71});
+
             this.lstCommands.Size = new System.Drawing.Size(445, 465);
             this.lstCommands.TabIndex = 2;
             this.lstCommands.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.lstCommands_NodeMouseDoubleClick);

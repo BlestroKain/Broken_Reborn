@@ -2132,6 +2132,7 @@ namespace Intersect.Client.Networking
                 null
             );
         }
+
         //MapTrapPacket
         public void HandlePacket(IPacketSender packetSender, MapTrapPacket packet)
         {
@@ -2216,6 +2217,36 @@ namespace Intersect.Client.Networking
                 Globals.Me.FlashColor = packet.EntityFlashColor;
                 Globals.Me.FlashEndTime = Timing.Global.Milliseconds + 200; // TODO config
             }
+
+        // Mail
+        public void HandlePacket(MailBoxsUpdatePacket packet)
+        {
+            Globals.Mails.Clear();
+            foreach (MailBoxUpdatePacket mail in packet.Mails)
+            {
+                Globals.Mails.Add(new Mail(mail.MailID, mail.Name, mail.Message, mail.SenderName, mail.Item == null ? Guid.Empty : mail.Item, mail.Quantity));
+            }
+        }
+
+       public void HandlePacket(MailBoxPacket packet)
+        {
+            if (!packet.Close)
+            {
+                Interface.Interface.GameUi.CloseSendMailBox();
+                Interface.Interface.GameUi.CloseMailBox();
+            }
+            else
+            {
+                if (packet.Send)
+                {
+                    Interface.Interface.GameUi.OpenSendMailBox();
+                }
+                else
+                {
+                    Interface.Interface.GameUi.OpenMailBox();
+                }
+            }
+
         }
     }
 

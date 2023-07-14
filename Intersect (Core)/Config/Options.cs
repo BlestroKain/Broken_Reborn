@@ -123,7 +123,7 @@ namespace Intersect
         public static int IntelligenceManaMultiplier => Instance.PlayerOpts.IntManaDivider;
 
         public static int WeaponIndex => Instance.EquipmentOpts.WeaponSlot;
-
+        public static int MaxMail => Instance.PlayerOpts.MaxMail;
         public static int ShieldIndex => Instance.EquipmentOpts.ShieldSlot;
 
         public static List<string> EquipmentSlots => Instance.EquipmentOpts.Slots;

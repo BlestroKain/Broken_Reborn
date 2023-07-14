@@ -1801,6 +1801,7 @@ namespace Intersect.Server.Database
                     MigrateDbSet(context.PlayerVariables, newGameContext.PlayerVariables);
                     MigrateDbSet(context.Tilesets, newGameContext.Tilesets);
                     MigrateDbSet(context.Time, newGameContext.Time);
+                   
                     newGameContext.ChangeTracker.DetectChanges();
                     newGameContext.SaveChanges();
                     newGameContext.Dispose();
@@ -1826,6 +1827,7 @@ namespace Intersect.Server.Database
                     MigrateDbSet(context.Bag_Items, newPlayerContext.Bag_Items);
                     MigrateDbSet(context.Mutes, newPlayerContext.Mutes);
                     MigrateDbSet(context.Bans, newPlayerContext.Bans);
+                    MigrateDbSet(context.Player_MailBox, newPlayerContext.Player_MailBox);
                     newPlayerContext.ChangeTracker.DetectChanges();
                     newPlayerContext.SaveChanges();
                     newPlayerContext.Dispose();

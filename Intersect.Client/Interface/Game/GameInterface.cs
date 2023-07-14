@@ -10,6 +10,7 @@ using Intersect.Client.Interface.Game.Crafting;
 using Intersect.Client.Interface.Game.EntityPanel;
 using Intersect.Client.Interface.Game.Hotbar;
 using Intersect.Client.Interface.Game.Inventory;
+using Intersect.Client.Interface.Game.Mail;
 using Intersect.Client.Interface.Game.Shop;
 using Intersect.Client.Interface.Game.Trades;
 using Intersect.Client.Networking;
@@ -83,6 +84,10 @@ namespace Intersect.Client.Interface.Game
         private bool mShouldUpdateGuildList;
 
         private bool mShouldHideGuildWindow;
+
+        private SendMailBoxWindow mSendMailBoxWindow;
+        private MailBoxWindow mMailBoxWindow;
+
 
         private string mTradingTarget;
 
@@ -193,7 +198,38 @@ namespace Intersect.Client.Interface.Game
             mShopWindow = new ShopWindow(GameCanvas);
             mShouldOpenShop = false;
         }
+        // Mail Box
+        public void OpenSendMailBox()
+        {
+            if (mSendMailBoxWindow != null)
+            {
+                mSendMailBoxWindow.Close();
+            }
+            mSendMailBoxWindow = new SendMailBoxWindow(GameCanvas);
+            mSendMailBoxWindow.UpdateItemList();
+        }
 
+        public void OpenMailBox()
+        {
+            if (mMailBoxWindow != null)
+            {
+                mMailBoxWindow.UpdateMail();
+            }
+            else
+            {
+                mMailBoxWindow = new MailBoxWindow(GameCanvas);
+                mMailBoxWindow.UpdateMail();
+            }
+        }
+        public void CloseSendMailBox()
+        {
+            mSendMailBoxWindow?.Hide();
+        }
+
+        public void CloseMailBox()
+        {
+            mMailBoxWindow?.Hide();
+        }
         //Bank
         public void NotifyOpenBank()
         {
@@ -385,6 +421,17 @@ namespace Intersect.Client.Interface.Game
             }
 
             mShouldCloseShop = false;
+            if (mSendMailBoxWindow != null && !mSendMailBoxWindow.IsVisible())
+            {
+                mSendMailBoxWindow?.Close();
+                mSendMailBoxWindow = null;
+            }
+
+            if (mMailBoxWindow != null && !mMailBoxWindow.IsVisible())
+            {
+                mMailBoxWindow?.Close();
+                mMailBoxWindow = null;
+            }
 
             //Bank Update
             if (mShouldOpenBank)

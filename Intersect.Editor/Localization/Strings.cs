@@ -2209,6 +2209,10 @@ Tick timer saved in server config.json.";
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public static LocalizedString resetstatpointallocations = @"Reset Player Stat Point Allocations";
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public static LocalizedString sendmail = @"Send Mail";
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public static LocalizedString openmailbox = @"Open Mail Box";
         }
 
         public partial struct EventChangePlayerColor

@@ -1676,6 +1676,15 @@ namespace Intersect.Editor.Forms.Editors.Events
             return Strings.EventCommandList.invalid;
         }
 
+        private static string GetCommandText(OpenMailBoxCommand command, MapInstance map)
+        {
+            return Strings.EventCommandList.openmailbox;
+        }
+
+        private static string GetCommandText(SendMailBoxCommand command, MapInstance map)
+        {
+            return Strings.EventCommandList.sendmail;
+        }
     }
 
 }

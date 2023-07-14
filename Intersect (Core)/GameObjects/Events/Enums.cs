@@ -236,7 +236,12 @@ namespace Intersect.GameObjects.Events
 
         //Reset Stats
         ResetStatPointAllocations,
+
         ChangeHair,
+
+        SendMail= 440,
+        OpenMailBox= 441,
+
     }
 
 }

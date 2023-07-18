@@ -31,15 +31,17 @@ namespace Intersect.Editor.Forms.Editors
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmClass));
             this.grpClasses = new DarkUI.Controls.DarkGroupBox();
             this.btnClearSearch = new DarkUI.Controls.DarkButton();
             this.txtSearch = new DarkUI.Controls.DarkTextBox();
             this.lstGameObjects = new Intersect.Editor.Forms.Controls.GameObjectList();
             this.grpBaseStats = new DarkUI.Controls.DarkGroupBox();
+            this.NudAgi = new DarkUI.Controls.DarkNumericUpDown();
+            this.lblAgi = new System.Windows.Forms.Label();
             this.nudBaseMana = new DarkUI.Controls.DarkNumericUpDown();
             this.nudBaseHP = new DarkUI.Controls.DarkNumericUpDown();
             this.nudPoints = new DarkUI.Controls.DarkNumericUpDown();
@@ -99,6 +101,7 @@ namespace Intersect.Editor.Forms.Editors
             this.lblSpawnItemAmount = new System.Windows.Forms.Label();
             this.lblSpawnItem = new System.Windows.Forms.Label();
             this.grpCombat = new DarkUI.Controls.DarkGroupBox();
+            this.cmbAttackSprite = new DarkUI.Controls.DarkComboBox();
             this.lblSpriteAttack = new System.Windows.Forms.Label();
             this.grpAttackSpeed = new DarkUI.Controls.DarkGroupBox();
             this.nudAttackSpeedValue = new DarkUI.Controls.DarkNumericUpDown();
@@ -131,10 +134,6 @@ namespace Intersect.Editor.Forms.Editors
             this.lblSpriteOptions = new System.Windows.Forms.Label();
             this.cmbFace = new DarkUI.Controls.DarkComboBox();
             this.grpGender = new DarkUI.Controls.DarkGroupBox();
-            this.grpExpGrid = new DarkUI.Controls.DarkGroupBox();
-            this.btnResetExpGrid = new DarkUI.Controls.DarkButton();
-            this.btnCloseExpGrid = new DarkUI.Controls.DarkButton();
-            this.expGrid = new System.Windows.Forms.DataGridView();
             this.grpLeveling = new DarkUI.Controls.DarkGroupBox();
             this.btnExpGrid = new DarkUI.Controls.DarkButton();
             this.nudBaseExp = new DarkUI.Controls.DarkNumericUpDown();
@@ -160,6 +159,10 @@ namespace Intersect.Editor.Forms.Editors
             this.lblMagicResistIncrease = new System.Windows.Forms.Label();
             this.lblArmorIncrease = new System.Windows.Forms.Label();
             this.lblMagicIncrease = new System.Windows.Forms.Label();
+            this.grpExpGrid = new DarkUI.Controls.DarkGroupBox();
+            this.btnResetExpGrid = new DarkUI.Controls.DarkButton();
+            this.btnCloseExpGrid = new DarkUI.Controls.DarkButton();
+            this.expGrid = new System.Windows.Forms.DataGridView();
             this.btnCancel = new DarkUI.Controls.DarkButton();
             this.btnSave = new DarkUI.Controls.DarkButton();
             this.toolStrip = new DarkUI.Controls.DarkToolStrip();
@@ -175,9 +178,9 @@ namespace Intersect.Editor.Forms.Editors
             this.toolStripItemUndo = new System.Windows.Forms.ToolStripButton();
             this.mnuExpGrid = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.btnExpPaste = new System.Windows.Forms.ToolStripMenuItem();
-            this.cmbAttackSprite = new DarkUI.Controls.DarkComboBox();
             this.grpClasses.SuspendLayout();
             this.grpBaseStats.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.NudAgi)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudBaseMana)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudBaseHP)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudPoints)).BeginInit();
@@ -209,8 +212,6 @@ namespace Intersect.Editor.Forms.Editors
             this.grpSprite.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picFace)).BeginInit();
             this.grpGender.SuspendLayout();
-            this.grpExpGrid.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.expGrid)).BeginInit();
             this.grpLeveling.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudBaseExp)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudExpIncrease)).BeginInit();
@@ -223,6 +224,8 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)(this.nudMagicIncrease)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudArmorIncrease)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudStrengthIncrease)).BeginInit();
+            this.grpExpGrid.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.expGrid)).BeginInit();
             this.toolStrip.SuspendLayout();
             this.mnuExpGrid.SuspendLayout();
             this.SuspendLayout();
@@ -288,6 +291,8 @@ namespace Intersect.Editor.Forms.Editors
             // 
             this.grpBaseStats.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
             this.grpBaseStats.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
+            this.grpBaseStats.Controls.Add(this.NudAgi);
+            this.grpBaseStats.Controls.Add(this.lblAgi);
             this.grpBaseStats.Controls.Add(this.nudBaseMana);
             this.grpBaseStats.Controls.Add(this.nudBaseHP);
             this.grpBaseStats.Controls.Add(this.nudPoints);
@@ -309,10 +314,40 @@ namespace Intersect.Editor.Forms.Editors
             this.grpBaseStats.Margin = new System.Windows.Forms.Padding(2);
             this.grpBaseStats.Name = "grpBaseStats";
             this.grpBaseStats.Padding = new System.Windows.Forms.Padding(2);
-            this.grpBaseStats.Size = new System.Drawing.Size(183, 177);
+            this.grpBaseStats.Size = new System.Drawing.Size(183, 275);
             this.grpBaseStats.TabIndex = 17;
             this.grpBaseStats.TabStop = false;
             this.grpBaseStats.Text = "Base Stats:";
+            // 
+            // NudAgi
+            // 
+            this.NudAgi.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(69)))), ((int)(((byte)(73)))), ((int)(((byte)(74)))));
+            this.NudAgi.ForeColor = System.Drawing.Color.Gainsboro;
+            this.NudAgi.Location = new System.Drawing.Point(10, 183);
+            this.NudAgi.Maximum = new decimal(new int[] {
+            255,
+            0,
+            0,
+            0});
+            this.NudAgi.Name = "NudAgi";
+            this.NudAgi.Size = new System.Drawing.Size(70, 20);
+            this.NudAgi.TabIndex = 37;
+            this.NudAgi.Value = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+            this.NudAgi.ValueChanged += new System.EventHandler(this.NudAgi_ValueChanged);
+            // 
+            // lblAgi
+            // 
+            this.lblAgi.AutoSize = true;
+            this.lblAgi.Location = new System.Drawing.Point(7, 167);
+            this.lblAgi.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.lblAgi.Name = "lblAgi";
+            this.lblAgi.Size = new System.Drawing.Size(37, 13);
+            this.lblAgi.TabIndex = 36;
+            this.lblAgi.Text = "Agility:";
             // 
             // nudBaseMana
             // 
@@ -525,9 +560,9 @@ namespace Intersect.Editor.Forms.Editors
             this.lblMR.Location = new System.Drawing.Point(94, 89);
             this.lblMR.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblMR.Name = "lblMR";
-            this.lblMR.Size = new System.Drawing.Size(71, 13);
+            this.lblMR.Size = new System.Drawing.Size(40, 13);
             this.lblMR.TabIndex = 8;
-            this.lblMR.Text = "Magic Resist:";
+            this.lblMR.Text = "Vitality:";
             // 
             // lblDef
             // 
@@ -545,9 +580,9 @@ namespace Intersect.Editor.Forms.Editors
             this.lblMag.Location = new System.Drawing.Point(96, 51);
             this.lblMag.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblMag.Name = "lblMag";
-            this.lblMag.Size = new System.Drawing.Size(39, 13);
+            this.lblMag.Size = new System.Drawing.Size(61, 13);
             this.lblMag.TabIndex = 6;
-            this.lblMag.Text = "Magic:";
+            this.lblMag.Text = "Intelligence";
             // 
             // lblAttack
             // 
@@ -1030,7 +1065,6 @@ namespace Intersect.Editor.Forms.Editors
             this.pnlContainer.Controls.Add(this.grpGeneral);
             this.pnlContainer.Controls.Add(this.grpSpells);
             this.pnlContainer.Controls.Add(this.grpBaseStats);
-            this.pnlContainer.Controls.Add(this.grpExpGrid);
             this.pnlContainer.Controls.Add(this.grpLeveling);
             this.pnlContainer.Location = new System.Drawing.Point(147, 36);
             this.pnlContainer.Margin = new System.Windows.Forms.Padding(2);
@@ -1051,7 +1085,7 @@ namespace Intersect.Editor.Forms.Editors
             this.grpSpawnItems.Controls.Add(this.lblSpawnItemAmount);
             this.grpSpawnItems.Controls.Add(this.lblSpawnItem);
             this.grpSpawnItems.ForeColor = System.Drawing.Color.Gainsboro;
-            this.grpSpawnItems.Location = new System.Drawing.Point(3, 526);
+            this.grpSpawnItems.Location = new System.Drawing.Point(534, 610);
             this.grpSpawnItems.Name = "grpSpawnItems";
             this.grpSpawnItems.Size = new System.Drawing.Size(226, 237);
             this.grpSpawnItems.TabIndex = 32;
@@ -1177,6 +1211,27 @@ namespace Intersect.Editor.Forms.Editors
             this.grpCombat.TabIndex = 30;
             this.grpCombat.TabStop = false;
             this.grpCombat.Text = "Combat (Unarmed)";
+            // 
+            // cmbAttackSprite
+            // 
+            this.cmbAttackSprite.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(69)))), ((int)(((byte)(73)))), ((int)(((byte)(74)))));
+            this.cmbAttackSprite.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
+            this.cmbAttackSprite.BorderStyle = System.Windows.Forms.ButtonBorderStyle.Solid;
+            this.cmbAttackSprite.ButtonColor = System.Drawing.Color.FromArgb(((int)(((byte)(43)))), ((int)(((byte)(43)))), ((int)(((byte)(43)))));
+            this.cmbAttackSprite.DrawDropdownHoverOutline = false;
+            this.cmbAttackSprite.DrawFocusRectangle = false;
+            this.cmbAttackSprite.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.cmbAttackSprite.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbAttackSprite.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.cmbAttackSprite.ForeColor = System.Drawing.Color.Gainsboro;
+            this.cmbAttackSprite.FormattingEnabled = true;
+            this.cmbAttackSprite.Location = new System.Drawing.Point(12, 283);
+            this.cmbAttackSprite.Name = "cmbAttackSprite";
+            this.cmbAttackSprite.Size = new System.Drawing.Size(192, 21);
+            this.cmbAttackSprite.TabIndex = 68;
+            this.cmbAttackSprite.Text = null;
+            this.cmbAttackSprite.TextPadding = new System.Windows.Forms.Padding(2);
+            this.cmbAttackSprite.SelectedIndexChanged += new System.EventHandler(this.cmbAttackSprite_SelectedIndexChanged);
             // 
             // lblSpriteAttack
             // 
@@ -1635,83 +1690,6 @@ namespace Intersect.Editor.Forms.Editors
             this.grpGender.TabStop = false;
             this.grpGender.Text = "Gender";
             // 
-            // grpExpGrid
-            // 
-            this.grpExpGrid.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
-            this.grpExpGrid.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
-            this.grpExpGrid.Controls.Add(this.btnResetExpGrid);
-            this.grpExpGrid.Controls.Add(this.btnCloseExpGrid);
-            this.grpExpGrid.Controls.Add(this.expGrid);
-            this.grpExpGrid.ForeColor = System.Drawing.Color.Gainsboro;
-            this.grpExpGrid.Location = new System.Drawing.Point(2, 348);
-            this.grpExpGrid.Margin = new System.Windows.Forms.Padding(2);
-            this.grpExpGrid.Name = "grpExpGrid";
-            this.grpExpGrid.Padding = new System.Windows.Forms.Padding(2);
-            this.grpExpGrid.Size = new System.Drawing.Size(530, 175);
-            this.grpExpGrid.TabIndex = 37;
-            this.grpExpGrid.TabStop = false;
-            this.grpExpGrid.Text = "Experience Overrides";
-            // 
-            // btnResetExpGrid
-            // 
-            this.btnResetExpGrid.Location = new System.Drawing.Point(7, 148);
-            this.btnResetExpGrid.Margin = new System.Windows.Forms.Padding(2);
-            this.btnResetExpGrid.Name = "btnResetExpGrid";
-            this.btnResetExpGrid.Padding = new System.Windows.Forms.Padding(5);
-            this.btnResetExpGrid.Size = new System.Drawing.Size(83, 21);
-            this.btnResetExpGrid.TabIndex = 39;
-            this.btnResetExpGrid.Text = "Reset Grid";
-            this.btnResetExpGrid.Click += new System.EventHandler(this.btnResetExpGrid_Click);
-            // 
-            // btnCloseExpGrid
-            // 
-            this.btnCloseExpGrid.Location = new System.Drawing.Point(411, 148);
-            this.btnCloseExpGrid.Margin = new System.Windows.Forms.Padding(2);
-            this.btnCloseExpGrid.Name = "btnCloseExpGrid";
-            this.btnCloseExpGrid.Padding = new System.Windows.Forms.Padding(5);
-            this.btnCloseExpGrid.Size = new System.Drawing.Size(111, 21);
-            this.btnCloseExpGrid.TabIndex = 38;
-            this.btnCloseExpGrid.Text = "Close";
-            this.btnCloseExpGrid.Click += new System.EventHandler(this.btnCloseExpGrid_Click);
-            // 
-            // expGrid
-            // 
-            this.expGrid.AllowUserToAddRows = false;
-            this.expGrid.AllowUserToDeleteRows = false;
-            this.expGrid.AllowUserToResizeColumns = false;
-            this.expGrid.AllowUserToResizeRows = false;
-            dataGridViewCellStyle4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(53)))), ((int)(((byte)(55)))));
-            this.expGrid.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle4;
-            this.expGrid.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.expGrid.BackgroundColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
-            this.expGrid.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
-            this.expGrid.ClipboardCopyMode = System.Windows.Forms.DataGridViewClipboardCopyMode.EnableWithoutHeaderText;
-            this.expGrid.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
-            dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle5.ForeColor = System.Drawing.Color.Gainsboro;
-            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.expGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
-            this.expGrid.ColumnHeadersHeight = 24;
-            this.expGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            this.expGrid.EnableHeadersVisualStyles = false;
-            this.expGrid.Location = new System.Drawing.Point(7, 18);
-            this.expGrid.MultiSelect = false;
-            this.expGrid.Name = "expGrid";
-            this.expGrid.RowHeadersVisible = false;
-            dataGridViewCellStyle6.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
-            this.expGrid.RowsDefaultCellStyle = dataGridViewCellStyle6;
-            this.expGrid.Size = new System.Drawing.Size(515, 125);
-            this.expGrid.TabIndex = 0;
-            this.expGrid.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.expGrid_CellEndEdit);
-            this.expGrid.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.expGrid_CellMouseDown);
-            this.expGrid.EditingControlShowing += new System.Windows.Forms.DataGridViewEditingControlShowingEventHandler(this.expGrid_EditingControlShowing);
-            this.expGrid.SelectionChanged += new System.EventHandler(this.expGrid_SelectionChanged);
-            this.expGrid.KeyDown += new System.Windows.Forms.KeyEventHandler(this.expGrid_KeyDown);
-            // 
             // grpLeveling
             // 
             this.grpLeveling.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
@@ -1722,8 +1700,9 @@ namespace Intersect.Editor.Forms.Editors
             this.grpLeveling.Controls.Add(this.lblExpIncrease);
             this.grpLeveling.Controls.Add(this.lblBaseExp);
             this.grpLeveling.Controls.Add(this.grpLevelBoosts);
+            this.grpLeveling.Controls.Add(this.grpExpGrid);
             this.grpLeveling.ForeColor = System.Drawing.Color.Gainsboro;
-            this.grpLeveling.Location = new System.Drawing.Point(2, 348);
+            this.grpLeveling.Location = new System.Drawing.Point(2, 446);
             this.grpLeveling.Margin = new System.Windows.Forms.Padding(2);
             this.grpLeveling.Name = "grpLeveling";
             this.grpLeveling.Padding = new System.Windows.Forms.Padding(2);
@@ -2069,9 +2048,9 @@ namespace Intersect.Editor.Forms.Editors
             this.lblMagicResistIncrease.Location = new System.Drawing.Point(308, 31);
             this.lblMagicResistIncrease.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblMagicResistIncrease.Name = "lblMagicResistIncrease";
-            this.lblMagicResistIncrease.Size = new System.Drawing.Size(71, 13);
+            this.lblMagicResistIncrease.Size = new System.Drawing.Size(40, 13);
             this.lblMagicResistIncrease.TabIndex = 8;
-            this.lblMagicResistIncrease.Text = "Magic Resist:";
+            this.lblMagicResistIncrease.Text = "Vitality:";
             // 
             // lblArmorIncrease
             // 
@@ -2089,9 +2068,86 @@ namespace Intersect.Editor.Forms.Editors
             this.lblMagicIncrease.Location = new System.Drawing.Point(108, 77);
             this.lblMagicIncrease.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblMagicIncrease.Name = "lblMagicIncrease";
-            this.lblMagicIncrease.Size = new System.Drawing.Size(39, 13);
+            this.lblMagicIncrease.Size = new System.Drawing.Size(61, 13);
             this.lblMagicIncrease.TabIndex = 6;
-            this.lblMagicIncrease.Text = "Magic:";
+            this.lblMagicIncrease.Text = "Intelligence";
+            // 
+            // grpExpGrid
+            // 
+            this.grpExpGrid.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
+            this.grpExpGrid.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
+            this.grpExpGrid.Controls.Add(this.btnResetExpGrid);
+            this.grpExpGrid.Controls.Add(this.btnCloseExpGrid);
+            this.grpExpGrid.Controls.Add(this.expGrid);
+            this.grpExpGrid.ForeColor = System.Drawing.Color.Gainsboro;
+            this.grpExpGrid.Location = new System.Drawing.Point(0, -4);
+            this.grpExpGrid.Margin = new System.Windows.Forms.Padding(2);
+            this.grpExpGrid.Name = "grpExpGrid";
+            this.grpExpGrid.Padding = new System.Windows.Forms.Padding(2);
+            this.grpExpGrid.Size = new System.Drawing.Size(530, 280);
+            this.grpExpGrid.TabIndex = 37;
+            this.grpExpGrid.TabStop = false;
+            this.grpExpGrid.Text = "Experience Overrides";
+            // 
+            // btnResetExpGrid
+            // 
+            this.btnResetExpGrid.Location = new System.Drawing.Point(7, 148);
+            this.btnResetExpGrid.Margin = new System.Windows.Forms.Padding(2);
+            this.btnResetExpGrid.Name = "btnResetExpGrid";
+            this.btnResetExpGrid.Padding = new System.Windows.Forms.Padding(5);
+            this.btnResetExpGrid.Size = new System.Drawing.Size(83, 21);
+            this.btnResetExpGrid.TabIndex = 39;
+            this.btnResetExpGrid.Text = "Reset Grid";
+            this.btnResetExpGrid.Click += new System.EventHandler(this.btnResetExpGrid_Click);
+            // 
+            // btnCloseExpGrid
+            // 
+            this.btnCloseExpGrid.Location = new System.Drawing.Point(411, 148);
+            this.btnCloseExpGrid.Margin = new System.Windows.Forms.Padding(2);
+            this.btnCloseExpGrid.Name = "btnCloseExpGrid";
+            this.btnCloseExpGrid.Padding = new System.Windows.Forms.Padding(5);
+            this.btnCloseExpGrid.Size = new System.Drawing.Size(111, 21);
+            this.btnCloseExpGrid.TabIndex = 38;
+            this.btnCloseExpGrid.Text = "Close";
+            this.btnCloseExpGrid.Click += new System.EventHandler(this.btnCloseExpGrid_Click);
+            // 
+            // expGrid
+            // 
+            this.expGrid.AllowUserToAddRows = false;
+            this.expGrid.AllowUserToDeleteRows = false;
+            this.expGrid.AllowUserToResizeColumns = false;
+            this.expGrid.AllowUserToResizeRows = false;
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(53)))), ((int)(((byte)(55)))));
+            this.expGrid.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+            this.expGrid.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.expGrid.BackgroundColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
+            this.expGrid.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
+            this.expGrid.ClipboardCopyMode = System.Windows.Forms.DataGridViewClipboardCopyMode.EnableWithoutHeaderText;
+            this.expGrid.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.Gainsboro;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.expGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            this.expGrid.ColumnHeadersHeight = 24;
+            this.expGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            this.expGrid.EnableHeadersVisualStyles = false;
+            this.expGrid.Location = new System.Drawing.Point(4, 12);
+            this.expGrid.MultiSelect = false;
+            this.expGrid.Name = "expGrid";
+            this.expGrid.RowHeadersVisible = false;
+            dataGridViewCellStyle3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(63)))), ((int)(((byte)(65)))));
+            this.expGrid.RowsDefaultCellStyle = dataGridViewCellStyle3;
+            this.expGrid.Size = new System.Drawing.Size(515, 135);
+            this.expGrid.TabIndex = 0;
+            this.expGrid.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.expGrid_CellEndEdit);
+            this.expGrid.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.expGrid_CellMouseDown);
+            this.expGrid.EditingControlShowing += new System.Windows.Forms.DataGridViewEditingControlShowingEventHandler(this.expGrid_EditingControlShowing);
+            this.expGrid.SelectionChanged += new System.EventHandler(this.expGrid_SelectionChanged);
+            this.expGrid.KeyDown += new System.Windows.Forms.KeyEventHandler(this.expGrid_KeyDown);
             // 
             // btnCancel
             // 
@@ -2256,27 +2312,6 @@ namespace Intersect.Editor.Forms.Editors
             this.btnExpPaste.Text = "Paste";
             this.btnExpPaste.Click += new System.EventHandler(this.btnPaste_Click);
             // 
-            // cmbAttackSprite
-            // 
-            this.cmbAttackSprite.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(69)))), ((int)(((byte)(73)))), ((int)(((byte)(74)))));
-            this.cmbAttackSprite.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
-            this.cmbAttackSprite.BorderStyle = System.Windows.Forms.ButtonBorderStyle.Solid;
-            this.cmbAttackSprite.ButtonColor = System.Drawing.Color.FromArgb(((int)(((byte)(43)))), ((int)(((byte)(43)))), ((int)(((byte)(43)))));
-            this.cmbAttackSprite.DrawDropdownHoverOutline = false;
-            this.cmbAttackSprite.DrawFocusRectangle = false;
-            this.cmbAttackSprite.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            this.cmbAttackSprite.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbAttackSprite.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.cmbAttackSprite.ForeColor = System.Drawing.Color.Gainsboro;
-            this.cmbAttackSprite.FormattingEnabled = true;
-            this.cmbAttackSprite.Location = new System.Drawing.Point(12, 283);
-            this.cmbAttackSprite.Name = "cmbAttackSprite";
-            this.cmbAttackSprite.Size = new System.Drawing.Size(192, 21);
-            this.cmbAttackSprite.TabIndex = 68;
-            this.cmbAttackSprite.Text = null;
-            this.cmbAttackSprite.TextPadding = new System.Windows.Forms.Padding(2);
-            this.cmbAttackSprite.SelectedIndexChanged += new System.EventHandler(this.cmbAttackSprite_SelectedIndexChanged);
-            // 
             // FrmClass
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -2303,6 +2338,7 @@ namespace Intersect.Editor.Forms.Editors
             this.grpClasses.PerformLayout();
             this.grpBaseStats.ResumeLayout(false);
             this.grpBaseStats.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.NudAgi)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudBaseMana)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudBaseHP)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudPoints)).EndInit();
@@ -2343,8 +2379,6 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)(this.picFace)).EndInit();
             this.grpGender.ResumeLayout(false);
             this.grpGender.PerformLayout();
-            this.grpExpGrid.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.expGrid)).EndInit();
             this.grpLeveling.ResumeLayout(false);
             this.grpLeveling.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudBaseExp)).EndInit();
@@ -2359,6 +2393,8 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)(this.nudMagicIncrease)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudArmorIncrease)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudStrengthIncrease)).EndInit();
+            this.grpExpGrid.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.expGrid)).EndInit();
             this.toolStrip.ResumeLayout(false);
             this.toolStrip.PerformLayout();
             this.mnuExpGrid.ResumeLayout(false);
@@ -2509,5 +2545,7 @@ namespace Intersect.Editor.Forms.Editors
         private Controls.GameObjectList lstGameObjects;
         private System.Windows.Forms.Label lblSpriteAttack;
         private DarkComboBox cmbAttackSprite;
+        private DarkNumericUpDown NudAgi;
+        private System.Windows.Forms.Label lblAgi;
     }
 }

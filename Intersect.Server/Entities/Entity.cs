@@ -266,6 +266,9 @@ namespace Intersect.Server.Entities
         public object EntityLock = new object();
 
         [NotMapped, JsonIgnore]
+        public Guid DeathAnimation = Guid.Empty;
+
+        [NotMapped, JsonIgnore]
         public bool VitalsUpdated
         {
             get => !GetVitals().SequenceEqual(mOldVitals) || !GetMaxVitals().SequenceEqual(mOldMaxVitals);
@@ -1274,9 +1277,9 @@ namespace Intersect.Server.Entities
         public virtual int CalculateAttackTime()
         {
             return (int)(Options.MaxAttackRate +
-                          (Options.MinAttackRate - Options.MaxAttackRate) *
-                          (((float)Options.MaxStatValue - Stat[(int)Enums.Stat.Speed].Value()) /
-                           Options.MaxStatValue));
+                      (Options.MinAttackRate - Options.MaxAttackRate) *
+                      (((float)Options.MaxStatValue - Stat[(int)Enums.Stat.Agility].Value()) /
+                       Options.MaxStatValue));
         }
 
         public void TryBlock(bool blocking)
@@ -1989,6 +1992,13 @@ namespace Intersect.Server.Entities
                         case DamageType.True:
                             PacketSender.SendActionMsg(
                                 enemy, Strings.Combat.removesymbol + baseDamage, CustomColors.Combat.TrueDamage
+                            );
+
+                            break;
+
+                        case DamageType.Cure:
+                            PacketSender.SendActionMsg(
+                                enemy, Strings.Combat.removesymbol + (int)baseDamage, CustomColors.Combat.Cure
                             );
 
                             break;
@@ -2830,6 +2840,17 @@ namespace Intersect.Server.Entities
 
             return Options.Instance.MapOpts.EnableDiagonalMovement && dx == 1 && dy == 1;
         }
+        protected void PlayDeathAnimation()
+        {
+            if (DeathAnimation != Guid.Empty)
+            {
+                PacketSender.SendAnimationToProximity(DeathAnimation, -1, Id, MapId, (byte)X, (byte)Y, (sbyte)Direction.Up, MapInstanceId);
+            }
+            if (this is Player)
+            {
+                PacketSender.SendAnimationToProximity(new Guid(Options.PlayerDeathAnimationId), -1, Id, MapId, (byte)X, (byte)Y, (sbyte)Direction.Up, MapInstanceId);
+            }
+        }
 
         //Spawning/Dying
         public virtual void Die(bool dropItems = true, Entity killer = null)
@@ -2838,6 +2859,7 @@ namespace Intersect.Server.Entities
             {
                 return;
             }
+            PlayDeathAnimation();
 
             // Run events and other things.
             killer?.KilledEntity(this);

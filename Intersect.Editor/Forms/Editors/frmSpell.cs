@@ -103,6 +103,9 @@ namespace Intersect.Editor.Forms.Editors
             cmbHitAnimation.Items.Clear();
             cmbHitAnimation.Items.Add(Strings.General.None);
             cmbHitAnimation.Items.AddRange(AnimationBase.Names);
+            cmbTrapAnimation.Items.Clear();
+            cmbTrapAnimation.Items.Add(Strings.General.None);
+            cmbTrapAnimation.Items.AddRange(AnimationBase.Names);
             cmbEvent.Items.Clear();
             cmbEvent.Items.Add(Strings.General.None);
             cmbEvent.Items.AddRange(EventBase.Names);
@@ -176,6 +179,7 @@ namespace Intersect.Editor.Forms.Editors
             lblCastAnimation.Text = Strings.SpellEditor.castanimation;
             lblSpriteCastAnimation.Text = Strings.SpellEditor.CastSpriteOverride;
             lblHitAnimation.Text = Strings.SpellEditor.hitanimation;
+            lblTrapAnimation.Text = Strings.SpellEditor.TrapAnimation;
             chkBound.Text = Strings.SpellEditor.bound;
 
             grpRequirements.Text = Strings.SpellEditor.requirements;
@@ -301,6 +305,8 @@ namespace Intersect.Editor.Forms.Editors
                         TextUtils.NullToNone(mEditorItem.CastSpriteOverride)
                 );
 
+                cmbTrapAnimation.SelectedIndex = AnimationBase.ListIndex(mEditorItem.TrapAnimationId) + 1;
+
                 chkBound.Checked = mEditorItem.Bound;
 
                 cmbSprite.SelectedIndex = cmbSprite.FindString(TextUtils.NullToNone(mEditorItem.Icon));
@@ -358,14 +364,20 @@ namespace Intersect.Editor.Forms.Editors
                 nudStr.Value = mEditorItem.Combat.StatDiff[(int) Stat.Attack];
                 nudDef.Value = mEditorItem.Combat.StatDiff[(int) Stat.Defense];
                 nudSpd.Value = mEditorItem.Combat.StatDiff[(int) Stat.Speed];
-                nudMag.Value = mEditorItem.Combat.StatDiff[(int) Stat.AbilityPower];
-                nudMR.Value = mEditorItem.Combat.StatDiff[(int) Stat.MagicResist];
-
+                nudMag.Value = mEditorItem.Combat.StatDiff[(int) Stat.Intelligence];
+                nudMR.Value = mEditorItem.Combat.StatDiff[(int) Stat.Vitality];
+                nudAgi.Value = mEditorItem.Combat.StatDiff[(int)Stat.Agility];
+                nudDmg.Value = mEditorItem.Combat.StatDiff[(int)Stat.Potency];
+                nudCur.Value = mEditorItem.Combat.StatDiff[(int)Stat.Cures];
                 nudStrPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int) Stat.Attack];
                 nudDefPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int) Stat.Defense];
-                nudMagPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int) Stat.AbilityPower];
-                nudMRPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int) Stat.MagicResist];
+                nudMagPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int) Stat.Intelligence];
+                nudMRPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int) Stat.Vitality];
                 nudSpdPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int) Stat.Speed];
+                nudAgiPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int)Stat.Agility];
+                nudDmgPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int)Stat.Potency];
+                nudCurPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int)Stat.Cures];
+
 
                 chkFriendly.Checked = Convert.ToBoolean(mEditorItem.Combat.Friendly);
                 cmbDamageType.SelectedIndex = mEditorItem.Combat.DamageType;
@@ -440,6 +452,8 @@ namespace Intersect.Editor.Forms.Editors
             cmbProjectile.Hide();
             lblDuration.Hide();
             nudDuration.Hide();
+            lblTrapAnimation.Hide();
+            cmbTrapAnimation.Hide();
 
             if (cmbTargetType.SelectedIndex == (int) SpellTargetType.Single)
             {
@@ -488,6 +502,9 @@ namespace Intersect.Editor.Forms.Editors
                 lblDuration.Show();
                 nudDuration.Show();
                 nudDuration.Value = mEditorItem.Combat.TrapDuration;
+                lblTrapAnimation.Show();
+                cmbTrapAnimation.Show();
+                cmbTrapAnimation.SelectedIndex = AnimationBase.ListIndex(mEditorItem.TrapAnimationId) + 1;
             }
         }
 
@@ -842,7 +859,7 @@ namespace Intersect.Editor.Forms.Editors
 
         private void nudMag_ValueChanged(object sender, EventArgs e)
         {
-            mEditorItem.Combat.StatDiff[(int) Stat.AbilityPower] = (int) nudMag.Value;
+            mEditorItem.Combat.StatDiff[(int) Stat.Intelligence] = (int) nudMag.Value;
         }
 
         private void nudDef_ValueChanged(object sender, EventArgs e)
@@ -852,7 +869,7 @@ namespace Intersect.Editor.Forms.Editors
 
         private void nudMR_ValueChanged(object sender, EventArgs e)
         {
-            mEditorItem.Combat.StatDiff[(int) Stat.MagicResist] = (int) nudMR.Value;
+            mEditorItem.Combat.StatDiff[(int) Stat.Vitality] = (int) nudMR.Value;
         }
 
         private void nudSpd_ValueChanged(object sender, EventArgs e)
@@ -867,7 +884,7 @@ namespace Intersect.Editor.Forms.Editors
 
         private void nudMagPercentage_ValueChanged(object sender, EventArgs e)
         {
-            mEditorItem.Combat.PercentageStatDiff[(int) Stat.AbilityPower] = (int) nudMagPercentage.Value;
+            mEditorItem.Combat.PercentageStatDiff[(int) Stat.Intelligence] = (int) nudMagPercentage.Value;
         }
 
         private void nudDefPercentage_ValueChanged(object sender, EventArgs e)
@@ -877,7 +894,7 @@ namespace Intersect.Editor.Forms.Editors
 
         private void nudMRPercentage_ValueChanged(object sender, EventArgs e)
         {
-            mEditorItem.Combat.PercentageStatDiff[(int) Stat.MagicResist] = (int) nudMRPercentage.Value;
+            mEditorItem.Combat.PercentageStatDiff[(int) Stat.Vitality] = (int) nudMRPercentage.Value;
         }
 
         private void nudSpdPercentage_ValueChanged(object sender, EventArgs e)
@@ -1103,6 +1120,43 @@ namespace Intersect.Editor.Forms.Editors
         {
             Guid animationId = AnimationBase.IdFromList(cmbTickAnimation.SelectedIndex - 1);
             mEditorItem.TickAnimation = AnimationBase.Get(animationId);
+        }
+
+        private void cmbTrapAnimation_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Guid animationId = AnimationBase.IdFromList(cmbTrapAnimation.SelectedIndex - 1);
+            mEditorItem.TrapAnimation = AnimationBase.Get(animationId);
+        }
+
+        private void nudAgi_ValueChanged(object sender, EventArgs e)
+        {
+            mEditorItem.Combat.StatDiff[(int)Stat.Agility] = (int)nudAgi.Value;
+        }
+
+        private void nudAgiPercentage_ValueChanged(object sender, EventArgs e)
+        {
+            mEditorItem.Combat.PercentageStatDiff[(int)Stat.Agility] = (int)nudAgiPercentage.Value;
+        }
+
+        private void nudDmg_ValueChanged(object sender, EventArgs e)
+        {
+            mEditorItem.Combat.StatDiff[(int)Stat.Potency] = (int)nudDmg.Value;
+        }
+
+        private void nudDmgPercentage_ValueChanged(object sender, EventArgs e)
+        {
+            mEditorItem.Combat.PercentageStatDiff[(int)Stat.Potency] = (int)nudDmgPercentage.Value;
+        }
+
+
+        private void nudCur_ValueChanged(object sender, EventArgs e)
+        {
+            mEditorItem.Combat.StatDiff[(int)Stat.Cures] = (int)nudCur.Value;
+        }
+
+        private void nudCurPercentage_ValueChanged(object sender, EventArgs e)
+        {
+            mEditorItem.Combat.PercentageStatDiff[(int)Stat.Cures] = (int)nudCurPercentage.Value;
         }
     }
 

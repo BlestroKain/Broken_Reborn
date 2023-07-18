@@ -70,7 +70,16 @@ namespace Intersect.GameObjects
             get => AnimationBase.Get(TickAnimationId);
             set => TickAnimationId = value?.Id ?? Guid.Empty;
         }
+        [Column("TrapAnimation")]
+        public Guid TrapAnimationId { get; set; }
 
+        [NotMapped]
+        [JsonIgnore]
+        public AnimationBase TrapAnimation
+        {
+            get => AnimationBase.Get(TrapAnimationId);
+            set => TrapAnimationId = value?.Id ?? Guid.Empty;
+        }
         //Spell Times
         public int CastDuration { get; set; }
 

@@ -410,6 +410,9 @@ namespace Intersect.Server.Migrations.Game
                     b.Property<double>("CritMultiplier");
 
                     b.Property<int>("Damage");
+                    
+                    b.Property<Guid>("DeathAnimationId")
+                        .HasColumnName("DeathAnimation");
 
                     b.Property<int>("DamageType");
 

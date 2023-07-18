@@ -740,7 +740,11 @@ namespace Intersect.Client.Entities
             {
                 PacketSender.SendDepositItem(inventorySlotIndex, 1, bankSlotIndex);
             }
-
+            if (Globals.InputManager.KeyDown(Keys.Shift))
+            {
+                PacketSender.SendDepositItem(inventorySlotIndex, Inventory[inventorySlotIndex].Quantity);
+                return;
+            }
             var userData = new int[2] { inventorySlotIndex, bankSlotIndex };
 
             InputBox.Open(
@@ -805,7 +809,11 @@ namespace Intersect.Client.Entities
                 PacketSender.SendWithdrawItem(bankSlotIndex, 1, inventorySlotIndex);
                 return;
             }
-
+            if (Globals.InputManager.KeyDown(Keys.Shift))
+            {
+                PacketSender.SendWithdrawItem(bankSlotIndex, Globals.Bank[bankSlotIndex].Quantity);
+                return;
+            }
             int[] userData = new int[2] { bankSlotIndex, inventorySlotIndex };
 
             InputBox.Open(
@@ -1287,7 +1295,20 @@ namespace Intersect.Client.Entities
             //Something is null.. return a value that is out of range :)
             return 9999;
         }
-
+        public void TargetPartyMember(int idx)
+        {
+            if (Globals.Me.IsInParty() && idx < Globals.Me.Party.Count)
+            {
+                if (Globals.Entities.TryGetValue(Globals.Me.Party[idx].Id, out var partyMember) && GetDistanceTo(partyMember) <= Options.Instance.CombatOpts.PartyTargetDistance)
+                {
+                    TryTarget(partyMember);
+                }
+            }
+            else if (idx == 0)
+            {
+                TryTarget(this);
+            }
+        }
         public void AutoTarget()
         {
             //Check for taunt status if so don't allow to change target

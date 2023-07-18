@@ -118,6 +118,10 @@ namespace Intersect
 
         public static int TradeRange => Instance.PlayerOpts.TradeRange;
 
+        public static int VitalityHealthMultiplier => Instance.PlayerOpts.VitalityHealthDivider;
+
+        public static int IntelligenceManaMultiplier => Instance.PlayerOpts.IntManaDivider;
+
         public static int WeaponIndex => Instance.EquipmentOpts.WeaponSlot;
 
         public static int ShieldIndex => Instance.EquipmentOpts.ShieldSlot;
@@ -141,6 +145,8 @@ namespace Intersect
         public static int BlockingSlow => Instance.CombatOpts.BlockingSlow;
 
         public static int MaxDashSpeed => Instance.CombatOpts.MaxDashSpeed;
+
+        public static string PlayerDeathAnimationId => Instance.CombatOpts.PlayerDeathAnimationId;
 
         public static int GameBorderStyle => Instance.MapOpts.GameBorderStyle;
 

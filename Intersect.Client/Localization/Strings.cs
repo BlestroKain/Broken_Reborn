@@ -786,6 +786,9 @@ namespace Intersect.Client.Localization
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public static LocalizedString title = @"Crafting Table";
 
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public static LocalizedString recipe = @"{01}";
+
         }
 
         public partial struct Credits

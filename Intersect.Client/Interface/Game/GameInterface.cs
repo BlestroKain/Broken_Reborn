@@ -15,6 +15,9 @@ using Intersect.Client.Interface.Game.Trades;
 using Intersect.Client.Networking;
 using Intersect.Enums;
 using Intersect.GameObjects;
+using Intersect.Client.Items;
+using System.Collections.Generic;
+using static Intersect.Client.Interface.Game.Bank.BankWindow;
 
 namespace Intersect.Client.Interface.Game
 {
@@ -499,8 +502,17 @@ namespace Intersect.Client.Interface.Game
                 mChatBox.UnFocus();
                 UnfocusChat = false;
             }
+          
+        }
+        public List<BankSlot> GetSortedBank()
+        {
+            return mBankWindow.SortedBank;
         }
 
+        public void RefreshBank()
+        {
+            mBankWindow.InitRefreshBank();
+        }
         public void Draw()
         {
             GameCanvas.RenderCanvas();

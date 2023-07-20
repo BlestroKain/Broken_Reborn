@@ -14,6 +14,10 @@ using Intersect.Configuration;
 using Intersect.Enums;
 using Intersect.GameObjects;
 using Intersect.Utilities;
+using System.Collections.Generic;
+using Intersect.Client.Framework.File_Management;
+using Intersect.Client.Items;
+using static Intersect.Client.Interface.Game.Bank.BankWindow;
 
 namespace Intersect.Client.Interface.Game.Bank
 {
@@ -75,7 +79,7 @@ namespace Intersect.Client.Interface.Game.Bank
         {
             if (ClientConfiguration.Instance.EnableContextMenus)
             {
-                mBankWindow.OpenContextMenu(mMySlot);
+                mBankWindow.OpenContextMenu(SortedSlot);
             }
             else
             {
@@ -87,7 +91,7 @@ namespace Intersect.Client.Interface.Game.Bank
         {
             if (Globals.InBank)
             {
-                Globals.Me.TryWithdrawItem(mMySlot);
+                Globals.Me.TryWithdrawItem(SortedSlot);
             }
         }
 
@@ -130,12 +134,12 @@ namespace Intersect.Client.Interface.Game.Bank
                 mDescWindow = null;
             }
 
-            if (Globals.Bank[mMySlot]?.Base != null)
+            if (SortedBank[mMySlot]?.Item.Base != null)
             {
                 mDescWindow = new ItemDescriptionWindow(
-                    Globals.Bank[mMySlot].Base, Globals.Bank[mMySlot].Quantity, mBankWindow.X, mBankWindow.Y,
-                    Globals.Bank[mMySlot].ItemProperties
-                );
+                    SortedBank[mMySlot].Item.Base, SortedBank[mMySlot].Item.Quantity, mBankWindow.X, mBankWindow.Y,
+                    SortedBank[mMySlot].Item.ItemProperties
+                                    );
             }
         }
 
@@ -154,10 +158,10 @@ namespace Intersect.Client.Interface.Game.Bank
 
         public void Update()
         {
-            if (Globals.Bank[mMySlot].ItemId != mCurrentItemId)
+            if (SortedBank[mMySlot].Item.ItemId != mCurrentItemId)
             {
-                mCurrentItemId = Globals.Bank[mMySlot].ItemId;
-                var item = ItemBase.Get(Globals.Bank[mMySlot].ItemId);
+                mCurrentItemId = SortedBank[mMySlot].Item.ItemId;
+                var item = ItemBase.Get(SortedBank[mMySlot].Item.ItemId);
                 if (item != null)
                 {
                     var itemTex = Globals.ContentManager.GetTexture(Framework.Content.TextureType.Item, item.Icon);
@@ -282,7 +286,7 @@ namespace Intersect.Client.Interface.Game.Bank
 
                                 if (allowed)
                                 {
-                                    PacketSender.SendMoveBankItems(bestIntersectIndex, mMySlot);
+                                    PacketSender.SendMoveBankItems(bestIntersectIndex, SortedSlot);
                                 }
 
                                 //Globals.Me.SwapItems(bestIntersectIndex, _mySlot);
@@ -323,6 +327,12 @@ namespace Intersect.Client.Interface.Game.Bank
             }
         }
 
+       
     }
+    public partial class BankItem
+    {
+        public List<BankSlot> SortedBank => Interface.GameUi.GetSortedBank();
 
+        public int SortedSlot => SortedBank[mMySlot].SlotId;
+    }
 }

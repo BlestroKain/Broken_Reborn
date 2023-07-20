@@ -17,3 +17,14 @@ namespace Intersect.Enums
         Bag = 6
     }
 }
+
+// SORT Values:
+/*
+ * Currency
+ * Equipment
+ * Bag
+ * Event
+ * Spell
+ * None
+ * Consumable
+ */ 

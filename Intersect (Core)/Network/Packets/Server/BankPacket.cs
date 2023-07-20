@@ -1,4 +1,4 @@
-﻿using MessagePack;
+using MessagePack;
 
 namespace Intersect.Network.Packets.Server
 {
@@ -9,12 +9,13 @@ namespace Intersect.Network.Packets.Server
         public BankPacket()
         {
         }
-        public BankPacket(bool close, bool guild, int slots, BankUpdatePacket[] items)
+        public BankPacket(bool close, bool guild, int slots, BankUpdatePacket[] items, int bankValue)
         {
             Close = close;
             Guild = guild;
             Slots = slots;
             Items = items;
+            BankValue = bankValue;
         }
 
         [Key(0)]
@@ -29,6 +30,8 @@ namespace Intersect.Network.Packets.Server
         [Key(3)]
         public BankUpdatePacket[] Items { get; set; }
 
+        [Key(4)]
+        public int BankValue { get; set; }
     }
 
 }

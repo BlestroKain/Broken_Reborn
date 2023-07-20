@@ -9,6 +9,8 @@ using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.General;
 using Intersect.Client.Localization;
 using Intersect.GameObjects;
+using Intersect.Client.Networking;
+using Intersect.Client.Framework.Gwen.Control.EventArguments;
 
 namespace Intersect.Client.Interface.Game.Bank
 {
@@ -36,6 +38,9 @@ namespace Intersect.Client.Interface.Game.Bank
 
         private bool mOpen;
 
+        private Button mSortButton;
+
+        private Label mValueLabel;
         // Context menu
         private Framework.Gwen.Control.Menu mContextMenu;
 
@@ -72,6 +77,15 @@ namespace Intersect.Client.Interface.Game.Bank
             mContextMenu.Children.Clear();
             mWithdrawContextItem = mContextMenu.AddItem(Strings.BankContextMenu.Withdraw);
             mWithdrawContextItem.Clicked += MWithdrawContextItem_Clicked;
+
+            mSortButton = new Button(mBankWindow, "SortButton");
+            mSortButton.SetText(Strings.Bank.sort);
+            mSortButton.Clicked += sort_Clicked;
+
+            mValueLabel = new Label(mBankWindow, "ValueLabel");
+            mValueLabel.SetText(Strings.Bank.bankvalue.ToString(Strings.FormatQuantityAbbreviated(Globals.BankValue)));
+            mValueLabel.SetToolTipText(Strings.Bank.bankvalue.ToString(Globals.BankValue.ToString("N0").Replace(",", Strings.Numbers.comma)));
+
             mContextMenu.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
 
             // Close the window.
@@ -189,6 +203,15 @@ namespace Intersect.Client.Interface.Game.Bank
                     bankLabel.IsHidden = true;
                 }
             }
+            mValueLabel.SetText(Strings.Bank.bankvalue.ToString(Strings.FormatQuantityAbbreviated(Globals.BankValue)));
+            mValueLabel.SetToolTipText(Strings.Bank.bankvaluefull.ToString(Globals.BankValue.ToString("N0").Replace(",", Strings.Numbers.comma)));
+
+        }
+                void sort_Clicked(Base sender, ClickedEventArgs arguments)
+        {
+            if (mBankWindow.IsHidden) return;
+
+            PacketSender.SendBankSortPacket();
         }
 
         private void InitItemContainer()

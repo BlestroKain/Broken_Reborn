@@ -1191,7 +1191,7 @@ namespace Intersect.Client.Entities
                 else if (equipSlot > -1)
                 {
                     //Don't render the paperdolls if they have transformed.
-                    if (sprite == Sprite && Equipment.Length == Options.EquipmentSlots.Count)
+                    if (sprite == Sprite && Equipment.Length == Options.EquipmentSlots.Count && !IsDead())
                     {
                         if (Equipment[equipSlot] != Guid.Empty && this != Globals.Me ||
                             MyEquipment[equipSlot] < Options.MaxInvItems)

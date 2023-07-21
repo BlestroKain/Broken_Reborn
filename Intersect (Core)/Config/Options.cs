@@ -143,6 +143,31 @@ namespace Intersect
 
         public static List<string>[] PaperdollOrder => Instance.EquipmentOpts.Paperdoll.Directions;
 
+        public static bool CombatFlashes => Instance.CombatOpts.CombatFlashes;
+
+        public static float CriticalHitFlashIntensity => Instance.CombatOpts.CriticalHitFlashIntensity;
+
+        public static float HitFlashDuration => Instance.CombatOpts.HitFlashDuration;
+
+        public static string CriticalHitReceivedSound => Instance.CombatOpts.CriticalHitReceivedSound;
+
+        public static float DamageTakenFlashIntensity => Instance.CombatOpts.DamageTakenFlashIntensity;
+
+        public static float DamageTakenShakeAmount => Instance.CombatOpts.DamageTakenShakeAmount;
+
+        public static float DamageGivenShakeAmount => Instance.CombatOpts.DamageGivenShakeAmount;
+
+        public static float MaxDamageShakeDistance => Instance.CombatOpts.MaxDamageShakeDistance;
+
+        public static string GenericDamageGivenSound => Instance.CombatOpts.GenericDamageGivenSound;
+
+        public static string GenericDamageReceivedSound => Instance.CombatOpts.GenericDamageReceivedSound;
+
+        public static float ResourceDestroyedShakeAmount => Instance.CombatOpts.ResourceDestroyedShakeAmount;
+
+        public static string CriticalHitDealtSound => Instance.CombatOpts.CriticalHitDealtSound;
+           
+
         public static List<string> ToolTypes => Instance.EquipmentOpts.ToolTypes;
 
         public static List<string> AnimatedSprites => Instance._animatedSprites;

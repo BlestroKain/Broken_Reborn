@@ -113,6 +113,11 @@ namespace Intersect.Client.Core
 
         public static float BaseWorldScale => Options.Instance?.MapOpts?.TileScale ?? 1;
 
+        // ScreenShake
+        public static float CurrentShake = 0.0f;
+
+        private static float mShakeDecrement = 0.12f;
+
         //Init Functions
         public static void InitGraphics()
         {
@@ -601,6 +606,12 @@ namespace Intersect.Client.Core
                 Renderer.GetWhiteTexture(), new FloatRect(0, 0, 1, 1), CurrentView,
                 new Color((int)Fade.GetFade(), 0, 0, 0), null, GameBlendModes.None
             );
+            // Draw the current Flash over top that
+            DrawGameTexture(
+                Renderer.GetWhiteTexture(), new FloatRect(0, 0, 1, 1), CurrentView,
+                new Color((int)Flash.GetFlash(), Flash.GetColor().R, Flash.GetColor().G,
+                Flash.GetColor().B), null, GameBlendModes.None
+            );
 
             // Draw our mousecursor at the very end, but not when taking screenshots.
             if (!takingScreenshot && !string.IsNullOrWhiteSpace(ClientConfiguration.Instance.MouseCursor))
@@ -891,9 +902,24 @@ namespace Intersect.Client.Core
                 var sx = 0;//sw - (sw / scale);
                 var sy = 0;//sh - (sh / scale);
                 CurrentView = new FloatRect(sx, sy, sw / scale, sh / scale);
+                CurrentShake = 0.0f;
                 return;
             }
-
+            CurrentShake = Utilities.MathHelper.Clamp(CurrentShake - mShakeDecrement, 0.0f, 100.0f);
+            var yShake = CurrentShake;
+            var xShake = CurrentShake;
+            if (CurrentShake > 0.0f)
+            {
+                // Randomize which directions we're shaking in
+                if (Randomization.Next(0, 2) == 1)
+                {
+                    yShake *= -1;
+                }
+                if (Randomization.Next(0, 2) == 1)
+                {
+                    xShake *= -1;
+                }
+            }
             var mapWidth = Options.MapWidth * Options.TileWidth;
             var mapHeight = Options.MapHeight * Options.TileHeight;
 
@@ -937,8 +963,8 @@ namespace Intersect.Client.Core
                 h
             );
             var newView = new FloatRect(
-                (int)Math.Ceiling(en.Center.X - Renderer.ScreenWidth / scale / 2f),
-                (int)Math.Ceiling(en.Center.Y - Renderer.ScreenHeight / scale / 2f),
+                (int)Math.Ceiling(en.Center.X - Renderer.ScreenWidth / scale / 2f)+(int) xShake,
+                (int)Math.Ceiling(en.Center.Y - Renderer.ScreenHeight / scale / 2f)+ (int)yShake,
                 Renderer.ScreenWidth / scale,
                 Renderer.ScreenHeight / scale
             );

@@ -2267,6 +2267,20 @@ namespace Intersect.Server.Networking
         {
             player?.SendPacket(new MapTrapPacket(mapId, trapId, animationId, ownerId, x, y, remove));
         }
+
+        public static void SendFlashScreenPacket(Client client, float dur, Color col, float intensity, string soundFile = null)
+        {
+            client?.Send(new FlashScreenPacket(dur, col, intensity, soundFile));
+        }
+        public static void SendShakeScreenPacket(Client client, float intensity)
+        {
+            client?.Send(new ShakeScreenPacket(intensity));
+        }
+
+        public static void SendCombatEffectPacket(Client client, Guid targetId, float shakeAmount, Color entityFlashColor, string sound, float flashIntensity, float flashDuration, Color flashColor)
+        {
+            client?.Send(new CombatEffectPacket(targetId, shakeAmount, entityFlashColor, sound, flashIntensity, flashDuration, flashColor));
+        }
     }
 
 }

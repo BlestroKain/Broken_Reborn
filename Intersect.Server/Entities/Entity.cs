@@ -1903,7 +1903,6 @@ namespace Intersect.Server.Entities
             {
                 isCrit = true;
             }
-
             //If the enemy is a resource, the original base damage value will be used on "Calculate Damages", if not, we need change...
             if (!(enemy is Resource))
             {
@@ -2130,7 +2129,7 @@ namespace Intersect.Server.Entities
             if (enemy.GetVital(Vital.Health) <= 0)
             {
                 this.Target = null;
-                
+
                 if (enemy is Npc || enemy is Resource)
                 {
                     lock (enemy.EntityLock)
@@ -2180,6 +2179,11 @@ namespace Intersect.Server.Entities
             {
                 thisNpc.MoveTimer = Timing.Global.Milliseconds + (long)GetMovementTime();
             }
+
+            if (baseDamage != 0)
+            {
+                SendCombatEffects(enemy, isCrit, baseDamage);
+            }
         }
 
         void CheckForOnhitAttack(Entity enemy, bool isAutoAttack)
@@ -2194,6 +2198,113 @@ namespace Intersect.Server.Entities
                         status.RemoveStatus();
                     }
                 }
+            }
+        }
+
+        private void SendCombatEffects(Entity enemy, bool isCrit, int damage)
+        {
+            // Calculate combat special effects (entity/screen flash, screen shake, extra sounds)
+            // Define vars that will be used for combat effects
+            Color flashColor = null;
+            Color entityFlashColor = CustomColors.Combat.GenericDamageGiveEntityFlashColor;
+            float flashIntensity = 0.0f;
+            float flashDuration = Options.HitFlashDuration;
+            string damageSound = "";
+
+            if (this is Player player && enemy.Id != player.Id) // if the player is targeting themselves don't bother with any of this, just skip to the part where we send to the enemy
+            {
+                // Calc distances so shakes aren't as violent when further away
+                int enemyDistance = GetDistanceTo(enemy);
+                float shakeModifier = 1.0f;
+                if (enemyDistance > 1)
+                {
+                    shakeModifier = shakeModifier - (enemyDistance / Options.MaxDamageShakeDistance); // Don't shake if more than 6 tiles away
+                    shakeModifier = (float)MathHelper.Clamp(shakeModifier, 0.0f, 1.0f);
+                }
+
+                if (string.IsNullOrEmpty(damageSound) && damage > 0)
+                {
+                    damageSound = Options.GenericDamageGivenSound;
+                }
+
+                if (player.Client != null && !(enemy is Resource))
+                {
+                    var shakeAmount = Options.DamageGivenShakeAmount * shakeModifier;
+                    if (isCrit)
+                    {
+                        flashColor = CustomColors.Combat.CriticalHitDealtColor;
+                        flashIntensity = Options.CriticalHitFlashIntensity;
+                        damageSound = Options.CriticalHitDealtSound;
+                    }
+
+                    if (damage < 0) // healing exceptions
+                    {
+                        entityFlashColor = CustomColors.Combat.GenericHealingReceivedEntityFlashColor;
+                        flashColor = CustomColors.Combat.HealingFlashColor;
+                        entityFlashColor = CustomColors.Combat.GenericHealingReceivedEntityFlashColor;
+                        flashColor = CustomColors.Combat.HealingFlashColor;
+                        shakeAmount = 0.0f;
+                    }
+
+                    PacketSender.SendCombatEffectPacket(player.Client,
+                        enemy.Id,
+                        shakeAmount,
+                        entityFlashColor,
+                        damageSound,
+                        flashIntensity,
+                        flashDuration,
+                        flashColor);
+                }
+                else if (enemy is Resource)
+                {
+                    if (enemy.GetVital(Vital.Health) <= 0)
+                    {
+                        // Only shake for an exhausted resource
+                        PacketSender.SendCombatEffectPacket(player.Client,
+                            enemy.Id,
+                            Options.ResourceDestroyedShakeAmount * shakeModifier,
+                            null, // Don't want a resource to flash
+                            "", // Don't want a resource to make a hit sound
+                            0.0f,
+                            0.0f,
+                            null);
+                    }
+                }
+            }
+            // Send damaged effects to enemy - this will make their screen flash if critted, play THEIR hurt sound, and also make THEIR entity sprite flash
+            if (enemy.GetVital(Vital.Health) > 0 && enemy is Player en)
+            {
+                var shakeAmount = Options.DamageTakenShakeAmount;
+                flashIntensity = Options.DamageTakenFlashIntensity;
+
+                if (damage < 0) // healing exceptions
+                {
+                    entityFlashColor = CustomColors.Combat.GenericHealingReceivedEntityFlashColor;
+                    flashColor = CustomColors.Combat.HealingFlashColor;
+                    shakeAmount = 0.0f;
+                }
+                else if (damage > 0)
+                {
+                    flashColor = CustomColors.Combat.DamageTakenFlashColor;
+                    flashIntensity = Options.DamageTakenFlashIntensity;
+                    damageSound = Options.GenericDamageReceivedSound;
+
+                    if (isCrit)
+                    {
+                        flashColor = CustomColors.Combat.CriticalHitReceivedColor;
+                        flashIntensity = Options.CriticalHitFlashIntensity;
+                        damageSound = Options.CriticalHitReceivedSound;
+                    }
+                }
+
+                PacketSender.SendCombatEffectPacket(en.Client,
+                        en.Id,
+                        shakeAmount,
+                        entityFlashColor,
+                        damageSound,
+                        flashIntensity,
+                        flashDuration,
+                        flashColor);
             }
         }
 

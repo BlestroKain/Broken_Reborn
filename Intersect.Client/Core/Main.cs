@@ -70,6 +70,7 @@ namespace Intersect.Client.Core
             {
                 Networking.Network.Update();
                 Fade.Update();
+                Flash.Update();
                 Interface.Interface.ToggleInput(Globals.GameState != GameStates.Intro);
 
                 switch (Globals.GameState)

@@ -279,7 +279,7 @@ namespace Intersect.Server.Maps
         /// <param name="en">The entity to add.</param>
         public void AddEntity(Entity en)
         {
-            if (en != null && (!en.IsDead() || en.GetVital((int) Vital.Health) <= 0) && en.MapInstanceId == MapInstanceId)
+            if (en != null && (!en.IsDead() || en.GetVital((int) Vital.Health) > 0) && en.MapInstanceId == MapInstanceId)
             {
                 if (!mEntities.ContainsKey(en.Id))
                 {
@@ -1313,7 +1313,7 @@ namespace Intersect.Server.Maps
             for (var i = 0; i < spawns.Count; i++)
             {
                 var spawn = spawns[i];
-                if (!NpcSpawnInstances.TryGetValue(spawn, out var spawnInstance) || spawnInstance?.Entity?.Base == default || (!spawnInstance.Entity.Dead || spawnInstance.Entity.GetVital(Vital.Health) <= 0))
+                if (!NpcSpawnInstances.TryGetValue(spawn, out var spawnInstance) || spawnInstance?.Entity?.Base == default || (!spawnInstance.Entity.Dead))
                 {
                     continue;
                 }

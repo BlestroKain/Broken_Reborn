@@ -97,6 +97,10 @@ namespace Intersect.Client.Core
         private static float sPlayerLightSize;
 
         public static GameFont UIFont;
+        public static float CurrentShake = 0.0f;
+
+        private static float mShakeDecrement = 0.12f;
+
 
         //Init Functions
         public static void InitGraphics()
@@ -578,6 +582,12 @@ namespace Intersect.Client.Core
                 new Color((int) Fade.GetFade(), 0, 0, 0), null, GameBlendModes.None
             );
 
+            // Draw the current Flash over top that
+            DrawGameTexture(
+                Renderer.GetWhiteTexture(), new FloatRect(0, 0, 1, 1), CurrentView,
+                new Color((int)Flash.GetFlash(), Flash.GetColor().R, Flash.GetColor().G,
+                Flash.GetColor().B), null, GameBlendModes.None
+            );
             // Draw our mousecursor at the very end, but not when taking screenshots.
             if (!takingScreenshot && !string.IsNullOrWhiteSpace(ClientConfiguration.Instance.MouseCursor))
             {
@@ -860,10 +870,26 @@ namespace Intersect.Client.Core
         {
             if (Globals.Me == null)
             {
+                CurrentShake = 0.0f;
                 CurrentView = new FloatRect(0, 0, Renderer.GetScreenWidth(), Renderer.GetScreenHeight());
                 Renderer.SetView(CurrentView);
 
                 return;
+            }
+            CurrentShake = Utilities.MathHelper.Clamp(CurrentShake - mShakeDecrement, 0.0f, 100.0f);
+            var yShake = CurrentShake;
+            var xShake = CurrentShake;
+            if (CurrentShake > 0.0f)
+            {
+                // Randomize which directions we're shaking in
+                if (Randomization.Next(0, 2) == 1)
+                {
+                    yShake *= -1;
+                }
+                if (Randomization.Next(0, 2) == 1)
+                {
+                    xShake *= -1;
+                }
             }
 
             var map = MapInstance.Get(Globals.Me.MapId);
@@ -898,8 +924,9 @@ namespace Intersect.Client.Core
                 var h = y1 - y;
                 var restrictView = new FloatRect(x, y, w, h);
                 CurrentView = new FloatRect(
-                    (int) Math.Ceiling(en.Center.X - Renderer.ScreenWidth / 2f),
-                    (int) Math.Ceiling(en.Center.Y - Renderer.ScreenHeight / 2f),
+                    (int) Math.Ceiling(en.Center.X - Renderer.ScreenWidth / 2f) + (int) xShake,
+                    (int) Math.Ceiling(en.Center.Y - Renderer.ScreenHeight / 2f) + (int) yShake,
+                
                     Renderer.ScreenWidth,
                     Renderer.ScreenHeight
                 );

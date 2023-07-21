@@ -1265,7 +1265,7 @@ namespace Intersect.Client.Networking
                 Globals.Me.Inventory[packet.Slot].Load(packet.ItemId, packet.Quantity, packet.BagId, packet.Properties);
                 Globals.Me.InventoryUpdatedDelegate?.Invoke();
             }
-        }
+               }
 
         //SpellsPacket
         public void HandlePacket(IPacketSender packetSender, SpellsPacket packet)
@@ -1624,6 +1624,7 @@ namespace Intersect.Client.Networking
                 }
                 Globals.BankSlots = packet.Slots;
                 Interface.Interface.GameUi.NotifyOpenBank();
+                Globals.BankValue = packet.BankValue;
             }
             else
             {
@@ -1644,6 +1645,7 @@ namespace Intersect.Client.Networking
             {
                 Globals.Bank[slot] = null;
             }
+            Interface.Interface.GameUi.RefreshBank();
         }
 
         //GameObjectPacket
@@ -2143,6 +2145,76 @@ namespace Intersect.Client.Networking
             else
             {
                 map.RemoveTrap(packet.TrapId);
+            }
+        }
+        //BankUpdateValuePacket
+        public void HandlePacket(IPacketSender packetSender, BankUpdateValuePacket packet)
+        {
+            Globals.BankValue = packet.BankValue;
+          
+        }
+
+        // Screen Shake packet
+        public void HandlePacket(IPacketSender packetSender, ShakeScreenPacket packet)
+        {
+            if (Globals.Me == null) return;
+
+            if (Graphics.CurrentShake < packet.Intensity)
+            {
+                Graphics.CurrentShake = packet.Intensity;
+            }
+        }
+        // The client will flash the screen with the given params
+        public void HandlePacket(IPacketSender packetSender, FlashScreenPacket packet)
+        {
+            if (Globals.Me == null) return;
+
+            Flash.FlashScreen(packet.Duration, packet.FlashColor, packet.Intensity);
+
+            var flashSound = packet.SoundFile;
+            if (flashSound != null)
+            {
+                Audio.AddGameSound(flashSound, false);
+            }
+        }
+    
+    // Combat Effect packet
+    public void HandlePacket(IPacketSender packetSender, CombatEffectPacket packet)
+        {
+            if (Globals.Me == null) return;
+
+            var someTarget = packet.TargetId != null && packet.TargetId != Guid.Empty && Globals.Entities.ContainsKey(packet.TargetId);
+
+            if (Graphics.CurrentShake < packet.ShakeAmount && packet.ShakeAmount > 0.0f)
+            {
+                Graphics.CurrentShake = packet.ShakeAmount;
+            }
+
+            if (packet.FlashColor != null)
+            {
+                Flash.FlashScreen(packet.FlashDuration, packet.FlashColor, packet.FlashIntensity);
+            }
+            // Flash entity
+            if (someTarget)
+            {
+                Entity affectedTarget = Globals.Entities[packet.TargetId];
+                affectedTarget.Flash = true;
+                affectedTarget.FlashColor = packet.EntityFlashColor;
+                affectedTarget.FlashEndTime = Timing.Global.Milliseconds + 200; // TODO config
+                if (!string.IsNullOrEmpty(packet.Sound))
+                {
+                    Audio.AddMapSound(packet.Sound, affectedTarget.X, affectedTarget.Y, affectedTarget.MapId, false, 0, 10);
+                }
+            }
+            else // If we don't have a specific target handle this as if the hit-effects are happening to the packet-receiving player
+            {
+                if (!string.IsNullOrEmpty(packet.Sound))
+                {
+                    Audio.AddGameSound(packet.Sound, false);
+                }
+                Globals.Me.Flash = true;
+                Globals.Me.FlashColor = packet.EntityFlashColor;
+                Globals.Me.FlashEndTime = Timing.Global.Milliseconds + 200; // TODO config
             }
         }
     }

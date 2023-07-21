@@ -21,6 +21,7 @@ using Intersect.GameObjects.Maps;
 using Intersect.Logging;
 using Intersect.Network.Packets.Server;
 using Intersect.Utilities;
+using Microsoft.Xna.Framework.Graphics.PackedVector;
 using MapAttribute = Intersect.Enums.MapAttribute;
 
 namespace Intersect.Client.Entities
@@ -155,6 +156,11 @@ namespace Intersect.Client.Entities
 
         public bool Passable { get; set; }
 
+        public bool Flash = false; // Whether or not the entity sprite is flashing
+
+        public Color FlashColor = null; // What color to flash the entity
+
+        public long FlashEndTime = 0L;
         //Rendering Variables
         public HashSet<Entity> RenderList { get; set; }
 
@@ -542,6 +548,12 @@ namespace Intersect.Client.Entities
         //Movement Processing
         public virtual bool Update()
         {
+            // Update flash timer
+            if (Flash && Timing.Global.Milliseconds > FlashEndTime)
+            {
+                Flash = false;
+            }
+
             if (mDisposed)
             {
                 LatestMap = null;
@@ -1082,7 +1094,10 @@ namespace Intersect.Client.Entities
             var sprite = "";
             // Copy the actual render color, because we'll be editing it later and don't want to overwrite it.
             var renderColor = new Color(Color.A, Color.R, Color.G, Color.B);
-
+            if (Flash && FlashColor != null) // Flash the sprite some color for some duration
+            {
+                renderColor = FlashColor;
+            }
             string transformedSprite = "";
 
             // Loop through the entity status list.
@@ -1402,9 +1417,14 @@ namespace Intersect.Client.Entities
                 (int)Math.Ceiling(Center.X - frameWidth / 2f),
                 (int)Math.Ceiling(Center.Y - frameHeight / 2f),
                 srcRectangle.Width,
-                srcRectangle.Height
+            srcRectangle.Height        
             );
-
+            var RenderColor = new Color(222, 255, 255, 255);
+            if (Flash)
+            {
+                RenderColor = FlashColor;
+                RenderColor.A = 128;
+            }
             // Draw the paperdoll texture using: source and destination rectangles along with the render color.
             Graphics.DrawGameTexture(paperdollTex, srcRectangle, destRectangle, renderColor);
         }

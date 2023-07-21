@@ -434,6 +434,11 @@ namespace Intersect.Client.Networking
             Network.SendPacket(new RespawnPacket());
         }
 
+        public static void SendBankSortPacket()
+        {
+            Network.SendPacket(new BankSortPacket());
+        }
+
     }
 
 }

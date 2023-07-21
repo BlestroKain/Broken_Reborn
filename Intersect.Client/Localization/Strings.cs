@@ -436,7 +436,14 @@ namespace Intersect.Client.Localization
 
             public static LocalizedString withdrawitemprompt = @"How many/much {00} would you like to withdraw?";
 
-        }
+            public static LocalizedString sort = @"Sort";
+
+            public static LocalizedString bankvalue = @"Bank Value: {00}";
+
+            public static LocalizedString bankvaluefull = @"{00} Global Coins";
+        
+
+    }
 
         public partial struct BanMute
         {
@@ -778,6 +785,9 @@ namespace Intersect.Client.Localization
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public static LocalizedString title = @"Crafting Table";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public static LocalizedString recipe = @"{01}";
 
         }
 

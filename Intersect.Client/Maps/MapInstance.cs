@@ -726,6 +726,27 @@ namespace Intersect.Client.Maps
             if (layer == 2)
             {
                 drawLayers = Options.Instance.MapOpts.Layers.UpperLayers;
+                
+                //by rodrigo
+                if (Globals.MouseClick.is_click_image_on == true)
+                {
+                    //get the mouse position
+                    var mouse = Graphics.ConvertToWorldPoint(Globals.InputManager.GetMousePosition());
+
+                    var mouse_marker = Globals.ContentManager.GetTexture(Framework.Content.TextureType.Image, Globals.MouseClick.click_image_file);
+                    Graphics.DrawGameTexture(
+                        mouse_marker, new FloatRect(0, 0, Options.TileWidth, Options.TileHeight),
+                        new FloatRect(mouse.X - (Options.TileWidth / 2), mouse.Y - (Options.TileHeight / 2), Options.TileWidth, Options.TileHeight), Color.White
+                    );
+                    //we gotta count the ticks to make the marker stand in the view for some time
+                    Globals.MouseClick.click_image_duration = Globals.MouseClick.click_image_duration - (int)(TimeSpan.TicksPerMillisecond / 200);
+                    if (Globals.MouseClick.click_image_duration <= 0)
+                    {
+                        Globals.MouseClick.is_click_image_on = false;
+                        Globals.MouseClick.click_image_duration = 2000;
+                    }
+                }
+                //end
             }
 
             foreach (var drawLayer in drawLayers)

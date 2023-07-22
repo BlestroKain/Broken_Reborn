@@ -11,6 +11,7 @@ using Intersect.Client.Networking;
 using Intersect.Utilities;
 using Intersect.Client.Framework.Gwen.Input;
 using Intersect.Client.MonoGame.Input;
+using Intersect.Logging;
 
 namespace Intersect.Client.Core
 {
@@ -40,6 +41,16 @@ namespace Intersect.Client.Core
             KeyDown?.Invoke(modifier, key);
             switch (key)
             {
+                //by rodrigo. flags the CTRL key
+                case Keys.LControlKey:
+                    if (Globals.GameState != GameStates.Intro)
+                    {
+                        Globals.IsControlKeyPressed = true;
+                        break;
+                    }
+
+                    break;
+                //end
                 case Keys.Escape:
                     if (Globals.GameState != GameStates.Intro)
                     {
@@ -305,6 +316,11 @@ namespace Intersect.Client.Core
             {
                 return;
             }
+            
+            if(key == Keys.LControlKey)
+            {
+                Globals.IsControlKeyPressed = false;
+            }
         }
 
         public static void OnMouseDown(Keys modifier, MouseButtons btn)
@@ -314,71 +330,194 @@ namespace Intersect.Client.Core
             {
                 case MouseButtons.Left:
                     key = Keys.LButton;
-                    //editado por rodrigo
-                    //case GameInput.MouseButtons.Left:
-                    if
-                        (Globals.GameState == GameStates.InGame &&
-                        Globals.Me != null &&
-                        Interface.Interface.HasInputFocus() == false &&
+                                 //editado por rodrigo
+
+                    if 
+                        (Globals.GameState == GameStates.InGame && 
+                        Globals.Me != null && 
+                        Interface.Interface.HasInputFocus() == false && 
                         Interface.Interface.MouseHitGui() == false &&
                         Globals.Me.TryTarget() == false)
                     {
-                        var player_x = Globals.Me.X;
-                        var player_y = Globals.Me.Y;
+                        Pointf mouse;
+                        bool move_it = false;
+                        //get the mouse position
+                        mouse = Globals.InputManager.GetMousePosition();
 
-                        var mouse_x = Math.Floor((Globals.InputManager.GetMousePosition().X + Graphics.CurrentView.Left) / Options.TileWidth);
-                        var mouse_y = Math.Floor((Globals.InputManager.GetMousePosition().Y + Graphics.CurrentView.Top) / Options.TileHeight);
+                        Globals.MouseClick.click_image_file = "click_marker_left.png";
+                        Globals.MouseClick.is_click_image_on = true;
 
-                        //do the math to find out the mouse most probably direction
-                        var dif_x = (int)(mouse_x - player_x);
-                        var dif_y = (int)(mouse_y - player_y);
-
+                        Pointf getpoint = Globals.Me.GetClickedTileDistance(mouse);
+                        var dif_x = (int)getpoint.X;
+                        var dif_y = (int)getpoint.Y;
                         //ok, now we convert to positive integer to check the biggest difference, horizontal or vertical so we can decide where to move
                         var chk_x = 0; var chk_y = 0; var direction = "";
 
-                        if (dif_x < 0) { chk_x = (dif_x * (-1)); } else { chk_x = dif_x; }
-                        if (dif_y < 0) { chk_y = (dif_y * (-1)); } else { chk_y = dif_y; }
+                        if (dif_x < 0) 
+                        { 
+                            chk_x = (dif_x * (-1)); 
+                        } else {
+                            chk_x = dif_x;
+                        }
+                        if (dif_y < 0) 
+                        { 
+                            chk_y = (dif_y * (-1)); 
+                        } else { 
+                            chk_y = dif_y; 
+                        }
 
                         //we clear any existing movement before setting a new one
                         //Globals.Me.multi_mouse_move_active = false;
                         Globals.Me.multi_mouse_move_count = -1;
 
-                        if (mouse_x < player_x && chk_x >= chk_y)
-                        {
-                            direction = "left";
-                            Globals.Me.multi_mouse_move_count = chk_x - 1;
-                            Globals.Me.multi_mouse_move_direction = 1;
-                        }
-                        if (mouse_x > player_x && chk_x > chk_y)
-                        {
-                            Globals.Me.multi_mouse_move_count = chk_x - 1;
-                            Globals.Me.multi_mouse_move_direction = 3;
-                        }
-                        if (mouse_y < player_y && chk_x <= chk_y)
-                        {
-                            direction = "up";
-                            Globals.Me.multi_mouse_move_count = chk_y - 1;
-                            Globals.Me.multi_mouse_move_direction = 0;
-                        }
-                        if (mouse_y > player_y && chk_x < chk_y)
-                        {
-                            direction = "down";
-                            Globals.Me.multi_mouse_move_count = chk_y - 1;
-                            Globals.Me.multi_mouse_move_direction = 2;
-                        }
-                        Globals.Me.HandleInput(Globals.Me.multi_mouse_move_direction);
-                        Globals.Me.multi_mouse_move_active = true;
+                        if(chk_x > chk_y)
+                        { //horizontal movement
+                            Globals.Me.multi_mouse_move_count = chk_x;
+                            if (dif_x  < 0)
+                            { // move left
+                                direction = "left";
+                                Globals.Me.multi_mouse_move_direction = 1;
+                                move_it = true;
+                            }
+                            else
+                            { // move right
+                                direction = "right";
+                                Globals.Me.multi_mouse_move_direction = 3;
+                                move_it = true;
+                            }
 
-                        //The commented code below shows a chat bubble with the direction and "steps". For testing purposes.
-                        //PacketSender.SendChatMsg("going " + direction + " " + Globals.Me.multi_mouse_move_count.ToString() + " steps." , 0);
+                        }
+                        if (chk_x < chk_y)
+                        { //vertical movement
+                            Globals.Me.multi_mouse_move_count = chk_y;
+                            if (dif_y < 0)
+                            { // move up
+                                direction = "up";
+                                Globals.Me.multi_mouse_move_direction = 0;
+                                move_it = true;
+                            }
+                            else
+                            { // move down
+                                direction = "down";
+                                Globals.Me.multi_mouse_move_direction = 2;
+                                move_it = true;
+                            }
+                        }
+                        //for maximize performance, if steps are above X value, increase X steps
+                        switch (Globals.Me.multi_mouse_move_count)
+                            {
+                                case int n when (n >= 5 && n < 10):
+                                Globals.Me.multi_mouse_move_count = (int)(Math.Floor(Globals.Me.multi_mouse_move_count * 1.5));
+                                break;
+                            case int n when (n >= 10 && n < 100):
+                                Globals.Me.multi_mouse_move_count = (int)(Math.Floor(Globals.Me.multi_mouse_move_count * 2.5));
+                                break;
 
-                        Globals.Me.IsMoving = true;
+                        }
+                        //Globals.Me.multi_mouse_move_count = 20;
+
+                        //tudo que vier abaixo será uma função pra achar o tile real no mundo.
+
+                        var myMap = MapInstance.Get(Globals.Me.MapId);
+                        
+                        
+                        if (myMap != null)
+                        {
+
+                            int mapgx = (int)MapInstance.Get(Globals.Me.MapId).GridX;
+                            int mapgy = (int)MapInstance.Get(Globals.Me.MapId).GridY;
+
+                            int targetx = mapgx; int targety = mapgy;
+
+                            //verifica se o player está em cima da última tile do mapa no sentido x
+                            if (Globals.Me.X + dif_x > Options.MapWidth)
+                             {
+                            //PacketSender.SendChatMsg($"Ultrapassa mapa para direita", 0);
+                                targetx = mapgx + 1;
+                            }
+                            if (Globals.Me.X + dif_x < 0)
+                            {
+                                targetx = mapgx - 1;
+                                //PacketSender.SendChatMsg($"Ultrapassa mapa para esquerda", 0);
+                            }
+
+                            if (Globals.Me.Y + dif_y > Options.MapHeight)
+                            {
+                                //PacketSender.SendChatMsg($"Ultrapassa mapa para baixo", 0);
+                                targety = mapgy + 1;
+                            }
+                            if (Globals.Me.Y + dif_y < 0)
+                            {
+                                targety = mapgx - 1;
+                                //PacketSender.SendChatMsg($"Ultrapassa mapa para cima", 0);
+                            }
+
+                            int mouse_x = (int)(mouse.X / Options.TileWidth);
+                            int mouse_y = (int)(mouse.Y / Options.TileHeight);
+                            //make sure the values are within the grid limits
+                            
+                            if (targetx < Globals.MapGrid.GetLength(0) && targety < Globals.MapGrid.GetLength(1) && targetx > -1 && targety > -1)
+                            {
+                                try
+                                {
+                                    var targetMap = MapInstance.Get(Globals.MapGrid[targetx, targety]);
+                                } catch
+                                {
+                                    Log.Error("fudeu");
+                                }
+                            }
+
+                            //Calculate World Tile of Me
+                            var x1 = Globals.Me.X + myMap.GridX * Options.MapWidth;
+                            var y1 = Globals.Me.Y + myMap.GridY * Options.MapHeight;
+
+                            //Calculate world tile of target
+                            //var x2 = target.X + targetMap.MapGridX * Options.MapWidth;
+                            //var y2 = target.Y + targetMap.MapGridY * Options.MapHeight;
+
+                            //return (int)Math.Sqrt(Math.Pow(x1 - x2, 2) + Math.Pow(y1 - y2, 2));
+
+                            string[] anim_list = GameObjects.AnimationBase.GetNameList();
+                            
+                            
+                            for(int i = 0; i <= anim_list.Length -1; i++)
+                            {
+                                Guid anim_id = GameObjects.AnimationBase.IdFromList(i);
+                                string ani_name = GameObjects.AnimationBase.GetName(anim_id);
+                                if (ani_name == "mouse_click_animation")
+                                {
+                                    // PacketSender.SendChatMsg("animation found", 0);
+
+                                    //targetMap.AddMouseClickAnimation(anim_id, mouse_x, mouse_y);
+                                    //Graphics.DrawGameTexture
+
+                                }
+                                
+                            }
+                            //targetMap
+                        }
+
+                        if (move_it == true && Globals.IsControlKeyPressed == false)
+                        {
+                            Globals.Me.IsMoving = true;
+                            Globals.Me.HandleInput(Globals.Me.multi_mouse_move_direction);
+                            Globals.Me.multi_mouse_move_active = true;
+
+                            //The commented code below shows a chat bubble with the direction and "steps". For testing purposes.
+                            PacketSender.SendChatMsg("going " + direction + " " + Globals.Me.multi_mouse_move_count.ToString() + " steps." , 0);
+                            //PacketSender.SendChatMsg($"player:  {player_x},{player_y}  mouse: {mouse_x}, {mouse_y} real mouse: {real_mouse_x} pl-px: {real_pl_x} Steps to walk: {steps_to_walk} " , 0);
+                            //PacketSender.SendChatMsg($"diferenca x: {dif_x} diferenca y: {dif_y}", 0);
+                            //PacketSender.SendChatMsg($"map len:{Globals.MapGrid.Length}",0);
+                        }
                     }
                     //fim do editado por rodrigo
                     break;
 
                 case MouseButtons.Right:
-                    key = Keys.RButton;
+                    key = Keys.RButton;        
+                    
+                    Globals.MouseClick.click_image_file = "click_marker_right.png";
+                    Globals.MouseClick.is_click_image_on = true;
 
                     break;
 
@@ -448,6 +587,29 @@ namespace Intersect.Client.Core
             {
                 case MouseButtons.Right:
                     key = Keys.RButton;
+                    //by rodrigo
+                    if
+                        (Globals.GameState == GameStates.InGame &&
+                         Globals.Me != null &&
+                         Interface.Interface.HasInputFocus() == false &&
+                         Interface.Interface.MouseHitGui() == false &&
+                         Globals.Me.TryTarget() == false && Globals.Me.IsMoving == false)
+                    {
+                        Pointf mouse;
+                        //send the player direction to the server again
+                        PacketSender.SendDirection(Globals.Me.Dir);
+                        //get the mouse position
+                        mouse = Graphics.ConvertToWorldPoint(Globals.InputManager.GetMousePosition());
+                        Globals.Me.LongRangeSpellTarget.X = (int)mouse.X / Options.TileWidth;
+                        Globals.Me.LongRangeSpellTarget.Y = (int)mouse.Y / Options.TileHeight;
+                        Globals.Me.PlayerView.X = (int)Graphics.CurrentView.Left;
+                        Globals.Me.PlayerView.Y = (int)Graphics.CurrentView.Top;
+
+
+
+                        Globals.Me.start_hotbar_selected_spell = true;                    
+                    }
+//end
 
                     break;
 

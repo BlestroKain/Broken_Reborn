@@ -19,9 +19,23 @@ using Intersect.Utilities;
 
 namespace Intersect.Client.General
 {
+    //by rodrigo. class to join all the mouseclick stuff, to go inside the Globals
+    public  class clsMouseClick
+    {
+        public  bool is_click_image_on = false;
+        public  int click_image_duration = 2000;
+        public string click_image_file = "click_marker_left.png";
+    }
 
     public static partial class Globals
     {
+        public static int WindowLeft;
+        public static int WindowTop;
+        
+        //the flag below controls if the Click Image is active
+        public static clsMouseClick MouseClick = new clsMouseClick();
+
+        public static bool IsControlKeyPressed = false;
 
         //Only need 1 table, and that is the one we see at a given moment in time.
         public static CraftingTableBase ActiveCraftingTable;

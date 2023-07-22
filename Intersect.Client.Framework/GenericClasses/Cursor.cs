@@ -3,7 +3,10 @@
 
     public partial class Cursor
     {
+        public int cursor_position_x = 0;
 
+        public int cursor_position_y = 0;
+        
         private int mType = 0;
 
         public Cursor()

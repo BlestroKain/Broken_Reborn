@@ -1314,6 +1314,12 @@ namespace Intersect.Client.Core
         {
             return new Pointf((int)Math.Floor(windowPoint.X + CurrentView.Left), (int)Math.Floor(windowPoint.Y + CurrentView.Top));
         }
+        
+        public static Pointf GetWindowPosition()
+        {
+            return new Pointf((int)CurrentView.Left, (int)CurrentView.Top );
+        }
+
 
         //Rendering Functions
 

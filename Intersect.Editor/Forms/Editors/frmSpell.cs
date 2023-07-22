@@ -439,6 +439,9 @@ namespace Intersect.Editor.Forms.Editors
             if (cmbType.SelectedIndex == (int) SpellType.Ressurect)
             {
                 grpTargetInfo.Show();
+                cmbTargetType.SelectedIndex = (int)SpellTargetType.Single;
+                cmbTargetType.Enabled = false;
+                UpdateTargetTypePanel();
             }
         }
 

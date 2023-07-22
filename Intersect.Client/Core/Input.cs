@@ -9,6 +9,8 @@ using Intersect.Client.Interface.Game;
 using Intersect.Client.Maps;
 using Intersect.Client.Networking;
 using Intersect.Utilities;
+using Intersect.Client.Framework.Gwen.Input;
+using Intersect.Client.MonoGame.Input;
 
 namespace Intersect.Client.Core
 {
@@ -312,7 +314,67 @@ namespace Intersect.Client.Core
             {
                 case MouseButtons.Left:
                     key = Keys.LButton;
+                    //editado por rodrigo
+                    //case GameInput.MouseButtons.Left:
+                    if
+                        (Globals.GameState == GameStates.InGame &&
+                        Globals.Me != null &&
+                        Interface.Interface.HasInputFocus() == false &&
+                        Interface.Interface.MouseHitGui() == false &&
+                        Globals.Me.TryTarget() == false)
+                    {
+                        var player_x = Globals.Me.X;
+                        var player_y = Globals.Me.Y;
 
+                        var mouse_x = Math.Floor((Globals.InputManager.GetMousePosition().X + Graphics.CurrentView.Left) / Options.TileWidth);
+                        var mouse_y = Math.Floor((Globals.InputManager.GetMousePosition().Y + Graphics.CurrentView.Top) / Options.TileHeight);
+
+                        //do the math to find out the mouse most probably direction
+                        var dif_x = (int)(mouse_x - player_x);
+                        var dif_y = (int)(mouse_y - player_y);
+
+                        //ok, now we convert to positive integer to check the biggest difference, horizontal or vertical so we can decide where to move
+                        var chk_x = 0; var chk_y = 0; var direction = "";
+
+                        if (dif_x < 0) { chk_x = (dif_x * (-1)); } else { chk_x = dif_x; }
+                        if (dif_y < 0) { chk_y = (dif_y * (-1)); } else { chk_y = dif_y; }
+
+                        //we clear any existing movement before setting a new one
+                        //Globals.Me.multi_mouse_move_active = false;
+                        Globals.Me.multi_mouse_move_count = -1;
+
+                        if (mouse_x < player_x && chk_x >= chk_y)
+                        {
+                            direction = "left";
+                            Globals.Me.multi_mouse_move_count = chk_x - 1;
+                            Globals.Me.multi_mouse_move_direction = 1;
+                        }
+                        if (mouse_x > player_x && chk_x > chk_y)
+                        {
+                            Globals.Me.multi_mouse_move_count = chk_x - 1;
+                            Globals.Me.multi_mouse_move_direction = 3;
+                        }
+                        if (mouse_y < player_y && chk_x <= chk_y)
+                        {
+                            direction = "up";
+                            Globals.Me.multi_mouse_move_count = chk_y - 1;
+                            Globals.Me.multi_mouse_move_direction = 0;
+                        }
+                        if (mouse_y > player_y && chk_x < chk_y)
+                        {
+                            direction = "down";
+                            Globals.Me.multi_mouse_move_count = chk_y - 1;
+                            Globals.Me.multi_mouse_move_direction = 2;
+                        }
+                        Globals.Me.HandleInput(Globals.Me.multi_mouse_move_direction);
+                        Globals.Me.multi_mouse_move_active = true;
+
+                        //The commented code below shows a chat bubble with the direction and "steps". For testing purposes.
+                        //PacketSender.SendChatMsg("going " + direction + " " + Globals.Me.multi_mouse_move_count.ToString() + " steps." , 0);
+
+                        Globals.Me.IsMoving = true;
+                    }
+                    //fim do editado por rodrigo
                     break;
 
                 case MouseButtons.Right:

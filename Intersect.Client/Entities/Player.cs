@@ -110,6 +110,12 @@ namespace Intersect.Client.Entities
 
         private Dictionary<int, long> mLastHotbarUseTime = new Dictionary<int, long>();
         private int mHotbarUseDelay = 150;
+        //editado por rodrigo
+        public int multi_mouse_move_count = 0;
+        public int multi_mouse_move_direction = -1;
+        public bool multi_mouse_move_active = false;
+
+        private int mouse_move_command = -10;
 
         /// <summary>
         /// Name of our guild if we are in one.
@@ -236,6 +242,7 @@ namespace Intersect.Client.Entities
             {
                 if (this == Globals.Me && IsMoving == false)
                 {
+                    GetMouseDirection();
                     ProcessDirectionalInput();
                 }
 
@@ -1185,8 +1192,8 @@ namespace Intersect.Client.Entities
         }
 
         //Input Handling
-        private void HandleInput()
-        {
+        public void HandleInput(int optional_cmd = -10)
+        {         
             var movex = 0f;
             var movey = 0f;
             if (Interface.Interface.HasInputFocus())
@@ -1194,22 +1201,22 @@ namespace Intersect.Client.Entities
                 return;
             }
 
-            if (Controls.KeyDown(Control.MoveUp))
+            if (Controls.KeyDown(Control.MoveUp) || optional_cmd == 0)
             {
                 movey = 1;
             }
 
-            if (Controls.KeyDown(Control.MoveDown))
+            if (Controls.KeyDown(Control.MoveDown) || optional_cmd == 2)
             {
                 movey = -1;
             }
 
-            if (Controls.KeyDown(Control.MoveLeft))
+            if (Controls.KeyDown(Control.MoveLeft) || optional_cmd == 1)
             {
                 movex = -1;
             }
 
-            if (Controls.KeyDown(Control.MoveRight))
+            if (Controls.KeyDown(Control.MoveRight) || optional_cmd == 3)
             {
                 movex = 1;
             }
@@ -1244,8 +1251,12 @@ namespace Intersect.Client.Entities
                 {
                     Globals.Me.MoveDir = movex < 0 ? Direction.Left : Direction.Right;
                 }
+                //store the value for later use
+                Globals.Me.mouse_move_command = (int)Globals.Me.MoveDir;
+                Globals.Me.multi_mouse_move_count = Globals.Me.multi_mouse_move_count - 1;
+
             }
-            
+
             TurnAround();
 
             var castInput = -1;
@@ -1295,7 +1306,24 @@ namespace Intersect.Client.Entities
             //Something is null.. return a value that is out of range :)
             return 9999;
         }
-        public void TargetPartyMember(int idx)
+        protected int GetDistanceToClickedTile(Entity target)
+        {
+            var myMap = MapInstance.Get(CurrentMap);
+            var targetMap = MapInstance.Get(target.CurrentMap);
+            if (myMap != null && targetMap != null)
+            {
+                //Calculate World Tile of Me
+                var x1 = X + myMap.MapGridX * Options.MapWidth;
+                var y1 = Y + myMap.MapGridY * Options.MapHeight;
+
+                //Calculate world tile of target
+                var x2 = target.X + targetMap.MapGridX * Options.MapWidth;
+                var y2 = target.Y + targetMap.MapGridY * Options.MapHeight;
+
+                return (int)Math.Sqrt(Math.Pow(x1 - x2, 2) + Math.Pow(y1 - y2, 2));
+            }
+        }
+            public void TargetPartyMember(int idx)
         {
             if (Globals.Me.IsInParty() && idx < Globals.Me.Party.Count)
             {
@@ -2001,7 +2029,7 @@ namespace Intersect.Client.Entities
         }
 
         //Movement Processing
-        private void ProcessDirectionalInput()
+        public void ProcessDirectionalInput()
         {
             //Check if player is crafting
             if (Globals.InCraft == true)
@@ -2044,7 +2072,16 @@ namespace Intersect.Client.Entities
             {
                 return;
             }
+            if (mouse_move_command > -10)
+            {
+                Globals.Me.MoveDir = (Direction)mouse_move_command;
+                mouse_move_command = -10;
+            }
 
+            if ((int)Globals.Me.MoveDir > -1)
+            {
+                var i = 1;
+            }
             //Try to move if able and not casting spells.
             if (IsMoving || MoveTimer >= Timing.Global.Milliseconds ||
                 (!Options.Combat.MovementCancelsCast && IsCasting))
@@ -2188,6 +2225,16 @@ namespace Intersect.Client.Entities
                 TryToChangeDimension();
                 PacketSender.SendMove();
                 MoveTimer = (Timing.Global.Milliseconds) + (long)GetMovementTime();
+                //editado por rodrigo
+                if (multi_mouse_move_active == true && multi_mouse_move_count > 0)
+                {
+                    HandleInput(multi_mouse_move_direction);
+                    multi_mouse_move_count--;
+                    if (multi_mouse_move_count < 1)
+                    {
+                        multi_mouse_move_active = false;
+                    }
+                }
             }
             else
             {

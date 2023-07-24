@@ -12,6 +12,8 @@ namespace Intersect.Enums
 
         Event = 4,
         
-        Ressurect = 5
+        Ressurect = 5,
+
+            Summon = 6,
     }
 }

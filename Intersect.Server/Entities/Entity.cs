@@ -43,7 +43,8 @@ namespace Intersect.Server.Entities
         public Entity() : this(Guid.NewGuid(), Guid.Empty)
         {
         }
-
+        public bool is_entity_summon = false; //<---- tells us if the entity is a summon
+        public Player summoner_player_entity;
         //Initialization
         public Entity(Guid instanceId, Guid mapInstanceId)
         {
@@ -2313,6 +2314,20 @@ namespace Intersect.Server.Entities
 
         public virtual void KilledEntity(Entity entity)
         {
+
+            //PacketSender.SendChatBubble(this.Id,this.MapInstanceId, this.GetEntityType(), "Npc killed.", this.MapId);
+
+            switch (entity)
+            {
+                case Npc npc when this.is_entity_summon:
+                    {
+                        if (this.summoner_player_entity != null)
+                        {
+                            this.summoner_player_entity.KilledEntity(entity);
+                        }
+                        break;
+                    }
+            }
         }
 
         public virtual bool CanCastSpell(SpellBase spell, Entity target, bool checkVitalReqs, out SpellCastFailureReason reason)

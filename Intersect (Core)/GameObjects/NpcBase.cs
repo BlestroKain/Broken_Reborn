@@ -175,6 +175,10 @@ namespace Intersect.GameObjects
             set => Drops = JsonConvert.DeserializeObject<List<Drop>>(value);
         }
 
+        public bool Is_Summon
+        {
+            get; set;
+        }
         /// <summary>
         /// If true this npc will drop individual loot for all of those who helped slay it.
         /// </summary>

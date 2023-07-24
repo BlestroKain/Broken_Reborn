@@ -77,7 +77,7 @@ namespace Intersect.Editor.Forms.Editors
             {
                 // Sort immunities to keep change checker consistent
                 item.Immunities.Sort();
-
+                if (this.chkIsSummon.Checked) { item.Is_Summon = true; } else { item.Is_Summon = false; }
                 PacketSender.SendSaveObject(item);
                 item.DeleteBackup();
             }
@@ -294,6 +294,7 @@ namespace Intersect.Editor.Forms.Editors
                 nudSightRange.Value = mEditorItem.SightRange;
                 cmbMovement.SelectedIndex = Math.Min(mEditorItem.Movement, cmbMovement.Items.Count - 1);
                 chkSwarm.Checked = mEditorItem.Swarm;
+                chkIsSummon.Checked = mEditorItem.Is_Summon;
                 nudFlee.Value = mEditorItem.FleeHealthPercentage;
                 chkFocusDamageDealer.Checked = mEditorItem.FocusHighestDamageDealer;
                 nudResetRadius.Value = mEditorItem.ResetRadius;

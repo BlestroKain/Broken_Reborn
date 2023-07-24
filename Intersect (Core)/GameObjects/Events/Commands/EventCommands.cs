@@ -642,7 +642,7 @@ namespace Intersect.GameObjects.Events.Commands
         public sbyte X { get; set; }
 
         public sbyte Y { get; set; }
-
+        public bool Is_Summon { get; set; }
     }
 
     public partial class DespawnNpcCommand : EventCommand

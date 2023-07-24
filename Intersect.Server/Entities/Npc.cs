@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Intersect.Enums;
 using Intersect.GameObjects;
+using Intersect.GameObjects.Maps;
 using Intersect.Logging;
 using Intersect.Network.Packets.Server;
 using Intersect.Server.Database;
@@ -57,6 +58,13 @@ namespace Intersect.Server.Entities
         }
 
         public bool Despawnable;
+
+        public bool is_summon;
+
+        public Guid summoner_player;
+
+        // Agregar propiedad para almacenar la ID del mapa actual del jugador invocador
+        public Guid SummonerCurrentMapId { get; set; }
 
         //Moving
         public long LastRandomMove;
@@ -111,6 +119,8 @@ namespace Intersect.Server.Entities
             Level = myBase.Level;
             Immunities = myBase.Immunities;
             Base = myBase;
+            this.is_entity_summon = Base.Is_Summon;
+            SummonerCurrentMapId = Guid.Empty;
             Despawnable = despawnable;
 
             for (var i = 0; i < (int) Enums.Stat.StatCount; i++)
@@ -202,21 +212,24 @@ namespace Intersect.Server.Entities
 
             // Are we resetting? If so, do not allow for a new target.
             var pathTarget = mPathFinder?.GetTarget();
-            if (AggroCenterMap != null && pathTarget != null &&
-                pathTarget.TargetMapId == AggroCenterMap.Id && pathTarget.TargetX == AggroCenterX && pathTarget.TargetY == AggroCenterY)
+            if (AggroCenterMap != null && pathTarget != null)
             {
                 if (en == null)
-                {
-                                    return;
+                    if (pathTarget.TargetMapId == AggroCenterMap.Id && pathTarget.TargetX == AggroCenterX && pathTarget.TargetY == AggroCenterY)
+                    {
+                        return;
+                        if (en == null)
+                        {
+                            return;
 
-                }
-                else
-                {
-                    return;
+                        }
+                    else
+                        {
+                            return;
 
-                }
+                        }
+                    }
             }
-
             //Why are we doing all of this logic if we are assigning a target that we already have?
             if (en != null && en != Target)
             {
@@ -251,14 +264,38 @@ namespace Intersect.Server.Entities
                                 return;
                             }
                         }
+
+                        // Check if the entity is a summon and validate the summoner_player_entity
+                        if (npc.is_entity_summon && npc.summoner_player_entity != null)
+                        {
+                            if (npc.summoner_player_entity.Id != this.Id)
+                            {
+                                return; // If this NPC is a summon and its summoner_player_entity is not this NPC, do not assign a target.
+                            }
+                        }
                     }
 
                     if (en is Player)
                     {
-                        //TODO Make sure that the npc can target the player
+                        // TODO: Make sure that the NPC can target the player
                         if (this != en && !TargetHasStealth(en))
                         {
-                            Target = en;
+                            if (this.is_entity_summon == false)
+                            {
+                                // NPC is not a summon, so attack any player in summoner's hostility
+                                if (!this.is_entity_summon || (this.is_entity_summon && en.Id != summoner_player_entity.Id))
+                                {
+                                    Target = en;
+                                }
+                            }
+                            else
+                            {
+                                // NPC is a summon, attack the player only if the player is not the summoner
+                                if (summoner_player_entity != null && en.Id != summoner_player_entity.Id)
+                                {
+                                    Target = en;
+                                }
+                            }
                         }
                     }
                     else
@@ -287,14 +324,16 @@ namespace Intersect.Server.Entities
             {
                 Target = en;
             }
-            
+
             if (Target != oldTarget)
             {
                 CombatTimer = Timing.Global.Milliseconds + Options.CombatTime;
                 PacketSender.SendNpcAggressionToProximity(this);
             }
+
             mTargetFailCounter = 0;
         }
+
 
         public void RemoveFromDamageMap(Entity en)
         {
@@ -742,7 +781,100 @@ namespace Intersect.Server.Entities
         //General Updating
         public override void Update(long timeMs)
         {
-            var lockObtained = false;
+
+            // Verifica si la summon es una entidad invocada y si tiene un jugador invocador válido
+            if (is_entity_summon && summoner_player_entity != null)
+            {
+                // Obtiene el target (jugador invocador) del NPC summon
+                var target = summoner_player_entity;
+
+                // Verificar si el jugador invocador cambió de mapa
+                if (target.MapId != SummonerCurrentMapId)
+                {
+                    // El jugador invocador cambió de mapa, actualizar el mapa actual del summon
+                    SummonerCurrentMapId = target.MapId;
+                }
+
+                // Si el jugador invocador está en combate, la summon debe entrar en combate también
+                if (target.IsAttacking)
+                {
+                    // Verifica si el jugador invocador tiene un objetivo enemigo válido
+                    var playerTarget = target.Target;
+                    if (playerTarget != null && !playerTarget.IsDead() && CanAttack(playerTarget, null))
+                    {
+                        // Si el objetivo del jugador invocador es diferente del objetivo actual de la summon, cambia el objetivo de la summon
+                        if (playerTarget != Target)
+                        {
+                            Target = playerTarget;
+                            CombatTimer = Timing.Global.Milliseconds + Options.CombatTime;
+                            PacketSender.SendNpcAggressionToProximity(this);
+                        }
+                        TryAttack(playerTarget);
+                        // Ahora la summon y el jugador están atacando al mismo objetivo
+                        // Puedes agregar aquí el resto del código necesario para combatir al enemigo
+                        // por ejemplo, intentar atacar al objetivo, lanzar hechizos, etc.
+                    }
+                    else
+                    {
+                        // Si el jugador invocador no tiene un objetivo enemigo válido, la summon detendrá su movimiento
+                        return;
+                    }
+                }
+                else
+                {
+                    // Define el objetivo del PathFinder con la posición del jugador invocador
+                    mPathFinder?.SetTarget(new PathfinderTarget(target.MapId, target.X, target.Y, target.Z));
+
+                    // Actualiza el PathFinder para que encuentre el camino hacia el jugador invocador
+                    switch (mPathFinder.Update(timeMs))
+                    {
+                        case PathfinderResult.Success:
+                            // Obtiene la dirección hacia el próximo paso del camino
+                            var dir = mPathFinder.GetMove();
+
+                            // Verifica que la dirección sea válida y mueve al NPC summon
+                            if (dir > Direction.None && CanMove(dir) == -1)
+                            {
+                                Move(dir, null);
+                            }
+                            break;
+                        case PathfinderResult.OutOfRange:
+                            // El objetivo está fuera del rango del NPC summon
+                            // Agrega aquí la lógica para manejar esta situación, si es necesario
+
+                            // Ejemplo: Enviar un mensaje al jugador de advertencia
+                            PacketSender.SendChatMsg(summoner_player_entity, "Tu invocación está fuera de rango.", ChatMessageType.Error);
+
+                            break;
+                        case PathfinderResult.NoPathToTarget:
+                        case PathfinderResult.Failure:
+                            // No se puede encontrar una ruta hacia el objetivo
+                            // Agrega aquí la lógica para manejar esta situación, si es necesario
+
+                            // Ejemplo: Aparecer junto al jugador invocador
+                            X = target.X;
+                            Y = target.Y;
+                            // También puedes ajustar la altura (Z) si es necesario
+
+                            // Ejemplo: Enviar un mensaje al jugador de advertencia
+                            PacketSender.SendChatMsg(summoner_player_entity, "Tu invocación no puede encontrarte.", ChatMessageType.Error);
+                           
+                            break;
+                        case PathfinderResult.Wait:
+                            // El Pathfinder no se ejecutará debido a fallas recientes y está tratando de conservar recursos de CPU
+                            // Agrega aquí la lógica para manejar esta situación, si es necesario
+
+                            break;
+                        default:
+                            // Otros casos que no hemos manejado, si es necesario
+                            break;
+                    }
+                }
+            }
+        
+    
+
+    var lockObtained = false;
             try
             {
                 Monitor.TryEnter(EntityLock, ref lockObtained);

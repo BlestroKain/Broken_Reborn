@@ -2421,12 +2421,17 @@ namespace Intersect.Server.Entities
             return true;
         }
 
-        public virtual void CastSpell(Guid spellId, int spellSlot = -1)
+        public virtual void CastSpell(Guid spellId, int spellSlot = -1, bool resurrectItem = false)
         {
             var spellBase = SpellBase.Get(spellId);
             if (spellBase == null)
             {
                 return;
+            }
+
+            if (CastTarget.IsDead() && resurrectItem )
+            {
+                spellBase.Combat.Friendly = true;
             }
 
             if (!CanCastSpell(spellBase, CastTarget, false, out var _))
@@ -2571,7 +2576,7 @@ namespace Intersect.Server.Entities
 
                     break;
                 case SpellType.Ressurect:
-                    
+                    spellBase.Combat.Friendly = false;
                     if (CastTarget != null && CastTarget.IsDead())
                     {
                         if (CastTarget is Player targetPlayer)
@@ -2579,6 +2584,7 @@ namespace Intersect.Server.Entities
                             PacketSender.SendAnimationToProximity(
                                 spellBase.HitAnimationId, 1, targetPlayer.Id, Target.MapId, 0, 0, Dir, CastTarget.MapInstanceId
                             );
+                            PacketSender.SendProximityMsg(Strings.Player.ressurected.ToString(targetPlayer.Name, Name), ChatMessageType.Local, targetPlayer.MapId, CustomColors.Chat.AnnouncementChat);
 
                             targetPlayer.Reset();
                             PacketSender.SendPlayerRespawn(targetPlayer);

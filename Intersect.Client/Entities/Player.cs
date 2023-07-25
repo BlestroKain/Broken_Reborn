@@ -437,10 +437,10 @@ namespace Intersect.Client.Entities
 
         public void TryUseItem(int index)
         {
-            if (this.IsDead())
-            {
-                return;
-            }
+            // if (this.IsDead())
+            // {
+            //     return;
+            // }
 
             if (!IsItemOnCooldown(index) &&
                 index >= 0 && index < Globals.Me.Inventory.Length && Globals.Me.Inventory[index]?.Quantity > 0)

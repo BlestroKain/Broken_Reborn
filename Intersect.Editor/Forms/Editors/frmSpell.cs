@@ -441,6 +441,7 @@ namespace Intersect.Editor.Forms.Editors
                 grpTargetInfo.Show();
                 cmbTargetType.SelectedIndex = (int)SpellTargetType.Single;
                 cmbTargetType.Enabled = false;
+                mEditorItem.Combat.Friendly = false;
                 UpdateTargetTypePanel();
             }
         }

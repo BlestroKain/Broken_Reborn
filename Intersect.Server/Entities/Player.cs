@@ -2881,6 +2881,10 @@ namespace Intersect.Server.Entities
             var itemBase = ItemBase.Get(Item.ItemId);
             if (itemBase != null && Item.Quantity > 0)
             {
+                if (target.IsDead() && itemBase.Spell.SpellType != SpellType.Ressurect)
+                {
+                    return;
+                }
 
                 //Check if the user is silenced or stunned
                 foreach (var status in CachedStatuses)
@@ -3018,13 +3022,15 @@ namespace Intersect.Server.Entities
 
                         if (itemBase.QuickCast)
                         {
-                            if (!CanCastSpell(itemBase.Spell, target, false, out var _))
+                            bool resurrectItem = target.IsDead() && itemBase.Spell.SpellType == SpellType.Ressurect;
+
+                            if (!resurrectItem && !CanCastSpell(itemBase.Spell, target, false, out var _))
                             {
                                 return;
                             }
 
                             CastTarget = target;
-                            CastSpell(itemBase.SpellId);
+                            CastSpell(itemBase.SpellId, resurrectItem: resurrectItem);
                         }
                         else if (!TryTeachSpell(new Spell(itemBase.SpellId)))
                         {
@@ -5161,7 +5167,7 @@ namespace Intersect.Server.Entities
             }
         }
 
-        public override void CastSpell(Guid spellId, int spellSlot = -1)
+        public override void CastSpell(Guid spellId, int spellSlot = -1, bool resurrectItem = false)
         {
             var spellBase = SpellBase.Get(spellId);
             if (spellBase == null)
@@ -5182,7 +5188,7 @@ namespace Intersect.Server.Entities
 
                     break;
                 default:
-                    base.CastSpell(spellId, spellSlot);
+                    base.CastSpell(spellId, spellSlot, resurrectItem: resurrectItem);
 
                     break;
             }

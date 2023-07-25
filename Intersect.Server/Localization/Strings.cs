@@ -1172,6 +1172,8 @@ namespace Intersect.Server.Localization
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public readonly LocalizedString kicked = @"{00} has been kicked by {01}!";
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public readonly LocalizedString killed = @"{00} has been killed by {01}!";
+            
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public readonly LocalizedString ressurected = @"{00} has been resurrected by {01}!";
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public readonly LocalizedString left = @"{00} has left {01}.";
 

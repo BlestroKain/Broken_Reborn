@@ -2311,6 +2311,9 @@ Tick timer saved in server config.json.";
                 {"openguildbank", @"Open Guild Bank"},
                 {"setguildbankslots", @"Set Guild Bank Slots Count"},
                 {"resetstatallocations", @"Reset Stat Point Allocations"},
+                {"mailbox", @"Mail Box" },
+                {"sendmail", @"Send Mail"},
+                {"openmailbox", @"Open Mail Box"},
             };
 
         }

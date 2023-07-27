@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Windows.Forms;
 using DarkUI.Controls;
 
@@ -154,6 +154,11 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode62,
             treeNode63,
             treeNode64});
+            System.Windows.Forms.TreeNode treeNode66 = new System.Windows.Forms.TreeNode("Send Mail");
+            System.Windows.Forms.TreeNode treeNode67 = new System.Windows.Forms.TreeNode("Opend Mail Box");
+            System.Windows.Forms.TreeNode treeNode68 = new System.Windows.Forms.TreeNode("Mail Box", new System.Windows.Forms.TreeNode[] {
+            treeNode66,
+            treeNode67});
             this.lblName = new System.Windows.Forms.Label();
             this.txtEventname = new DarkUI.Controls.DarkTextBox();
             this.grpEntityOptions = new DarkUI.Controls.DarkGroupBox();
@@ -1039,6 +1044,14 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode64.Text = "Set Guild Bank Slots Count";
             treeNode65.Name = "guilds";
             treeNode65.Text = "Guilds";
+            treeNode66.Name = "sendmail";
+            treeNode66.Tag = "440";
+            treeNode66.Text = "Send Mail";
+            treeNode67.Name = "openmailbox";
+            treeNode67.Tag = "441";
+            treeNode67.Text = "Opend Mail Box";
+            treeNode68.Name = "mailbox";
+            treeNode68.Text = "Mail Box";
             this.lstCommands.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             treeNode5,
             treeNode13,
@@ -1048,7 +1061,8 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode54,
             treeNode56,
             treeNode60,
-            treeNode65});
+            treeNode65,
+            treeNode68});
             this.lstCommands.Size = new System.Drawing.Size(445, 465);
             this.lstCommands.TabIndex = 2;
             this.lstCommands.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.lstCommands_NodeMouseDoubleClick);

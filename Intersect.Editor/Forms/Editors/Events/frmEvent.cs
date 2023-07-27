@@ -752,6 +752,16 @@ namespace Intersect.Editor.Forms.Editors.Events
                     tmpCommand = new ResetStatPointAllocationsCommand();
 
                     break;
+
+                case EventCommandType.SendMail:
+                    tmpCommand = new SendMailBoxCommand();
+
+                    break;
+
+                case EventCommandType.OpenMailBox:
+                    tmpCommand = new OpenMailBoxCommand();
+
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -1349,6 +1359,11 @@ namespace Intersect.Editor.Forms.Editors.Events
                     break;
                 case EventCommandType.ResetStatPointAllocations:
 
+                    break;
+
+                case EventCommandType.SendMail:
+                    break;
+                case EventCommandType.OpenMailBox:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

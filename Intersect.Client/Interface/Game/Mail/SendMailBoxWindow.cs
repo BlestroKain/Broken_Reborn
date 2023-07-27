@@ -95,6 +95,10 @@ namespace Intersect.Client.Interface.Game.Mail
             mSendMailBoxWindow.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
         }
 
+        public SendMailBoxWindow()
+        {
+        }
+
         public int X { get => mSendMailBoxWindow.X; }
         public int Y { get => mSendMailBoxWindow.Y; }
 
@@ -204,7 +208,7 @@ namespace Intersect.Client.Interface.Game.Mail
             }
             if (mSendItem.GetSlot() >= 0)
             {
-                Items.Item item = Globals.Me.Inventory[mSendItem.GetSlot()];
+                Items.Item item = (Items.Item)Globals.Me.Inventory[mSendItem.GetSlot()];
                 if (item == null || item.ItemId == Guid.Empty)
                 {
                     return 0;

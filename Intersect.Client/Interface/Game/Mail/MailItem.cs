@@ -51,7 +51,7 @@ namespace Intersect.Client.Interface.Game.Mail
                         Globals.Me.Inventory[mMySlot].Base,
                         mMailWindow.GetQuantity(),
                         mMailWindow.X, mMailWindow.Y,
-                        Globals.Me.Inventory[mMySlot].StatBuffs,
+                        Globals.Me.Inventory[mMySlot].ItemProperties
                     
                     );
                 }
@@ -91,7 +91,7 @@ namespace Intersect.Client.Interface.Game.Mail
                 var item = ItemBase.Get(Globals.Me.Inventory[mMySlot].ItemId);
                 if (item != null)
                 {
-                    var itemTex = Globals.ContentManager.GetTexture(GameContentManager.TextureType.Item, item.Icon);
+                    var itemTex = Globals.ContentManager.GetTexture(Framework.Content.TextureType.Item, item.Icon);
                    
                     if (itemTex != null)
                     {

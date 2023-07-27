@@ -8,7 +8,8 @@ using MessagePack;
 
 namespace Intersect.Network.Packets.Server
 {
-    public partial class MailBoxPacket
+    [MessagePackObject]
+    public partial class MailBoxPacket:IntersectPacket
     {
         public MailBoxPacket() { }
 
@@ -17,8 +18,9 @@ namespace Intersect.Network.Packets.Server
             Close = close;
             Send = send;
         }
+        [MessagePack.Key(0)]
         public bool Close { get; set; }
-
+        [MessagePack.Key(1)]
         public bool Send { get; set; }
     }
 }

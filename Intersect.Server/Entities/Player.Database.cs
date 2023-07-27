@@ -171,7 +171,7 @@ namespace Intersect.Server.Entities
             {
                 return null;
             }
-            MailBox.GetMails(DbInterface.GetPlayerContext(), player);
+            MailBox.GetMails(DbInterface.CreatePlayerContext(), player);
             // ReSharper disable once InvertIf
             if (!player.ValidateLists())
             {

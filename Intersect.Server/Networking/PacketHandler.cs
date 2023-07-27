@@ -1997,14 +1997,14 @@ namespace Intersect.Server.Networking
             player.CloseMailBox();
         }
 
-        public void HandlePacket(Client client, Player player, MailBoxSendPacket packet)
+        public void HandlePacket(Client client, Player player, MailBoxSendPacket packet, User user)
         {
             if (player == null)
             {
                 return;
             }
 
-            var character = DbInterface.GetPlayerClient(packet.To);
+            var character = Player.Find(packet.To);
             if (character != null)
             {
                 int slotID = packet.SlotID;
@@ -2014,7 +2014,7 @@ namespace Intersect.Server.Networking
                     return;
                 }
                 int quantity = 0;
-                int[] statBuffs = new int[(int)Enums.Stat.StatCount];
+                int[] statBuffs = new int[(int)Stat.StatCount];
                 Dictionary<string, int> tags = new Dictionary<string, int>();
                 Guid itemID = Guid.Empty;
                 if (slotID >= 0)
@@ -2024,12 +2024,14 @@ namespace Intersect.Server.Networking
                     if (itemID != Guid.Empty)
                     {
                         quantity = packet.Quantity;
-                        statBuffs = slot.StatBuffs;
-                        if (player.TakeItemsBySlot(slotID, quantity) == false)
+                      //  statBuffs = slot.StatBuffs;
+
+
+                        if (player.TryTakeItem(slot, quantity,ItemHandling.Normal,false)) 
                         {
                             itemID = Guid.Empty;
                             quantity = 0;
-                            statBuffs = new int[(int)Enums.Stat.StatCount];
+                            statBuffs = new int[(int)Stat.StatCount];
                             tags = new Dictionary<string, int>();
                         }
                      
@@ -2039,7 +2041,10 @@ namespace Intersect.Server.Networking
                 }
 
                 character.MailBoxs.Add(new MailBox(player, character, packet.Title, packet.Message, itemID, quantity, statBuffs));
-
+                if (Globals.OnlineList.Select(p => p.Id == character.Id) != null)
+                {
+                    PacketSender.SendChatMsg(character, $"Vous avez recu une Lettre",ChatMessageType.Trading, CustomColors.Alerts.Accepted);
+                }
             }
             else
             {
@@ -2048,10 +2053,10 @@ namespace Intersect.Server.Networking
 
 
             player.CloseMailBox();
-            DbInterface.SavePlayerDatabaseAsync();
+            user?.Save();
         }
 
-        public void HandlePacket(Client client, Player player, TakeMailPacket packet)
+        public void HandlePacket(Client client, Player player, TakeMailPacket packet, User user)
         {
             if (player == null)
             {
@@ -2075,18 +2080,18 @@ namespace Intersect.Server.Networking
             {
                 player.MailBoxs.Remove(mail);
                 PacketSender.SendOpenMailBox(player);
-                DbInterface.SavePlayerDatabaseAsync();
+                user.Save();
                 return;
             }
-            Item item = new Item(mail.ItemId, mail.Quantity, false);
-            item.StatBuffs = mail.StatBuffs;
-            if (player.TryGiveItem(item))
+            Item item = new Item(mail.ItemId, mail.Quantity);
+            //item.Properties = mail.StatBuffs;
+            if (player.TryGiveItem(item,-1))
             {
                 var it = ItemBase.Get(mail.ItemId);
                 player.MailBoxs.Remove(mail);
                 PacketSender.SendChatMsg(player, $"{Strings.Mails.receiveitem} ({it?.Name})!",ChatMessageType.Bank,CustomColors.Chat.PartyChat);
                 PacketSender.SendOpenMailBox(player);
-                DbInterface.SavePlayerDatabaseAsync();
+                user.Save();
             }
             else
             {

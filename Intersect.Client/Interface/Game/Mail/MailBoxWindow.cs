@@ -10,6 +10,7 @@ using Intersect.Client.Localization;
 using Intersect.Client.Networking;
 using Intersect.GameObjects;
 using Intersect.Client;
+using Intersect.Client.Interface.Game.Mail;
 
 namespace Intersect.Client.Interface.Game.Mail
 {
@@ -25,7 +26,7 @@ namespace Intersect.Client.Interface.Game.Mail
         private Label mTitle;
         private RichLabel mMessage;
         private Label mItem;
-
+        private Button mSendMail;
         private Button mCloseButton;
 
         private Button mTakeButton;
@@ -41,31 +42,61 @@ namespace Intersect.Client.Interface.Game.Mail
                 Text = Strings.MailBox.mails
             };
 
+            // Establecer la ubicación para el ListBox
             mMailListBox = new ListBox(mMailBoxWindow, "MailListBox");
             mMailListBox.EnableScroll(false, true);
             mMailListBox.RowSelected += Selected_MailListBox;
             mMailListBox.AllowMultiSelect = false;
+            mMailListBox.SetPosition(x: 10, y: 10); // Ejemplo: X = 10, Y = 10 (cambia las coordenadas según tus necesidades)
+
+            // Establecer la ubicación para el Label "Sender"
             mSender = new Label(mMailBoxWindow, "Sender");
             mSender.Hide();
+            mSender.SetPosition(x: 20, y: 50); // Ejemplo: X = 20, Y = 50 (cambia las coordenadas según tus necesidades)
+
+            // Establecer la ubicación para el Label "Title"
             mTitle = new Label(mMailBoxWindow, "Title");
             mTitle.Hide();
+            mTitle.SetPosition(x: 20, y: 70); // Ejemplo: X = 20, Y = 70 (cambia las coordenadas según tus necesidades)
+
+            // Establecer la ubicación para el RichLabel "Message"
             mMessage = new RichLabel(mMailBoxWindow, "Message");
             mMessage.Hide();
+            mMessage.SetPosition(x: 20, y: 100); // Ejemplo: X = 20, Y = 100 (cambia las coordenadas según tus necesidades)
 
+            // Establecer la ubicación para el Label "Item"
             mItem = new Label(mMailBoxWindow, "Item");
             mItem.Hide();
+            mItem.SetPosition(x: 20, y: 250); // Ejemplo: X = 20, Y = 250 (cambia las coordenadas según tus necesidades)
 
-
+            // Establecer la ubicación para el Button "TakeButton"
             mTakeButton = new Button(mMailBoxWindow, "TakeButton");
             mTakeButton.SetText(Strings.MailBox.take);
             mTakeButton.Clicked += Take_Clicked;
             mTakeButton.Hide();
+            mTakeButton.SetPosition(x: 150, y: 250); // Ejemplo: X = 150, Y = 250 (cambia las coordenadas según tus necesidades)
+           
+            mSendMail = new Button(mMailBoxWindow, "SendMailButton");
+            mSendMail.SetText("Send Mail");
+            mSendMail.Clicked += SendMail_Clicked;
+            mSendMail.SetPosition(x: 20, y: 300); // Ejemplo: X = 20, Y = 300 (cambia las coordenadas según tus necesidades)
 
+            // Establecer la ubicación para el Button "CloseButton"
             mCloseButton = new Button(mMailBoxWindow, "CloseButton");
             mCloseButton.SetText(Strings.MailBox.close);
             mCloseButton.Clicked += CloseButton_Clicked;
+            mCloseButton.Hide();
+            mCloseButton.SetPosition(x: 300, y: 250); // Ejemplo: X = 300, Y = 250 (cambia las coordenadas según tus necesidades)
 
             mMailBoxWindow.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+        }
+
+        private void SendMail_Clicked(Base sender, ClickedEventArgs arguments)
+        {
+            SendMailBoxWindow sendMailWindow = new SendMailBoxWindow();
+
+            // Mostrar la ventana
+            sendMailWindow.IsVisible();
         }
 
         private void Take_Clicked(Base sender, ClickedEventArgs e)
@@ -158,6 +189,11 @@ namespace Intersect.Client.Interface.Game.Mail
         public void Hide()
         {
             mMailBoxWindow.IsHidden = true;
+        }
+
+        internal void Show()
+        {
+            mMailBoxWindow.Show();
         }
     }
 }

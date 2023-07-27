@@ -1,4 +1,4 @@
-﻿namespace Intersect.Editor.Forms.Editors
+namespace Intersect.Editor.Forms.Editors
 {
 	partial class frmHDV
 	{
@@ -271,7 +271,7 @@
 			this.cmbAddItem.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
 			this.cmbAddItem.BorderStyle = System.Windows.Forms.ButtonBorderStyle.Solid;
 			this.cmbAddItem.ButtonColor = System.Drawing.Color.FromArgb(((int)(((byte)(43)))), ((int)(((byte)(43)))), ((int)(((byte)(43)))));
-			this.cmbAddItem.ButtonIcon = ((System.Drawing.Bitmap)(resources.GetObject("cmbAddItem.ButtonIcon")));
+		//	this.cmbAddItem.ButtonIcon = ((System.Drawing.Bitmap)(resources.GetObject("cmbAddItem.ButtonIcon")));
 			this.cmbAddItem.DrawDropdownHoverOutline = false;
 			this.cmbAddItem.DrawFocusRectangle = false;
 			this.cmbAddItem.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
@@ -384,7 +384,7 @@
 			this.cmbFolder.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
 			this.cmbFolder.BorderStyle = System.Windows.Forms.ButtonBorderStyle.Solid;
 			this.cmbFolder.ButtonColor = System.Drawing.Color.FromArgb(((int)(((byte)(43)))), ((int)(((byte)(43)))), ((int)(((byte)(43)))));
-			this.cmbFolder.ButtonIcon = ((System.Drawing.Bitmap)(resources.GetObject("cmbFolder.ButtonIcon")));
+//			this.cmbFolder.ButtonIcon = ((System.Drawing.Bitmap)(resources.GetObject("cmbFolder.ButtonIcon")));
 			this.cmbFolder.DrawDropdownHoverOutline = false;
 			this.cmbFolder.DrawFocusRectangle = false;
 			this.cmbFolder.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
@@ -406,7 +406,7 @@
 			this.cmbDefaultCurrency.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
 			this.cmbDefaultCurrency.BorderStyle = System.Windows.Forms.ButtonBorderStyle.Solid;
 			this.cmbDefaultCurrency.ButtonColor = System.Drawing.Color.FromArgb(((int)(((byte)(43)))), ((int)(((byte)(43)))), ((int)(((byte)(43)))));
-			this.cmbDefaultCurrency.ButtonIcon = ((System.Drawing.Bitmap)(resources.GetObject("cmbDefaultCurrency.ButtonIcon")));
+		//	this.cmbDefaultCurrency.ButtonIcon = ((System.Drawing.Bitmap)(resources.GetObject("cmbDefaultCurrency.ButtonIcon")));
 			this.cmbDefaultCurrency.DrawDropdownHoverOutline = false;
 			this.cmbDefaultCurrency.DrawFocusRectangle = false;
 			this.cmbDefaultCurrency.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;

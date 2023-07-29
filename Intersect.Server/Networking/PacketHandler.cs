@@ -1987,8 +1987,9 @@ namespace Intersect.Server.Networking
             PacketSender.SendChatMsg(player, Strings.Parties.outofrange, ChatMessageType.Combat, CustomColors.Combat.NoTarget);
         }
         // Mail Box
-        public void HandlePacket(Client client, Player player, MailBoxClosePacket packet)
+        public void HandlePacket(Client client, MailBoxClosePacket packet)
         {
+            var player = client?.Entity;
             if (player == null)
             {
                 return;
@@ -1997,8 +1998,10 @@ namespace Intersect.Server.Networking
             player.CloseMailBox();
         }
 
-        public void HandlePacket(Client client, Player player, MailBoxSendPacket packet, User user)
+        public void HandlePacket(Client client, MailBoxSendPacket packet)
         {
+            var player = client?.Entity;
+            var user = client?.User;
             if (player == null)
             {
                 return;
@@ -2056,8 +2059,10 @@ namespace Intersect.Server.Networking
             user?.Save();
         }
 
-        public void HandlePacket(Client client, Player player, TakeMailPacket packet, User user)
+        public void HandlePacket(Client client, TakeMailPacket packet)
         {
+            var player = client?.Entity;
+            var user = client?.User;
             if (player == null)
             {
                 return;

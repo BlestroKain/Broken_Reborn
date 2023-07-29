@@ -34,7 +34,7 @@ namespace Intersect.Client.Interface.Game.Mail
         public MailBoxWindow(Canvas gameCanvas)
         {
             mMailBoxWindow = new WindowControl(gameCanvas, Strings.MailBox.title, false, "MailBoxWindow");
-            mMailBoxWindow.DisableResizing();
+
             Interface.InputBlockingElements.Add(mMailBoxWindow);
 
             mMail = new Label(mMailBoxWindow, "Mail")
@@ -89,6 +89,13 @@ namespace Intersect.Client.Interface.Game.Mail
             mCloseButton.SetPosition(x: 300, y: 250); // Ejemplo: X = 300, Y = 250 (cambia las coordenadas según tus necesidades)
 
             mMailBoxWindow.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+            
+            mMailBoxWindow.SetPosition(
+                Graphics.Renderer.GetScreenWidth() / 2 - mMailBoxWindow.Width / 2,
+                Graphics.Renderer.GetScreenHeight() / 2 - mMailBoxWindow.Height / 2
+            );
+            
+            mMailBoxWindow.DisableResizing();
         }
 
         private void SendMail_Clicked(Base sender, ClickedEventArgs arguments)

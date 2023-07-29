@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 using Intersect.Client.Core;
 using Intersect.Client.Framework.File_Management;
@@ -36,7 +35,6 @@ namespace Intersect.Client.Interface.Game.Mail
         public SendMailBoxWindow(Canvas gameCanvas)
         {
             mSendMailBoxWindow = new WindowControl(gameCanvas, Strings.MailBox.sendtitle, false, "SendMailBoxWindow");
-            mSendMailBoxWindow.DisableResizing();
             Interface.InputBlockingElements.Add(mSendMailBoxWindow);
 
             mTo = new Label(mSendMailBoxWindow, "To")
@@ -93,6 +91,13 @@ namespace Intersect.Client.Interface.Game.Mail
             mCloseButton.Clicked += CloseButton_Clicked;
 
             mSendMailBoxWindow.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+            
+            mSendMailBoxWindow.SetPosition(
+                Graphics.Renderer.GetScreenWidth() / 2 - mSendMailBoxWindow.Width / 2,
+                Graphics.Renderer.GetScreenHeight() / 2 - mSendMailBoxWindow.Height / 2
+            );
+            
+            mSendMailBoxWindow.DisableResizing();
         }
 
         public SendMailBoxWindow()

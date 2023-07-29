@@ -2219,7 +2219,7 @@ namespace Intersect.Client.Networking
             }
         }
         // Mail
-        public void HandlePacket(MailBoxsUpdatePacket packet)
+        public void HandlePacket(IPacketSender packetSender, MailBoxsUpdatePacket packet)
         {
             Globals.Mails.Clear();
             foreach (MailBoxUpdatePacket mail in packet.Mails)
@@ -2228,7 +2228,7 @@ namespace Intersect.Client.Networking
             }
         }
 
-        public void HandlePacket(MailBoxPacket packet)
+        public void HandlePacket(IPacketSender packetSender, MailBoxPacket packet)
         {
             if (!packet.Close)
             {

@@ -89,7 +89,27 @@ namespace Intersect.Client.Interface.Game.Mail
             mCloseButton = new Button(mSendMailBoxWindow, "CloseButton");
             mCloseButton.SetText(Strings.MailBox.close);
             mCloseButton.Clicked += CloseButton_Clicked;
+            // Posiciones para los controles de texto
+            mTo.SetPosition(50, 50);
+            mToTextbox.SetPosition(100, 50);
 
+            mTitle.SetPosition(50, 100);
+            mTitleTextbox.SetPosition(100, 100);
+
+            mMessage.SetPosition(50, 150);
+            mMsgTextbox.SetPosition(100, 150);
+
+            // Posiciones para los controles de MailItem
+            mItem.SetPosition(50, 200);
+            
+
+            // Posiciones para los controles de cantidad
+            mQuantity.SetPosition(50, 250);
+            mQuantityTextBoxNumeric.SetPosition(100, 250);
+
+            // Posiciones para los botones
+            mSendButton.SetPosition(50, 300);
+            mCloseButton.SetPosition(150, 300);
             mSendMailBoxWindow.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
             
             mSendMailBoxWindow.SetPosition(

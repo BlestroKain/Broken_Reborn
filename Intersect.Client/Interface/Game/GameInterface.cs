@@ -207,7 +207,7 @@ namespace Intersect.Client.Interface.Game
             }
             mSendMailBoxWindow = new SendMailBoxWindow(GameCanvas);
             mSendMailBoxWindow.UpdateItemListBySlot(-1);
-            //mSendMailBoxWindow.UpdateItemList();
+            mSendMailBoxWindow.UpdateItemList();
         }
 
         public void OpenMailBox()

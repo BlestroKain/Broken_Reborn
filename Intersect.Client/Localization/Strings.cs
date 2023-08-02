@@ -671,7 +671,7 @@ namespace Intersect.Client.Localization
 
             public static LocalizedString stat2 = @"DEF";
 
-            public static LocalizedString stat3 = @"Magic Resist";
+            public static LocalizedString stat3 = @"VIT";
 
             public static LocalizedString stat4 = @"MOV";
 
@@ -680,6 +680,8 @@ namespace Intersect.Client.Localization
             public static LocalizedString stat6 = @"Bonus Damage";
 
             public static LocalizedString stat7 = @"Bonus Cures";
+
+            public static LocalizedString stat8 = @"MDEF";
 
             public static LocalizedString targetoutsiderange = @"Target too far away!";
 

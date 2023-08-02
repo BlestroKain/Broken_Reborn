@@ -22,9 +22,9 @@ namespace Intersect.Client.Interface.Game.Character
         //Equipment List
         public List<EquipmentItem> Items = new List<EquipmentItem>();
 
-        Label mAbilityPwrLabel;
+        Label mIntelligebceLabel;
 
-        Button mAddAbilityPwrBtn;
+        Button mAddIntelligenceBtn;
 
         Button mAddAttackBtn;
 
@@ -32,7 +32,9 @@ namespace Intersect.Client.Interface.Game.Character
 
         Button mAddVitalityBtn;
 
-        Button mAddSpeedBtn;
+        Label mAgilityLabel;
+
+        Button mAddAgilityBtn;
 
         //Stats
         Label mAttackLabel;
@@ -56,7 +58,7 @@ namespace Intersect.Client.Interface.Game.Character
 
         private ItemProperties mItemProperties = null;
 
-        Label mMagicRstLabel;
+        Label mVitalityLabel;
 
         Label mPointsLabel;
 
@@ -105,8 +107,11 @@ namespace Intersect.Client.Interface.Game.Character
         int CooldownAmount = 0;
 
         Label mManaSteal;
-
+        Label mDamagesLabel;
+        Label mCuresLabel;
         int ManaStealAmount = 0;
+         Label mMagicResistLabel;
+         Button mAddMagicResistBtn;
 
         //Init
         public CharacterWindow(Canvas gameCanvas)
@@ -140,7 +145,6 @@ namespace Intersect.Client.Interface.Game.Character
             statsLabel.SetText(Strings.Character.stats);
 
             mAttackLabel = new Label(mCharacterWindow, "AttackLabel");
-
             mAddAttackBtn = new Button(mCharacterWindow, "IncreaseAttackButton");
             mAddAttackBtn.Clicked += _addAttackBtn_Clicked;
 
@@ -148,15 +152,19 @@ namespace Intersect.Client.Interface.Game.Character
             mAddDefenseBtn = new Button(mCharacterWindow, "IncreaseDefenseButton");
             mAddDefenseBtn.Clicked += _addDefenseBtn_Clicked;
 
-            mSpeedLabel = new Label(mCharacterWindow, "SpeedLabel");
-            mAddSpeedBtn = new Button(mCharacterWindow, "IncreaseSpeedButton");
-            mAddSpeedBtn.Clicked += _addSpeedBtn_Clicked;
+            mMagicResistLabel = new Label(mCharacterWindow, "MagicResistLabel");
+            mAddMagicResistBtn = new Button(mCharacterWindow, "IncreaseMagicResistButton");
+            mAddMagicResistBtn.Clicked += _addMagicResistBtn_Clicked;
 
-            mAbilityPwrLabel = new Label(mCharacterWindow, "AbilityPowerLabel");
-            mAddAbilityPwrBtn = new Button(mCharacterWindow, "IncreaseAbilityPowerButton");
-            mAddAbilityPwrBtn.Clicked += _addAbilityPwrBtn_Clicked;
+            mAgilityLabel = new Label(mCharacterWindow, "AgilityLabel");
+            mAddAgilityBtn = new Button(mCharacterWindow, "IncreaseAgilityButton");
+            mAddAgilityBtn.Clicked += _addAgilityBtn_Clicked;
 
-            mMagicRstLabel = new Label(mCharacterWindow, "VitalityLabel");
+            mIntelligebceLabel = new Label(mCharacterWindow, "IntelligenceLabel");
+            mAddIntelligenceBtn = new Button(mCharacterWindow, "IncreaseIntelligenceButton");
+            mAddIntelligenceBtn.Clicked += _addIntelligenceBtn_Clicked;
+
+            mVitalityLabel = new Label(mCharacterWindow, "VitalityLabel");
             mAddVitalityBtn = new Button(mCharacterWindow, "IncreaseVitalityButton");
             mAddVitalityBtn.Clicked += _addVitalityBtn_Clicked;
 
@@ -172,6 +180,7 @@ namespace Intersect.Client.Interface.Game.Character
             var extraBuffsLabel = new Label(mCharacterWindow, "ExtraBuffsLabel");
             extraBuffsLabel.SetText(Strings.Character.ExtraBuffs);
 
+            mSpeedLabel = new Label(mCharacterWindow, "SpeedLabel");
             mHpRegen = new Label(mCharacterWindow, "HpRegen");
             mManaRegen = new Label(mCharacterWindow, "ManaRegen");
             mLifeSteal = new Label(mCharacterWindow, "Lifesteal");
@@ -181,6 +190,8 @@ namespace Intersect.Client.Interface.Game.Character
             mTenacity = new Label(mCharacterWindow, "Tenacity");
             mCooldownReduction = new Label(mCharacterWindow, "CooldownReduction");
             mManaSteal = new Label(mCharacterWindow, "Manasteal");
+            mDamagesLabel = new Label(mCharacterWindow, " BonusDamages");
+            mCuresLabel = new Label(mCharacterWindow, " BonusCures");
 
             mCharacterWindow.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
         }
@@ -191,14 +202,18 @@ namespace Intersect.Client.Interface.Game.Character
             PacketSender.SendUpgradeStat((int) Stat.Vitality);
         }
 
-        void _addAbilityPwrBtn_Clicked(Base sender, ClickedEventArgs arguments)
+        void _addMagicResistBtn_Clicked(Base sender, ClickedEventArgs arguments)
+        {
+            PacketSender.SendUpgradeStat((int)Stat.MagicResist);
+        }
+        void _addIntelligenceBtn_Clicked(Base sender, ClickedEventArgs arguments)
         {
             PacketSender.SendUpgradeStat((int) Stat.Intelligence);
         }
 
-        void _addSpeedBtn_Clicked(Base sender, ClickedEventArgs arguments)
+        void _addAgilityBtn_Clicked(Base sender, ClickedEventArgs arguments)
         {
-            PacketSender.SendUpgradeStat((int) Stat.Speed);
+            PacketSender.SendUpgradeStat((int) Stat.Agility);
         }
 
         void _addDefenseBtn_Clicked(Base sender, ClickedEventArgs arguments)
@@ -337,16 +352,28 @@ namespace Intersect.Client.Interface.Game.Character
                 Strings.Character.stat4.ToString(Strings.Combat.stat4, Globals.Me.Stat[(int) Stat.Speed])
             );
 
-            mAbilityPwrLabel.SetText(
+            mAgilityLabel.SetText(
+              Strings.Character.stat4.ToString(Strings.Combat.stat5, Globals.Me.Stat[(int)Stat.Agility])
+          );
+            mIntelligebceLabel.SetText(
                 Strings.Character.stat1.ToString(Strings.Combat.stat1, Globals.Me.Stat[(int) Stat.Intelligence])
             );
 
-            mMagicRstLabel.SetText(
+            mVitalityLabel.SetText(
                 Strings.Character.stat3.ToString(Strings.Combat.stat3, Globals.Me.Stat[(int) Stat.Vitality])
             );
+            mMagicResistLabel.SetText(
+              Strings.Character.stat3.ToString(Strings.Combat.stat8, Globals.Me.Stat[(int)Stat.MagicResist])
+          );
+            mDamagesLabel.SetText(
+             Strings.Character.stat3.ToString(Strings.Combat.stat6, Globals.Me.Stat[(int)Stat.Potency])
+         );
+            mCuresLabel.SetText(
+             Strings.Character.stat3.ToString(Strings.Combat.stat7, Globals.Me.Stat[(int)Stat.Cures])
+         );
 
             mPointsLabel.SetText(Strings.Character.points.ToString(Globals.Me.StatPoints));
-            mAddAbilityPwrBtn.IsHidden = Globals.Me.StatPoints == 0 ||
+            mAddIntelligenceBtn.IsHidden = Globals.Me.StatPoints == 0 ||
                                          Globals.Me.Stat[(int) Stat.Intelligence] == Options.MaxStatValue;
 
             mAddAttackBtn.IsHidden =
@@ -358,8 +385,11 @@ namespace Intersect.Client.Interface.Game.Character
             mAddVitalityBtn.IsHidden = Globals.Me.StatPoints == 0 ||
                                           Globals.Me.Stat[(int) Stat.Vitality] == Options.MaxStatValue;
 
-            mAddSpeedBtn.IsHidden =
+            mAddAgilityBtn.IsHidden =
                 Globals.Me.StatPoints == 0 || Globals.Me.Stat[(int) Stat.Speed] == Options.MaxStatValue;
+
+           mAddMagicResistBtn.IsHidden =
+               Globals.Me.StatPoints == 0 || Globals.Me.Stat[(int)Stat.MagicResist] == Options.MaxStatValue;
 
             UpdateExtraBuffs();
 

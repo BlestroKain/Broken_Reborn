@@ -7,7 +7,7 @@ namespace Intersect.Enums
         Intelligence,
 
         Defense,
-
+  
         Vitality,
 
         Speed,
@@ -18,19 +18,20 @@ namespace Intersect.Enums
 
         Cures, // bonus de cura 
 
+        MagicResist,
         // Elementales
 
-       /* Fire,
+        /* Fire,
 
-        Water,
+         Water,
 
-        Wind,
+         Wind,
 
-        Earth,
+         Earth,
 
-        Lightness,
+         Lightness,
 
-        Darkness,*/
+         Darkness,*/
 
         StatCount
     }

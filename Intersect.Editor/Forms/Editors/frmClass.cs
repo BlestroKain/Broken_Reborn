@@ -155,7 +155,7 @@ namespace Intersect.Editor.Forms.Editors
                 nudAttack.Value = mEditorItem.BaseStat[(int) Stat.Attack];
                 nudMag.Value = mEditorItem.BaseStat[(int) Stat.Intelligence];
                 nudDef.Value = mEditorItem.BaseStat[(int) Stat.Defense];
-                nudMR.Value = mEditorItem.BaseStat[(int) Stat.Vitality];
+                nudMR.Value = mEditorItem.BaseStat[(int) Stat.MagicResist];
                 nudSpd.Value = mEditorItem.BaseStat[(int) Stat.Speed];
                 NudAgi.Value = mEditorItem.BaseStat[(int)Stat.Agility];
                 nudBaseHP.Value = Math.Max(
@@ -796,7 +796,7 @@ namespace Intersect.Editor.Forms.Editors
 
             nudMagicResistIncrease.Value = Math.Min(
 
-                nudMagicResistIncrease.Maximum, mEditorItem.StatIncrease[(int) Stat.Vitality]
+                nudMagicResistIncrease.Maximum, mEditorItem.StatIncrease[(int) Stat.MagicResist]
             );
 
             nudSpeedIncrease.Value = Math.Min(nudSpeedIncrease.Maximum, mEditorItem.StatIncrease[(int) Stat.Speed]);
@@ -988,7 +988,7 @@ namespace Intersect.Editor.Forms.Editors
 
         private void nudMR_ValueChanged(object sender, EventArgs e)
         {
-            mEditorItem.BaseStat[(int) Stat.Vitality] = (int) nudMR.Value;
+            mEditorItem.BaseStat[(int) Stat.MagicResist] = (int) nudMR.Value;
         }
 
         private void nudPoints_ValueChanged(object sender, EventArgs e)
@@ -1056,7 +1056,7 @@ namespace Intersect.Editor.Forms.Editors
 
         private void nudMagicResistIncrease_ValueChanged(object sender, EventArgs e)
         {
-            mEditorItem.StatIncrease[(int) Stat.Vitality] = (int) nudMagicResistIncrease.Value;
+            mEditorItem.StatIncrease[(int) Stat.MagicResist] = (int) nudMagicResistIncrease.Value;
             UpdateIncreases();
         }
 
@@ -1546,6 +1546,7 @@ namespace Intersect.Editor.Forms.Editors
         private void NudAgi_ValueChanged(object sender, EventArgs e)
         {
             mEditorItem.BaseStat[(int)Stat.Agility] = (int)NudAgi.Value;
+            UpdateIncreases();
         }
 
     }

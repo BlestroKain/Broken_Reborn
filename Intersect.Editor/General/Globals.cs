@@ -197,6 +197,8 @@ namespace Intersect.Editor.General
                     return "Bonus Damage";
                 case (int)Stat.Cures:
                     return "Bonus Curas";
+                case (int)Stat.MagicResist:
+                    return "Magic Resist";
                 default:
                     return "Invalid Stat";
             }

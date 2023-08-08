@@ -204,6 +204,31 @@ namespace Intersect.Editor.General
             }
         }
 
+        public static string GetJobName(int statnum)
+        {
+            switch (statnum)
+            {
+                case (int)Jobs.Farming:
+                    return "Farming";
+                case (int)Jobs.Mining:
+                    return "Mining";
+                case (int)Jobs.Fishing:
+                    return "Fishing";
+                case (int)Jobs.Woodcutter:
+                    return "Woodcutting";
+                case (int)Jobs.Hunter:
+                    return "Hunting";
+                case (int)Jobs.Alquemy:
+                    return "Alchemy";
+                case (int)Jobs.Smithing:
+                    return "Blacksmith";
+                case (int)Jobs.Cooking:
+                    return "Cooking";
+                default:
+                    return "Invalid Job";
+            }
+        }
+
     }
 
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Intersect.Enums;
 using Intersect.GameObjects;
@@ -20,6 +20,8 @@ namespace Intersect.Server.Entities
 
         //Respawn
         public long RespawnTime = 0;
+        public Jobs JobType { get; set; } // Agrega esta propiedad para el tipo de trabajo (job)
+        public int ExperienceAmount { get; set; } // Agrega esta propiedad para la cantidad de experiencia (xp)
 
         public Resource(ResourceBase resource) : base()
         {
@@ -36,6 +38,9 @@ namespace Intersect.Server.Entities
             RestoreVital(Vital.Health);
             Passable = resource.WalkableBefore;
             HideName = true;
+            JobType = Jobs.SkillCount; // Establece el tipo de trabajo predeterminado
+            ExperienceAmount = 0; // Establece la cantidad de experiencia predeterminada
+
         }
 
         public void Destroy(bool dropItems = false, Entity killer = null)
@@ -70,9 +75,52 @@ namespace Intersect.Server.Entities
                     );
                 }
             }
- 
+            // Otorgar experiencia al jugador que destruyó el recurso
+            if (killer is Player player)
+            {
+                switch (Base.JobType)
+                {
+                    case Jobs.Farming:
+                        player.GiveFarmingExperience(ExperienceAmount);
+                        PacketSender.SendChatMsg(player, $"Has recibido {ExperienceAmount} puntos de experiencia en Granjero.", ChatMessageType.Notice, CustomColors.Chat.PlayerMsg);
+                        break;
+                    case Jobs.Mining:
+                        player.GiveMiningExperience(ExperienceAmount);
+                        PacketSender.SendChatMsg(player, $"Has recibido {ExperienceAmount} puntos de experiencia en Minería.", ChatMessageType.Notice, CustomColors.Chat.PlayerMsg);
+                        break;
+                    case Jobs.Fishing:
+                        player.GiveFishingExperience(ExperienceAmount);
+                        PacketSender.SendChatMsg(player, $"Has recibido {ExperienceAmount} puntos de experiencia en Pesca.", ChatMessageType.Notice, CustomColors.Chat.PlayerMsg);
+                        break;
+                    case Jobs.Woodcutter:
+                        player.GiveWoodExperience(ExperienceAmount);
+                        PacketSender.SendChatMsg(player, $"Has recibido {ExperienceAmount} puntos de experiencia en Leñador.", ChatMessageType.Notice, CustomColors.Chat.PlayerMsg);
+                        break;
+                    case Jobs.Hunter:
+                        player.GiveHuntingExperience(ExperienceAmount);
+                        PacketSender.SendChatMsg(player, $"Has recibido {ExperienceAmount} puntos de experiencia en Caza.", ChatMessageType.Notice, CustomColors.Chat.PlayerMsg);
+                        break;
+                    case Jobs.Alquemy:
+                        player.GiveAlchemyExperience(ExperienceAmount);
+                        PacketSender.SendChatMsg(player, $"Has recibido {ExperienceAmount} puntos de experiencia en Alquimia.", ChatMessageType.Notice, CustomColors.Chat.PlayerMsg);
+                        break;
+                    case Jobs.Smithing:
+                        player.GiveBlacksmithExperience(ExperienceAmount);
+                        PacketSender.SendChatMsg(player, $"Has recibido {ExperienceAmount} puntos de experiencia en Herrería.", ChatMessageType.Notice, CustomColors.Chat.PlayerMsg);
+                        break;
+                    case Jobs.Cooking:
+                        player.GiveCookingExperience(ExperienceAmount);
+                        PacketSender.SendChatMsg(player, $"Has recibido {ExperienceAmount} puntos de experiencia en Cocina.", ChatMessageType.Notice, CustomColors.Chat.PlayerMsg);
+                        break;
+                    default:
+                        PacketSender.SendChatMsg(player, $"No se reconoce el trabajo {Base.JobType}.", ChatMessageType.Error, Color.Orange);
+                        break;
+                }
+            }
+
             PacketSender.SendEntityDataToProximity(this);
             PacketSender.SendEntityPositionToAll(this);
+
         }
 
         public void Spawn()
@@ -100,6 +148,8 @@ namespace Intersect.Server.Entities
                     itemSlot++;
                 }
             }
+            JobType = Base.JobType; // Asigna el tipo de trabajo desde la configuración base
+            ExperienceAmount = Base.ExperienceAmount; // Asigna la cantidad de experiencia desde la configuración base
 
             Dead = false;
             PacketSender.SendEntityDataToProximity(this);

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-
+using Intersect.Enums;
 using Intersect.GameObjects.Conditions;
 using Intersect.GameObjects.Events;
 using Intersect.Models;
@@ -91,6 +91,11 @@ namespace Intersect.GameObjects
             get => HarvestingRequirements.Data();
             set => HarvestingRequirements.Load(value);
         }
+        // Propiedad para almacenar el tipo de trabajo
+        public Jobs JobType { get; set; }
+
+        // Propiedad para almacenar la cantidad de experiencia que otorga
+        public int ExperienceAmount { get; set; }
 
         [Column("Event")]
         [JsonProperty]

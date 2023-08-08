@@ -1,7 +1,7 @@
 namespace Intersect.Enums
 {
 
-    public enum Skills
+    public enum Jobs
     {
         //Recolection skills//
         Farming = 0,

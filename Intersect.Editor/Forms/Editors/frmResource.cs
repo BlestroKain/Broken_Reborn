@@ -115,6 +115,11 @@ namespace Intersect.Editor.Forms.Editors
             cmbDropItem.Items.Clear();
             cmbDropItem.Items.Add(Strings.General.None);
             cmbDropItem.Items.AddRange(ItemBase.Names);
+            cmbJobType.Items.Clear();
+            for (var x = 0; x < (int)Jobs.SkillCount; x++)
+            {
+                cmbJobType.Items.Add(Globals.GetJobName(x));
+            }
             InitLocalization();
             UpdateEditor();
         }
@@ -257,7 +262,8 @@ namespace Intersect.Editor.Forms.Editors
                 chkInitialBelowEntities.Checked = mEditorItem.Initial.RenderBelowEntities;
                 chkExhaustedBelowEntities.Checked = mEditorItem.Exhausted.RenderBelowEntities;
                 txtCannotHarvest.Text = mEditorItem.CannotHarvestMessage;
-
+                cmbJobType.SelectedIndex = (int)mEditorItem.JobType;
+                nudExpAmount.Value = mEditorItem.ExperienceAmount;
                 //Regen
                 nudHpRegen.Value = mEditorItem.VitalRegen;
                 PopulateInitialGraphicList();
@@ -980,6 +986,21 @@ namespace Intersect.Editor.Forms.Editors
         }
 
         #endregion
+
+        private void lblRegenHint_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void cmbJobType_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            mEditorItem.JobType = (Jobs)cmbJobType.SelectedIndex;
+        }
+
+        private void nudExpAmount_ValueChanged(object sender, EventArgs e)
+        {
+            mEditorItem.ExperienceAmount = (int)nudExpAmount.Value;
+        }
     }
 
 }

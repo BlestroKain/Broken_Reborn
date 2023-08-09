@@ -109,6 +109,7 @@ namespace Intersect
         public static int MaxLevel => Instance.PlayerOpts.MaxLevel;
         public static int MaxJobLevel => Instance.JobsOpts.MaxJobLevel;
         public static int BaseFarmingExp => Instance.JobsOpts.BaseFarmingExp;
+        public static double GainBaseExponent => Instance.JobsOpts.GainBaseExponent;
         public static int BaseMiningExp => Instance.JobsOpts.BaseMiningExp;
         public static int BaseFishingExp => Instance.JobsOpts.BaseFishingExp;
         public static int BaseLumberjackExp => Instance.JobsOpts.BaseLumberjackExp;

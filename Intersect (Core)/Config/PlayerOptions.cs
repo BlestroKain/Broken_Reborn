@@ -7,14 +7,15 @@ namespace Intersect.Config
     public partial class JobsOptions
     {
         public int MaxJobLevel { get; set; } = 100;
+        public double GainBaseExponent { get; set; } = 1.7;
         public int BaseFarmingExp { get; set; } = 15;
         public int BaseFishingExp { get; set; } = 15;
         public int BaseMiningExp { get; set; } = 15;
         public int BaseLumberjackExp { get; set; } = 15;
         public int BaseHuntingExp { get; set; } = 15;
-        public int BaseCookingExp { get; set; } = 30;
-        public int BaseAlchemyExp { get; set; } = 30;
-        public int BaseBlacksmithExp { get; set; } = 30;
+        public int BaseCookingExp { get; set; } = 20;
+        public int BaseAlchemyExp { get; set; } = 20;
+        public int BaseBlacksmithExp { get; set; } = 20;
     }
         public partial class PlayerOptions
     {

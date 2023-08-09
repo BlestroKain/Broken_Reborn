@@ -84,7 +84,8 @@ namespace Intersect.Editor.Forms.Editors
                 nudFailureChance.Value = mEditorItem.FailureChance;
                 nudItemLossChance.Value = mEditorItem.ItemLossChance;
                 cmbResult.SelectedIndex = ItemBase.ListIndex(mEditorItem.ItemId) + 1;
-
+                cmbJobType.SelectedIndex = (int)mEditorItem.JobType;
+                nudExpAmount.Value = mEditorItem.ExperienceAmount;
                 nudCraftQuantity.Value = mEditorItem.Quantity;
 
                 lstIngredients.Items.Clear();
@@ -424,6 +425,11 @@ namespace Intersect.Editor.Forms.Editors
 
         private void frmCrafting_Load(object sender, EventArgs e)
         {
+            cmbJobType.Items.Clear();
+            for (var x = 0; x < (int)Jobs.SkillCount; x++)
+            {
+                cmbJobType.Items.Add(Globals.GetJobName(x));
+            }
             InitLocalization();
         }
 
@@ -583,6 +589,16 @@ namespace Intersect.Editor.Forms.Editors
         }
 
         #endregion
+
+        private void cmbJobType_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            mEditorItem.JobType = (Jobs)cmbJobType.SelectedIndex;
+        }
+              
+        private void nudExpAmount_ValueChanged_1(object sender, EventArgs e)
+        {
+            mEditorItem.ExperienceAmount = (int)nudExpAmount.Value;
+        }
     }
 
 }

@@ -7,6 +7,7 @@ using Intersect.GameObjects.Events;
 
 using Newtonsoft.Json;
 using Intersect.GameObjects.Conditions;
+using Intersect.Enums;
 
 namespace Intersect.GameObjects.Crafting
 {
@@ -67,7 +68,10 @@ namespace Intersect.GameObjects.Crafting
         }
 
         [NotMapped] public ConditionLists CraftingRequirements = new ConditionLists();
+        public Jobs JobType { get; set; }
 
+        // Propiedad para almacenar la cantidad de experiencia que otorga
+        public int ExperienceAmount { get; set; }
         //Requirements
         [Column("CraftingRequirements")]
         [JsonIgnore]

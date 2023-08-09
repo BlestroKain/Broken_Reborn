@@ -4522,6 +4522,47 @@ namespace Intersect.Server.Entities
                     {
                         EnqueueStartCommonEvent(craftDescriptor.Event);
                     }
+                    if (craftDescriptor.ExperienceAmount > 0)
+                    {
+                        switch (craftDescriptor.JobType)
+                        {
+                            case Jobs.Farming:
+                                GiveFarmingExperience(craftDescriptor.ExperienceAmount);
+                                PacketSender.SendChatMsg(this, $"Has recibido {craftDescriptor.ExperienceAmount} puntos de experiencia en Granjero.", ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
+                                break;
+                            case Jobs.Mining:
+                                GiveMiningExperience(craftDescriptor.ExperienceAmount);
+                                PacketSender.SendChatMsg(this, $"Has recibido {craftDescriptor.ExperienceAmount} puntos de experiencia en Minería.", ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
+                                break;
+                            case Jobs.Fishing:
+                                GiveFishingExperience(craftDescriptor.ExperienceAmount);
+                                PacketSender.SendChatMsg(this, $"Has recibido {craftDescriptor.ExperienceAmount} puntos de experiencia en Pesca.", ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
+                                break;
+                            case Jobs.Woodcutter:
+                                GiveWoodExperience(craftDescriptor.ExperienceAmount);
+                                PacketSender.SendChatMsg(this, $"Has recibido {craftDescriptor.ExperienceAmount} puntos de experiencia en Leñador.", ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
+                                break;
+                            case Jobs.Hunter:
+                                GiveHuntingExperience(craftDescriptor.ExperienceAmount);
+                                PacketSender.SendChatMsg(this, $"Has recibido {craftDescriptor.ExperienceAmount} puntos de experiencia en Caza.", ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
+                                break;
+                            case Jobs.Alquemy:
+                                GiveAlchemyExperience(craftDescriptor.ExperienceAmount);
+                                PacketSender.SendChatMsg(this, $"Has recibido {craftDescriptor.ExperienceAmount} puntos de experiencia en Alquimia.", ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
+                                break;
+                            case Jobs.Smithing:
+                                GiveBlacksmithExperience(craftDescriptor.ExperienceAmount);
+                                PacketSender.SendChatMsg(this, $"Has recibido {craftDescriptor.ExperienceAmount} puntos de experiencia en Herrería.", ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
+                                break;
+                            case Jobs.Cooking:
+                                GiveCookingExperience(craftDescriptor.ExperienceAmount);
+                                PacketSender.SendChatMsg(this, $"Has recibido {craftDescriptor.ExperienceAmount} puntos de experiencia en Cocina.", ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
+                                break;
+                            default:
+                                PacketSender.SendChatMsg(this, $"No se reconoce el trabajo {craftDescriptor.JobType}.", ChatMessageType.Error, Color.Orange);
+                                break;
+                        }
+                    }
                 }
                 else
                 {

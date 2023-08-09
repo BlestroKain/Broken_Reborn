@@ -338,7 +338,7 @@ namespace Intersect.Server.Entities
             }
 
             var skillBase = Options.BaseFarmingExp;
-            var Gain = 3;
+            var Gain = Options.GainBaseExponent;
             var level = FarmingLevel;
 
 
@@ -353,7 +353,7 @@ namespace Intersect.Server.Entities
             }
 
             var skillBase = Options.BaseMiningExp;
-            var Gain = 3;
+            var Gain = Options.GainBaseExponent;
             var level = MiningLevel;
 
 
@@ -368,7 +368,7 @@ namespace Intersect.Server.Entities
             }
 
             var skillBase = Options.BaseFishingExp;
-            var Gain = 3;
+            var Gain = Options.GainBaseExponent;
             var level = FishingLevel;
 
 
@@ -383,7 +383,7 @@ namespace Intersect.Server.Entities
             }
 
             var skillBase = Options.BaseLumberjackExp;
-            var Gain = 3;
+            var Gain = Options.GainBaseExponent;
             var level = WoodLevel;
 
 
@@ -397,7 +397,7 @@ namespace Intersect.Server.Entities
             }
 
             var skillBase = Options.BaseCookingExp;
-            var Gain = 3;
+            var Gain = Options.GainBaseExponent;
             var level = CookingLevel;
 
 
@@ -411,7 +411,7 @@ namespace Intersect.Server.Entities
             }
 
             var skillBase = Options.BaseHuntingExp;
-            var Gain = 3;
+            var Gain = Options.GainBaseExponent;
             var level = HuntingLevel;
 
 
@@ -425,7 +425,7 @@ namespace Intersect.Server.Entities
             }
 
             var skillBase = Options.BaseBlacksmithExp;
-            var Gain = 3;
+            var Gain = Options.GainBaseExponent;
             var level = BlacksmithLevel;
 
 
@@ -439,7 +439,7 @@ namespace Intersect.Server.Entities
             }
 
             var skillBase = Options.BaseAlchemyExp;
-            var Gain = 3;
+            var Gain = Options.GainBaseExponent;
             var level = AlchemyLevel;
 
 

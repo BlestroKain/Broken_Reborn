@@ -208,6 +208,8 @@ namespace Intersect.Editor.General
         {
             switch (statnum)
             {
+                case (int)Jobs.None:
+                    return "None";
                 case (int)Jobs.Farming:
                     return "Farming";
                 case (int)Jobs.Mining:

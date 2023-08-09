@@ -78,43 +78,46 @@ namespace Intersect.Server.Entities
             // Otorgar experiencia al jugador que destruyó el recurso
             if (killer is Player player)
             {
-                switch (Base.JobType)
+                if (ExperienceAmount > 0)
                 {
-                    case Jobs.Farming:
-                        player.GiveFarmingExperience(ExperienceAmount);
-                        PacketSender.SendChatMsg(player, $"Has recibido {ExperienceAmount} puntos de experiencia en Granjero.", ChatMessageType.Notice, CustomColors.Chat.PlayerMsg);
-                        break;
-                    case Jobs.Mining:
-                        player.GiveMiningExperience(ExperienceAmount);
-                        PacketSender.SendChatMsg(player, $"Has recibido {ExperienceAmount} puntos de experiencia en Minería.", ChatMessageType.Notice, CustomColors.Chat.PlayerMsg);
-                        break;
-                    case Jobs.Fishing:
-                        player.GiveFishingExperience(ExperienceAmount);
-                        PacketSender.SendChatMsg(player, $"Has recibido {ExperienceAmount} puntos de experiencia en Pesca.", ChatMessageType.Notice, CustomColors.Chat.PlayerMsg);
-                        break;
-                    case Jobs.Woodcutter:
-                        player.GiveWoodExperience(ExperienceAmount);
-                        PacketSender.SendChatMsg(player, $"Has recibido {ExperienceAmount} puntos de experiencia en Leñador.", ChatMessageType.Notice, CustomColors.Chat.PlayerMsg);
-                        break;
-                    case Jobs.Hunter:
-                        player.GiveHuntingExperience(ExperienceAmount);
-                        PacketSender.SendChatMsg(player, $"Has recibido {ExperienceAmount} puntos de experiencia en Caza.", ChatMessageType.Notice, CustomColors.Chat.PlayerMsg);
-                        break;
-                    case Jobs.Alquemy:
-                        player.GiveAlchemyExperience(ExperienceAmount);
-                        PacketSender.SendChatMsg(player, $"Has recibido {ExperienceAmount} puntos de experiencia en Alquimia.", ChatMessageType.Notice, CustomColors.Chat.PlayerMsg);
-                        break;
-                    case Jobs.Smithing:
-                        player.GiveBlacksmithExperience(ExperienceAmount);
-                        PacketSender.SendChatMsg(player, $"Has recibido {ExperienceAmount} puntos de experiencia en Herrería.", ChatMessageType.Notice, CustomColors.Chat.PlayerMsg);
-                        break;
-                    case Jobs.Cooking:
-                        player.GiveCookingExperience(ExperienceAmount);
-                        PacketSender.SendChatMsg(player, $"Has recibido {ExperienceAmount} puntos de experiencia en Cocina.", ChatMessageType.Notice, CustomColors.Chat.PlayerMsg);
-                        break;
-                    default:
-                        PacketSender.SendChatMsg(player, $"No se reconoce el trabajo {Base.JobType}.", ChatMessageType.Error, Color.Orange);
-                        break;
+                    switch (Base.JobType)
+                    {
+                        case Jobs.Farming:
+                            player.GiveFarmingExperience(ExperienceAmount);
+                            PacketSender.SendChatMsg(player, $"Has recibido {ExperienceAmount} puntos de experiencia en Granjero.", ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
+                            break;
+                        case Jobs.Mining:
+                            player.GiveMiningExperience(ExperienceAmount);
+                            PacketSender.SendChatMsg(player, $"Has recibido {ExperienceAmount} puntos de experiencia en Minería.", ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
+                            break;
+                        case Jobs.Fishing:
+                            player.GiveFishingExperience(ExperienceAmount);
+                            PacketSender.SendChatMsg(player, $"Has recibido {ExperienceAmount} puntos de experiencia en Pesca.", ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
+                            break;
+                        case Jobs.Woodcutter:
+                            player.GiveWoodExperience(ExperienceAmount);
+                            PacketSender.SendChatMsg(player, $"Has recibido {ExperienceAmount} puntos de experiencia en Leñador.", ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
+                            break;
+                        case Jobs.Hunter:
+                            player.GiveHuntingExperience(ExperienceAmount);
+                            PacketSender.SendChatMsg(player, $"Has recibido {ExperienceAmount} puntos de experiencia en Caza.", ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
+                            break;
+                        case Jobs.Alquemy:
+                            player.GiveAlchemyExperience(ExperienceAmount);
+                            PacketSender.SendChatMsg(player, $"Has recibido {ExperienceAmount} puntos de experiencia en Alquimia.", ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
+                            break;
+                        case Jobs.Smithing:
+                            player.GiveBlacksmithExperience(ExperienceAmount);
+                            PacketSender.SendChatMsg(player, $"Has recibido {ExperienceAmount} puntos de experiencia en Herrería.", ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
+                            break;
+                        case Jobs.Cooking:
+                            player.GiveCookingExperience(ExperienceAmount);
+                            PacketSender.SendChatMsg(player, $"Has recibido {ExperienceAmount} puntos de experiencia en Cocina.", ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
+                            break;
+                        default:
+                            PacketSender.SendChatMsg(player, $"No se reconoce el trabajo {Base.JobType}.", ChatMessageType.Error, Color.Orange);
+                            break;
+                    }
                 }
             }
 

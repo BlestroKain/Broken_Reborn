@@ -126,7 +126,7 @@ namespace Intersect.Client.Interface.Menu
         void BackBtn_Clicked(Base sender, ClickedEventArgs arguments)
         {
             Hide();
-            Interface.MenuUi.MainMenu.NotifyOpenLogin();
+            mMainMenu.Show();
         }
 
         void Textbox_SubmitPressed(Base sender, EventArgs arguments)

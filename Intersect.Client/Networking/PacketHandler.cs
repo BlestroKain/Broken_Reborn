@@ -2049,7 +2049,7 @@ namespace Intersect.Client.Networking
                     new KeyValuePair<string, string>(Strings.ResetPass.success, Strings.ResetPass.successmsg)
                 );
 
-                Interface.Interface.MenuUi.MainMenu.NotifyOpenLogin();
+                Interface.Interface.MenuUi.MainMenu.NotifyOpenForgotPassword();
             }
             else
             {

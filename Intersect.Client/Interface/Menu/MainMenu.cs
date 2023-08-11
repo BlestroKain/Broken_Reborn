@@ -42,7 +42,7 @@ namespace Intersect.Client.Interface.Menu
 
         private readonly Button mLoginButton;
 
- 
+        private readonly Button mDiscordButton;
 
         //Controls
         private readonly Canvas mMenuCanvas;
@@ -150,6 +150,11 @@ namespace Intersect.Client.Interface.Menu
             {
                 mSettingsButton.SetToolTipText(Strings.MainMenu.SettingsTooltip);
             }
+            mDiscordButton = new Button(mMenuWindow, "WebsiteButton");
+            mDiscordButton.SetText(Strings.MainMenu.Discord);
+            mDiscordButton.Clicked += DiscordButton_Clicked;
+            mDiscordButton.SetPosition(338, 54);
+            mDiscordButton.SetSize(96, 35);
 
             mLoginContainer = new ImagePanel(mMenuWindow, "LoginContainer");
 
@@ -240,6 +245,12 @@ namespace Intersect.Client.Interface.Menu
             mCreditsWindow = new CreditsWindow(mMenuCanvas, this);
 
             UpdateDisabled();
+        }
+
+        private void DiscordButton_Clicked(object sender, EventArgs e)
+        {
+            // Launch browser to ascensiongamedev...
+            System.Diagnostics.Process.Start("https://discord.gg/k2sdk7hFYS");
         }
 
         ~MainMenu()

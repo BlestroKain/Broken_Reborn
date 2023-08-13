@@ -828,6 +828,7 @@ namespace Intersect.Editor.Forms.Editors.Events
 
         private static string GetCommandText(GiveJobExperienceCommand command, MapInstance map)
         {
+            
             if (command.FarmingExp != 0)
             {
                 return Strings.EventCommandList.giveFarmingexp.ToString(command.FarmingExp);

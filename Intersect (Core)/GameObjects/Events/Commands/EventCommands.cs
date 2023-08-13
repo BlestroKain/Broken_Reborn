@@ -329,10 +329,9 @@ namespace Intersect.GameObjects.Events.Commands
     }
     public partial class GiveJobExperienceCommand : EventCommand
     {
+              public override EventCommandType Type { get; } = EventCommandType.GiveJobExperience;
 
-        public override EventCommandType Type { get; } = EventCommandType.GiveJobExperience;
-
-               //Recolection Jobs
+     
         public long FarmingExp { get; set; }
         public long FishingExp { get; set; }
         public long MiningExp { get; set; }
@@ -343,9 +342,11 @@ namespace Intersect.GameObjects.Events.Commands
         public long CookingExp { get; set; }
         public long BlacksmithExp { get; set; }
         public long AlchemyExp { get; set; }
+
+      
         /*public long JewellerExp { get; set; }
-        public long ShoemakerExp { get; set; }
-        public long TailorExp { get; set; }*/
+public long ShoemakerExp { get; set; }
+public long TailorExp { get; set; }*/
 
     }
     public partial class ChangeLevelCommand : EventCommand

@@ -2323,7 +2323,7 @@ Tick timer saved in server config.json.";
                 {"openguildbank", @"Open Guild Bank"},
                 {"setguildbankslots", @"Set Guild Bank Slots Count"},
                 {"resetstatallocations", @"Reset Stat Point Allocations"},
-                {"givejobexperience",@"Give Job Experience"},
+                {"givejobexperience", @"Give Job Experience"},
             };
 
         }

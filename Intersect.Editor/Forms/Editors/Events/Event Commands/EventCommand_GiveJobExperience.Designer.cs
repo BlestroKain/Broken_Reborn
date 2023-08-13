@@ -66,22 +66,13 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
             this.cmbJob.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.cmbJob.ForeColor = System.Drawing.Color.Gainsboro;
             this.cmbJob.FormattingEnabled = true;
-            this.cmbJob.Items.AddRange(new object[] {
-            "None",
-            "Farming",
-            "Mining",
-            "Fishing",
-            "Lumberjack",
-            "Hunting",
-            "Alchemy",
-            "Blacksmith",
-            "Cooking"});
             this.cmbJob.Location = new System.Drawing.Point(6, 32);
             this.cmbJob.Name = "cmbJob";
-            this.cmbJob.Size = new System.Drawing.Size(156, 21);
+            this.cmbJob.Size = new System.Drawing.Size(156, 23);
             this.cmbJob.TabIndex = 27;
             this.cmbJob.Text = "None";
             this.cmbJob.TextPadding = new System.Windows.Forms.Padding(2);
+            this.cmbJob.SelectedIndexChanged += new System.EventHandler(this.cmbJob_SelectedIndexChanged);
             // 
             // nudExperience
             // 
@@ -94,13 +85,14 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
             0,
             0});
             this.nudExperience.Name = "nudExperience";
-            this.nudExperience.Size = new System.Drawing.Size(156, 20);
+            this.nudExperience.Size = new System.Drawing.Size(156, 22);
             this.nudExperience.TabIndex = 26;
             this.nudExperience.Value = new decimal(new int[] {
             0,
             0,
             0,
             0});
+            this.nudExperience.ValueChanged += new System.EventHandler(this.nudExperience_ValueChanged);
             // 
             // btnCancel
             // 

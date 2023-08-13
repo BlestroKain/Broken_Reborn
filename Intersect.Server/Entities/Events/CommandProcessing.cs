@@ -420,15 +420,46 @@ namespace Intersect.Server.Entities.Events
             CommandInstance stackInfo,
             Stack<CommandInstance> callStack
         )
-        {                     
-            player.GiveFarmingExperience(command.FarmingExp);
-            player.GiveMiningExperience(command.MiningExp);
-            player.GiveFishingExperience(command.FishingExp);
-            player.GiveWoodExperience(command.WoodExp);
-            player.GiveHuntingExperience(command.HuntingExp);
-            player.GiveAlchemyExperience(command.AlchemyExp);
-            player.GiveBlacksmithExperience(command.BlacksmithExp);
-            player.GiveCookingExperience(command.CookingExp);
+        {
+            if (command.FarmingExp != 0)
+            {
+                player.GiveFarmingExperience(command.FarmingExp);
+            }
+
+            if (command.MiningExp != 0)
+            {
+                player.GiveMiningExperience(command.MiningExp);
+            }
+
+            if (command.FishingExp != 0)
+            {
+                player.GiveFishingExperience(command.FishingExp);
+            }
+
+            if (command.WoodExp != 0)
+            {
+                player.GiveWoodExperience(command.WoodExp);
+            }
+
+            if (command.HuntingExp != 0)
+            {
+                player.GiveHuntingExperience(command.HuntingExp);
+            }
+
+            if (command.AlchemyExp != 0)
+            {
+                player.GiveAlchemyExperience(command.AlchemyExp);
+            }
+
+            if (command.BlacksmithExp != 0)
+            {
+                player.GiveBlacksmithExperience(command.BlacksmithExp);
+            }
+
+            if (command.CookingExp != 0)
+            {
+                player.GiveCookingExperience(command.CookingExp);
+            }
         }
         //Change Level Command
         private static void ProcessCommand(

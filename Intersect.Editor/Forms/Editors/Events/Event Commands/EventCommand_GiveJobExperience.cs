@@ -21,6 +21,8 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
     {
         private readonly FrmEvent mEventEditor;
         private GiveJobExperienceCommand mMyCommand;
+        private Jobs selectedJob = Jobs.None;
+        private long selectedExperience = 0;
         public EventCommandGiveJobExperience(GiveJobExperienceCommand refCommand, FrmEvent editor)
         {
 
@@ -28,71 +30,103 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
             InitLocalization();
             mMyCommand = refCommand;
             mEventEditor = editor;
+          
+            
             cmbJob.Items.Clear();
-            cmbJob.Items.AddRange(new object[] {
-            "None",
-            "Farming",
-            "Mining",
-            "Fishing",
-            "Lumberjack",
-            "Hunting",
-            "Alchemy",
-            "Blacksmith",
-            "Cooking"});                     
+            for (var x = 0; x < (int)Jobs.SkillCount; x++)
+            {
+                cmbJob.Items.Add(General.Globals.GetJobName(x));
+            }
         }
         private void InitLocalization()
         {
             grpGiveExperience.Text = Strings.EventGiveExperience.title;          
             btnSave.Text = Strings.EventGiveExperience.okay;
             btnCancel.Text = Strings.EventGiveExperience.cancel;
+           
         }
-
+            private void UpdateCommandPrinter()
+        {
+            // Actualizar el texto del "printer" de comandos con el valor devuelto por GetCommandText
+            // Puedes llamar a este método cada vez que cambie el valor de experiencia
+            string commandText = GetCommandText();
+            // Actualiza el "printer" de comandos con el nuevo texto
+            // printerCommand.Text = commandText;
+        }
+        private string GetCommandText()
+        {
+            // Devuelve el texto que se mostrará en el "printer" de comandos
+            // en base a los valores de experiencia seleccionados en el formulario
+            // Por ejemplo:
+            // return $"Give Job Experience: {mMyCommand.FarmingExp} Farming, {mMyCommand.MiningExp} Mining, ...";
+            return string.Empty;
+        }
         private void btnSave_Click(object sender, EventArgs e)
         {
-            switch (cmbJob.SelectedIndex)
+            ResetExperience();
+            switch (selectedJob)
             {
-                case 1:
-                    mMyCommand.FarmingExp = (long)nudExperience.Value;
+                case Jobs.None:
+                    return;
+                case Jobs.Farming:
+                    mMyCommand.FarmingExp = selectedExperience;
                     break;
-                case 2:
-                    mMyCommand.MiningExp = (long)nudExperience.Value;
+                case Jobs.Mining:
+                    mMyCommand.MiningExp = selectedExperience;
                     break;
-                case 3:
-                    mMyCommand.FishingExp = (long)nudExperience.Value;
+                case Jobs.Fishing:
+                    mMyCommand.FishingExp = selectedExperience;
                     break;
-                case 4:
-                    mMyCommand.WoodExp = (long)nudExperience.Value;
+                case Jobs.Woodcutter:
+                    mMyCommand.WoodExp = selectedExperience;
                     break;
-                case 5:
-                    mMyCommand.HuntingExp = (long)nudExperience.Value;
+                case Jobs.Hunter:
+                    mMyCommand.HuntingExp = selectedExperience;
                     break;
-                case 6:
-                    mMyCommand.AlchemyExp = (long)nudExperience.Value;
+                case Jobs.Alquemy:
+                    mMyCommand.AlchemyExp = selectedExperience;
                     break;
-                case 7:
-                    mMyCommand.BlacksmithExp = (long)nudExperience.Value;
+                case Jobs.Smithing:
+                    mMyCommand.BlacksmithExp = selectedExperience;
                     break;
-                case 8:
-                    mMyCommand.CookingExp = (long)nudExperience.Value;
+                case Jobs.Cooking:
+                    mMyCommand.CookingExp = selectedExperience;
                     break;
-            }
+            
+
+        }
+            cmbJob.SelectedIndex = (int)selectedJob;
+            nudExperience.Value = selectedExperience;
+            UpdateCommandPrinter();
             mEventEditor.FinishCommandEdit();
         }
-
+        private void ResetExperience()
+        {
+            // Reiniciar todas las experiencias a cero
+            mMyCommand.FarmingExp = 0;
+            mMyCommand.MiningExp = 0;
+            mMyCommand.FishingExp = 0;
+            mMyCommand.WoodExp = 0;
+            mMyCommand.HuntingExp = 0;
+            mMyCommand.AlchemyExp = 0;
+            mMyCommand.BlacksmithExp = 0;
+            mMyCommand.CookingExp = 0;
+        }
         private void btnCancel_Click(object sender, EventArgs e)
         {
 
             mEventEditor.CancelCommandEdit();
         }
 
-        private void btnSave_Click_1(object sender, EventArgs e)
+        private void nudExperience_ValueChanged(object sender, EventArgs e)
         {
-
+            selectedExperience = (long)nudExperience.Value;
         }
 
-        private void btnCancel_Click_1(object sender, EventArgs e)
+        private void cmbJob_SelectedIndexChanged(object sender, EventArgs e)
         {
-
+            selectedJob = (Jobs)cmbJob.SelectedIndex;
+            ResetExperience();
         }
     }
 }

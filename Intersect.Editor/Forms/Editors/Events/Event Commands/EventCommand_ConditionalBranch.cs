@@ -174,8 +174,23 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
             {
                 cmbLevelComparator.Items.Add(Strings.EventConditional.comparators[i]);
             }
-
             chkStatIgnoreBuffs.Text = Strings.EventConditional.ignorestatbuffs;
+            grpJobLevel.Text = Strings.EventConditional.levelorstat;
+            // JobLevel
+            cmbJobLevel.Items.Clear();
+           
+            for (var i = 0; i < (int)Jobs.SkillCount; i++)
+            {
+                cmbJobLevel.Items.Add(General.Globals.GetJobName(i));
+
+            }
+
+            cmbJobComparator.Items.Clear();
+            for (var i = 0; i < Strings.EventConditional.comparators.Count; i++)
+            {
+                cmbJobComparator.Items.Add(Strings.EventConditional.comparators[i]);
+            }
+            
 
             //Self Switch Is
             grpSelfSwitch.Text = Strings.EventConditional.selfswitchis;
@@ -408,6 +423,14 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
                     }
 
                     break;
+
+                case ConditionTypes.JobLevel:
+                    Condition = new JobLevelCondition();
+                    cmbJobLevel.SelectedIndex = 0;
+                    cmbJobComparator.SelectedIndex = 0;
+                    nudJobValue.Value = 0;
+
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -433,6 +456,7 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
             grpMapZoneType.Hide();
             grpNpc.Hide();
             grpCheckEquippedSlot.Hide();
+            grpJobLevel.Hide();
             switch (type)
             {
                 case ConditionTypes.VariableIs:
@@ -574,6 +598,11 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
                     }
 
                     break;
+                case ConditionTypes.JobLevel:
+                    grpJobLevel.Show();
+
+                    break;
+
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -1400,6 +1429,13 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
             cmbCheckEquippedSlot.SelectedIndex = Options.EquipmentSlots.IndexOf(condition.Name);
         }
 
+        private void SetupFormValues(JobLevelCondition condition)
+        {
+            cmbJobComparator.SelectedIndex = (int)condition.ComparatorJob;
+            nudJobValue.Value = condition.Value;
+            cmbJobLevel.SelectedIndex = condition.ComparingLevel;
+           
+        }
 
         #endregion
 
@@ -1491,7 +1527,13 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
 
             condition.IgnoreBuffs = chkStatIgnoreBuffs.Checked;
         }
-
+        private void SaveFormValues(JobLevelCondition condition)
+        {
+            condition.ComparatorJob = (VariableComparator)cmbJobComparator.SelectedIndex;
+            condition.Value = (int)nudJobValue.Value;
+            condition.ComparingLevel = cmbJobLevel.SelectedIndex;
+                    
+        }
         private void SaveFormValues(SelfSwitchCondition condition)
         {
             condition.SwitchIndex = cmbSelfSwitch.SelectedIndex;

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -257,6 +258,92 @@ namespace Intersect.Server.Entities.Events
                     break;
                 case VariableComparator.NotEqual:
                     if (lvlStat != condition.Value)
+                    {
+                        return true;
+                    }
+
+                    break;
+            }
+
+            return false;
+        }
+        public static bool MeetsCondition(
+           JobLevelCondition condition,
+           Player player,
+           Event eventInstance,
+           QuestBase questBase
+           
+            
+       )
+        {
+            var joblevel = 0;
+
+            switch (condition.ComparingLevel)
+            {
+                case (int)Jobs.Farming:
+                    joblevel = player.FarmingLevel;
+                    break;
+                case (int)Jobs.Mining:
+                    joblevel = player.MiningLevel;
+                    break;
+                case (int)Jobs.Hunter:
+                    joblevel = player.HuntingLevel;
+                    break;
+                case (int)Jobs.Smithing:
+                    joblevel = player.BlacksmithLevel;
+                    break;
+                case (int)Jobs.Cooking:
+                    joblevel = player.CookingLevel;
+                    break;
+                case (int)Jobs.Alquemy:
+                    joblevel = player.AlchemyLevel;
+                    break;
+                case (int)Jobs.Fishing:
+                    joblevel = player.FishingLevel;
+                    break;
+                case (int)Jobs.Woodcutter:
+                    joblevel = player.WoodLevel;
+                    break;
+            }
+            switch (condition.ComparatorJob) //Comparator
+            {
+                case VariableComparator.Equal:
+                    if (joblevel == condition.Value)
+                    {
+                        return true;
+                    }
+
+                    break;
+                case VariableComparator.GreaterOrEqual:
+                    if (joblevel >= condition.Value)
+                    {
+                        return true;
+                    }
+
+                    break;
+                case VariableComparator.LesserOrEqual:
+                    if (joblevel <= condition.Value)
+                    {
+                        return true;
+                    }
+
+                    break;
+                case VariableComparator.Greater:
+                    if (joblevel > condition.Value)
+                    {
+                        return true;
+                    }
+
+                    break;
+                case VariableComparator.Less:
+                    if (joblevel < condition.Value)
+                    {
+                        return true;
+                    }
+
+                    break;
+                case VariableComparator.NotEqual:
+                    if (joblevel != condition.Value)
                     {
                         return true;
                     }

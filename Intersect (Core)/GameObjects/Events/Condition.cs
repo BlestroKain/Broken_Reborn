@@ -43,6 +43,9 @@ namespace Intersect.GameObjects.Events
         MapZoneTypeIs,
 
         CheckEquipment,
+
+        JobLevel,
+
     }
 
     public partial class Condition
@@ -306,4 +309,19 @@ namespace Intersect.GameObjects.Events
 
         public string Name { get; set; }
     }
+
+    public partial class JobLevelCondition : Condition
+    {
+
+        public override ConditionTypes Type { get; } = ConditionTypes.JobLevel;
+
+        public int ComparingLevel { get; set; }
+
+        public VariableComparator ComparatorJob { get; set; } = VariableComparator.Equal;
+
+        public int Value { get; set; }
+
+
+    }
+
 }

@@ -182,7 +182,68 @@ namespace Intersect.Editor.Localization
 
             return EventConditionDesc.levelorstat.ToString(lvlorstat, pLvl);
         }
+        public static string GetEventConditionalDesc(JobLevelCondition condition)
+        {
+            var pLvl = "";
+            switch (condition.ComparatorJob)
+            {
+                case VariableComparator.Equal:
+                    pLvl = EventConditionDesc.equal.ToString(condition.Value);
 
+                    break;
+                case VariableComparator.GreaterOrEqual:
+                    pLvl = EventConditionDesc.greaterequal.ToString(condition.Value);
+
+                    break;
+                case VariableComparator.LesserOrEqual:
+                    pLvl = EventConditionDesc.lessthanequal.ToString(condition.Value);
+
+                    break;
+                case VariableComparator.Greater:
+                    pLvl = EventConditionDesc.greater.ToString(condition.Value);
+
+                    break;
+                case VariableComparator.Less:
+                    pLvl = EventConditionDesc.lessthan.ToString(condition.Value);
+
+                    break;
+                case VariableComparator.NotEqual:
+                    pLvl = EventConditionDesc.notequal.ToString(condition.Value);
+
+                    break;
+                    
+            }
+            var joblevel = "";
+           
+            switch (condition.ComparingLevel)
+            {
+                case (int)Jobs.Farming:
+                    joblevel = EventConditionDesc.Farminglevel;
+                    break;
+                case (int)Jobs.Mining:
+                    joblevel = EventConditionDesc.Mininglevel;
+                    break;
+                case (int)Jobs.Hunter:
+                    joblevel = EventConditionDesc.Hunterlevel;
+                    break;
+                case (int)Jobs.Smithing:
+                    joblevel = EventConditionDesc.Blacksmithlevel;
+                    break;
+                case (int)Jobs.Cooking:
+                    joblevel = EventConditionDesc.Cookinglevel;
+                    break;
+                case (int)Jobs.Alquemy:
+                    joblevel = EventConditionDesc.Alchemylevel;
+                    break;
+                case (int)Jobs.Fishing:
+                    joblevel = EventConditionDesc.Fishinglevel;
+                    break;
+                case (int)Jobs.Woodcutter:
+                    joblevel = EventConditionDesc.Lumberjacklevel;
+                    break;
+            }
+            return EventConditionDesc.levelorstat.ToString(joblevel, pLvl);
+        }
         public static string GetEventConditionalDesc(SelfSwitchCondition condition)
         {
             var sValue = EventConditionDesc.False;
@@ -2404,6 +2465,7 @@ Tick timer saved in server config.json.";
                 {19, @"In Guild With At Least Rank..." },
                 {20, @"Map Zone Type is..." },
                 {21, @"Check Equipped Slot..." },
+                {22, @"Job Level is..."},
             };
 
             public static LocalizedString endrange = @"End Range:";
@@ -2617,6 +2679,15 @@ Tick timer saved in server config.json.";
             public static LocalizedString lessthanequal = @"is less than or equal to {00}";
 
             public static LocalizedString level = @"Level";
+
+            public static LocalizedString Farminglevel = @"Farming Level";
+            public static LocalizedString Mininglevel = @"Mining Level";
+            public static LocalizedString Hunterlevel = @"Hunting Level";
+            public static LocalizedString Lumberjacklevel = @"Lumberjack Level";
+            public static LocalizedString Fishinglevel = @"Fishing Level";
+            public static LocalizedString Blacksmithlevel = @"Blacksmith Level";
+            public static LocalizedString Cookinglevel = @"Cooking Level";
+            public static LocalizedString Alchemylevel = @"Alchemy Level";
 
             public static LocalizedString levelorstat = @"{00} {01}";
 

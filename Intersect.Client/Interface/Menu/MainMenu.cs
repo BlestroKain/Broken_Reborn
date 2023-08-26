@@ -150,7 +150,7 @@ namespace Intersect.Client.Interface.Menu
             {
                 mSettingsButton.SetToolTipText(Strings.MainMenu.SettingsTooltip);
             }
-            mDiscordButton = new Button(mMenuWindow, "WebsiteButton");
+            mDiscordButton = new Button(mMenuWindow, "DiscordButton");
             mDiscordButton.SetText(Strings.MainMenu.Discord);
             mDiscordButton.Clicked += DiscordButton_Clicked;
             mDiscordButton.SetPosition(338, 54);
@@ -283,12 +283,7 @@ namespace Intersect.Client.Interface.Menu
                 CreateCharacterCreation();
             }
 
-            if (!Networking.Network.Connected)
-            {
-                             
-                Interface.MsgboxErrors.Add(new KeyValuePair<string, string>("", Strings.Errors.lostconnection));
-                return;
-            }
+           
 
             // Re-Enable our buttons button if we're not waiting for the server anymore with it disabled.
             if (!Globals.WaitingOnServer && mLoginButton.IsDisabled)
@@ -439,13 +434,7 @@ namespace Intersect.Client.Interface.Menu
                 return;
             }
 
-            if (!Networking.Network.Connected)
-            {
-                Interface.MsgboxErrors.Add(new KeyValuePair<string, string>("", Strings.Errors.notconnected));
-
-                return;
-            }
-
+           
             if (!FieldChecking.IsValidUsername(mUsernameTextbox?.Text, Strings.Regex.username))
             {
                 Interface.MsgboxErrors.Add(new KeyValuePair<string, string>("", Strings.Errors.usernameinvalid));

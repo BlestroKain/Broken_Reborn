@@ -1,4 +1,4 @@
-﻿using MessagePack;
+using MessagePack;
 using System;
 
 namespace Intersect.Network.Packets.Server
@@ -9,6 +9,7 @@ namespace Intersect.Network.Packets.Server
     [Union(2, typeof(NpcEntityPacket))]
     [Union(3, typeof(ProjectileEntityPacket))]
     [Union(4, typeof(ResourceEntityPacket))]
+    [Union(5, typeof(PetPacket))]
     public abstract partial class EntityPacket : IntersectPacket
     {
 

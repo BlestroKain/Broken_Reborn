@@ -1,8 +1,13 @@
 using Intersect.Enums;
+using Intersect.GameObjects;
 using Intersect.Server.Localization;
+using Intersect.Server.Maps;
 using Intersect.Server.Networking;
+using Intersect.Utilities;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Web.UI.WebControls.WebParts;
 
 namespace Intersect.Server.Entities
 {
@@ -801,6 +806,97 @@ namespace Intersect.Server.Entities
             return (long)Math.Floor(skillBase * (((Math.Pow(level, Gain)))));
         }
 
+        #endregion
+
+        #region Pets
+
+        // Nueva propiedad para almacenar la mascota actual del jugador
+        [NotMapped]
+        public Pet CurrentPet { get; set; }
+        [NotMapped]
+        public Entity LastAttacker { get; set; }
+
+        public void SummonPet(Guid petId)
+        {
+            if (CurrentPet != null)
+            {
+                DespawnPet();
+            }
+
+            var petBase = PetBase.Get(petId);
+            if (petBase != null)
+            {
+                CurrentPet = new Pet(this, petBase)
+                {
+                    MapId = this.MapId,
+                    X = this.X,
+                    Y = this.Y,
+                    Dir = this.Dir
+                };
+
+                // Asegurarse de que se esté utilizando una instancia del mapa válida
+                if (MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var mapInstance))
+                {
+                    mapInstance.AddEntity(CurrentPet);
+                    PacketSender.SendEntityDataToProximity(CurrentPet);
+                }
+            }
+        }
+
+        public void DespawnPet()
+        {
+            if (CurrentPet != null)
+            {
+                CurrentPet.Die();
+                CurrentPet = null;
+            }
+        }
+
+        public void UpdatePetPosition(long timeMs)
+        {
+            if (CurrentPet != null)
+            {
+                if (!CurrentPet.InRangeOf(this, 10))
+                {
+                    // Ajustar la posición para que la mascota aparezca a un lado o detrás del jugador
+                    var targetX = this.X;
+                    var targetY = this.Y;
+
+                    switch (this.Dir)
+                    {
+                        case Direction.Up:
+                            targetY += 1;
+                            break;
+                        case Direction.Down:
+                            targetY -= 1;
+                            break;
+                        case Direction.Left:
+                            targetX += 1;
+                            break;
+                        case Direction.Right:
+                            targetX -= 1;
+                            break;
+                    }
+
+                    CurrentPet.Warp(this.MapId, targetX, targetY, this.Dir);
+                }
+                else
+                {
+                    CurrentPet.FollowOwner(timeMs);
+                }
+            }
+        }
+
+        public bool IsUnderAttack()
+        {
+            return CombatTimer > Timing.Global.Milliseconds;
+        }
+
+        public Entity GetLastAttacker()
+        {
+            // Assuming there's a way to track the last attacker
+            return LastAttacker;
+        }
         #endregion
     }
 }

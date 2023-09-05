@@ -160,6 +160,10 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode66,
             treeNode67
             });
+            System.Windows.Forms.TreeNode treeNode69 = new System.Windows.Forms.TreeNode("Spawn Pet");
+            System.Windows.Forms.TreeNode treeNode70 = new System.Windows.Forms.TreeNode("Pets", new System.Windows.Forms.TreeNode[] {
+            treeNode69});
+
             this.lblName = new System.Windows.Forms.Label();
             this.txtEventname = new DarkUI.Controls.DarkTextBox();
             this.grpEntityOptions = new DarkUI.Controls.DarkGroupBox();
@@ -1051,8 +1055,13 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode67.Name = "setjoblevel";
             treeNode67.Tag = "202";
             treeNode67.Text = "Set Job Level";
-            treeNode68.Name = "jobs";
-            treeNode68.Text = "Jobs";
+           
+            treeNode69.Name = "spawnPet";
+            treeNode69.Tag = "203";
+            treeNode69.Text = "Spawn Pet";
+            treeNode70.Name = "pets";
+           treeNode70.Text = "Pets";
+
             this.lstCommands.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             treeNode5,
             treeNode13,
@@ -1063,7 +1072,9 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode56,
             treeNode60,
             treeNode65,
-             treeNode68});
+             treeNode68,
+            treeNode70
+            });
             this.lstCommands.Size = new System.Drawing.Size(445, 465);
             this.lstCommands.TabIndex = 2;
             this.lstCommands.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.lstCommands_NodeMouseDoubleClick);

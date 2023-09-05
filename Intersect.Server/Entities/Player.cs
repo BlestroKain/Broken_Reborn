@@ -66,8 +66,9 @@ namespace Intersect.Server.Entities
 
         [JsonIgnore] [NotMapped] public List<Npc> SpawnedNpcs = new List<Npc>();
 
+        [JsonIgnore][NotMapped] public List<Pet> SpawnedPets = new List<Pet>();
         #endregion
-
+   
         public static int OnlineCount => OnlinePlayers.Count;
 
         [JsonProperty("MaxVitals"), NotMapped]
@@ -543,7 +544,9 @@ namespace Intersect.Server.Entities
             {
                 return;
             }
-
+            base.Update(timeMs);
+            // Actualizar la posición de la mascota
+            UpdatePetPosition(timeMs);
             var lockObtained = false;
             try
             {
@@ -1406,6 +1409,8 @@ namespace Intersect.Server.Entities
 
         public void TryAttack(Entity target)
         {
+            
+
             if (IsCasting)
             {
                 if (Options.Combat.EnableCombatChatMessages)
@@ -1430,7 +1435,11 @@ namespace Intersect.Server.Entities
             {
                 return;
             }
-
+            // Evitar atacar a la propia mascota
+            if (target is Pet pet && pet.OwnerId == Id)
+            {
+                return;
+            }
             var weapon = TryGetEquippedItem(Options.WeaponIndex, out var item) ? item.Descriptor : null;
 
             //If Entity is resource, check for the correct tool and make sure its not a spell cast.
@@ -1503,7 +1512,7 @@ namespace Intersect.Server.Entities
             {
                 return false;
             }
-           
+
             if (spell?.Combat?.TargetType == SpellTargetType.Self ||
                 spell?.Combat?.TargetType == SpellTargetType.Projectile ||
                 spell?.Combat.TargetType == SpellTargetType.Trap ||
@@ -1523,6 +1532,12 @@ namespace Intersect.Server.Entities
                 return false;
             }
 
+            // Evitar atacar a la propia mascota
+            if (entity is Pet pet && pet.OwnerId == Id)
+            {
+                return false;
+            }
+                     
             var friendly = spell?.Combat != null && spell.Combat.Friendly;
             if (entity is Player player)
             {

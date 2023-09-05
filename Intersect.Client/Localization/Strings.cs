@@ -2350,6 +2350,23 @@ namespace Intersect.Client.Localization
             public static LocalizedString skill0 = @"{00}";
         
         }
+
+        public partial struct Pets
+        {
+            public static LocalizedString title = @"Pet Information";
+            public static LocalizedString name = @"Name:";
+            public static LocalizedString level = @"Level: {00}";
+            public static LocalizedString type = @"Type:";
+            public static LocalizedString gender = @"Gender:";
+            public static LocalizedString rarity = @"Rarity:";
+            public static LocalizedString personality = @"Personality:";
+            public static LocalizedString health = @"Health:";
+            public static LocalizedString breedStatus = @"Breed Status:";
+            public static LocalizedString mood = @"Mood:";
+            public static LocalizedString hunger = @"Hunger:";
+            internal static object breedCount;
+            internal static object lifeHP;
+        }
         public partial struct Trading
         {
 

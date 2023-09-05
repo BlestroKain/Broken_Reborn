@@ -42,7 +42,8 @@ namespace Intersect.Server.Entities
         public Entity() : this(Guid.NewGuid(), Guid.Empty)
         {
         }
-
+        public bool is_entity_Pet = false; //<---- tells us if the entity is a summon
+        public Player owner;
         //Initialization
         public Entity(Guid instanceId, Guid mapInstanceId)
         {
@@ -510,6 +511,11 @@ namespace Intersect.Server.Entities
                         blockerType = MovementBlockerType.Entity;
                         entityType = EntityType.Resource;
                         return false;
+                    case Pet _:
+                        // There should honestly be an Npc EntityType...
+                        blockerType = MovementBlockerType.Entity;
+                        entityType = EntityType.Player;
+                        return false;
                 }
             }
 
@@ -541,10 +547,10 @@ namespace Intersect.Server.Entities
         protected virtual bool IgnoresNpcAvoid => true;
 
         private bool IsBlockedByMapAttribute(
-            Direction direction,
-            Intersect.GameObjects.Maps.MapAttribute mapAttribute,
-            out MovementBlockerType blockerType
-        )
+     Direction direction,
+     Intersect.GameObjects.Maps.MapAttribute mapAttribute,
+     out MovementBlockerType blockerType
+ )
         {
             blockerType = MovementBlockerType.NotBlocked;
             if (mapAttribute == default)
@@ -556,7 +562,7 @@ namespace Intersect.Server.Entities
             {
                 case MapBlockedAttribute _:
                 case MapAnimationAttribute animationAttribute when animationAttribute.IsBlock:
-                case MapNpcAvoidAttribute _ when !IgnoresNpcAvoid:
+                case MapNpcAvoidAttribute _ when !IgnoresNpcAvoid: // Aquí se utiliza la propiedad
                     blockerType = MovementBlockerType.MapAttribute;
                     break;
 
@@ -571,6 +577,7 @@ namespace Intersect.Server.Entities
 
             return blockerType != MovementBlockerType.NotBlocked;
         }
+
 
         protected virtual bool CanPassPlayer(MapController targetMap) => false;
 
@@ -2310,6 +2317,19 @@ namespace Intersect.Server.Entities
 
         public virtual void KilledEntity(Entity entity)
         {
+            PacketSender.SendChatBubble(this.Id, this.MapInstanceId, this.GetEntityType(), "Npc killed.", this.MapId);
+
+            switch (entity)
+            {
+                case Pet pet when this.is_entity_Pet:
+                    {
+                        if (this.owner != null)
+                        {
+                            this.owner.KilledEntity(entity);
+                        }
+                        break;
+                    }
+            }
         }
 
         public virtual bool CanCastSpell(SpellBase spell, Entity target, bool checkVitalReqs, out SpellCastFailureReason reason)

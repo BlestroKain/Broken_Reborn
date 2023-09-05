@@ -596,7 +596,22 @@ namespace Intersect.Server.Networking
                 }
             }
         }
+        public static void SendPetAggressionToProximity(Pet en)
+        {
+            if (en == null)
+            {
+                return;
+            }
 
+            foreach (var mapInstance in MapController.GetSurroundingMapInstances(en.Map.Id, en.MapInstanceId, true))
+            {
+                var players = mapInstance.GetPlayers();
+                foreach (var pl in players)
+                {
+                    SendPetAggressionTo(pl, en);
+                }
+            }
+        }
         //NpcAggressionPacket
         public static void SendNpcAggressionTo(Player player, Npc npc)
         {
@@ -607,7 +622,15 @@ namespace Intersect.Server.Networking
 
             player.SendPacket(new NpcAggressionPacket(npc.Id, npc.GetAggression(player)), TransmissionMode.Any);
         }
+        public static void SendPetAggressionTo(Player player, Pet npc)
+        {
+            if (player == null || npc == null)
+            {
+                return;
+            }
 
+          //  player.SendPacket(new NpcAggressionPacket(npc.Id, npc.GetAggression(player)), TransmissionMode.Any);
+        }
         //EntityLeftArea
         public static void SendEntityLeaveMap(Entity en, Guid leftMap)
         {
@@ -1681,6 +1704,13 @@ namespace Intersect.Server.Networking
                     }
 
                     break;
+                case GameObjectType.Pet:
+                    foreach (var obj in PetBase.Lookup)
+                    {
+                        SendGameObject(client, obj.Value, false, false, packetList);
+                    }
+
+                    break;
                 case GameObjectType.Projectile:
                     foreach (var obj in ProjectileBase.Lookup)
                     {
@@ -2325,6 +2355,12 @@ namespace Intersect.Server.Networking
         public static void SendCombatEffectPacket(Client client, Guid targetId, float shakeAmount, Color entityFlashColor, string sound, float flashIntensity, float flashDuration, Color flashColor)
         {
             client?.Send(new CombatEffectPacket(targetId, shakeAmount, entityFlashColor, sound, flashIntensity, flashDuration, flashColor));
+        }
+
+        public static void SendPetPersonalityUpdate(Client client, Guid petId, PetPersonality personality)
+        {
+            var packet = new PetPersonalityUpdatePacket(petId, personality);
+            client?.Send(packet);
         }
     }
 

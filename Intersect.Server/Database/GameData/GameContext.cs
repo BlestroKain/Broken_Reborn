@@ -64,6 +64,8 @@ namespace Intersect.Server.Database.GameData
 
         //NPCs
         public DbSet<NpcBase> Npcs { get; set; }
+        //Pets
+        public DbSet<PetBase> Pets { get; set; }
 
         //Projectiles
         public DbSet<ProjectileBase> Projectiles { get; set; }

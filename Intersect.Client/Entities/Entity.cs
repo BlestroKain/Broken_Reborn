@@ -211,6 +211,7 @@ namespace Intersect.Client.Entities
         public EntityType Type { get; }
 
         public NpcAggression Aggression { get; set; }
+        public PetState State { get; set; }
 
         public int[] Vital { get; set; } = new int[(int)Enums.Vital.VitalCount];
 

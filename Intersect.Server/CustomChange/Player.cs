@@ -1,8 +1,12 @@
 using Intersect.Enums;
+using Intersect.GameObjects;
 using Intersect.Server.Localization;
+using Intersect.Server.Maps;
 using Intersect.Server.Networking;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Web.UI.WebControls.WebParts;
 
 namespace Intersect.Server.Entities
 {
@@ -800,6 +804,66 @@ namespace Intersect.Server.Entities
 
             return (long)Math.Floor(skillBase * (((Math.Pow(level, Gain)))));
         }
+
+        #endregion
+
+        #region Pets
+
+          // Nueva propiedad para almacenar la mascota actual del jugador
+    [NotMapped]
+    public Pet CurrentPet { get; set; }
+
+        // Método para invocar una mascota
+        public void SummonPet(Guid petId, MapInstance mapInstance)
+        {
+            if (CurrentPet != null)
+            {
+                DespawnPet();
+            }
+
+            var petBase = PetBase.Get(petId);
+            if (petBase != null)
+            {
+                CurrentPet = new Pet(this, petBase)
+                {
+                    MapId = this.MapId,
+                    X = this.X,
+                    Y = this.Y,
+                    Dir = this.Dir
+                };
+                mapInstance.AddEntity(CurrentPet);
+                PacketSender.SendEntityDataToProximity(CurrentPet);
+            }
+        }
+
+        // Método para retirar la mascota actual
+        public void DespawnPet()
+        {
+            if (CurrentPet != null)
+            {
+                CurrentPet.Die();
+                CurrentPet = null;
+            }
+        }
+
+        // Método para actualizar la posición de la mascota
+        public void UpdatePetPosition()
+        {
+            if (CurrentPet != null)
+            {
+                if (!CurrentPet.InRangeOf(this, 5))
+                {
+                    CurrentPet.Warp(this.MapId, this.X, this.Y, this.Dir);
+                }
+                else
+                {
+                    CurrentPet.FollowOwner();
+                }
+            }
+        }
+
+
+
 
         #endregion
     }

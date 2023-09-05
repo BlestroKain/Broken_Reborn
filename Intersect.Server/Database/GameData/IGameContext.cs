@@ -1,4 +1,4 @@
-﻿using Intersect.GameObjects;
+using Intersect.GameObjects;
 using Intersect.GameObjects.Crafting;
 using Intersect.GameObjects.Events;
 using Intersect.GameObjects.Maps.MapList;
@@ -27,7 +27,7 @@ namespace Intersect.Server.Database.GameData
         DbSet<MapList> MapFolders { get; set; }
 
         DbSet<NpcBase> Npcs { get; set; }
-
+        DbSet<PetBase> Pets { get; set; }
         DbSet<ProjectileBase> Projectiles { get; set; }
 
         DbSet<QuestBase> Quests { get; set; }

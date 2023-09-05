@@ -515,6 +515,10 @@ namespace Intersect.Server.Database
                     NpcBase.Lookup.Clear();
 
                     break;
+                case GameObjectType.Pet:
+                    PetBase.Lookup.Clear();
+
+                    break;
                 case GameObjectType.Projectile:
                     ProjectileBase.Lookup.Clear();
 
@@ -612,6 +616,13 @@ namespace Intersect.Server.Database
                             foreach (var npc in context.Npcs)
                             {
                                 NpcBase.Lookup.Set(npc.Id, npc);
+                            }
+
+                            break;
+                        case GameObjectType.Pet:
+                            foreach (var Pet in context.Pets)
+                            {
+                                PetBase.Lookup.Set(Pet.Id, Pet);
                             }
 
                             break;
@@ -865,7 +876,11 @@ namespace Intersect.Server.Database
                             NpcBase.Lookup.Set(dbObj.Id, dbObj);
 
                             break;
+                        case GameObjectType.Pet:
+                            context.Pets.Add((PetBase)dbObj);
+                            PetBase.Lookup.Set(dbObj.Id, dbObj);
 
+                            break;
                         case GameObjectType.Projectile:
                             context.Projectiles.Add((ProjectileBase)dbObj);
                             ProjectileBase.Lookup.Set(dbObj.Id, dbObj);
@@ -993,6 +1008,10 @@ namespace Intersect.Server.Database
                             break;
                         case GameObjectType.Npc:
                             context.Npcs.Remove((NpcBase)gameObject);
+
+                            break;
+                        case GameObjectType.Pet:
+                            context.Pets.Remove((PetBase)gameObject);
 
                             break;
                         case GameObjectType.Projectile:
@@ -1133,6 +1152,10 @@ namespace Intersect.Server.Database
                             break;
                         case GameObjectType.Npc:
                             context.Npcs.Update((NpcBase)gameObject);
+
+                            break;
+                        case GameObjectType.Pet:
+                            context.Pets.Update((PetBase)gameObject);
 
                             break;
                         case GameObjectType.Projectile:
@@ -1801,6 +1824,7 @@ namespace Intersect.Server.Database
                     MigrateDbSet(context.MapFolders, newGameContext.MapFolders);
                     MigrateDbSet(context.Maps, newGameContext.Maps);
                     MigrateDbSet(context.Npcs, newGameContext.Npcs);
+                    MigrateDbSet(context.Pets, newGameContext.Pets);
                     MigrateDbSet(context.Projectiles, newGameContext.Projectiles);
                     MigrateDbSet(context.Quests, newGameContext.Quests);
                     MigrateDbSet(context.Resources, newGameContext.Resources);

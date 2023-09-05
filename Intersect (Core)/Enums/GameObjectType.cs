@@ -64,5 +64,9 @@ namespace Intersect.Enums
 
         [GameObjectInfo(typeof(UserVariableBase), "user_variables")]
         UserVariable,
+
+        [GameObjectInfo(typeof(PetBase), "pets")]
+        Pet,
+
     }
 }

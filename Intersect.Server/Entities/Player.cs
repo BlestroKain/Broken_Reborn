@@ -66,6 +66,7 @@ namespace Intersect.Server.Entities
 
         [JsonIgnore] [NotMapped] public List<Npc> SpawnedNpcs = new List<Npc>();
 
+        [JsonIgnore][NotMapped] public List<Pet> SpawnedPets = new List<Pet>();
         #endregion
 
         public static int OnlineCount => OnlinePlayers.Count;
@@ -543,7 +544,9 @@ namespace Intersect.Server.Entities
             {
                 return;
             }
-
+            base.Update(timeMs);
+            // Actualizar la posición de la mascota
+            UpdatePetPosition();
             var lockObtained = false;
             try
             {

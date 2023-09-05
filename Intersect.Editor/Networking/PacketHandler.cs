@@ -473,6 +473,21 @@ namespace Intersect.Editor.Networking
 
                     break;
 
+                case GameObjectType.Pet:
+                    if (deleted)
+                    {
+                        var Pet = PetBase.Get(id);
+                        Pet.Delete();
+                    }
+                    else
+                    {
+                        var Pet = new PetBase(id);
+                        Pet.Load(json);
+                        PetBase.Lookup.Set(id, Pet);
+                    }
+
+                    break;
+
                 case GameObjectType.Projectile:
                     if (deleted)
                     {

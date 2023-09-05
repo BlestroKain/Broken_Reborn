@@ -42,7 +42,8 @@ namespace Intersect.Server.Entities
         public Entity() : this(Guid.NewGuid(), Guid.Empty)
         {
         }
-
+        public bool is_entity_Pet = false; //<---- tells us if the entity is a summon
+        public Player owner;
         //Initialization
         public Entity(Guid instanceId, Guid mapInstanceId)
         {
@@ -2310,6 +2311,19 @@ namespace Intersect.Server.Entities
 
         public virtual void KilledEntity(Entity entity)
         {
+            PacketSender.SendChatBubble(this.Id, this.MapInstanceId, this.GetEntityType(), "Npc killed.", this.MapId);
+
+            switch (entity)
+            {
+                case PetEntity pet when this.is_entity_Pet:
+                    {
+                        if (this.owner != null)
+                        {
+                            this.owner.KilledEntity(entity);
+                        }
+                        break;
+                    }
+            }
         }
 
         public virtual bool CanCastSpell(SpellBase spell, Entity target, bool checkVitalReqs, out SpellCastFailureReason reason)

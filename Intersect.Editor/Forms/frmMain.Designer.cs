@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Windows.Forms;
 using DarkUI.Controls;
 using DarkUI.Renderers;
@@ -1104,7 +1104,8 @@ namespace Intersect.Editor.Forms
 		private ToolStripMenuItem craftingTableEditorToolStripMenuItem;
 		private ToolStripMenuItem itemEditorToolStripMenuItem;
 		private ToolStripMenuItem npcEditorToolStripMenuItem;
-		private ToolStripMenuItem projectileEditorToolStripMenuItem;
+        private ToolStripMenuItem PetEditorToolStripMenuItem;
+        private ToolStripMenuItem projectileEditorToolStripMenuItem;
 		private ToolStripMenuItem questEditorToolStripMenuItem;
 		private ToolStripMenuItem resourceEditorToolStripMenuItem;
 		private ToolStripMenuItem shopEditorToolStripMenuItem;

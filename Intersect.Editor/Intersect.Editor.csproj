@@ -35,6 +35,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Forms\Editors\Events\Event Commands\EventCommand_SpawnPet.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Forms\Editors\Events\Event Commands\EventCommand_SpawnNpc - Copia.Designer.cs">
+      <DependentUpon>EventCommand_SpawnNpc.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Forms\Editors\frmPet.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\Editors\frmNpc - Copia.Designer.cs">
+      <DependentUpon>frmNpc.cs</DependentUpon>
+    </Compile>
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -411,8 +423,7 @@
     <Compile Update="Forms\Editors\Events\Event Commands\EventCommand_WaitForRouteCompletion.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile
-      Update="Forms\Editors\Events\Event Commands\EventCommand_WaitForRouteCompletion.Designer.cs">
+    <Compile Update="Forms\Editors\Events\Event Commands\EventCommand_WaitForRouteCompletion.Designer.cs">
       <DependentUpon>EventCommand_WaitForRouteCompletion.cs</DependentUpon>
     </Compile>
     <Compile Update="Forms\Editors\Events\Event Commands\EventCommand_Warp.cs">
@@ -430,8 +441,7 @@
     <Compile Update="Forms\Editors\Events\Event Commands\Event_MoveRouteAnimationSelector.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile
-      Update="Forms\Editors\Events\Event Commands\Event_MoveRouteAnimationSelector.Designer.cs">
+    <Compile Update="Forms\Editors\Events\Event Commands\Event_MoveRouteAnimationSelector.Designer.cs">
       <DependentUpon>Event_MoveRouteAnimationSelector.cs</DependentUpon>
     </Compile>
     <Compile Update="Forms\Editors\Events\Event Commands\Event_MoveRouteDesigner.cs">

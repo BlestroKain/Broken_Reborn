@@ -65,6 +65,7 @@ namespace Intersect.Server.Entities
 
         [JsonIgnore] [NotMapped] public List<Npc> SpawnedNpcs = new List<Npc>();
 
+        [JsonIgnore][NotMapped] public List<PetEntity> SpawnedPets = new List<PetEntity>();
         #endregion
 
         public static int OnlineCount => OnlinePlayers.Count;

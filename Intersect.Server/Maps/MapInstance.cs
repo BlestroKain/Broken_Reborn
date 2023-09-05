@@ -519,6 +519,32 @@ namespace Intersect.Server.Maps
 
             return null;
         }
+        public PetEntity SpawnPet(byte tileX, byte tileY, Direction dir, Guid PetId, Player owner )
+        {
+            var petBase = PetBase.Get(PetId);
+            if (petBase != null)
+            {
+                var processLayer = this.MapInstanceId;
+                var Pet = new PetEntity(petBase, owner)  // Añadido el propietario aquí
+                {
+                    MapId = mMapController.Id,
+                    X = tileX,
+                    Y = tileY,
+                    Dir = dir,
+                    MapInstanceId = processLayer
+                };
+
+                Pet.Reset();
+
+                AddEntity(Pet);
+                PacketSender.SendEntityDataToProximity(Pet);
+
+                return Pet;
+            }
+
+            return null;
+        }
+
 
         /// <summary>
         /// Forcibly reset all Npcs originating from this map.

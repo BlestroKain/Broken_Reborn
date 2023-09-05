@@ -64,6 +64,8 @@ namespace Intersect.Editor.Forms
         private FrmItem mItemEditor;
 
         private FrmNpc mNpcEditor;
+        private FrmPet mPetEditor;
+
 
         private FrmProjectile mProjectileEditor;
 
@@ -195,6 +197,7 @@ namespace Intersect.Editor.Forms
             craftsEditorToolStripMenuItem.Text = Strings.MainForm.craftingeditor;
             itemEditorToolStripMenuItem.Text = Strings.MainForm.itemeditor;
             npcEditorToolStripMenuItem.Text = Strings.MainForm.npceditor;
+            PetEditorToolStripMenuItem.Text = Strings.MainForm.Peteditor;
             projectileEditorToolStripMenuItem.Text = Strings.MainForm.projectileeditor;
             questEditorToolStripMenuItem.Text = Strings.MainForm.questeditor;
             resourceEditorToolStripMenuItem.Text = Strings.MainForm.resourceeditor;
@@ -1240,6 +1243,10 @@ namespace Intersect.Editor.Forms
         {
             PacketSender.SendOpenEditor(GameObjectType.Npc);
         }
+        private void PetEditorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            PacketSender.SendOpenEditor(GameObjectType.Pet);
+        }
 
         private void spellEditorToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1618,6 +1625,15 @@ namespace Intersect.Editor.Forms
                             mNpcEditor = new FrmNpc();
                             mNpcEditor.InitEditor();
                             mNpcEditor.Show();
+                        }
+
+                        break;
+                    case GameObjectType.Pet:
+                        if (mPetEditor == null || mPetEditor.Visible == false)
+                        {
+                            mPetEditor = new FrmPet();
+                            mPetEditor.InitEditor();
+                            mPetEditor.Show();
                         }
 
                         break;

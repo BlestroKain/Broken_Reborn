@@ -3923,6 +3923,8 @@ Tick timer saved in server config.json.";
             public static LocalizedString newmap = @"New Map";
 
             public static LocalizedString npceditor = @"Npc Editor";
+            public static LocalizedString Peteditor = @"Pet Editor";
+
 
             public static LocalizedString options = @"Options";
 
@@ -4482,7 +4484,235 @@ Tick timer saved in server config.json.";
             };
 
         }
+        public partial struct PetEditor
+        {
 
+            public static LocalizedString abilitypower = @"Ability Pwr:";
+
+            public static LocalizedString addhostility = @"Add";
+
+            public static LocalizedString addspell = @"Add";
+
+            public static LocalizedString aggressive = @"Aggressive";
+
+            public static LocalizedString attack = @"Attack:";
+
+            public static LocalizedString attackallies = @"Attack Allies?";
+
+            public static LocalizedString attackanimation = @"Attack Animation:";
+
+            public static LocalizedString attackonsightconditions = @"Attack Player on Sight";
+
+            public static LocalizedString attackspeed = @"Attack Speed";
+
+            public static LocalizedString attackspeedmodifier = @"Modifier:";
+
+            public static Dictionary<int, LocalizedString> attackspeedmodifiers = new Dictionary<int, LocalizedString>
+            {
+                {0, @"Disabled"},
+                {1, @"Static (ms)"},
+            };
+
+            public static LocalizedString attackspeedvalue = @"Value:";
+
+            public static LocalizedString basedamage = @"Base Damage:";
+
+            public static LocalizedString behavior = @"Behavior:";
+
+            public static LocalizedString cancel = @"Cancel";
+
+            public static LocalizedString combat = @"Combat";
+
+            public static LocalizedString commonevents = @"Common Events";
+
+            public static LocalizedString conditions = @"Conditions";
+
+            public static LocalizedString copy = @"Copy pet";
+
+            public static LocalizedString critchance = @"Crit Chance (%):";
+
+            public static LocalizedString critmultiplier = @"Crit Multiplier (Default 1.5x):";
+
+            public static LocalizedString damagetype = @"Damage Type:";
+
+            public static LocalizedString defense = @"Defense:";
+
+            public static LocalizedString delete = @"Delete pet";
+
+            public static LocalizedString deleteprompt =
+                @"Are you sure you want to delete this pet? This action cannot be reverted!";
+
+            public static LocalizedString deletetitle = @"Delete Item";
+
+            public static LocalizedString dontattackonsightconditions = @"Should Not Attack Player on Sight";
+
+            public static LocalizedString drops = @"Drops";
+
+            public static LocalizedString dropitem = @"Item:";
+
+            public static LocalizedString dropamount = @"Amount:";
+
+            public static LocalizedString dropchance = @"Chance (%):";
+
+            public static LocalizedString dropadd = @"Add";
+
+            public static LocalizedString dropremove = @"Remove";
+
+            public static LocalizedString dropdisplay = @"{00} x{01} - {02}%";
+
+            public static LocalizedString enabled = @"Enabled?";
+
+            public static LocalizedString exp = @"Exp:";
+
+            public static LocalizedString flee = @"Flee Health %";
+
+            public static LocalizedString focusdamagedealer = @"Focus Highest Damage Dealer:";
+
+            public static LocalizedString folderlabel = @"Folder:";
+
+            public static LocalizedString foldertitle = @"Add Folder";
+
+            public static LocalizedString folderprompt = @"Enter a name for the folder you'd like to add:";
+
+            public static LocalizedString frequency = @"Freq:";
+
+            public static Dictionary<int, LocalizedString> frequencies = new Dictionary<int, LocalizedString>
+            {
+                {0, @"Not Very Often"},
+                {1, @"Not Often"},
+                {2, @"Normal"},
+                {3, @"Often"},
+                {4, @"Very Often"},
+            };
+
+            public static LocalizedString general = @"General";
+
+            public static LocalizedString hp = @"HP:";
+
+            public static LocalizedString hpregen = @"HP (%);";
+
+            public static LocalizedString individualizedloot = @"Spawn loot for all attackers?";
+
+            public static LocalizedString magicresist = @"Magic Resist:";
+
+            public static LocalizedString mana = @"Mana:";
+
+            public static LocalizedString movement = @"Movement";
+
+            public static LocalizedString resetradius = @"Reset Radius:";
+
+            public static Dictionary<int, LocalizedString> movements = new Dictionary<int, LocalizedString>
+            {
+                {0, @"Move Randomly"},
+                {1, @"Turn Randomly"},
+                {2, @"Stand Still"},
+                {3, @"Static"},
+            };
+
+            public static LocalizedString mpregen = @"MP (%):";
+
+            public static LocalizedString name = @"Name:";
+
+            public static LocalizedString New = @"New Pet";
+
+            public static LocalizedString pet = @"Pet:";
+
+            public static LocalizedString pets = @"Pets";
+
+            public static LocalizedString petvspet = @"pet vs pet Combat/Hostility  ";
+
+            public static LocalizedString ondeathevent = @"On Death (for killer):";
+
+            public static LocalizedString ondeathpartyevent = @"On Death (for party):";
+
+            public static LocalizedString paste = @"Paste pet";
+
+            public static LocalizedString playercanattackconditions = @"Player Can Attack (Default: True)";
+
+            public static LocalizedString playerfriendprotectorconditions = @"Player Friend/Protector";
+
+            public static LocalizedString regen = @"Regen";
+
+            public static LocalizedString regenhint = @"% of HP/Mana to restore per tick.
+
+Tick timer saved in server config.json.";
+
+            public static LocalizedString removehostility = @"Remove";
+
+            public static LocalizedString removespell = @"Remove";
+
+            public static LocalizedString save = @"Save";
+
+            public static LocalizedString scalingamount = @"Scaling Amount (%):";
+
+            public static LocalizedString scalingstat = @"Scaling Stat:";
+
+            public static LocalizedString searchplaceholder = @"Search...";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public static LocalizedString sortalphabetically = @"Order Alphabetically";
+
+            public static LocalizedString sightrange = @"Sight Range:";
+
+            public static LocalizedString spawnduration = @"Spawn Duration: (ms)";
+
+            public static LocalizedString speed = @"Speed:";
+
+            public static LocalizedString spell = @"Spell:";
+
+            public static LocalizedString spells = @"Spells";
+
+            public static LocalizedString sprite = @"Sprite";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public static LocalizedString Red = @"Red:";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public static LocalizedString Green = @"Green:";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public static LocalizedString Blue = @"Blue:";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public static LocalizedString Alpha = @"Alpha:";
+
+            public static LocalizedString stats = @"Stats:";
+
+            public static LocalizedString swarm = @"Swarm";
+
+            public static LocalizedString title = @"pet Editor";
+
+            public static LocalizedString undo = @"Undo Changes";
+
+            public static LocalizedString undoprompt =
+                @"Are you sure you want to undo changes made to this pet? This action cannot be reverted!";
+
+            public static LocalizedString undotitle = @"Undo Changes";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public static LocalizedString ImmunitiesTitle = @"Immunities";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public static LocalizedString Tenacity = @"Tenacity (%):";
+
+            public static LocalizedString additionalanimationgroup = @"Animations:";
+
+            public static LocalizedString deathanimation = @"Death Animation:";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public static Dictionary<SpellEffect, LocalizedString> Immunities = new Dictionary<SpellEffect, LocalizedString>
+            {
+                {SpellEffect.Knockback, @"Knockback"},
+                {SpellEffect.Silence, @"Silence"},
+                {SpellEffect.Stun, @"Stun"},
+                {SpellEffect.Snare, @"Snare"},
+                {SpellEffect.Blind, @"Blind"},
+                {SpellEffect.Transform, @"Transform"},
+                {SpellEffect.Sleep, @"Sleep"},
+                {SpellEffect.Taunt, @"Taunt"},
+            };
+
+        }
         public partial struct NpcSpawns
         {
 

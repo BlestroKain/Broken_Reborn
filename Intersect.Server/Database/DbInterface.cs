@@ -773,6 +773,10 @@ namespace Intersect.Server.Database
                     dbObj = new NpcBase(predefinedid);
 
                     break;
+                case GameObjectType.Pet:
+                    dbObj = new PetBase(predefinedid);
+
+                    break;
                 case GameObjectType.Projectile:
                     dbObj = new ProjectileBase(predefinedid);
 

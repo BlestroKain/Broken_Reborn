@@ -308,7 +308,24 @@ namespace Intersect.Client.Networking
                 Globals.Entities.Add(entity.Id, entity);
             }
         }
-
+        //PetEntityPacket
+        public void HandlePacket(IPacketSender packetSender, PetPacket packet)
+        {
+            var en = Globals.GetEntity(packet.EntityId, EntityType.Pet);
+            if (en != null)
+            {
+                en.Load(packet);
+                en.State = packet.CurrentState;
+            }
+            else
+            {
+                var entity = new Entity(packet.EntityId, packet, EntityType.Pet)
+                {
+                    State = packet.CurrentState,
+            };
+                Globals.Entities.Add(entity.Id, entity);
+            }
+        }
         //ResourceEntityPacket
         public void HandlePacket(IPacketSender packetSender, ResourceEntityPacket packet)
         {

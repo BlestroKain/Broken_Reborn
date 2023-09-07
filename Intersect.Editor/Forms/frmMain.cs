@@ -197,7 +197,6 @@ namespace Intersect.Editor.Forms
             craftsEditorToolStripMenuItem.Text = Strings.MainForm.craftingeditor;
             itemEditorToolStripMenuItem.Text = Strings.MainForm.itemeditor;
             npcEditorToolStripMenuItem.Text = Strings.MainForm.npceditor;
-            PetEditorToolStripMenuItem.Text = Strings.MainForm.Peteditor;
             projectileEditorToolStripMenuItem.Text = Strings.MainForm.projectileeditor;
             questEditorToolStripMenuItem.Text = Strings.MainForm.questeditor;
             resourceEditorToolStripMenuItem.Text = Strings.MainForm.resourceeditor;
@@ -205,6 +204,7 @@ namespace Intersect.Editor.Forms
             spellEditorToolStripMenuItem.Text = Strings.MainForm.spelleditor;
             variableEditorToolStripMenuItem.Text = Strings.MainForm.variableeditor;
             timeEditorToolStripMenuItem.Text = Strings.MainForm.timeeditor;
+            PetEditorToolStripMenuItem.Text = Strings.MainForm.Peteditor;
         }
 
         private void InitLocalizationMenuTools()
@@ -1243,11 +1243,7 @@ namespace Intersect.Editor.Forms
         {
             PacketSender.SendOpenEditor(GameObjectType.Npc);
         }
-        private void PetEditorToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            PacketSender.SendOpenEditor(GameObjectType.Pet);
-        }
-
+   
         private void spellEditorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             PacketSender.SendOpenEditor(GameObjectType.Spell);
@@ -2255,6 +2251,10 @@ namespace Intersect.Editor.Forms
             return filesProcessed;
         }
 
+        private void toolStripMenuItem2_Click(object sender, EventArgs e)
+        {
+            PacketSender.SendOpenEditor(GameObjectType.Pet);
+        }
     }
 
 }

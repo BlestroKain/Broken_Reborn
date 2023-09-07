@@ -2,7 +2,7 @@
   "profiles": {
     "Intersect.Editor": {
       "commandName": "Project",
-      "workingDirectory": "$(ProjectDir)../assets/development/client"
+      "workingDirectory": "C:\\Users\\jlroo\\Desktop\\Cliente for test\\Client and Editor"
     }
   }
 }

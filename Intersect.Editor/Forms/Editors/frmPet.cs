@@ -143,7 +143,7 @@ namespace Intersect.Editor.Forms.Editors
             lblSpd.Text = Strings.PetEditor.speed;
             lblMag.Text = Strings.PetEditor.abilitypower;
             lblMR.Text = Strings.PetEditor.magicresist;
-            lblExp.Text = Strings.PetEditor.exp;
+          
 
             grpRegen.Text = Strings.PetEditor.regen;
             lblHpRegen.Text = Strings.PetEditor.hpregen;
@@ -188,7 +188,6 @@ namespace Intersect.Editor.Forms.Editors
             chkTransform.Text = Strings.PetEditor.Immunities[SpellEffect.Transform];
             chkTaunt.Text = Strings.PetEditor.Immunities[SpellEffect.Taunt];
             chkSleep.Text = Strings.PetEditor.Immunities[SpellEffect.Sleep];
-            lblTenacity.Text = Strings.PetEditor.Tenacity;
             grpAnimation.Text = Strings.PetEditor.additionalanimationgroup;
             lblDeathAnimation.Text = Strings.PetEditor.deathanimation;
             btnSave.Text = Strings.PetEditor.save;
@@ -213,8 +212,7 @@ namespace Intersect.Editor.Forms.Editors
                 nudAgi.Value = mEditorItem.Stats[(int)Stat.Agility];
                 nudHp.Value = mEditorItem.MaxVital[(int) Vital.Health];
                 nudMana.Value = mEditorItem.MaxVital[(int) Vital.Mana];
-                nudExp.Value = mEditorItem.Experience;
-     
+                   
 
                 //Combat
                 nudDamage.Value = mEditorItem.Damage;
@@ -407,6 +405,8 @@ namespace Intersect.Editor.Forms.Editors
             chkTaunt.Checked = mEditorItem.Immunities.Contains(SpellEffect.Taunt);
             chkBlind.Checked = mEditorItem.Immunities.Contains(SpellEffect.Blind);
         }
+       
+     
 
         private void form_KeyDown(object sender, KeyEventArgs e)
         {
@@ -509,12 +509,7 @@ namespace Intersect.Editor.Forms.Editors
         {
             mEditorItem.MaxVital[(int) Vital.Mana] = (int) nudMana.Value;
         }
-
-        private void nudExp_ValueChanged(object sender, EventArgs e)
-        {
-            mEditorItem.Experience = (int) nudExp.Value;
-        }
-       
+                     
         private void nudLevel_ValueChanged(object sender, EventArgs e)
         {
             mEditorItem.Level = (int) nudLevel.Value;

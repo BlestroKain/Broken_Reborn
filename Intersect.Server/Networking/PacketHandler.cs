@@ -3672,6 +3672,10 @@ namespace Intersect.Server.Networking
                     obj = NpcBase.Get(id);
 
                     break;
+                case GameObjectType.Pet:
+                    obj = PetBase.Get(id);
+
+                    break;
 
                 case GameObjectType.Projectile:
                     obj = ProjectileBase.Get(id);
@@ -3799,6 +3803,11 @@ namespace Intersect.Server.Networking
                     break;
                 case GameObjectType.Npc:
                     obj = NpcBase.Get(id);
+
+                    break;
+                    break;
+                case GameObjectType.Pet:
+                    obj = PetBase.Get(id);
 
                     break;
 

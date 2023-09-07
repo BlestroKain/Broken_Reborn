@@ -963,6 +963,7 @@ namespace Intersect.Server.Entities.Events
             if (tile.TryFix() && MapController.TryGetInstanceFromMap(mapId, player.MapInstanceId, out var instance))
             {
                 var Pet = instance.SpawnPet((byte)tileX, (byte)tileY, direction, PetId, player);
+                Pet.Owner = player;
                 player.SpawnedPets.Add(Pet);
             }
         }

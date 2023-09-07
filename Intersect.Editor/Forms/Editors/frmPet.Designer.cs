@@ -31,6 +31,7 @@ namespace Intersect.Editor.Forms.Editors
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmPet));
             this.grpPets = new DarkUI.Controls.DarkGroupBox();
             this.btnClearSearch = new DarkUI.Controls.DarkButton();
             this.txtSearch = new DarkUI.Controls.DarkTextBox();
@@ -51,7 +52,6 @@ namespace Intersect.Editor.Forms.Editors
             this.grpStats = new DarkUI.Controls.DarkGroupBox();
             this.nudAgi = new DarkUI.Controls.DarkNumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
-            this.nudExp = new DarkUI.Controls.DarkNumericUpDown();
             this.nudMana = new DarkUI.Controls.DarkNumericUpDown();
             this.nudHp = new DarkUI.Controls.DarkNumericUpDown();
             this.nudSpd = new DarkUI.Controls.DarkNumericUpDown();
@@ -66,14 +66,11 @@ namespace Intersect.Editor.Forms.Editors
             this.lblStr = new System.Windows.Forms.Label();
             this.lblMana = new System.Windows.Forms.Label();
             this.lblHP = new System.Windows.Forms.Label();
-            this.lblExp = new System.Windows.Forms.Label();
             this.pnlContainer = new System.Windows.Forms.Panel();
             this.grpAnimation = new DarkUI.Controls.DarkGroupBox();
             this.cmbDeathAnimation = new DarkUI.Controls.DarkComboBox();
             this.lblDeathAnimation = new System.Windows.Forms.Label();
             this.grpImmunities = new DarkUI.Controls.DarkGroupBox();
-            this.nudTenacity = new DarkUI.Controls.DarkNumericUpDown();
-            this.lblTenacity = new System.Windows.Forms.Label();
             this.chkTaunt = new DarkUI.Controls.DarkCheckBox();
             this.chkSleep = new DarkUI.Controls.DarkCheckBox();
             this.chkTransform = new DarkUI.Controls.DarkCheckBox();
@@ -137,7 +134,6 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)(this.nudSightRange)).BeginInit();
             this.grpStats.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudAgi)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.nudExp)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMana)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudHp)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudSpd)).BeginInit();
@@ -148,7 +144,6 @@ namespace Intersect.Editor.Forms.Editors
             this.pnlContainer.SuspendLayout();
             this.grpAnimation.SuspendLayout();
             this.grpImmunities.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nudTenacity)).BeginInit();
             this.grpCombat.SuspendLayout();
             this.grpAttackSpeed.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudAttackSpeedValue)).BeginInit();
@@ -418,7 +413,6 @@ namespace Intersect.Editor.Forms.Editors
             this.grpStats.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
             this.grpStats.Controls.Add(this.nudAgi);
             this.grpStats.Controls.Add(this.label1);
-            this.grpStats.Controls.Add(this.nudExp);
             this.grpStats.Controls.Add(this.nudMana);
             this.grpStats.Controls.Add(this.nudHp);
             this.grpStats.Controls.Add(this.nudSpd);
@@ -433,13 +427,12 @@ namespace Intersect.Editor.Forms.Editors
             this.grpStats.Controls.Add(this.lblStr);
             this.grpStats.Controls.Add(this.lblMana);
             this.grpStats.Controls.Add(this.lblHP);
-            this.grpStats.Controls.Add(this.lblExp);
             this.grpStats.ForeColor = System.Drawing.Color.Gainsboro;
             this.grpStats.Location = new System.Drawing.Point(4, 311);
             this.grpStats.Margin = new System.Windows.Forms.Padding(4);
             this.grpStats.Name = "grpStats";
             this.grpStats.Padding = new System.Windows.Forms.Padding(4);
-            this.grpStats.Size = new System.Drawing.Size(275, 239);
+            this.grpStats.Size = new System.Drawing.Size(275, 200);
             this.grpStats.TabIndex = 15;
             this.grpStats.TabStop = false;
             this.grpStats.Text = "Stats:";
@@ -448,7 +441,7 @@ namespace Intersect.Editor.Forms.Editors
             // 
             this.nudAgi.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(69)))), ((int)(((byte)(73)))), ((int)(((byte)(74)))));
             this.nudAgi.ForeColor = System.Drawing.Color.Gainsboro;
-            this.nudAgi.Location = new System.Drawing.Point(17, 203);
+            this.nudAgi.Location = new System.Drawing.Point(140, 158);
             this.nudAgi.Margin = new System.Windows.Forms.Padding(4);
             this.nudAgi.Maximum = new decimal(new int[] {
             255,
@@ -468,32 +461,11 @@ namespace Intersect.Editor.Forms.Editors
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(13, 187);
+            this.label1.Location = new System.Drawing.Point(139, 142);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(46, 16);
             this.label1.TabIndex = 46;
             this.label1.Text = "Agility:";
-            // 
-            // nudExp
-            // 
-            this.nudExp.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(69)))), ((int)(((byte)(73)))), ((int)(((byte)(74)))));
-            this.nudExp.ForeColor = System.Drawing.Color.Gainsboro;
-            this.nudExp.Location = new System.Drawing.Point(140, 158);
-            this.nudExp.Margin = new System.Windows.Forms.Padding(4);
-            this.nudExp.Maximum = new decimal(new int[] {
-            1410065407,
-            2,
-            0,
-            0});
-            this.nudExp.Name = "nudExp";
-            this.nudExp.Size = new System.Drawing.Size(103, 22);
-            this.nudExp.TabIndex = 45;
-            this.nudExp.Value = new decimal(new int[] {
-            0,
-            0,
-            0,
-            0});
-            this.nudExp.ValueChanged += new System.EventHandler(this.nudExp_ValueChanged);
             // 
             // nudMana
             // 
@@ -712,16 +684,6 @@ namespace Intersect.Editor.Forms.Editors
             this.lblHP.TabIndex = 14;
             this.lblHP.Text = "HP:";
             // 
-            // lblExp
-            // 
-            this.lblExp.AutoSize = true;
-            this.lblExp.Location = new System.Drawing.Point(141, 142);
-            this.lblExp.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblExp.Name = "lblExp";
-            this.lblExp.Size = new System.Drawing.Size(33, 16);
-            this.lblExp.TabIndex = 11;
-            this.lblExp.Text = "Exp:";
-            // 
             // pnlContainer
             // 
             this.pnlContainer.AutoScroll = true;
@@ -789,8 +751,6 @@ namespace Intersect.Editor.Forms.Editors
             // 
             this.grpImmunities.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
             this.grpImmunities.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
-            this.grpImmunities.Controls.Add(this.nudTenacity);
-            this.grpImmunities.Controls.Add(this.lblTenacity);
             this.grpImmunities.Controls.Add(this.chkTaunt);
             this.grpImmunities.Controls.Add(this.chkSleep);
             this.grpImmunities.Controls.Add(this.chkTransform);
@@ -808,27 +768,6 @@ namespace Intersect.Editor.Forms.Editors
             this.grpImmunities.TabIndex = 33;
             this.grpImmunities.TabStop = false;
             this.grpImmunities.Text = "Immunities";
-            // 
-            // nudTenacity
-            // 
-            this.nudTenacity.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(69)))), ((int)(((byte)(73)))), ((int)(((byte)(74)))));
-            this.nudTenacity.ForeColor = System.Drawing.Color.Gainsboro;
-            this.nudTenacity.Location = new System.Drawing.Point(0, 0);
-            this.nudTenacity.Name = "nudTenacity";
-            this.nudTenacity.Size = new System.Drawing.Size(120, 22);
-            this.nudTenacity.TabIndex = 0;
-            this.nudTenacity.Value = new decimal(new int[] {
-            0,
-            0,
-            0,
-            0});
-            // 
-            // lblTenacity
-            // 
-            this.lblTenacity.Location = new System.Drawing.Point(0, 0);
-            this.lblTenacity.Name = "lblTenacity";
-            this.lblTenacity.Size = new System.Drawing.Size(100, 23);
-            this.lblTenacity.TabIndex = 1;
             // 
             // chkTaunt
             // 
@@ -1268,7 +1207,7 @@ namespace Intersect.Editor.Forms.Editors
             this.grpRegen.Controls.Add(this.lblManaRegen);
             this.grpRegen.Controls.Add(this.lblRegenHint);
             this.grpRegen.ForeColor = System.Drawing.Color.Gainsboro;
-            this.grpRegen.Location = new System.Drawing.Point(3, 556);
+            this.grpRegen.Location = new System.Drawing.Point(3, 517);
             this.grpRegen.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.grpRegen.Name = "grpRegen";
             this.grpRegen.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
@@ -1488,13 +1427,14 @@ namespace Intersect.Editor.Forms.Editors
             this.toolStrip.Name = "toolStrip";
             this.toolStrip.Padding = new System.Windows.Forms.Padding(7, 0, 1, 0);
             this.toolStrip.Size = new System.Drawing.Size(932, 31);
-            this.toolStrip.TabIndex = 45;
+            this.toolStrip.TabIndex = 46;
             this.toolStrip.Text = "toolStrip1";
             // 
             // toolStripItemNew
             // 
             this.toolStripItemNew.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripItemNew.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.toolStripItemNew.Image = ((System.Drawing.Image)(resources.GetObject("toolStripItemNew.Image")));
             this.toolStripItemNew.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripItemNew.Name = "toolStripItemNew";
             this.toolStripItemNew.Size = new System.Drawing.Size(29, 28);
@@ -1513,6 +1453,7 @@ namespace Intersect.Editor.Forms.Editors
             this.toolStripItemDelete.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripItemDelete.Enabled = false;
             this.toolStripItemDelete.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.toolStripItemDelete.Image = ((System.Drawing.Image)(resources.GetObject("toolStripItemDelete.Image")));
             this.toolStripItemDelete.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripItemDelete.Name = "toolStripItemDelete";
             this.toolStripItemDelete.Size = new System.Drawing.Size(29, 28);
@@ -1530,11 +1471,11 @@ namespace Intersect.Editor.Forms.Editors
             // 
             this.btnAlphabetical.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.btnAlphabetical.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.btnAlphabetical.Image = ((System.Drawing.Image)(resources.GetObject("btnAlphabetical.Image")));
             this.btnAlphabetical.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnAlphabetical.Name = "btnAlphabetical";
             this.btnAlphabetical.Size = new System.Drawing.Size(29, 28);
             this.btnAlphabetical.Text = "Order Chronologically";
-            this.btnAlphabetical.Click += new System.EventHandler(this.btnAlphabetical_Click);
             // 
             // toolStripSeparator4
             // 
@@ -1548,6 +1489,7 @@ namespace Intersect.Editor.Forms.Editors
             this.toolStripItemCopy.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripItemCopy.Enabled = false;
             this.toolStripItemCopy.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.toolStripItemCopy.Image = ((System.Drawing.Image)(resources.GetObject("toolStripItemCopy.Image")));
             this.toolStripItemCopy.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripItemCopy.Name = "toolStripItemCopy";
             this.toolStripItemCopy.Size = new System.Drawing.Size(29, 28);
@@ -1559,6 +1501,7 @@ namespace Intersect.Editor.Forms.Editors
             this.toolStripItemPaste.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripItemPaste.Enabled = false;
             this.toolStripItemPaste.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.toolStripItemPaste.Image = ((System.Drawing.Image)(resources.GetObject("toolStripItemPaste.Image")));
             this.toolStripItemPaste.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripItemPaste.Name = "toolStripItemPaste";
             this.toolStripItemPaste.Size = new System.Drawing.Size(29, 28);
@@ -1577,6 +1520,7 @@ namespace Intersect.Editor.Forms.Editors
             this.toolStripItemUndo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripItemUndo.Enabled = false;
             this.toolStripItemUndo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.toolStripItemUndo.Image = ((System.Drawing.Image)(resources.GetObject("toolStripItemUndo.Image")));
             this.toolStripItemUndo.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripItemUndo.Name = "toolStripItemUndo";
             this.toolStripItemUndo.Size = new System.Drawing.Size(29, 28);
@@ -1616,7 +1560,6 @@ namespace Intersect.Editor.Forms.Editors
             this.grpStats.ResumeLayout(false);
             this.grpStats.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudAgi)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.nudExp)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMana)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudHp)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudSpd)).EndInit();
@@ -1629,7 +1572,6 @@ namespace Intersect.Editor.Forms.Editors
             this.grpAnimation.PerformLayout();
             this.grpImmunities.ResumeLayout(false);
             this.grpImmunities.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nudTenacity)).EndInit();
             this.grpCombat.ResumeLayout(false);
             this.grpCombat.PerformLayout();
             this.grpAttackSpeed.ResumeLayout(false);
@@ -1660,7 +1602,6 @@ namespace Intersect.Editor.Forms.Editors
         private DarkGroupBox grpStats;
         private System.Windows.Forms.Label lblMana;
         private System.Windows.Forms.Label lblHP;
-        private System.Windows.Forms.Label lblExp;
         private System.Windows.Forms.Label lblSightRange;
         private System.Windows.Forms.Panel pnlContainer;
         private DarkButton btnSave;
@@ -1671,15 +1612,6 @@ namespace Intersect.Editor.Forms.Editors
         private System.Windows.Forms.Label lblSpell;
         private DarkComboBox cmbFreq;
         private System.Windows.Forms.Label lblFreq;
-        private DarkToolStrip toolStrip;
-        private System.Windows.Forms.ToolStripButton toolStripItemNew;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.ToolStripButton toolStripItemDelete;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-        public System.Windows.Forms.ToolStripButton toolStripItemCopy;
-        public System.Windows.Forms.ToolStripButton toolStripItemPaste;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
-        public System.Windows.Forms.ToolStripButton toolStripItemUndo;
         private DarkGroupBox grpCombat;
         private DarkComboBox cmbScalingStat;
         private System.Windows.Forms.Label lblScalingStat;
@@ -1707,7 +1639,6 @@ namespace Intersect.Editor.Forms.Editors
         private DarkNumericUpDown nudSightRange;
         private DarkNumericUpDown nudMana;
         private DarkNumericUpDown nudHp;
-        private DarkNumericUpDown nudExp;
         private System.Windows.Forms.Label lblLevel;
         private DarkNumericUpDown nudLevel;
         private DarkGroupBox grpRegen;
@@ -1725,8 +1656,6 @@ namespace Intersect.Editor.Forms.Editors
         private DarkButton btnAddFolder;
         private System.Windows.Forms.Label lblFolder;
         private DarkComboBox cmbFolder;
-        private System.Windows.Forms.ToolStripButton btnAlphabetical;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private DarkGroupBox grpAttackSpeed;
         private DarkNumericUpDown nudAttackSpeedValue;
         private System.Windows.Forms.Label lblAttackSpeedValue;
@@ -1734,8 +1663,6 @@ namespace Intersect.Editor.Forms.Editors
         private System.Windows.Forms.Label lblAttackSpeedModifier;
         private Controls.GameObjectList lstGameObjects;
         private DarkGroupBox grpImmunities;
-        private DarkNumericUpDown nudTenacity;
-        private System.Windows.Forms.Label lblTenacity;
         private DarkCheckBox chkTaunt;
         private DarkCheckBox chkSleep;
         private DarkCheckBox chkTransform;
@@ -1749,5 +1676,16 @@ namespace Intersect.Editor.Forms.Editors
         private DarkGroupBox grpAnimation;
         private DarkNumericUpDown nudAgi;
         private System.Windows.Forms.Label label1;
+        private DarkToolStrip toolStrip;
+        private System.Windows.Forms.ToolStripButton toolStripItemNew;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripButton toolStripItemDelete;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripButton btnAlphabetical;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
+        public System.Windows.Forms.ToolStripButton toolStripItemCopy;
+        public System.Windows.Forms.ToolStripButton toolStripItemPaste;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        public System.Windows.Forms.ToolStripButton toolStripItemUndo;
     }
 }

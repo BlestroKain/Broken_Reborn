@@ -1059,6 +1059,44 @@ namespace Intersect.Editor.Forms.Editors.Events
                 )
             );
         }
+        private static string GetCommandText(SpawnPetCommand command, MapInstance map)
+        {
+            if (command == null)
+            {
+                return null;
+            }
+                      
+            var retain = Strings.EventCommandList.False;
+
+            //TODO: Possibly bugged -- test this.
+            if (Convert.ToBoolean(command.Dir))
+            {
+                retain = Strings.EventCommandList.True;
+            }
+
+            if (command.EntityId == Guid.Empty)
+            {
+                return Strings.EventCommandList.spawnnpc.ToString(
+                    PetBase.GetName(command.PetId),
+                    Strings.EventCommandList.spawnonplayer.ToString(command.X, command.Y, retain)
+                );
+            }
+
+            if (map.LocalEvents.TryGetValue(command.EntityId, out var localEvent))
+            {
+                return Strings.EventCommandList.spawnnpc.ToString(
+                    PetBase.GetName(command.PetId),
+                    Strings.EventCommandList.spawnonevent.ToString(localEvent.Name, command.X, command.Y, retain)
+                );
+            }
+
+            return Strings.EventCommandList.spawnnpc.ToString(
+                PetBase.GetName(command.PetId),
+                Strings.EventCommandList.spawnonevent.ToString(
+                    Strings.EventCommandList.deletedevent, command.X, command.Y, retain
+                )
+            );
+        }
 
         private static string GetCommandText(DespawnNpcCommand command, MapInstance map)
         {

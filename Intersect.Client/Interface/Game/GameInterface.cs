@@ -40,9 +40,7 @@ namespace Intersect.Client.Interface.Game
         private BagWindow mBagWindow;
 
         private BankWindow mBankWindow;
-
-        private SkillsWindow mSkillsWindow;
-
+               
         private Chatbox mChatBox;
 
         private CraftingWindow mCraftingWindow;
@@ -65,15 +63,11 @@ namespace Intersect.Client.Interface.Game
 
         private bool mShouldCloseShop;
 
-        private bool mShouldCloseSkills;
-
         private bool mShouldCloseTrading;
 
         private bool mShouldOpenAdminWindow;
 
         private bool mShouldOpenBag;
-
-        private bool mShouldOpenSkills;
 
         private bool mShouldOpenBank;
 

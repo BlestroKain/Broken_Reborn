@@ -21,8 +21,8 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
     {
         private readonly FrmEvent mEventEditor;
         private GiveJobExperienceCommand mMyCommand;
-        private Jobs selectedJob = Jobs.None;
-        private long selectedExperience = 0;
+        private Jobs selectedJob;
+        private long selectedExperience;
         public EventCommandGiveJobExperience(GiveJobExperienceCommand refCommand, FrmEvent editor)
         {
 

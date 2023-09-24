@@ -176,6 +176,7 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
             }
             chkStatIgnoreBuffs.Text = Strings.EventConditional.ignorestatbuffs;
             grpJobLevel.Text = Strings.EventConditional.levelorstat;
+          
             // JobLevel
             cmbJobLevel.Items.Clear();
            
@@ -1657,6 +1658,11 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
             {
                 cmbNpcs.SelectedIndex = 0;
             }
+        }
+
+        private void grpJobLevel_Enter(object sender, EventArgs e)
+        {
+
         }
     }
 

@@ -14,9 +14,9 @@ using Intersect.Client.Entities;
 using Intersect.Utilities;
 using System.Drawing;
 using Graphics = Intersect.Client.Core.Graphics;
-using static Intersect.Client.Localization.Strings;
 
-namespace Intersect.Client.Interface.Game
+
+namespace Intersect.Client.Interface.Game.Job
 {
 
     public class SkillsWindow
@@ -84,16 +84,7 @@ namespace Intersect.Client.Interface.Game
         //paneles
         public ImagePanel InfoPanel;
         public ImagePanel JobsPanel;
-        //Experience Labels
-        Label mFarmingExpLabel;
-        Label mMiningExpLabel;
-        Label mLumberjackExpLabel;
-        Label mFishingExpLabel;
-        Label mHunterExpLabel;
-        Label mBlacksmithExpLabel;
-        Label mCookingExpLabel;
-        Label mAlchemyExpLabel;
-
+       
         private Label mJobtDescTemplateLabel;
         public int X;
 
@@ -105,6 +96,9 @@ namespace Intersect.Client.Interface.Game
         public float xtnl;
 
         public float Jobexp;
+          
+        public  Jobs JobType= Jobs.None;
+
 
         //Init
         public SkillsWindow(Canvas gameCanvas)
@@ -113,7 +107,7 @@ namespace Intersect.Client.Interface.Game
 
             mSkillsWindow = new WindowControl(gameCanvas, Strings.Skills.skill, false, "SkillsWindow");
             mSkillsWindow.DisableResizing();
-            mSkillsWindow.SetSize(420, 400);
+            mSkillsWindow.SetSize(800, 600);
 
             mSkillsName = new Label(mSkillsWindow, "SkillsNameLabel");
             mSkillsName.SetTextColor(Color.White, Label.ControlState.Normal);
@@ -123,24 +117,23 @@ namespace Intersect.Client.Interface.Game
             /// </summary>
             #region InfoPanel
             InfoPanel = new ImagePanel(mSkillsWindow, "InfoPanel");
-            InfoPanel.SetSize(250, 450);
-            InfoPanel.SetPosition(205, 5);
+            InfoPanel.SetSize(500, 600); // Ajusta según sea necesario.
+            InfoPanel.SetPosition(300, 0);
             // Job Icon
             JobIcon = new ImagePanel(InfoPanel, "JobIcon");
-            JobIcon.SetPosition(0, 0);
+            JobIcon.SetPosition(10, 10);
             JobIcon.SetSize(35, 35);
 
             // Job name and level
             JobNameLabel = new Label(InfoPanel, "JobNameLabel");
-            JobNameLabel.SetPosition(40, 0);
-           
-          
+           JobNameLabel.SetPosition(50, 10);     
+      
             JobLevelLabel = new Label(InfoPanel, "JobLevelLabel");
-            JobLevelLabel.SetPosition(160, 0);
+            JobLevelLabel.SetPosition(200, 10);
 
             // Job description
             JobDescriptionLabel = new RichLabel(InfoPanel,"Jobdesc");
-            JobDescriptionLabel.SetPosition(5, 50);
+            JobDescriptionLabel.SetPosition(10, 50);
             JobDescriptionLabel.SetSize(200, 100);
             JobDescriptionLabel.ClearText();
 
@@ -149,32 +142,33 @@ namespace Intersect.Client.Interface.Game
             // Exp label
             ExpTitle = new Label(InfoPanel, "ExpTitle");
             ExpTitle.SetText(Strings.EntityBox.exp);
-            ExpTitle.SetPosition(40, 20);
+            ExpTitle.SetPosition(10, 150);
 
             // Exp bar
             ExpBackground = new ImagePanel(InfoPanel, "ExpBackground");
-            ExpBackground.SetPosition(70, 20);
+            ExpBackground.SetPosition(10, 170);
             ExpBackground.SetSize(110, 16);
             ExpBackground.IsHidden = true;
 
             ExpBar = new ImagePanel(InfoPanel, "ExpBar");
-            ExpBar.SetPosition(71, 21);
+            ExpBar.SetPosition(11, 171);
             ExpBar.SetSize(100, 12);
             ExpBar.IsHidden = true;
             // Exp value
             ExpLabel = new Label(InfoPanel, "ExpLabel");
-            ExpLabel.SetPosition(70, 20);
-            ExpLabel.SetSize(180, 16);
+            ExpLabel.SetPosition(10, 190);
+            ExpLabel.SetSize(180, 16);      
+                             
             // Agregar el contenedor al conjunto de elementos hijos del mSkillsWindow
             mSkillsWindow.AddChild(InfoPanel);
             #endregion
             // Crear el panel de oficios
             JobsPanel = new ImagePanel(mSkillsWindow, "JobsPanel");
-            JobsPanel.SetSize(200, 450);
-            JobsPanel.SetPosition(5, 5);
+            JobsPanel.SetSize(300, 600); // Ajusta según sea necesario.
+            JobsPanel.SetPosition(0, 0);
 
             var jobContainerHeight = 40;
-            var jobContainerWidth = 195;
+            var jobContainerWidth = 295;
             var jobIconSize = 40;
 
             #region Farming
@@ -337,248 +331,196 @@ namespace Intersect.Client.Interface.Game
 
           
 
-            JobsPanel.AddChild(AlchemyContainer); 
+            JobsPanel.AddChild(AlchemyContainer);
             #endregion
 
-
+          
             mSkillsWindow.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
         }
 
         private void FishingBtn_Clicked(Base sender, ClickedEventArgs arguments)
-        {        
+        {
             JobDescriptionLabel.ClearText();
-            ExpBackground.IsHidden=false;          
-            UpdateFishingInfo();       
+            ExpBackground.IsHidden = false;
+            UpdateJobInfo(Jobs.Fishing);
+           
         }
 
         private void LumberjackBtn_Clicked(Base sender, ClickedEventArgs arguments)
         {
             ExpBackground.IsHidden = false;
             JobDescriptionLabel.ClearText();
-            UpdateLumberjackInfo();                    
+            UpdateJobInfo(Jobs.Woodcutter);           
         }
-
-      
 
         private void MiningBtn_Clicked(Base sender, ClickedEventArgs arguments)
         {
-            ExpBackground.IsHidden = false;           
+            ExpBackground.IsHidden = false;
             JobDescriptionLabel.ClearText();
-            UpdateMiningInfo();        
-            
+            UpdateJobInfo(Jobs.Mining);
+           
         }
-
-
 
         private void FarmingBtn_Clicked(Base sender, ClickedEventArgs arguments)
         {
-            ExpBackground.IsHidden = false;           
+            ExpBackground.IsHidden = false;
             JobDescriptionLabel.ClearText();
-            UpdateFarmingInfo();      
-           
+            UpdateJobInfo(Jobs.Farming);
         }
 
         private void AlchemyBtn_Clicked(Base sender, ClickedEventArgs arguments)
         {
             ExpBackground.IsHidden = false;
             JobDescriptionLabel.ClearText();
-            UpdateAlchemyInfo();                     
-        }
+            UpdateJobInfo(Jobs.Alquemy);  
+  }
 
         private void CookingBtn_Clicked(Base sender, ClickedEventArgs arguments)
         {
             ExpBackground.IsHidden = false;
             JobDescriptionLabel.ClearText();
-            UpdateCookingInfo();          
-            
+            UpdateJobInfo(Jobs.Cooking);
+   
         }
 
         private void BlacksmithBtn_Clicked(Base sender, ClickedEventArgs arguments)
         {
-            ExpBackground.IsHidden = false;           
+            ExpBackground.IsHidden = false;
             JobDescriptionLabel.ClearText();
-            UpdateBlacksmithInfo();
-               
+            UpdateJobInfo(Jobs.Smithing);
+
         }
 
         private void HuntingBtn_Clicked(Base sender, ClickedEventArgs arguments)
         {
-            
             ExpBackground.IsHidden = false;
             JobDescriptionLabel.ClearText();
-            UpdateHuntingInfo();
-            
-            
+            UpdateJobInfo(Jobs.Hunter);
+           
         }
-        private void UpdateLumberjackInfo()
+        private void UpdateJobInfo(Jobs jobType)
         {
-            Jobexp = Globals.Me.WoodExperience;
-            xtnl = Globals.Me.ExperienceToWoodNextLevel;
-            JobNameLabel.Text = mLumberjackLabel.Text;
-            JobIcon = new ImagePanel(LumberjackIcon);
-           /* ExpTitle.SetText(ExpLumberjackTitle.Text);
-            ExpLabel.SetText(ExpLumberjackLbl.Text);*/
-            JobDescriptionLabel.AddText(Strings.Job.LumberjackDesc, mJobtDescTemplateLabel);
-            JobLevelLabel.Text = Strings.Job.level.ToString(Globals.Me.WoodLevel);
-            InfoPanel.Show();
-            ExpBackground.Show();
-            ExpBar.Show();
-            ExpLabel.Show();
-            ExpTitle.Show();
-            JobLevelLabel.Show();
-            JobNameLabel.Show();
-            JobDescriptionLabel.Show();
-            UpdateExperience(Globals.Me.WoodExperience, Globals.Me.ExperienceToWoodNextLevel);
-        }
-        private void UpdateFarmingInfo()
-        {
-            Jobexp = Globals.Me.FarmingExperience;
-            xtnl = Globals.Me.ExperienceToFarmingNextLevel;
-            JobNameLabel.Text = mFarmingLabel.Text;
-            JobIcon = new ImagePanel(FarmingIcon);
-            /*ExpTitle.SetText(ExpFarmingTitle.Text);
-            ExpLabel.SetText(ExpFarmingLbl.Text);*/
-            JobDescriptionLabel.AddText(Strings.Job.FarmingDesc, mJobtDescTemplateLabel);
-            JobLevelLabel.Text = Strings.Job.level.ToString(Globals.Me.FarmingLevel);
-            InfoPanel.Show();
-            ExpBackground.Show();
-            ExpBar.Show();
-            ExpLabel.Show();
-            ExpTitle.Show();
-            JobLevelLabel.Show();
-            JobNameLabel.Show();
-            JobDescriptionLabel.Show();
-            UpdateExperience(Globals.Me.FarmingExperience, Globals.Me.ExperienceToFarmingNextLevel);
-        }
+            switch (jobType)
+            {
+                case Jobs.None:
+                    InfoPanel.Hide();
+                    ExpBackground.Hide();
+                    ExpBar.Hide();
+                    ExpLabel.Hide();
+                    JobType = Jobs.None;
 
-        private void UpdateMiningInfo()
-        {
-            Jobexp = Globals.Me.MiningExperience;
-            xtnl = Globals.Me.ExperienceToMiningNextLevel;
-            JobNameLabel.Text = mMiningLabel.Text;
-            JobIcon = new ImagePanel(MiningIcon);
-            /*  ExpTitle.SetText(ExpMiningTitle.Text);
-              ExpLabel.SetText(ExpMiningLbl.Text);*/
-            JobDescriptionLabel.AddText(Strings.Job.MiningDesc, mJobtDescTemplateLabel);
-            JobLevelLabel.Text = Strings.Job.level.ToString(Globals.Me.MiningLevel);
-            InfoPanel.Show();
-            ExpBackground.Show();
-            ExpBar.Show();
-            ExpLabel.Show();
-            ExpTitle.Show();
-            JobLevelLabel.Show();
-            JobNameLabel.Show();
-            JobDescriptionLabel.Show();
-            UpdateExperience(Globals.Me.MiningExperience,Globals.Me.ExperienceToMiningNextLevel);
-        
-        }
+                    break;
+                case Jobs.Woodcutter:
+                    Jobexp = Globals.Me.WoodExperience;
+                    xtnl = Globals.Me.ExperienceToWoodNextLevel;
+                    JobNameLabel.Text = mLumberjackLabel.Text;
+                    JobIcon = new ImagePanel(LumberjackIcon);
+                    JobDescriptionLabel.ClearText();
+                    JobDescriptionLabel.AddText(Strings.Job.LumberjackDesc, mJobtDescTemplateLabel);
+                    JobLevelLabel.Text = Strings.Job.level.ToString(Globals.Me.WoodLevel);
+                    JobType = Jobs.Woodcutter;
+                    break;
 
-        private void UpdateFishingInfo()
-        {
-            Jobexp = Globals.Me.FishingExperience;
-            xtnl = Globals.Me.ExperienceToFishingNextLevel;
-            JobNameLabel.Text = mFishingLabel.Text;
-            JobIcon = new ImagePanel(FishingIcon);
-          /*  ExpTitle.SetText(ExpFishingTitle.Text);
-            ExpLabel.SetText(ExpFishingLbl.Text);*/
-            JobDescriptionLabel.AddText(Strings.Job.FishingDesc, mJobtDescTemplateLabel);
-            JobLevelLabel.Text = Strings.Job.level.ToString(Globals.Me.FishingLevel);
-            InfoPanel.Show();
-            ExpBackground.Show();
-            ExpBar.Show();
-            ExpLabel.Show();
-            ExpTitle.Show();
-            JobLevelLabel.Show();
-            JobNameLabel.Show();
-            JobDescriptionLabel.Show();
-            UpdateExperience(Globals.Me.FishingExperience, Globals.Me.ExperienceToFishingNextLevel);
-        }
+                case Jobs.Farming:
+                    Jobexp = Globals.Me.FarmingExperience;
+                    xtnl = Globals.Me.ExperienceToFarmingNextLevel;
+                    JobNameLabel.Text = mFarmingLabel.Text;
+                    JobIcon = new ImagePanel(FarmingIcon);
+                    JobDescriptionLabel.ClearText();
+                    JobDescriptionLabel.AddText(Strings.Job.FarmingDesc, mJobtDescTemplateLabel);
+                    JobLevelLabel.Text = Strings.Job.level.ToString(Globals.Me.FarmingLevel);
+                    JobType = Jobs.Farming;
+                    break;
 
-        private void UpdateHuntingInfo()
-        {
-            Jobexp = Globals.Me.HuntingExperience;
-            xtnl = Globals.Me.ExperienceToHuntingNextLevel;
-            JobNameLabel.Text = mHuntingLabel.Text;
-            JobIcon = new ImagePanel(HuntingIcon);
-          /*  ExpTitle.SetText(ExpHuntingTitle.Text);
-            ExpLabel.SetText(ExpHuntingLbl.Text);*/
-            JobDescriptionLabel.AddText(Strings.Job.HuntingDesc, mJobtDescTemplateLabel);
-            JobLevelLabel.Text = Strings.Job.level.ToString(Globals.Me.HunterLevel);
-            InfoPanel.Show();
-            ExpBackground.Show();
-            ExpBar.Show();
-            ExpLabel.Show();
-            ExpTitle.Show();
-            JobLevelLabel.Show();
-            JobNameLabel.Show();
-            JobDescriptionLabel.Show();
-            UpdateExperience(Globals.Me.HuntingExperience, Globals.Me.ExperienceToHuntingNextLevel);
-        }
-        private void UpdateBlacksmithInfo()
-        {
-            Jobexp = Globals.Me.BlacksmithExperience;
-            xtnl = Globals.Me.ExperienceToBlacksmithNextLevel;
-            JobNameLabel.Text = mBlacksmithLabel.Text;
-            JobIcon = new ImagePanel(BlacksmithIcon);
-          /*  ExpTitle.SetText(ExpBlacksmithTitle.Text);
-            ExpLabel.SetText(ExpBlacksmithLbl.Text);*/
-            JobDescriptionLabel.AddText(Strings.Job.BlacksmithDesc, mJobtDescTemplateLabel);
-            JobLevelLabel.Text = Strings.Job.level.ToString(Globals.Me.BlacksmithLevel);
-            InfoPanel.Show();
-            ExpBackground.Show();
-            ExpBar.Show();
-            ExpLabel.Show();
-            ExpTitle.Show();
-            JobLevelLabel.Show();
-            JobNameLabel.Show();
-            JobDescriptionLabel.Show();
-            UpdateExperience(Globals.Me.BlacksmithExperience, Globals.Me.ExperienceToBlacksmithNextLevel);
-        }
-        private void UpdateCookingInfo()
-        {
-            Jobexp = Globals.Me.CookingExperience;
-            xtnl = Globals.Me.ExperienceToCookingNextLevel;
-            JobNameLabel.Text = mCookingLabel.Text;
-            JobIcon = new ImagePanel(CookingIcon);
-          /*  ExpTitle.SetText(ExpCookingTitle.Text);
-            ExpLabel.SetText(ExpCookingLbl.Text);*/
-            JobDescriptionLabel.AddText(Strings.Job.CookingDesc, mJobtDescTemplateLabel);
-            JobLevelLabel.Text = Strings.Job.level.ToString(Globals.Me.CookingLevel);
-            InfoPanel.Show();
-            ExpBackground.Show();
-            ExpBar.Show();
-            ExpLabel.Show();
-            ExpTitle.Show();
-            JobLevelLabel.Show();
-            JobNameLabel.Show(); 
-            JobDescriptionLabel.Show();
-            UpdateExperience(Globals.Me.CookingExperience, Globals.Me.ExperienceToCookingNextLevel);
-        }
-        private void UpdateAlchemyInfo()
-        {
-            Jobexp = Globals.Me.AlchemyExperience;
-            xtnl = Globals.Me.ExperienceToAlchemyNextLevel;
-            JobNameLabel.Text = mAlchemyLabel.Text;
-            JobIcon = new ImagePanel(AlchemyIcon);
-           /* ExpTitle.SetText(ExpAlchemyTitle.Text);
-            ExpLabel.SetText(ExpAlchemyLbl.Text);*/
-            JobDescriptionLabel.AddText(Strings.Job.AlchemyDesc, mJobtDescTemplateLabel);
-            JobLevelLabel.Text = Strings.Job.level.ToString(Globals.Me.AlchemyLevel);
-           InfoPanel.Show();
-            ExpBackground.Show();
-            ExpBar.Show();
-            ExpLabel.Show();
-            ExpTitle.Show();
-            JobLevelLabel.Show();
-            JobNameLabel.Show();
-            JobDescriptionLabel.Show();
-            UpdateExperience(Globals.Me.AlchemyExperience, Globals.Me.ExperienceToAlchemyNextLevel);
+                case Jobs.Mining:
+                    Jobexp = Globals.Me.MiningExperience;
+                    xtnl = Globals.Me.ExperienceToMiningNextLevel;
+                    JobNameLabel.Text = mMiningLabel.Text;
+                    JobIcon = new ImagePanel(MiningIcon);
+                    JobDescriptionLabel.ClearText();
+                    JobDescriptionLabel.AddText(Strings.Job.MiningDesc, mJobtDescTemplateLabel);
+                    JobLevelLabel.Text = Strings.Job.level.ToString(Globals.Me.MiningLevel);
+                    JobType = Jobs.Mining;
+                    break;
 
+                case Jobs.Fishing:
+                    Jobexp = Globals.Me.FishingExperience;
+                    xtnl = Globals.Me.ExperienceToFishingNextLevel;
+                    JobNameLabel.Text = mFishingLabel.Text;
+                    JobIcon = new ImagePanel(FishingIcon);
+                    JobDescriptionLabel.ClearText();
+                    JobDescriptionLabel.AddText(Strings.Job.FishingDesc, mJobtDescTemplateLabel);
+                    JobLevelLabel.Text = Strings.Job.level.ToString(Globals.Me.FishingLevel);
+                    JobType = Jobs.Fishing;
+                    break;
+
+                case Jobs.Hunter:
+                    Jobexp = Globals.Me.HuntingExperience;
+                    xtnl = Globals.Me.ExperienceToHuntingNextLevel;
+                    JobNameLabel.Text = mHuntingLabel.Text;
+                    JobIcon = new ImagePanel(HuntingIcon);
+                    JobDescriptionLabel.ClearText();
+                    JobDescriptionLabel.AddText(Strings.Job.HuntingDesc, mJobtDescTemplateLabel);
+                    JobLevelLabel.Text = Strings.Job.level.ToString(Globals.Me.HunterLevel);
+                    JobType = Jobs.Hunter;
+                    break;
+
+                case Jobs.Smithing:
+                    Jobexp = Globals.Me.BlacksmithExperience;
+                    xtnl = Globals.Me.ExperienceToBlacksmithNextLevel;
+                    JobNameLabel.Text = mBlacksmithLabel.Text;
+                    JobIcon = new ImagePanel(BlacksmithIcon);
+                    JobDescriptionLabel.ClearText();
+                    JobDescriptionLabel.AddText(Strings.Job.BlacksmithDesc, mJobtDescTemplateLabel);
+                    JobLevelLabel.Text = Strings.Job.level.ToString(Globals.Me.BlacksmithLevel);
+                    JobType = Jobs.Smithing;
+                    break;
+
+                case Jobs.Cooking:
+                    Jobexp = Globals.Me.CookingExperience;
+                    xtnl = Globals.Me.ExperienceToCookingNextLevel;
+                    JobNameLabel.Text = mCookingLabel.Text;
+                    JobIcon = new ImagePanel(CookingIcon);
+                    JobDescriptionLabel.ClearText();
+                    JobDescriptionLabel.AddText(Strings.Job.CookingDesc, mJobtDescTemplateLabel);
+                    JobLevelLabel.Text = Strings.Job.level.ToString(Globals.Me.CookingLevel);
+                    JobType = Jobs.Cooking;
+                    break;
+
+                case Jobs.Alquemy:
+                    Jobexp = Globals.Me.AlchemyExperience;
+                    xtnl = Globals.Me.ExperienceToAlchemyNextLevel;
+                    JobNameLabel.Text = mAlchemyLabel.Text;
+                    JobIcon = new ImagePanel(AlchemyIcon);
+                    JobDescriptionLabel.ClearText();
+                    JobDescriptionLabel.AddText(Strings.Job.AlchemyDesc, mJobtDescTemplateLabel);
+                    JobLevelLabel.Text = Strings.Job.level.ToString(Globals.Me.AlchemyLevel);
+                    JobType = Jobs.Alquemy;
+                    break;
+
+                default:
+                    // Manejar cualquier caso inesperado aquí
+                    break;
+            }
+            if (JobType != Jobs.None)
+            {
+                InfoPanel.Show();
+                UpdateExperience(Jobexp, xtnl);
+             
+                ExpBackground.Show();
+                ExpBar.Show();
+                ExpLabel.Show();
+                ExpTitle.Show();
+                JobLevelLabel.Show();
+                JobNameLabel.Show();
+                JobDescriptionLabel.Show();
+            }
         }
         public void Update()
         {
             //Time since this window was last updated (for bar animations)
             var elapsedTime = (Timing.Global.Milliseconds - mLastUpdateTime) / 1000.0f;
+           
             mFarmingLabel.SetText(Strings.Job.skill0);
             mMiningLabel.SetText(Strings.Job.skill1);
             mLumberjackLabel.SetText(Strings.Job.skill2);
@@ -588,11 +530,10 @@ namespace Intersect.Client.Interface.Game
             mCookingLabel.SetText(Strings.Job.skill6);
             mAlchemyLabel.SetText(Strings.Job.skill7);
             
-            UpdateXpBar(elapsedTime);
-               
-            
-
+            UpdateJobInfo(JobType); 
+         
         }
+
         private void UpdateExperience(float currentExperience, float requiredExperience)
         {
             var elapsedTime = (Timing.Global.Milliseconds - mLastUpdateTime) / 1000.0f;
@@ -642,69 +583,22 @@ namespace Intersect.Client.Interface.Game
                 ExpBar.IsHidden = false;
             }
         }
-        private void UpdateXpBar(float elapsedTime)
-        {
-            float ExpSize = 1;
-            if ((float)(xtnl) > 0)
-            {
-                ExpSize = (float)(Jobexp) /
-                                 (float)(xtnl);
-
-                ExpLabel.Text = Strings.EntityBox.expval.ToString(
-                    ((float)(Jobexp)), ((float)(xtnl)));
-            }
-            else
-            {
-                ExpSize = 1f;
-                ExpLabel.Text = Strings.EntityBox.maxlevel;
-            }
-
-            ExpSize *= ExpBackground.Width;
-            if (Math.Abs((int)ExpSize - CurExpWidth) < 0.01)
-            {
-                return;
-            }
-
-            if ((int)ExpSize > CurExpWidth)
-            {
-                CurExpWidth += 100f * elapsedTime;
-                if (CurExpWidth > (int)ExpSize)
-                {
-                    CurExpWidth = ExpSize;
-                }
-            }
-            else
-            {
-                CurExpWidth -= 100f * elapsedTime;
-                if (CurExpWidth < ExpSize)
-                {
-                    CurExpWidth = ExpSize;
-                }
-            }
-
-            if (CurExpWidth == 0)
-            {
-                ExpBar.IsHidden = true;
-            }
-            else
-            {
-                ExpBar.Width = (int)CurExpWidth;
-                ExpBar.SetTextureRect(0, 0, (int)CurExpWidth, ExpBar.Height);
-                ExpBar.IsHidden = false;
-            }
-        }
-       
+   
         public void Show()
         {
-            mSkillsWindow.IsHidden = false;
-           InfoPanel.Hide();
+            InfoPanel.Hide();
             ExpBackground.Hide();
             ExpBar.Hide();
             ExpLabel.Hide();
-            ExpTitle.Hide();            
+            ExpTitle.Hide();
             JobLevelLabel.Hide();
             JobNameLabel.Hide();
-            JobDescriptionLabel.Hide();           
+            JobDescriptionLabel.Hide();
+            UpdateJobInfo(Jobs.None);
+            JobType = Jobs.None;
+            mSkillsWindow.IsHidden = false;
+          
+            
         }
 
         public bool IsVisible()
@@ -714,8 +608,21 @@ namespace Intersect.Client.Interface.Game
 
         public void Hide()
         {
-            mSkillsWindow.IsHidden = true;
+            JobType= Jobs.None;
+            InfoPanel.Hide();
+            ExpBackground.Hide();
+            ExpBar.Hide();
+            ExpLabel.Hide();
+            ExpTitle.Hide();
+            JobLevelLabel.Hide();
+            JobNameLabel.Hide();
+            JobDescriptionLabel.Hide();
+          
+            // Limpia el texto de la descripción del trabajo
             JobDescriptionLabel.ClearText();
+            mSkillsWindow.IsHidden = true;
+          
+
         }
 
 
@@ -723,10 +630,3 @@ namespace Intersect.Client.Interface.Game
 
 
 }
-
-
-
-
-
-
-

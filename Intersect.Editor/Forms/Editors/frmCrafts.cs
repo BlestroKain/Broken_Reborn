@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -13,6 +14,7 @@ using Intersect.GameObjects;
 using Intersect.GameObjects.Crafting;
 using Intersect.GameObjects.Events;
 using Intersect.Models;
+using Newtonsoft.Json;
 
 namespace Intersect.Editor.Forms.Editors
 {
@@ -225,13 +227,51 @@ namespace Intersect.Editor.Forms.Editors
             {
                 PacketSender.SendSaveObject(item);
                 item.DeleteBackup();
+                SaveRecipe(item);
             }
 
             Hide();
             Globals.CurrentEditor = -1;
             Dispose();
         }
+        public void SaveRecipe(CraftBase newRecipe)
+        {
+            // Cargar todas las recetas existentes desde el archivo JSON
+            List<CraftBase> allRecipes = LoadAllRecipesFromJson();
 
+            // Añadir la nueva receta a la lista
+            allRecipes.Add(newRecipe);
+
+            // Convertir la lista actualizada a JSON
+            string json = JsonConvert.SerializeObject(allRecipes, Formatting.Indented);
+
+            // Guardar el JSON en el archivo
+
+            string path = @"resources/recipes.json";
+            File.WriteAllText(path, json);
+        }
+
+        private List<CraftBase> LoadAllRecipesFromJson()
+        {
+            // Ruta del archivo JSON
+            string path = @"resources/recipes.json";
+
+            // Verificar si el archivo existe
+            if (!File.Exists(path))
+            {
+                // Crear un archivo JSON vacío si no existe
+                File.WriteAllText(path, "[]");
+                return new List<CraftBase>(); // Devolver una lista vacía
+            }
+
+            // Leer el contenido del archivo JSON
+            string json = File.ReadAllText(path);
+
+            // Deserializar el JSON en una lista de recetas
+            List<CraftBase> allRecipes = JsonConvert.DeserializeObject<List<CraftBase>>(json);
+
+            return allRecipes;
+        }
         private void toolStripItemNew_Click(object sender, EventArgs e)
         {
             PacketSender.SendCreateObject(GameObjectType.Crafts);

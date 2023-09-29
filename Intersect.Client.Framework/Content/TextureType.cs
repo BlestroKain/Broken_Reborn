@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -32,6 +32,9 @@ namespace Intersect.Client.Framework.Content
         Gui,
 
         Misc,
+        
+        Guild,
+
 
     }
 }

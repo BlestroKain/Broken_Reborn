@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 
 using Intersect.Client.Framework.Graphics;
@@ -276,5 +276,38 @@ namespace Intersect.Client.MonoGame.Graphics
             mTexture.Dispose();
             mTexture = null;
         }
+
+        public override void SetColor(int x, int y, Color color)
+        {
+            // Verificar si las coordenadas dadas están dentro de los límites de la textura
+            if (x < 0 || x >= mWidth || y < 0 || y >= mHeight)
+                return;
+
+            // Si la textura no ha sido cargada, cargala
+            if (mTexture == null)
+            {
+                LoadTexture();
+            }
+
+            // Si hubo un error al cargar la textura, no continuar
+            if (mLoadError)
+            {
+                return;
+            }
+
+            // Extraer todos los datos de color de la textura
+            var colorData = new Microsoft.Xna.Framework.Color[mWidth * mHeight];
+            mTexture.GetData(colorData);
+
+            // Convertir las coordenadas (x, y) a un índice en el arreglo unidimensional
+            int index = x + y * mWidth;
+
+            // Cambiar el color del pixel en el índice calculado
+            colorData[index] = new Microsoft.Xna.Framework.Color(color.R, color.G, color.B, color.A);
+
+            // Aplicar los datos de color modificados a la textura
+            mTexture.SetData(colorData);
+        }
+
     }
 }

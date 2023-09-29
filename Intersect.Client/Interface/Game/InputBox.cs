@@ -1,11 +1,13 @@
 using System;
 
 using Intersect.Client.Core;
+using Intersect.Client.Entities;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Graphics;
 using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
+using Intersect.Client.General;
 using Intersect.Client.Localization;
 
 namespace Intersect.Client.Interface.Game
@@ -85,6 +87,7 @@ namespace Intersect.Client.Interface.Game
         private ImagePanel mTextboxBg;
 
         private Button mYesButton;
+        private GuildCreationInterface mGuildCreationInterface;
 
         public string TextValue { get; set; }
 
@@ -222,7 +225,16 @@ namespace Intersect.Client.Interface.Game
 
         private void TextBox_SubmitPressed(Base sender, EventArgs arguments)
         {
+            // Si la interfaz no ha sido instanciada, instánciala.
+            if (mGuildCreationInterface == null)
+            {
+                mGuildCreationInterface = new GuildCreationInterface(Globals.Me);
+            }
+
+            // Mostrar la interfaz de creación de gremio.
+            mGuildCreationInterface.Show();
             SubmitInput();
+            
         }
 
         private void _myWindow_BeforeDraw(Base sender, EventArgs arguments)
@@ -293,6 +305,7 @@ namespace Intersect.Client.Interface.Game
                         mNumericTextboxBg.Hide();
                         mNumericSliderboxBg.Hide();
                         mTextboxBg.Show();
+                        
 
                         break;
                 }

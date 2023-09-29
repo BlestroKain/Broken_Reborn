@@ -36,6 +36,7 @@ namespace Intersect.Client.Framework.Graphics
         public abstract int GetHeight();
 
         public abstract object GetTexture();
+        public abstract void SetColor(int x, int y, Color color);
 
         public abstract Color GetPixel(int x1, int y1);
 
@@ -95,5 +96,6 @@ namespace Intersect.Client.Framework.Graphics
 
             return boundingTexture;
         }
+
     }
 }

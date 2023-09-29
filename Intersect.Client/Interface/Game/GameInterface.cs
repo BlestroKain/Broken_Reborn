@@ -48,7 +48,7 @@ namespace Intersect.Client.Interface.Game
         private QuestOfferWindow mQuestOfferWindow;
 
         private ShopWindow mShopWindow;
-
+        private GuildCreationInterface mCreateGuildWindow;
         private MapItemWindow mMapItemWindow;
 
         private bool mShouldCloseBag;
@@ -62,7 +62,8 @@ namespace Intersect.Client.Interface.Game
         private bool mShouldCloseTrading;
 
         private bool mShouldOpenAdminWindow;
-
+        private bool mShouldOpenGuildCreation;
+        private bool mShouldCloseGuildCreation;
         private bool mShouldOpenBag;
 
         private bool mShouldOpenBank;
@@ -120,6 +121,7 @@ namespace Intersect.Client.Interface.Game
             mQuestOfferWindow = new QuestOfferWindow(GameCanvas);
             mMapItemWindow = new MapItemWindow(GameCanvas);
             mBankWindow = new BankWindow(GameCanvas);
+            mCreateGuildWindow= new GuildCreationInterface(GameCanvas);
         }
 
         //Chatbox
@@ -182,7 +184,25 @@ namespace Intersect.Client.Interface.Game
         {
             mShouldCloseShop = true;
         }
+        public void NotifyOpenGuildCreation()
+        {
+            mShouldOpenGuildCreation = true;
+        }
 
+        public void NotifyCloseGuildCreation()
+        {
+            mShouldCloseGuildCreation = true;
+        }
+
+        public void OpenGuildCreation()
+        {
+            mCreateGuildWindow?.Show();
+        }
+
+        public void CloseGuildCreation()
+        {
+            mCreateGuildWindow?.Hide();
+        }
         public void OpenShop()
         {
             mShopWindow?.Close();
@@ -362,7 +382,17 @@ namespace Intersect.Client.Interface.Game
             }
 
             mEventWindow?.Update();
+            if (mShouldOpenGuildCreation)
+            {
+                OpenGuildCreation();
+                mShouldOpenGuildCreation = false;
+            }
 
+            if (mShouldCloseGuildCreation)
+            {
+                CloseGuildCreation();
+                mShouldCloseGuildCreation = false;
+            }
             //Admin window update
             if (mShouldOpenAdminWindow)
             {

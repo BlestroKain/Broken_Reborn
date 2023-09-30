@@ -1364,11 +1364,12 @@ namespace Intersect.Client.Localization
                 {0, @"Attack"},
                 {1, @"Ability Power"},
                 {2, @"Defense"},
-                {3, @"Magic Resist"},
+                {3, @"Vitality"},
                 {4, @"Speed"},
                 {5, @"Agility"},
                 {6, @"Damage"},
-                {7, @"Cures"}
+                {7, @"Cures"},
+                {8, @"Magic Resist"}
             };
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -1381,7 +1382,9 @@ namespace Intersect.Client.Localization
                 {4, @"Speed"},
                 {5, @"Agility"},
                 {6, @"Damage"},
-                {7, @"Cures"}
+                {7, @"Cures"},
+                {8, @"Magic Resist"}
+
             };
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -2237,11 +2240,12 @@ namespace Intersect.Client.Localization
                 {0, @"Attack"},
                 {1, @"Ability Power"},
                 {2, @"Defense"},
-                {3, @"Magic Resist"},
+                {3, @"Vitality"},
                 {4, @"Speed"},
                 {5, @"Agility"},
                 {6, @"Damage"},
-                {7, @"Cures"}
+                {7, @"Cures"},
+                {8, @"Magic Resist" }
             };
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

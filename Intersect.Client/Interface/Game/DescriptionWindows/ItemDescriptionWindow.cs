@@ -330,7 +330,8 @@ namespace Intersect.Client.Interface.Game.DescriptionWindows
             {
                 for (var i = 0; i < (int)Stat.StatCount; i++)
                 {
-                    var flatStat = mItem.StatsGiven[i] + mItemProperties.StatModifiers[i];
+              var flatStat =  mItemProperties.StatModifiers[i];
+                    
                     if (flatStat != 0 && mItem.PercentageStatsGiven[i] != 0)
                     {
                         rows.AddKeyValueRow(Strings.ItemDescription.StatCounts[i], Strings.ItemDescription.RegularAndPercentage.ToString(flatStat, mItem.PercentageStatsGiven[i]));
@@ -343,11 +344,34 @@ namespace Intersect.Client.Interface.Game.DescriptionWindows
                     {
                         rows.AddKeyValueRow(Strings.ItemDescription.StatCounts[i], Strings.ItemDescription.Percentage.ToString(mItem.PercentageStatsGiven[i]));
                     }
+                    
+                }
+            }
+            else if (mItemProperties?.StatModifiers == default)
+            {
+                for (var i = 0; i < (int)Stat.StatCount; i++)
+                {
+                    
+                        var flatStat = mItem.StatsGiven[i] ;
+
+                        if (flatStat != 0 && mItem.PercentageStatsGiven[i] != 0)
+                        {
+                            rows.AddKeyValueRow(Strings.ItemDescription.StatCounts[i], Strings.ItemDescription.RegularAndPercentage.ToString(flatStat, mItem.PercentageStatsGiven[i]));
+                        }
+                        else if (flatStat != 0)
+                        {
+                            rows.AddKeyValueRow(Strings.ItemDescription.StatCounts[i], flatStat.ToString());
+                        }
+                        else if (mItem.PercentageStatsGiven[i] != 0)
+                        {
+                            rows.AddKeyValueRow(Strings.ItemDescription.StatCounts[i], Strings.ItemDescription.Percentage.ToString(mItem.PercentageStatsGiven[i]));
+                        }
+                    
                 }
             }
 
             // Bonus Effect
-            foreach(var effect in mItem.Effects)
+            foreach (var effect in mItem.Effects)
             {
                 if (effect.Type != ItemEffect.None && effect.Percentage != 0)
                 {

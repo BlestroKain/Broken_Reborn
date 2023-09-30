@@ -49,33 +49,35 @@ namespace Intersect.Server.Database
 
             for (var i = 0; i < (int)Stat.StatCount; i++)
             {
-                Properties.StatModifiers[i] = Randomization.Next(-descriptor.StatGrowth, descriptor.StatGrowth + 1);
+                int maxstat = descriptor.StatsGiven[i];
+                var minstat = descriptor.StatGrowth;
+
+                if (maxstat == 0)
+                {
+                    Properties.StatModifiers[i] = 0;
+                    continue;
+                }
+
+                if (minstat > maxstat)
+                {
+                    Properties.StatModifiers[i] = Randomization.Next(maxstat, minstat);
+                }
+                else if (maxstat > minstat)
+                {
+                    Properties.StatModifiers[i] = Randomization.Next(minstat, maxstat);
+                }
+                else if (maxstat == minstat)
+                {
+                    minstat = maxstat / 2;
+                    Properties.StatModifiers[i] = Randomization.Next(minstat, maxstat);
+                }
+                else
+                {
+                    Properties.StatModifiers[i] = 0;
+                }
             }
 
-			
-		/*	{
-                int maxstat = descriptor.StatsGiven[i];
-               // var minstat = (int)Math.Ceiling(maxstat / 2.0);
-               var  minstat = 0;
-                if (maxstat != 0)
-                {
-                    if (minstat == maxstat)
-                    {
-                        StatBuffs[i] = minstat;
-                    }
-                    else if (maxstat > minstat)
-                    {
-                        StatBuffs[i] = Randomization.Next(minstat, maxstat + 1);
-                       
-                    }
-                    else
-                    {
-                        StatBuffs[i] = 0;
-                    }
 
-                }
-            
-        }*/
 
         }
 

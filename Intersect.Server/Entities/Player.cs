@@ -2298,7 +2298,7 @@ namespace Intersect.Server.Entities
 
                     if (equippedItem.Properties.StatModifiers != null)
                     {
-                        flatStats += equippedItem.Properties.StatModifiers[(int)statType];
+                        flatStats = equippedItem.Properties.StatModifiers[(int)statType];
                     }
 
                     percentageStats += descriptor.PercentageStatsGiven[(int)statType];
@@ -7873,7 +7873,7 @@ namespace Intersect.Server.Entities
         [JsonIgnore] public ConcurrentDictionary<Guid, long> ItemCooldowns = new ConcurrentDictionary<Guid, long>();
 
         #endregion
-
+        
     }
 
     public class CraftingState

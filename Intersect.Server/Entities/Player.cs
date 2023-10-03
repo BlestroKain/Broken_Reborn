@@ -28,6 +28,7 @@ using Intersect.Server.Networking;
 using Intersect.Utilities;
 
 using Newtonsoft.Json;
+using static Intersect.Server.Localization.Strings;
 using MapAttribute = Intersect.Enums.MapAttribute;
 using Stat = Intersect.Enums.Stat;
 
@@ -342,7 +343,7 @@ namespace Intersect.Server.Entities
             var level = FarmingLevel;
 
 
-            return (long)Math.Floor(skillBase + ((4 * (Math.Pow(level - 1, Gain))) / 5));
+            return (long)Math.Floor(skillBase * (((Math.Pow(level - 1, Gain)))));
         }
 
         private long GetExperienceToMiningNextLevel(int MiningLevel)
@@ -357,7 +358,7 @@ namespace Intersect.Server.Entities
             var level = MiningLevel;
 
 
-            return (long)Math.Floor(skillBase + ((4 * (Math.Pow(level - 1, Gain))) / 5));
+            return (long)Math.Floor(skillBase * (((Math.Pow(level - 1, Gain)))));
         }
 
         private long GetExperienceToFishingNextLevel(int FishingLevel)
@@ -372,7 +373,7 @@ namespace Intersect.Server.Entities
             var level = FishingLevel;
 
 
-            return (long)Math.Floor(skillBase + ((4 * (Math.Pow(level - 1, Gain))) / 5));
+            return (long)Math.Floor(skillBase * (((Math.Pow(level - 1, Gain)))));
         }
 
         private long GetExperienceToWoodNextLevel(int WoodLevel)
@@ -387,7 +388,7 @@ namespace Intersect.Server.Entities
             var level = WoodLevel;
 
 
-            return (long)Math.Floor(skillBase + ((4 * (Math.Pow(level - 1, Gain))) / 5));
+            return (long)Math.Floor(skillBase * (((Math.Pow(level - 1, Gain)))));
         }
         private long GetExperienceToCookingNextLevel(int CookingLevel)
         {
@@ -401,7 +402,7 @@ namespace Intersect.Server.Entities
             var level = CookingLevel;
 
 
-            return (long)Math.Floor(skillBase + ((4 * (Math.Pow(level - 1, Gain))) / 5));
+            return (long)Math.Floor(skillBase * (((Math.Pow(level - 1, Gain)))));
         }
         private long GetExperienceToHuntingNextLevel(int HuntingLevel)
         {
@@ -415,7 +416,7 @@ namespace Intersect.Server.Entities
             var level = HuntingLevel;
 
 
-            return (long)Math.Floor(skillBase + ((4 * (Math.Pow(level - 1, Gain))) / 5));
+            return (long)Math.Floor(skillBase * (((Math.Pow(level - 1, Gain)))));
         }
         private long GetExperienceToBlacksmithNextLevel(int BlacksmithLevel)
         {
@@ -429,7 +430,7 @@ namespace Intersect.Server.Entities
             var level = BlacksmithLevel;
 
 
-            return (long)Math.Floor(skillBase + ((4 * (Math.Pow(level - 1, Gain))) / 5));
+            return (long)Math.Floor(skillBase * (((Math.Pow(level - 1, Gain)))));
         }
         private long GetExperienceToAlchemyNextLevel(int AlchemyLevel)
         {
@@ -443,7 +444,7 @@ namespace Intersect.Server.Entities
             var level = AlchemyLevel;
 
 
-            return (long)Math.Floor(skillBase + ((4 * (Math.Pow(level - 1, Gain))) / 5));
+            return (long)Math.Floor(skillBase * (((Math.Pow(level - 1, Gain)))));
         }
 
         public void SetOnline()
@@ -4553,39 +4554,40 @@ namespace Intersect.Server.Entities
                         {
                             case Jobs.Farming:
                                 GiveFarmingExperience(craftDescriptor.ExperienceAmount);
-                                PacketSender.SendChatMsg(this, $"Has recibido {craftDescriptor.ExperienceAmount} puntos de experiencia en Granjero.", ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
+                                PacketSender.SendChatMsg(this, string.Format(Strings.Crafting.FarmerExperience, craftDescriptor.ExperienceAmount), ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
                                 break;
                             case Jobs.Mining:
                                 GiveMiningExperience(craftDescriptor.ExperienceAmount);
-                                PacketSender.SendChatMsg(this, $"Has recibido {craftDescriptor.ExperienceAmount} puntos de experiencia en Minería.", ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
+                                PacketSender.SendChatMsg(this, string.Format(Strings.Crafting.MiningExperience, craftDescriptor.ExperienceAmount), ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
                                 break;
                             case Jobs.Fishing:
                                 GiveFishingExperience(craftDescriptor.ExperienceAmount);
-                                PacketSender.SendChatMsg(this, $"Has recibido {craftDescriptor.ExperienceAmount} puntos de experiencia en Pesca.", ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
+                                PacketSender.SendChatMsg(this, string.Format(Strings.Crafting.FishingExperience, craftDescriptor.ExperienceAmount), ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
                                 break;
                             case Jobs.Woodcutter:
                                 GiveWoodExperience(craftDescriptor.ExperienceAmount);
-                                PacketSender.SendChatMsg(this, $"Has recibido {craftDescriptor.ExperienceAmount} puntos de experiencia en Leñador.", ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
+                                PacketSender.SendChatMsg(this, string.Format(Strings.Crafting.WoodcutterExperience, craftDescriptor.ExperienceAmount), ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
                                 break;
                             case Jobs.Hunter:
                                 GiveHuntingExperience(craftDescriptor.ExperienceAmount);
-                                PacketSender.SendChatMsg(this, $"Has recibido {craftDescriptor.ExperienceAmount} puntos de experiencia en Caza.", ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
+                                PacketSender.SendChatMsg(this, string.Format(Strings.Crafting.HunterExperience, craftDescriptor.ExperienceAmount), ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
                                 break;
                             case Jobs.Alquemy:
                                 GiveAlchemyExperience(craftDescriptor.ExperienceAmount);
-                                PacketSender.SendChatMsg(this, $"Has recibido {craftDescriptor.ExperienceAmount} puntos de experiencia en Alquimia.", ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
+                                PacketSender.SendChatMsg(this, string.Format(Strings.Crafting.AlchemyExperience, craftDescriptor.ExperienceAmount), ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
                                 break;
                             case Jobs.Smithing:
                                 GiveBlacksmithExperience(craftDescriptor.ExperienceAmount);
-                                PacketSender.SendChatMsg(this, $"Has recibido {craftDescriptor.ExperienceAmount} puntos de experiencia en Herrería.", ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
+                                PacketSender.SendChatMsg(this, string.Format(Strings.Crafting.BlacksmithExperience, craftDescriptor.ExperienceAmount), ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
                                 break;
                             case Jobs.Cooking:
                                 GiveCookingExperience(craftDescriptor.ExperienceAmount);
-                                PacketSender.SendChatMsg(this, $"Has recibido {craftDescriptor.ExperienceAmount} puntos de experiencia en Cocina.", ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
+                                PacketSender.SendChatMsg(this, string.Format(Strings.Crafting.CookingExperience, craftDescriptor.ExperienceAmount), ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
                                 break;
                             default:
-                                PacketSender.SendChatMsg(this, $"No se reconoce el trabajo {craftDescriptor.JobType}.", ChatMessageType.Error, Color.Orange);
+                                PacketSender.SendChatMsg(this, string.Format(Strings.Crafting.UnknownJobType, craftDescriptor.JobType), ChatMessageType.Error, Color.Orange);
                                 break;
+                                                           
                         }
                     }
                 }

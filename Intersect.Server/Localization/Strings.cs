@@ -519,6 +519,35 @@ namespace Intersect.Server.Localization
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public readonly LocalizedString AlreadyCrafting = @"You are already crafting!";
 
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public readonly LocalizedString FarmerExperience = @"You have received {00} experience points in Farming.";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public readonly LocalizedString MiningExperience = @"You have received {00} experience points in Mining.";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public readonly LocalizedString FishingExperience = @"You have received {00} experience points in Fishing.";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public readonly LocalizedString WoodcutterExperience = @"You have received {00} experience points in Woodcutting.";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public readonly LocalizedString HunterExperience = @"You have received {00} experience points in Hunting.";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public readonly LocalizedString AlchemyExperience = @"You have received {00} experience points in Alchemy.";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public readonly LocalizedString BlacksmithExperience = @"You have received {00} experience points in Blacksmithing.";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public readonly LocalizedString CookingExperience = @"You have received {00} experience points in Cooking.";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public readonly LocalizedString UnknownJobType = @"The job type {00} is not recognized.";
+
+
+
         }
 
         public sealed partial class DatabaseNamespace : LocaleNamespace

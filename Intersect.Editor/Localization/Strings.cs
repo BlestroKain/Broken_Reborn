@@ -2286,6 +2286,8 @@ Tick timer saved in server config.json.";
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public static LocalizedString resetstatpointallocations = @"Reset Player Stat Point Allocations";
+
+            public static LocalizedString setJoblevel = @"Set {00} Level To: {01}";
         }
 
         public partial struct EventChangePlayerColor
@@ -2385,6 +2387,7 @@ Tick timer saved in server config.json.";
                 {"setguildbankslots", @"Set Guild Bank Slots Count"},
                 {"resetstatallocations", @"Reset Stat Point Allocations"},
                 {"givejobexperience", @"Give Job Experience"},
+                {"setjoblevel", @"Set Job Level"},
             };
 
         }

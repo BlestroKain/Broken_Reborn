@@ -872,6 +872,47 @@ namespace Intersect.Editor.Forms.Editors.Events
             return Strings.EventCommandList.setlevel.ToString(command.Level);
         }
 
+        private static string GetCommandText(ChangeJobLevelCommand command, MapInstance map)
+        {
+            string jobName = command.Jobtype.ToString(); // Obtiene el nombre del trabajo basado en el enumerado
+            int jobLevel;
+
+            switch (command.Jobtype)
+            {
+                case Jobs.Farming:
+                    jobLevel = command.FarmingLevel;
+                    break;
+                case Jobs.Mining:
+                    jobLevel = command.MiningLevel;
+                    break;
+                case Jobs.Fishing:
+                    jobLevel = command.FishingLevel;
+                    break;
+                case Jobs.Woodcutter:
+                    jobLevel = command.WoodcuttingLevel;
+                    break;
+                case Jobs.Hunter:
+                    jobLevel = command.HuntingLevel;
+                    break;
+                case Jobs.Alquemy:
+                    jobLevel = command.AlchemyLevel;
+                    break;
+                case Jobs.Smithing:
+                    jobLevel = command.BlacksmithingLevel;
+                    break;
+                case Jobs.Cooking:
+                    jobLevel = command.CookingLevel;
+                    break;
+                default:
+                    jobLevel = 1; // O algún valor por defecto que desees.
+                    break;
+            }
+
+            // Usar setJoblevel para formatear la cadena con el nombre del trabajo y el nivel.
+            return Strings.EventCommandList.setJoblevel.ToString(jobName, jobLevel);
+        }
+
+
         private static string GetCommandText(ChangeSpellsCommand command, MapInstance map)
         {
             if (command.Add)

@@ -239,5 +239,6 @@ namespace Intersect.GameObjects.Events
      
         GiveJobExperience=200,
         ChangeHair,
+        ChangeJobLevel,
     }
 }

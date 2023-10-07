@@ -27,7 +27,7 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
         {
 
             InitializeComponent();
-            InitLocalization();
+           
             mMyCommand = refCommand;
             mEventEditor = editor;
           
@@ -37,6 +37,10 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
             {
                 cmbJob.Items.Add(General.Globals.GetJobName(x));
             }
+           
+            cmbJob.SelectedIndex = (int)selectedJob;
+            nudExperience.Value = selectedExperience;
+            InitLocalization();
         }
         private void InitLocalization()
         {

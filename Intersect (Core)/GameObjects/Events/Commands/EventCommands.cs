@@ -355,6 +355,21 @@ public long TailorExp { get; set; }*/
 
         public int Level { get; set; }
     }
+    public partial class ChangeJobLevelCommand : EventCommand
+    {
+        public override EventCommandType Type { get; } = EventCommandType.ChangeJobLevel;
+
+        public int FarmingLevel { get; set; }
+        public int MiningLevel { get; set; }
+        public int FishingLevel { get; set; }
+        public int WoodcuttingLevel { get; set; }
+        public int HuntingLevel { get; set; }
+        public int AlchemyLevel { get; set; }
+        public int BlacksmithingLevel { get; set; }
+        public int CookingLevel { get; set; }
+
+        public Jobs Jobtype { get; set; }
+    }
 
     public partial class ChangeSpellsCommand : EventCommand
     {

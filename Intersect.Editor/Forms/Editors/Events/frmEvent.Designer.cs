@@ -155,8 +155,10 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode63,
             treeNode64});
             System.Windows.Forms.TreeNode treeNode66 = new System.Windows.Forms.TreeNode("Give Job Experience");
-            System.Windows.Forms.TreeNode treeNode67 = new System.Windows.Forms.TreeNode("Jobs", new System.Windows.Forms.TreeNode[] {
-            treeNode66
+            System.Windows.Forms.TreeNode treeNode67 = new System.Windows.Forms.TreeNode("Change Job Level");
+            System.Windows.Forms.TreeNode treeNode68 = new System.Windows.Forms.TreeNode("Jobs", new System.Windows.Forms.TreeNode[] {
+            treeNode66,
+            treeNode67
             });
             this.lblName = new System.Windows.Forms.Label();
             this.txtEventname = new DarkUI.Controls.DarkTextBox();
@@ -1046,8 +1048,11 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode66.Name = "givejobexperience";
             treeNode66.Tag = "200";
             treeNode66.Text = "Give Job Experience";
-            treeNode67.Name = "jobs";
-            treeNode67.Text = "Jobs";
+            treeNode67.Name = "setjoblevel";
+            treeNode67.Tag = "202";
+            treeNode67.Text = "Set Job Level";
+            treeNode68.Name = "jobs";
+            treeNode68.Text = "Jobs";
             this.lstCommands.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             treeNode5,
             treeNode13,
@@ -1058,7 +1063,7 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode56,
             treeNode60,
             treeNode65,
-             treeNode67});
+             treeNode68});
             this.lstCommands.Size = new System.Drawing.Size(445, 465);
             this.lstCommands.TabIndex = 2;
             this.lstCommands.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.lstCommands_NodeMouseDoubleClick);

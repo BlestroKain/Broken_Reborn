@@ -483,6 +483,46 @@ namespace Intersect.Server.Entities.Events
         {
             player.SetLevel(command.Level, true);
         }
+        //Change Level Command
+        private static void ProcessCommand(
+      ChangeJobLevelCommand command,
+      Player player,
+      Event instance,
+      CommandInstance stackInfo,
+      Stack<CommandInstance> callStack
+  )
+        {
+            switch (command.Jobtype)
+            {
+                case Jobs.Farming:
+                    player.SetFarmingLevel(command.FarmingLevel, true);
+                    break;
+                case Jobs.Mining:
+                    player.SetMiningLevel(command.MiningLevel, true);
+                    break;
+                case Jobs.Fishing:
+                    player.SetFishingLevel(command.FishingLevel, true);
+                    break;
+                case Jobs.Woodcutter:
+                    player.SetWoodLevel(command.WoodcuttingLevel, true);
+                    break;
+                case Jobs.Hunter:
+                    player.SetHuntingLevel(command.HuntingLevel, true);
+                    break;
+                case Jobs.Alquemy:
+                    player.SetAlchemyLevel(command.AlchemyLevel, true);
+                    break;
+                case Jobs.Smithing:
+                    player.SetBlacksmithLevel(command.BlacksmithingLevel, true);
+                    break;
+                case Jobs.Cooking:
+                    player.SetCookingLevel(command.CookingLevel, true);
+                    break;
+                    // Si hay más trabajos, añádelos aquí...
+            }
+        }
+
+
 
         //Change Spells Command
         private static void ProcessCommand(

@@ -31,12 +31,12 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
         private void InitializeComponent()
         {
             this.grpChangeLevel = new DarkUI.Controls.DarkGroupBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.cmbJob = new DarkUI.Controls.DarkComboBox();
             this.nudLevel = new DarkUI.Controls.DarkNumericUpDown();
             this.lblLevel = new System.Windows.Forms.Label();
             this.btnCancel = new DarkUI.Controls.DarkButton();
             this.btnSave = new DarkUI.Controls.DarkButton();
-            this.cmbJob = new DarkUI.Controls.DarkComboBox();
-            this.label1 = new System.Windows.Forms.Label();
             this.grpChangeLevel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudLevel)).BeginInit();
             this.SuspendLayout();
@@ -53,65 +53,23 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
             this.grpChangeLevel.Controls.Add(this.btnSave);
             this.grpChangeLevel.ForeColor = System.Drawing.Color.Gainsboro;
             this.grpChangeLevel.Location = new System.Drawing.Point(4, 4);
-            this.grpChangeLevel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.grpChangeLevel.Margin = new System.Windows.Forms.Padding(4);
             this.grpChangeLevel.Name = "grpChangeLevel";
-            this.grpChangeLevel.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.grpChangeLevel.Padding = new System.Windows.Forms.Padding(4);
             this.grpChangeLevel.Size = new System.Drawing.Size(234, 144);
             this.grpChangeLevel.TabIndex = 17;
             this.grpChangeLevel.TabStop = false;
             this.grpChangeLevel.Text = "Change Level:";
             // 
-            // nudLevel
+            // label1
             // 
-            this.nudLevel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(69)))), ((int)(((byte)(73)))), ((int)(((byte)(74)))));
-            this.nudLevel.ForeColor = System.Drawing.Color.Gainsboro;
-            this.nudLevel.Location = new System.Drawing.Point(79, 72);
-            this.nudLevel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.nudLevel.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.nudLevel.Name = "nudLevel";
-            this.nudLevel.Size = new System.Drawing.Size(140, 22);
-            this.nudLevel.TabIndex = 22;
-            this.nudLevel.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            // 
-            // lblLevel
-            // 
-            this.lblLevel.AutoSize = true;
-            this.lblLevel.Location = new System.Drawing.Point(5, 74);
-            this.lblLevel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblLevel.Name = "lblLevel";
-            this.lblLevel.Size = new System.Drawing.Size(66, 16);
-            this.lblLevel.TabIndex = 21;
-            this.lblLevel.Text = "Set Level:";
-            // 
-            // btnCancel
-            // 
-            this.btnCancel.Location = new System.Drawing.Point(119, 108);
-            this.btnCancel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Padding = new System.Windows.Forms.Padding(7, 6, 7, 6);
-            this.btnCancel.Size = new System.Drawing.Size(100, 28);
-            this.btnCancel.TabIndex = 20;
-            this.btnCancel.Text = "Cancel";
-            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
-            // 
-            // btnSave
-            // 
-            this.btnSave.Location = new System.Drawing.Point(8, 108);
-            this.btnSave.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.btnSave.Name = "btnSave";
-            this.btnSave.Padding = new System.Windows.Forms.Padding(7, 6, 7, 6);
-            this.btnSave.Size = new System.Drawing.Size(100, 28);
-            this.btnSave.TabIndex = 19;
-            this.btnSave.Text = "Ok";
-            this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(5, 42);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(68, 16);
+            this.label1.TabIndex = 29;
+            this.label1.Text = "Job Type:";
             // 
             // cmbJob
             // 
@@ -134,15 +92,52 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
             this.cmbJob.TextPadding = new System.Windows.Forms.Padding(2);
             this.cmbJob.SelectedIndexChanged += new System.EventHandler(this.cmbJob_SelectedIndexChanged);
             // 
-            // label1
+            // nudLevel
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(5, 42);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(68, 16);
-            this.label1.TabIndex = 29;
-            this.label1.Text = "Job Type:";
+            this.nudLevel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(69)))), ((int)(((byte)(73)))), ((int)(((byte)(74)))));
+            this.nudLevel.ForeColor = System.Drawing.Color.Gainsboro;
+            this.nudLevel.Location = new System.Drawing.Point(79, 72);
+            this.nudLevel.Margin = new System.Windows.Forms.Padding(4);
+            this.nudLevel.Name = "nudLevel";
+            this.nudLevel.Size = new System.Drawing.Size(140, 22);
+            this.nudLevel.TabIndex = 22;
+            this.nudLevel.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            // 
+            // lblLevel
+            // 
+            this.lblLevel.AutoSize = true;
+            this.lblLevel.Location = new System.Drawing.Point(5, 74);
+            this.lblLevel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblLevel.Name = "lblLevel";
+            this.lblLevel.Size = new System.Drawing.Size(66, 16);
+            this.lblLevel.TabIndex = 21;
+            this.lblLevel.Text = "Set Level:";
+            // 
+            // btnCancel
+            // 
+            this.btnCancel.Location = new System.Drawing.Point(119, 108);
+            this.btnCancel.Margin = new System.Windows.Forms.Padding(4);
+            this.btnCancel.Name = "btnCancel";
+            this.btnCancel.Padding = new System.Windows.Forms.Padding(7, 6, 7, 6);
+            this.btnCancel.Size = new System.Drawing.Size(100, 28);
+            this.btnCancel.TabIndex = 20;
+            this.btnCancel.Text = "Cancel";
+            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+            // 
+            // btnSave
+            // 
+            this.btnSave.Location = new System.Drawing.Point(8, 108);
+            this.btnSave.Margin = new System.Windows.Forms.Padding(4);
+            this.btnSave.Name = "btnSave";
+            this.btnSave.Padding = new System.Windows.Forms.Padding(7, 6, 7, 6);
+            this.btnSave.Size = new System.Drawing.Size(100, 28);
+            this.btnSave.TabIndex = 19;
+            this.btnSave.Text = "Ok";
+            this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
             // 
             // EventCommandChangeJobLevel
             // 
@@ -151,7 +146,7 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
             this.AutoSize = true;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
             this.Controls.Add(this.grpChangeLevel);
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "EventCommandChangeJobLevel";
             this.Size = new System.Drawing.Size(245, 152);
             this.grpChangeLevel.ResumeLayout(false);

@@ -309,6 +309,30 @@ namespace Intersect.Server.Localization
             public readonly LocalizedString levelup = @"LEVEL UP!";
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public readonly LocalizedString FarmingLevelUp = @"FARMING LEVEL UP!";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public readonly LocalizedString MiningLevelUp = @"MINING LEVEL UP!";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public readonly LocalizedString FishingLevelUp = @"FISHING LEVEL UP!";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public readonly LocalizedString WoodcuttingLevelUp = @"WOODCUTTING LEVEL UP!";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public readonly LocalizedString HuntingLevelUp = @"HUNTING LEVEL UP!";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public readonly LocalizedString AlchemyLevelUp = @"ALCHEMY LEVEL UP!";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public readonly LocalizedString BlacksmithingLevelUp = @"BLACKSMITHING LEVEL UP!";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public readonly LocalizedString CookingLevelUp = @"COOKING LEVEL UP!";
+
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public readonly LocalizedString lowhealth = @"Not enough health.";
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -351,13 +375,14 @@ namespace Intersect.Server.Localization
                 new Dictionary<int, LocalizedString>
                 {
                     {0, @"Attack"},
-                    {1, @"Ability Power"},
+                    {1, @"Intelligence"},
                     {2, @"Defense"},
-                    {3, @"Magic Resist"},
+                    {3, @"Vitality"},
                     {4, @"Speed"},
                     {5, @"Agility"},
                     {6, @"Damage"},
-                    {7, @"Cures"}
+                    {7, @"Cures"},
+                     {8, @"Magic Resist"},
                 }
             );
 
@@ -1214,7 +1239,7 @@ namespace Intersect.Server.Localization
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public readonly LocalizedString Huntinglevelup = @"Your Hunting Job are now level {00}!";
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public readonly LocalizedString Blacksmithlevelup = @"Your Blacksmith Job are now level {00}!";
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public readonly LocalizedString Alchemylevelup = @"Your Alchemy Job are now level {00}!";
-            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public readonly LocalizedString Woodlevelup = @"Your Wood Job are now level {00}!";
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public readonly LocalizedString Woodlevelup = @"Your Lumberjack Job are now level {00}!";
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public readonly LocalizedString Fishinglevelup = @"Your Fishing Job are now level {00}!";
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public readonly LocalizedString Mininglevelup = @"Your Mining Job are now level {00}!";
            

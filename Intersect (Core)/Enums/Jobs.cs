@@ -6,11 +6,11 @@ namespace Intersect.Enums
         //Recolection skills//
         None,
 
-        Farming ,
+        Farming,
 
         Mining,
 
-        Woodcutter,
+        Lumberjack,
 
         Fishing,
 
@@ -23,6 +23,8 @@ namespace Intersect.Enums
         Smithing,
 
         Alquemy,
+
+        Crafting,
 
         SkillCount
 

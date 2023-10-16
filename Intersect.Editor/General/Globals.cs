@@ -216,7 +216,7 @@ namespace Intersect.Editor.General
                     return "Mining";
                 case (int)Jobs.Fishing:
                     return "Fishing";
-                case (int)Jobs.Woodcutter:
+                case (int)Jobs.Lumberjack:
                     return "Woodcutting";
                 case (int)Jobs.Hunter:
                     return "Hunting";
@@ -226,6 +226,8 @@ namespace Intersect.Editor.General
                     return "Blacksmith";
                 case (int)Jobs.Cooking:
                     return "Cooking";
+                case (int)Jobs.Crafting:
+                    return "Crafting";
                 default:
                     return "Invalid Job";
             }

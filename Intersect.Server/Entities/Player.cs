@@ -90,7 +90,7 @@ namespace Intersect.Server.Entities
         public long HuntingExp { get; set; } 
         public long BlacksmithExp { get; set; }
         public long AlchemyExp { get; set; }
-
+        public long CraftingExp { get; set; }
         public int StatPoints { get; set; }
 
         [Column("Equipment"), JsonIgnore]
@@ -197,6 +197,8 @@ namespace Intersect.Server.Entities
         public long ExperienceToHuntingNextLevel => GetExperienceToHuntingNextLevel(HuntingLevel);
         [NotMapped]
         public long ExperienceToCookingNextLevel => GetExperienceToCookingNextLevel(CookingLevel);
+        [NotMapped]
+        public long ExperienceToCraftingNextLevel => GetExperienceToCraftingNextLevel(CraftingLevel);
 
 
         [NotMapped, JsonIgnore]
@@ -3896,7 +3898,7 @@ namespace Intersect.Server.Entities
                                 GiveFishingExperience(craftDescriptor.ExperienceAmount);
                                 PacketSender.SendChatMsg(this, string.Format(Strings.Crafting.FishingExperience, craftDescriptor.ExperienceAmount), ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
                                 break;
-                            case Jobs.Woodcutter:
+                            case Jobs.Lumberjack:
                                 GiveWoodExperience(craftDescriptor.ExperienceAmount);
                                 PacketSender.SendChatMsg(this, string.Format(Strings.Crafting.WoodcutterExperience, craftDescriptor.ExperienceAmount), ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
                                 break;
@@ -3915,6 +3917,10 @@ namespace Intersect.Server.Entities
                             case Jobs.Cooking:
                                 GiveCookingExperience(craftDescriptor.ExperienceAmount);
                                 PacketSender.SendChatMsg(this, string.Format(Strings.Crafting.CookingExperience, craftDescriptor.ExperienceAmount), ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
+                                break;
+                            case Jobs.Crafting:
+                                GiveCraftingExperience(craftDescriptor.ExperienceAmount);
+                                PacketSender.SendChatMsg(this, string.Format(Strings.Crafting.CraftingExperience, craftDescriptor.ExperienceAmount), ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
                                 break;
                             default:
                                 PacketSender.SendChatMsg(this, string.Format(Strings.Crafting.UnknownJobType, craftDescriptor.JobType), ChatMessageType.Error, Color.Orange);
@@ -7207,6 +7213,7 @@ namespace Intersect.Server.Entities
         public int BlacksmithLevel { get; set; } = 1;
         public int HuntingLevel { get; set; } = 1;
         public int CookingLevel { get; set; } = 1;
+        public int CraftingLevel { get; set; } = 1;
 
         [JsonIgnore] public ConcurrentDictionary<Guid, long> ItemCooldowns = new ConcurrentDictionary<Guid, long>();
 

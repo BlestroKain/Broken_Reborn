@@ -331,6 +331,8 @@ namespace Intersect.Server.Localization
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public readonly LocalizedString CookingLevelUp = @"COOKING LEVEL UP!";
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public readonly LocalizedString CraftingLevelUp = @"CRAFTING LEVEL UP!";
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public readonly LocalizedString lowhealth = @"Not enough health.";
@@ -567,6 +569,8 @@ namespace Intersect.Server.Localization
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public readonly LocalizedString CookingExperience = @"You have received {00} experience points in Cooking.";
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public readonly LocalizedString CraftingExperience = @"You have received {00} experience points in Crafting.";
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public readonly LocalizedString UnknownJobType = @"The job type {00} is not recognized.";
@@ -1236,6 +1240,7 @@ namespace Intersect.Server.Localization
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public readonly LocalizedString Farminglevelup = @"Your Farming Job are now level {00}!";
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public readonly LocalizedString Cookinglevelup = @"Your Cooking Job are now level {00}!";
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public readonly LocalizedString Craftinglevelup = @"Your Crafting Job are now level {00}!";
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public readonly LocalizedString Huntinglevelup = @"Your Hunting Job are now level {00}!";
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public readonly LocalizedString Blacksmithlevelup = @"Your Blacksmith Job are now level {00}!";
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public readonly LocalizedString Alchemylevelup = @"Your Alchemy Job are now level {00}!";

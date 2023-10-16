@@ -238,7 +238,7 @@ namespace Intersect.Editor.Localization
                 case (int)Jobs.Fishing:
                     joblevel = EventConditionDesc.Fishinglevel;
                     break;
-                case (int)Jobs.Woodcutter:
+                case (int)Jobs.Lumberjack:
                     joblevel = EventConditionDesc.Lumberjacklevel;
                     break;
             }
@@ -2069,6 +2069,7 @@ Tick timer saved in server config.json.";
             public static LocalizedString giveHuntingexp = @"Give Player {00}  Hunting Experience";
             public static LocalizedString giveAlchemyexp = @"Give Player {00}  Alchemy Experience";
             public static LocalizedString giveCookingexp = @"Give Player {00}  Cooking Experience";
+            public static LocalizedString giveCraftingexp = @"Give Player {00}  Crafting Experience";
             public static LocalizedString giveBlacksmithexp = @"Give Player {00}  Blacksmith Experience";
 
             public static LocalizedString globalswitch = @"Set Global Switch {00} to {01}";

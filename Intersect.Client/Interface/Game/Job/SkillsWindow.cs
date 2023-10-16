@@ -70,11 +70,14 @@ namespace Intersect.Client.Interface.Game.Job
         Label mBlacksmithLabel;
         public ImagePanel BlacksmithIcon;
         
-
         // Cooking
         public Button CookingContainer;
         Label mCookingLabel;
-        public ImagePanel CookingIcon;      
+        public ImagePanel CookingIcon;
+        // Crafting
+        public Button CraftingContainer;
+        Label mCraftingLabel;
+        public ImagePanel CraftingIcon;
 
         // Alchemy
         public Button AlchemyContainer;
@@ -190,7 +193,6 @@ namespace Intersect.Client.Interface.Game.Job
             // Agregar el contenedor al conjunto de elementos hijos del JobsPanel
             JobsPanel.AddChild(FarmingContainer); 
             #endregion
-
             //////////////////////////////MINING/////////////////////////////////////////////////
             // Crear el contenedor para la habilidad de minería
             #region Mining
@@ -215,7 +217,6 @@ namespace Intersect.Client.Interface.Game.Job
             mSkillsWindow.AddChild(JobsPanel); 
             #endregion
             //////////////////////////////Lumberjack/////////////////////////////////////////////////
-
             #region Lumberjack
             LumberjackContainer = new Button(JobsPanel, "LumberjackContainer");
             LumberjackContainer.SetPosition(5, jobContainerHeight * 3);
@@ -233,7 +234,6 @@ namespace Intersect.Client.Interface.Game.Job
 
             JobsPanel.AddChild(LumberjackContainer);
             #endregion
-
             //////////////////////////////FISHING/////////////////////////////////////////////////
             #region Fishing
 
@@ -275,7 +275,6 @@ namespace Intersect.Client.Interface.Game.Job
 
             JobsPanel.AddChild(HuntingContainer);
             #endregion
-
             //////////////////////////////Blacksmith/////////////////////////////////////////////////
             #region Blacksmith
             BlacksmithContainer = new Button(JobsPanel, "BlacksmithContainer");
@@ -333,8 +332,25 @@ namespace Intersect.Client.Interface.Game.Job
 
             JobsPanel.AddChild(AlchemyContainer);
             #endregion
+            #region Crafting
+            CraftingContainer = new Button(JobsPanel, "CraftingContainer");
+            CraftingContainer.SetPosition(5, jobContainerHeight * 9);
+            CraftingContainer.SetSize(jobContainerWidth, jobContainerHeight);
+            CraftingContainer.Clicked += CraftingBtn_Clicked;
 
-          
+            // Job Icon
+            CraftingIcon = new ImagePanel(CraftingContainer, "CraftingIcon");
+            CraftingIcon.SetPosition(0, 0);
+            CraftingIcon.SetSize(35, 35);
+
+            // Job name and level
+            mCraftingLabel = new Label(CraftingContainer, "CraftingNameLbl");
+            mCraftingLabel.SetPosition(40, 0);
+
+
+            JobsPanel.AddChild(CraftingContainer);
+            #endregion
+
             mSkillsWindow.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
         }
 
@@ -342,61 +358,56 @@ namespace Intersect.Client.Interface.Game.Job
         {
             JobDescriptionLabel.ClearText();
             ExpBackground.IsHidden = false;
-            UpdateJobInfo(Jobs.Fishing);
-           
+            UpdateJobInfo(Jobs.Fishing);           
         }
-
         private void LumberjackBtn_Clicked(Base sender, ClickedEventArgs arguments)
         {
             ExpBackground.IsHidden = false;
             JobDescriptionLabel.ClearText();
-            UpdateJobInfo(Jobs.Woodcutter);           
+            UpdateJobInfo(Jobs.Lumberjack);           
         }
-
         private void MiningBtn_Clicked(Base sender, ClickedEventArgs arguments)
         {
             ExpBackground.IsHidden = false;
             JobDescriptionLabel.ClearText();
             UpdateJobInfo(Jobs.Mining);
-           
         }
-
         private void FarmingBtn_Clicked(Base sender, ClickedEventArgs arguments)
         {
             ExpBackground.IsHidden = false;
             JobDescriptionLabel.ClearText();
             UpdateJobInfo(Jobs.Farming);
         }
-
         private void AlchemyBtn_Clicked(Base sender, ClickedEventArgs arguments)
         {
             ExpBackground.IsHidden = false;
             JobDescriptionLabel.ClearText();
             UpdateJobInfo(Jobs.Alquemy);  
-  }
-
+        }
         private void CookingBtn_Clicked(Base sender, ClickedEventArgs arguments)
         {
             ExpBackground.IsHidden = false;
             JobDescriptionLabel.ClearText();
-            UpdateJobInfo(Jobs.Cooking);
-   
+            UpdateJobInfo(Jobs.Cooking);   
         }
-
+        private void CraftingBtn_Clicked(Base sender, ClickedEventArgs arguments)
+        {
+            ExpBackground.IsHidden = false;
+            JobDescriptionLabel.ClearText();
+            UpdateJobInfo(Jobs.Crafting);
+        }
         private void BlacksmithBtn_Clicked(Base sender, ClickedEventArgs arguments)
         {
             ExpBackground.IsHidden = false;
             JobDescriptionLabel.ClearText();
             UpdateJobInfo(Jobs.Smithing);
-
         }
 
         private void HuntingBtn_Clicked(Base sender, ClickedEventArgs arguments)
         {
             ExpBackground.IsHidden = false;
             JobDescriptionLabel.ClearText();
-            UpdateJobInfo(Jobs.Hunter);
-           
+            UpdateJobInfo(Jobs.Hunter);           
         }
         private void UpdateJobInfo(Jobs jobType)
         {
@@ -410,7 +421,7 @@ namespace Intersect.Client.Interface.Game.Job
                     JobType = Jobs.None;
 
                     break;
-                case Jobs.Woodcutter:
+                case Jobs.Lumberjack:
                     Jobexp = Globals.Me.WoodExperience;
                     xtnl = Globals.Me.ExperienceToWoodNextLevel;
                     JobNameLabel.Text = mLumberjackLabel.Text;
@@ -418,7 +429,7 @@ namespace Intersect.Client.Interface.Game.Job
                     JobDescriptionLabel.ClearText();
                     JobDescriptionLabel.AddText(Strings.Job.LumberjackDesc, mJobtDescTemplateLabel);
                     JobLevelLabel.Text = Strings.Job.level.ToString(Globals.Me.WoodLevel);
-                    JobType = Jobs.Woodcutter;
+                    JobType = Jobs.Lumberjack;
                     break;
 
                 case Jobs.Farming:
@@ -497,7 +508,16 @@ namespace Intersect.Client.Interface.Game.Job
                     JobLevelLabel.Text = Strings.Job.level.ToString(Globals.Me.AlchemyLevel);
                     JobType = Jobs.Alquemy;
                     break;
-
+                case Jobs.Crafting:
+                    Jobexp = Globals.Me.CraftingExperience;
+                    xtnl = Globals.Me.ExperienceToCraftingNextLevel;
+                    JobNameLabel.Text = mCraftingLabel.Text;
+                    JobIcon = new ImagePanel(CraftingIcon);
+                    JobDescriptionLabel.ClearText();
+                    JobDescriptionLabel.AddText(Strings.Job.CraftingDesc, mJobtDescTemplateLabel);
+                    JobLevelLabel.Text = Strings.Job.level.ToString(Globals.Me.CraftingLevel);
+                    JobType = Jobs.Crafting;
+                    break;
                 default:
                     // Manejar cualquier caso inesperado aquí
                     break;
@@ -529,7 +549,8 @@ namespace Intersect.Client.Interface.Game.Job
             mBlacksmithLabel.SetText(Strings.Job.skill5);
             mCookingLabel.SetText(Strings.Job.skill6);
             mAlchemyLabel.SetText(Strings.Job.skill7);
-            
+            mCraftingLabel.SetText(Strings.Job.skill8);
+
             UpdateJobInfo(JobType); 
          
         }

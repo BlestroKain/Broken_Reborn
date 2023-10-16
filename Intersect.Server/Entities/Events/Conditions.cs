@@ -295,13 +295,16 @@ namespace Intersect.Server.Entities.Events
                 case (int)Jobs.Cooking:
                     joblevel = player.CookingLevel;
                     break;
+                case (int)Jobs.Crafting:
+                    joblevel = player.CraftingLevel;
+                    break;
                 case (int)Jobs.Alquemy:
                     joblevel = player.AlchemyLevel;
                     break;
                 case (int)Jobs.Fishing:
                     joblevel = player.FishingLevel;
                     break;
-                case (int)Jobs.Woodcutter:
+                case (int)Jobs.Lumberjack:
                     joblevel = player.WoodLevel;
                     break;
             }

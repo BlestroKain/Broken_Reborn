@@ -13,6 +13,7 @@ namespace Intersect.Config
         public int BaseMiningExp { get; set; } = 15;
         public int BaseLumberjackExp { get; set; } = 15;
         public int BaseHuntingExp { get; set; } = 15;
+        public int BaseCraftingExp { get; set; } = 20;
         public int BaseCookingExp { get; set; } = 20;
         public int BaseAlchemyExp { get; set; } = 20;
         public int BaseBlacksmithExp { get; set; } = 20;

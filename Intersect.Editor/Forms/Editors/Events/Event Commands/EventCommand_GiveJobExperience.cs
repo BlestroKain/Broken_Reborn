@@ -81,7 +81,7 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
                 case Jobs.Fishing:
                     mMyCommand.FishingExp = selectedExperience;
                     break;
-                case Jobs.Woodcutter:
+                case Jobs.Lumberjack:
                     mMyCommand.WoodExp = selectedExperience;
                     break;
                 case Jobs.Hunter:
@@ -96,9 +96,12 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
                 case Jobs.Cooking:
                     mMyCommand.CookingExp = selectedExperience;
                     break;
-            
+                case Jobs.Crafting:
+                    mMyCommand.CraftingExp = selectedExperience;
+                    break;
 
-        }
+
+            }
             cmbJob.SelectedIndex = (int)selectedJob;
             nudExperience.Value = selectedExperience;
             UpdateCommandPrinter();
@@ -115,6 +118,7 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
             mMyCommand.AlchemyExp = 0;
             mMyCommand.BlacksmithExp = 0;
             mMyCommand.CookingExp = 0;
+            mMyCommand.CraftingExp = 0;
         }
         private void btnCancel_Click(object sender, EventArgs e)
         {

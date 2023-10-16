@@ -131,6 +131,7 @@ namespace Intersect
         public static int BaseAlchemyExp => Instance.JobsOpts.BaseAlchemyExp;
         public static int BaseBlacksmithExp => Instance.JobsOpts.BaseBlacksmithExp;
         public static int BaseCookingExp => Instance.JobsOpts.BaseCookingExp;
+        public static int BaseCraftingExp => Instance.JobsOpts.BaseCraftingExp;
         public static int MaxInvItems => Instance.PlayerOpts.MaxInventory;
 
         public static int MaxPlayerSkills => Instance.PlayerOpts.MaxSpells;

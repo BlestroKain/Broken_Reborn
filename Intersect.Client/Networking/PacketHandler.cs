@@ -1489,6 +1489,15 @@ namespace Intersect.Client.Networking
                 Globals.Me.CookingLevel = packet.CookingLevel;
             }
         }
+        public void HandlePacket(IPacketSender packetSender, CraftingInfoPacket packet)
+        {
+            if (Globals.Me != null)
+            {
+                Globals.Me.CraftingExperience = packet.CraftingExperience;
+                Globals.Me.ExperienceToCraftingNextLevel = packet.ExperienceToCraftingNextLevel;
+                Globals.Me.CraftingLevel = packet.CraftingLevel;
+            }
+        }
         //ProjectileDeadPacket
         public void HandlePacket(IPacketSender packetSender, ProjectileDeadPacket packet)
         {

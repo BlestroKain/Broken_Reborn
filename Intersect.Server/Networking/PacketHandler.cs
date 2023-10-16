@@ -1036,6 +1036,10 @@ namespace Intersect.Server.Networking
                                     player.GiveCookingExperience(expAmount);
                                     PacketSender.SendChatMsg(player, $"Has recibido {expAmount} puntos de experiencia en Cocina.", ChatMessageType.Notice, CustomColors.Chat.PlayerMsg);
                                     break;
+                                case "crafting":
+                                    player.GiveCraftingExperience(expAmount);
+                                    PacketSender.SendChatMsg(player, $"Has recibido {expAmount} puntos de experiencia en Crafting.", ChatMessageType.Notice, CustomColors.Chat.PlayerMsg);
+                                    break;
                                 default:
                                     PacketSender.SendChatMsg(player, $"No se reconoce el trabajo {jobName}.", ChatMessageType.Error, Color.Orange);
                                     break;

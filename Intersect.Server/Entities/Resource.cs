@@ -95,7 +95,7 @@ namespace Intersect.Server.Entities
                             player.GiveFishingExperience(ExperienceAmount);
                             PacketSender.SendChatMsg(player, string.Format(Strings.Crafting.FishingExperience, ExperienceAmount), ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
                             break;
-                        case Jobs.Woodcutter:
+                        case Jobs.Lumberjack:
                             player.GiveWoodExperience(ExperienceAmount);
                             PacketSender.SendChatMsg(player, string.Format(Strings.Crafting.WoodcutterExperience, ExperienceAmount), ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
                             break;
@@ -114,6 +114,10 @@ namespace Intersect.Server.Entities
                         case Jobs.Cooking:
                             player.GiveCookingExperience(ExperienceAmount);
                             PacketSender.SendChatMsg(player, string.Format(Strings.Crafting.CookingExperience, ExperienceAmount), ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
+                            break;
+                        case Jobs.Crafting:
+                            player.GiveCraftingExperience(ExperienceAmount);
+                            PacketSender.SendChatMsg(player, string.Format(Strings.Crafting.CraftingExperience, ExperienceAmount), ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
                             break;
                         default:
                             PacketSender.SendChatMsg(player, string.Format(Strings.Crafting.UnknownJobType, Base.JobType), ChatMessageType.Error, Color.Orange);

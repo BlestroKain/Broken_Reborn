@@ -40,7 +40,7 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
                 case Jobs.Fishing:
                     nudLevel.Value = mMyCommand.FishingLevel;
                     break;
-                case Jobs.Woodcutter:
+                case Jobs.Lumberjack:
                     nudLevel.Value = mMyCommand.WoodcuttingLevel;
                     break;
                 case Jobs.Hunter:
@@ -55,7 +55,9 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
                 case Jobs.Cooking:
                     nudLevel.Value = mMyCommand.CookingLevel;
                     break;
-                // Si hay más trabajos, añádelos aquí...
+                case Jobs.Crafting:
+                    nudLevel.Value = mMyCommand.CraftingLevel;
+                    break;
                 default:
                     nudLevel.Value = 1; // O algún valor por defecto que desees.
                     break;
@@ -91,7 +93,7 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
                 case Jobs.Fishing:
                     mMyCommand.FishingLevel = (int)nudLevel.Value;
                     break;
-                case Jobs.Woodcutter:
+                case Jobs.Lumberjack:
                     mMyCommand.WoodcuttingLevel = (int)nudLevel.Value;
                     break;
                 case Jobs.Hunter:
@@ -106,7 +108,9 @@ namespace Intersect.Editor.Forms.Editors.Events.Event_Commands
                 case Jobs.Cooking:
                     mMyCommand.CookingLevel = (int)nudLevel.Value;
                     break;
-                    // Si hay más trabajos, añádelos aquí...
+                case Jobs.Crafting:
+                    mMyCommand.CraftingLevel = (int)nudLevel.Value;
+                    break;
             }
             mEventEditor.FinishCommandEdit();
         }

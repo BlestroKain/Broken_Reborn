@@ -828,7 +828,7 @@ namespace Intersect.Editor.Forms.Editors.Events
 
         private static string GetCommandText(GiveJobExperienceCommand command, MapInstance map)
         {
-            
+
             if (command.FarmingExp != 0)
             {
                 return Strings.EventCommandList.giveFarmingexp.ToString(command.FarmingExp);
@@ -852,6 +852,10 @@ namespace Intersect.Editor.Forms.Editors.Events
             else if (command.CookingExp != 0)
             {
                 return Strings.EventCommandList.giveCookingexp.ToString(command.CookingExp);
+            }
+            else if (command.CraftingExp != 0)
+            {
+                return Strings.EventCommandList.giveCraftingexp.ToString(command.CraftingExp);
             }
             else if (command.HuntingExp != 0)
             {
@@ -888,7 +892,7 @@ namespace Intersect.Editor.Forms.Editors.Events
                 case Jobs.Fishing:
                     jobLevel = command.FishingLevel;
                     break;
-                case Jobs.Woodcutter:
+                case Jobs.Lumberjack:
                     jobLevel = command.WoodcuttingLevel;
                     break;
                 case Jobs.Hunter:
@@ -902,6 +906,9 @@ namespace Intersect.Editor.Forms.Editors.Events
                     break;
                 case Jobs.Cooking:
                     jobLevel = command.CookingLevel;
+                    break;
+                case Jobs.Crafting:
+                    jobLevel = command.CraftingLevel;
                     break;
                 default:
                     jobLevel = 1; // O algún valor por defecto que desees.

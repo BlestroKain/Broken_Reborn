@@ -69,6 +69,8 @@ namespace Intersect.Client.Entities
         public long ExperienceToAlchemyNextLevel { get; set; } = 0;
         public long CookingExperience { get; set; } = 0;
         public long ExperienceToCookingNextLevel { get; set; } = 0;
+        public long CraftingExperience { get; set; } = 0;
+        public long ExperienceToCraftingNextLevel { get; set; } = 0;
         public long BlacksmithExperience { get; set; } = 0;
         public long ExperienceToBlacksmithNextLevel { get; set; } = 0;
 
@@ -2694,7 +2696,7 @@ namespace Intersect.Client.Entities
         public int BlacksmithLevel { get; set; } = 1;
         public int CookingLevel { get; set; } = 1;
         public int AlchemyLevel { get; set; } = 1;
-
+        public int CraftingLevel { get; set; } = 1;
     }
 
 }

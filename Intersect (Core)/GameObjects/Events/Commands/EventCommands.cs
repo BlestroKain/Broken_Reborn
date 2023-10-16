@@ -342,11 +342,7 @@ namespace Intersect.GameObjects.Events.Commands
         public long CookingExp { get; set; }
         public long BlacksmithExp { get; set; }
         public long AlchemyExp { get; set; }
-
-      
-        /*public long JewellerExp { get; set; }
-public long ShoemakerExp { get; set; }
-public long TailorExp { get; set; }*/
+        public long CraftingExp { get; set; }
 
     }
     public partial class ChangeLevelCommand : EventCommand
@@ -367,7 +363,7 @@ public long TailorExp { get; set; }*/
         public int AlchemyLevel { get; set; }
         public int BlacksmithingLevel { get; set; }
         public int CookingLevel { get; set; }
-
+        public int CraftingLevel { get; set; }
         public Jobs Jobtype { get; set; }
     }
 

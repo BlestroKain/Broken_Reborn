@@ -471,6 +471,10 @@ namespace Intersect.Server.Entities.Events
             {
                 player.GiveCookingExperience(command.CookingExp);
             }
+            if (command.CraftingExp != 0)
+            {
+                player.GiveCraftingExperience(command.CraftingExp);
+            }
         }
         //Change Level Command
         private static void ProcessCommand(
@@ -503,7 +507,7 @@ namespace Intersect.Server.Entities.Events
                 case Jobs.Fishing:
                     player.SetFishingLevel(command.FishingLevel, true);
                     break;
-                case Jobs.Woodcutter:
+                case Jobs.Lumberjack:
                     player.SetWoodLevel(command.WoodcuttingLevel, true);
                     break;
                 case Jobs.Hunter:
@@ -518,7 +522,9 @@ namespace Intersect.Server.Entities.Events
                 case Jobs.Cooking:
                     player.SetCookingLevel(command.CookingLevel, true);
                     break;
-                    // Si hay más trabajos, añádelos aquí...
+                case Jobs.Crafting:
+                    player.SetCraftingLevel(command.CraftingLevel, true);
+                    break;
             }
         }
 

@@ -376,6 +376,7 @@ namespace Intersect.Server.Networking
                 SendFishingExperience(player);
                 SendWoodExperience(player);
                 SendCookingExperience(player);
+                SendCraftingExperience(player);
                 SendHuntingExperience(player);
                 SendBlacksmithExperience(player);
                 SendAlchemyExperience(player);
@@ -1509,6 +1510,10 @@ namespace Intersect.Server.Networking
         public static void SendCookingExperience(Player player)
         {
             player.SendPacket(new CookingInfoPacket(player.CookingExp, player.ExperienceToCookingNextLevel, player.CookingLevel), TransmissionMode.Any);
+        }
+        public static void SendCraftingExperience(Player player)
+        {
+            player.SendPacket(new CraftingInfoPacket(player.CraftingExp, player.ExperienceToCraftingNextLevel, player.CraftingLevel), TransmissionMode.Any);
         }
         public static void SendWoodExperience(Player player)
         {

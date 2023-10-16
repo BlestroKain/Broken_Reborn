@@ -668,9 +668,7 @@ namespace Intersect.Client.Localization
             public static LocalizedString skill5 = @"Smithing";
             public static LocalizedString skill6 = @"Cooking";
             public static LocalizedString skill7 = @"Alquemy";
-            public static LocalizedString skill8 = @"Jewerly";
-            public static LocalizedString skill9 = @"Tailor";
-            public static LocalizedString skill10 = @"Cobbler";
+            public static LocalizedString skill8 = @"Crafting";
             public static LocalizedString level = @"Lv: {00}";
             //descriptions
             public static LocalizedString FarmingDesc = @"Esta habilidad te permite cultivar plantas y cosechar sus frutos para obtener recursos valiosos.";
@@ -681,6 +679,7 @@ namespace Intersect.Client.Localization
             public static LocalizedString BlacksmithDesc = @"Esta habilidad te permite crear y mejorar herramientas y armas de metal.";
             public static LocalizedString AlchemyDesc = @"Esta habilidad te permite crear pociones y elixires para curar enfermedades y mejorar habilidades.";
             public static LocalizedString CookingDesc = @"Esta habilidad te permite preparar alimentos nutritivos y deliciosos para mejorar la salud y el bienestar.";
+            public static LocalizedString CraftingDesc = @"Este oficio te permite forjar una amplia variedad de objetos, desde amuletos mágicos hasta llaves y trofeos, ofreciendo una gama diversa de posibilidades creativas para mejorar tu juego.";
         }
         public partial struct Combat
         {

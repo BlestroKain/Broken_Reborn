@@ -117,6 +117,8 @@ namespace Intersect.Server.Database.PlayerData.SeedData
                         WoodLevel = 1,
                         CookingExp = 0,
                         CookingLevel = 1,
+                        CraftingExp = 0,
+                        CraftingLevel = 1,
                         BlacksmithExp = 0,
                         BlacksmithLevel = 1,
                         AlchemyExp = 0,

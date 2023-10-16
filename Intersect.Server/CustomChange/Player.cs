@@ -121,6 +121,22 @@ namespace Intersect.Server.Entities
             PacketSender.SendEntityDataToProximity(this);
             PacketSender.SendCookingExperience(this);
         }
+        public void SetCraftingLevel(int Craftinglevel, bool resetExperience = false)
+        {
+            if (Craftinglevel < 1)
+            {
+                return;
+            }
+
+            CraftingLevel = Math.Min(Options.MaxLevel, Craftinglevel);
+            if (resetExperience)
+            {
+                CraftingExp = 0;
+            }
+
+            PacketSender.SendEntityDataToProximity(this);
+            PacketSender.SendCraftingExperience(this);
+        }
         public void SetAlchemyLevel(int Alchemylevel, bool resetExperience = false)
         {
             if (Alchemylevel < 1)
@@ -339,6 +355,27 @@ namespace Intersect.Server.Entities
             PacketSender.SendEntityDataToProximity(this);
 
         }
+        public void CraftingLevelUp(bool resetExperience = true, int levels = 1)
+        {
+            var messages = new List<string>();
+            if (CraftingLevel < Options.MaxLevel)
+            {
+                for (var i = 0; i < levels; i++)
+                {
+                    SetCraftingLevel(CraftingLevel + 1, resetExperience);
+                }
+            }
+            PacketSender.SendChatMsg(this, Strings.Player.Craftinglevelup.ToString(CraftingLevel), ChatMessageType.Experience, CustomColors.Combat.SkillLevelUp, Name);
+
+            PacketSender.SendActionMsg(this, Strings.Combat.CraftingLevelUp, CustomColors.Combat.LevelUp);
+            foreach (var message in messages)
+            {
+                PacketSender.SendChatMsg(this, message, ChatMessageType.Experience, CustomColors.Alerts.Info, Name);
+            }
+            PacketSender.SendCraftingExperience(this);
+            PacketSender.SendEntityDataToProximity(this);
+
+        }
         #endregion
 
         #region GiveJobExperience
@@ -433,6 +470,19 @@ namespace Intersect.Server.Entities
                 PacketSender.SendCookingExperience(this);
             }
         }
+        public void GiveCraftingExperience(long amount)
+        {
+            CraftingExp += (int)(amount);
+            if (CraftingExp < 0)
+            {
+                CraftingExp = 0;
+            }
+
+            if (!CheckCraftingLevelUp())
+            {
+                PacketSender.SendCraftingExperience(this);
+            }
+        }
         public void GiveAlchemyExperience(long amount)
         {
             AlchemyExp += (int)(amount);
@@ -487,7 +537,6 @@ namespace Intersect.Server.Entities
 
             return true;
         }
-
         private bool CheckFishingLevelUp()
         {
             var levelCount = 0;
@@ -507,7 +556,6 @@ namespace Intersect.Server.Entities
 
             return true;
         }
-
         private bool CheckWoodLevelUp()
         {
             var levelCount = 0;
@@ -562,6 +610,25 @@ namespace Intersect.Server.Entities
             }
 
             CookingLevelUp(false, levelCount);
+
+            return true;
+        }
+        private bool CheckCraftingLevelUp()
+        {
+            var levelCount = 0;
+            while (CraftingExp >= GetExperienceToCraftingNextLevel(CraftingLevel + levelCount) &&
+                   GetExperienceToCraftingNextLevel(CraftingLevel + levelCount) > 0)
+            {
+                CraftingExp -= GetExperienceToCraftingNextLevel(CraftingLevel + levelCount);
+                levelCount++;
+            }
+
+            if (levelCount <= 0)
+            {
+                return false;
+            }
+
+            CraftingLevelUp(false, levelCount);
 
             return true;
         }
@@ -673,6 +740,20 @@ namespace Intersect.Server.Entities
             var skillBase = Options.BaseCookingExp;
             var Gain = Options.GainBaseExponent;
             var level = CookingLevel;
+
+
+            return (long)Math.Floor(skillBase * (((Math.Pow(level, Gain)))));
+        }
+        private long GetExperienceToCraftingNextLevel(int CraftingLevel)
+        {
+            if (CraftingLevel >= Options.MaxJobLevel)
+            {
+                return -1;
+            }
+
+            var skillBase = Options.BaseCraftingExp;
+            var Gain = Options.GainBaseExponent;
+            var level = CraftingLevel;
 
 
             return (long)Math.Floor(skillBase * (((Math.Pow(level, Gain)))));

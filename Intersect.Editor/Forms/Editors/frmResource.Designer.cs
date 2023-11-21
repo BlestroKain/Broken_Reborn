@@ -110,6 +110,8 @@ namespace Intersect.Editor.Forms.Editors
             this.toolStripItemUndo = new System.Windows.Forms.ToolStripButton();
             this.gameObjectTypeExtensionsBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.gameObjectTypeExtensionsBindingSource1 = new System.Windows.Forms.BindingSource(this.components);
+            this.LevelNud = new DarkUI.Controls.DarkNumericUpDown();
+            this.LvlLbl = new System.Windows.Forms.Label();
             this.grpResources.SuspendLayout();
             this.grpGeneral.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudMaxHp)).BeginInit();
@@ -133,6 +135,7 @@ namespace Intersect.Editor.Forms.Editors
             this.toolStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gameObjectTypeExtensionsBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gameObjectTypeExtensionsBindingSource1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.LevelNud)).BeginInit();
             this.SuspendLayout();
             // 
             // grpResources
@@ -199,6 +202,8 @@ namespace Intersect.Editor.Forms.Editors
             // 
             this.grpGeneral.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
             this.grpGeneral.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
+            this.grpGeneral.Controls.Add(this.LevelNud);
+            this.grpGeneral.Controls.Add(this.LvlLbl);
             this.grpGeneral.Controls.Add(this.btnAddFolder);
             this.grpGeneral.Controls.Add(this.lblFolder);
             this.grpGeneral.Controls.Add(this.cmbFolder);
@@ -315,7 +320,7 @@ namespace Intersect.Editor.Forms.Editors
             // 
             this.nudSpawnDuration.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(69)))), ((int)(((byte)(73)))), ((int)(((byte)(74)))));
             this.nudSpawnDuration.ForeColor = System.Drawing.Color.Gainsboro;
-            this.nudSpawnDuration.Location = new System.Drawing.Point(164, 186);
+            this.nudSpawnDuration.Location = new System.Drawing.Point(164, 220);
             this.nudSpawnDuration.Margin = new System.Windows.Forms.Padding(4);
             this.nudSpawnDuration.Maximum = new decimal(new int[] {
             2147483647,
@@ -345,7 +350,7 @@ namespace Intersect.Editor.Forms.Editors
             this.cmbAnimation.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.cmbAnimation.ForeColor = System.Drawing.Color.Gainsboro;
             this.cmbAnimation.FormattingEnabled = true;
-            this.cmbAnimation.Location = new System.Drawing.Point(100, 220);
+            this.cmbAnimation.Location = new System.Drawing.Point(100, 254);
             this.cmbAnimation.Margin = new System.Windows.Forms.Padding(4);
             this.cmbAnimation.Name = "cmbAnimation";
             this.cmbAnimation.Size = new System.Drawing.Size(179, 23);
@@ -357,7 +362,7 @@ namespace Intersect.Editor.Forms.Editors
             // lblAnimation
             // 
             this.lblAnimation.AutoSize = true;
-            this.lblAnimation.Location = new System.Drawing.Point(8, 224);
+            this.lblAnimation.Location = new System.Drawing.Point(8, 258);
             this.lblAnimation.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblAnimation.Name = "lblAnimation";
             this.lblAnimation.Size = new System.Drawing.Size(69, 16);
@@ -377,7 +382,7 @@ namespace Intersect.Editor.Forms.Editors
             // lblSpawnDuration
             // 
             this.lblSpawnDuration.AutoSize = true;
-            this.lblSpawnDuration.Location = new System.Drawing.Point(8, 191);
+            this.lblSpawnDuration.Location = new System.Drawing.Point(8, 225);
             this.lblSpawnDuration.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblSpawnDuration.Name = "lblSpawnDuration";
             this.lblSpawnDuration.Size = new System.Drawing.Size(104, 16);
@@ -386,7 +391,7 @@ namespace Intersect.Editor.Forms.Editors
             // 
             // chkWalkableAfter
             // 
-            this.chkWalkableAfter.Location = new System.Drawing.Point(8, 282);
+            this.chkWalkableAfter.Location = new System.Drawing.Point(8, 316);
             this.chkWalkableAfter.Margin = new System.Windows.Forms.Padding(4);
             this.chkWalkableAfter.Name = "chkWalkableAfter";
             this.chkWalkableAfter.Size = new System.Drawing.Size(281, 21);
@@ -396,7 +401,7 @@ namespace Intersect.Editor.Forms.Editors
             // 
             // chkWalkableBefore
             // 
-            this.chkWalkableBefore.Location = new System.Drawing.Point(8, 254);
+            this.chkWalkableBefore.Location = new System.Drawing.Point(8, 288);
             this.chkWalkableBefore.Margin = new System.Windows.Forms.Padding(4);
             this.chkWalkableBefore.Name = "chkWalkableBefore";
             this.chkWalkableBefore.Size = new System.Drawing.Size(281, 21);
@@ -1205,6 +1210,37 @@ namespace Intersect.Editor.Forms.Editors
             // 
             this.gameObjectTypeExtensionsBindingSource1.DataSource = typeof(Intersect.Enums.GameObjectTypeExtensions);
             // 
+            // LevelNud
+            // 
+            this.LevelNud.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(69)))), ((int)(((byte)(73)))), ((int)(((byte)(74)))));
+            this.LevelNud.ForeColor = System.Drawing.Color.Gainsboro;
+            this.LevelNud.Location = new System.Drawing.Point(101, 188);
+            this.LevelNud.Margin = new System.Windows.Forms.Padding(4);
+            this.LevelNud.Maximum = new decimal(new int[] {
+            1000000,
+            0,
+            0,
+            0});
+            this.LevelNud.Name = "LevelNud";
+            this.LevelNud.Size = new System.Drawing.Size(180, 22);
+            this.LevelNud.TabIndex = 54;
+            this.LevelNud.Value = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+            this.LevelNud.ValueChanged += new System.EventHandler(this.LevelNud_ValueChanged);
+            // 
+            // LvlLbl
+            // 
+            this.LvlLbl.AutoSize = true;
+            this.LvlLbl.Location = new System.Drawing.Point(9, 190);
+            this.LvlLbl.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.LvlLbl.Name = "LvlLbl";
+            this.LvlLbl.Size = new System.Drawing.Size(43, 16);
+            this.LvlLbl.TabIndex = 53;
+            this.LvlLbl.Text = "Level:";
+            // 
             // FrmResource
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -1259,6 +1295,7 @@ namespace Intersect.Editor.Forms.Editors
             this.toolStrip.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gameObjectTypeExtensionsBindingSource)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.gameObjectTypeExtensionsBindingSource1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.LevelNud)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -1343,5 +1380,7 @@ namespace Intersect.Editor.Forms.Editors
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.BindingSource gameObjectTypeExtensionsBindingSource;
         private System.Windows.Forms.BindingSource gameObjectTypeExtensionsBindingSource1;
+        private DarkNumericUpDown LevelNud;
+        private System.Windows.Forms.Label LvlLbl;
     }
 }

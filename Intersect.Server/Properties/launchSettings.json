@@ -2,30 +2,27 @@
   "profiles": {
     "Development": {
       "commandName": "Project",
-      "commandLineArgs": "",
+      "workingDirectory": "C:\\Users\\jlroo\\Desktop\\Cliente for test jobs\\Server",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development",
         "LD_LIBRARY_PATH": "."
-      },
-      "workingDirectory": "$(ProjectDir)../assets/development/server"
+      }
     },
     "Staging": {
       "commandName": "Project",
-      "commandLineArgs": "",
+      "workingDirectory": "$(ProjectDir)../assets/staging/server",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Staging",
         "LD_LIBRARY_PATH": "."
-      },
-      "workingDirectory": "$(ProjectDir)../assets/staging/server"
+      }
     },
     "Production": {
       "commandName": "Project",
-      "commandLineArgs": "",
+      "workingDirectory": "$(ProjectDir)../assets/production/server",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Production",
         "LD_LIBRARY_PATH": "."
-      },
-      "workingDirectory": "$(ProjectDir)../assets/production/server"
+      }
     }
   }
 }

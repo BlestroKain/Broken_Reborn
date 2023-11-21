@@ -254,6 +254,7 @@ namespace Intersect.Editor.Forms.Editors
                 cmbAnimation.SelectedIndex = AnimationBase.ListIndex(mEditorItem.AnimationId) + 1;
                 nudMinHp.Value = mEditorItem.MinHp;
                 nudMaxHp.Value = mEditorItem.MaxHp;
+                LevelNud.Value = mEditorItem.Level;
                 chkWalkableBefore.Checked = mEditorItem.WalkableBefore;
                 chkWalkableAfter.Checked = mEditorItem.WalkableAfter;
                 chkInitialFromTileset.Checked = mEditorItem.Initial.GraphicFromTileset;
@@ -1000,6 +1001,11 @@ namespace Intersect.Editor.Forms.Editors
         private void nudExpAmount_ValueChanged(object sender, EventArgs e)
         {
             mEditorItem.ExperienceAmount = (int)nudExpAmount.Value;
+        }
+
+        private void LevelNud_ValueChanged(object sender, EventArgs e)
+        {
+            mEditorItem.Level = (int)LevelNud.Value;
         }
     }
 

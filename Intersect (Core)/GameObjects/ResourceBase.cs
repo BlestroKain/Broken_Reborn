@@ -124,5 +124,7 @@ namespace Intersect.GameObjects
 
         /// <inheritdoc />
         public string Folder { get; set; } = string.Empty;
+
+        public int Level { get; set; }
     }
 }

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Data;
 using Intersect.Enums;
 using Intersect.GameObjects;
 using Intersect.Network.Packets.Server;
@@ -22,7 +24,10 @@ namespace Intersect.Server.Entities
         //Respawn
         public long RespawnTime = 0;
         public Jobs JobType { get; set; } // Agrega esta propiedad para el tipo de trabajo (job)
+        public int Level { get; set; }
         public int ExperienceAmount { get; set; } // Agrega esta propiedad para la cantidad de experiencia (xp)
+        [NotMapped]
+        public int BonusDrop { get; set; }
 
         public Resource(ResourceBase resource) : base()
         {
@@ -41,7 +46,7 @@ namespace Intersect.Server.Entities
             HideName = true;
             JobType = Jobs.SkillCount; // Establece el tipo de trabajo predeterminado
             ExperienceAmount = 0; // Establece la cantidad de experiencia predeterminada
-
+            Level = resource.Level;
         }
 
         public void Destroy(bool dropItems = false, Entity killer = null)
@@ -54,7 +59,26 @@ namespace Intersect.Server.Entities
             PacketSender.SendEntityDie(this);
             PacketSender.SendEntityLeave(this);
         }
-
+        public void CalculateBonusDrop(int resourceLevel, int jobType)
+        {
+            //Verificar que el nivel de trabajo y el nivel de recurso sean positivos
+            if (jobType < 0 || resourceLevel < 0)
+            {
+                // Manejar la lógica para niveles negativos si es necesario
+                return;
+            }
+             // Calcular la diferencia entre el nivel de trabajo y el nivel de recurso
+            int levelDifference = jobType - resourceLevel;
+            if (levelDifference > 0)
+            {
+                // Calcular el bonus de drop
+                BonusDrop = levelDifference / 10;
+                if (BonusDrop < 1 ) 
+                {
+                    BonusDrop = 0;
+                }
+            }
+        }
         public override void Die(bool dropItems = true, Entity killer = null)
         {
             lock (EntityLock)
@@ -79,31 +103,38 @@ namespace Intersect.Server.Entities
             // Otorgar experiencia al jugador que destruyó el recurso
             if (killer is Player player)
             {
+               
                 if (ExperienceAmount > 0)
                 {
                     switch (Base.JobType)
                     {
                         case Jobs.Farming:
+                            CalculateBonusDrop(Level, player.FarmingLevel);
                             player.GiveFarmingExperience(ExperienceAmount);
                             PacketSender.SendChatMsg(player, string.Format(Strings.Crafting.FarmerExperience, ExperienceAmount), ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
                             break;
                         case Jobs.Mining:
+                            CalculateBonusDrop(Level, player.MiningLevel);
                             player.GiveMiningExperience(ExperienceAmount);
                             PacketSender.SendChatMsg(player, string.Format(Strings.Crafting.MiningExperience, ExperienceAmount), ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
                             break;
                         case Jobs.Fishing:
+                            CalculateBonusDrop(Level, player.FishingLevel);
                             player.GiveFishingExperience(ExperienceAmount);
                             PacketSender.SendChatMsg(player, string.Format(Strings.Crafting.FishingExperience, ExperienceAmount), ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
                             break;
                         case Jobs.Lumberjack:
+                            CalculateBonusDrop(Level, player.WoodLevel);
                             player.GiveWoodExperience(ExperienceAmount);
                             PacketSender.SendChatMsg(player, string.Format(Strings.Crafting.WoodcutterExperience, ExperienceAmount), ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
                             break;
                         case Jobs.Hunter:
+                            CalculateBonusDrop(Level, player.HuntingLevel);
                             player.GiveHuntingExperience(ExperienceAmount);
                             PacketSender.SendChatMsg(player, string.Format(Strings.Crafting.HunterExperience, ExperienceAmount), ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
                             break;
                         case Jobs.Alquemy:
+                            CalculateBonusDrop(Level, player.AlchemyLevel);
                             player.GiveAlchemyExperience(ExperienceAmount);
                             PacketSender.SendChatMsg(player, string.Format(Strings.Crafting.AlchemyExperience, ExperienceAmount), ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
                             break;
@@ -144,15 +175,16 @@ namespace Intersect.Server.Entities
             RestoreVital(Vital.Health);
             Passable = Base.WalkableBefore;
             Items.Clear();
-
-            //Give Resource Drops
+            
+            // Give Resource Drops
             var itemSlot = 0;
             foreach (var drop in Base.Drops)
             {
                 if (Randomization.Next(1, 10001) <= drop.Chance * 100 && ItemBase.Get(drop.ItemId) != null)
                 {
                     var slot = new InventorySlot(itemSlot);
-                    slot.Set(new Item(drop.ItemId, drop.Quantity));
+                    // Aplica el bonus de drop a la cantidad de items
+                    slot.Set(new Item(drop.ItemId, drop.Quantity + BonusDrop));
                     Items.Add(slot);
                     itemSlot++;
                 }

@@ -2315,7 +2315,7 @@ namespace Intersect.Server.Entities
 
             switch (entity)
             {
-                case PetEntity pet when this.is_entity_Pet:
+                case Pet pet when this.is_entity_Pet:
                     {
                         if (this.owner != null)
                         {

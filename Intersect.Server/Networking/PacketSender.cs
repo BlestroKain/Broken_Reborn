@@ -1681,6 +1681,13 @@ namespace Intersect.Server.Networking
                     }
 
                     break;
+                case GameObjectType.Pet:
+                    foreach (var obj in PetBase.Lookup)
+                    {
+                        SendGameObject(client, obj.Value, false, false, packetList);
+                    }
+
+                    break;
                 case GameObjectType.Projectile:
                     foreach (var obj in ProjectileBase.Lookup)
                     {

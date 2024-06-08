@@ -197,7 +197,6 @@ namespace Intersect.Editor.Forms
             craftsEditorToolStripMenuItem.Text = Strings.MainForm.craftingeditor;
             itemEditorToolStripMenuItem.Text = Strings.MainForm.itemeditor;
             npcEditorToolStripMenuItem.Text = Strings.MainForm.npceditor;
-            PetEditorToolStripMenuItem.Text = Strings.MainForm.Peteditor;
             projectileEditorToolStripMenuItem.Text = Strings.MainForm.projectileeditor;
             questEditorToolStripMenuItem.Text = Strings.MainForm.questeditor;
             resourceEditorToolStripMenuItem.Text = Strings.MainForm.resourceeditor;
@@ -205,6 +204,7 @@ namespace Intersect.Editor.Forms
             spellEditorToolStripMenuItem.Text = Strings.MainForm.spelleditor;
             variableEditorToolStripMenuItem.Text = Strings.MainForm.variableeditor;
             timeEditorToolStripMenuItem.Text = Strings.MainForm.timeeditor;
+            PetEditorToolStripMenuItem.Text = Strings.MainForm.Peteditor;
         }
 
         private void InitLocalizationMenuTools()
@@ -244,7 +244,7 @@ namespace Intersect.Editor.Forms
 
             toolStripBtnFill.Text = Strings.MainForm.Fill;
             toolStripBtnErase.Text = Strings.MainForm.Erase;
-            toolStripBtnDropper.Text = Strings.MainForm.Dropper;
+            toolStripBtnEyeDrop.Text = Strings.MainForm.Dropper;
 
             toolStripTimeButton.Text = Strings.MainForm.lighting;
 
@@ -379,7 +379,7 @@ namespace Intersect.Editor.Forms
                         break;
 
                     case Keys.I: // Dropper Tool.
-                        toolStripBtnDropper_Click(null, null);
+                        toolStripBtnEyeDrop_Click(null, null);
                         break;
 
                     case Keys.Delete: // Delete Selection.
@@ -618,7 +618,7 @@ namespace Intersect.Editor.Forms
             toolStripBtnBrush.Enabled = false;
             toolStripBtnSelect.Enabled = true;
             toolStripBtnRect.Enabled = false;
-            toolStripBtnDropper.Enabled = false;
+            toolStripBtnEyeDrop.Enabled = false;
             if (Globals.CurrentLayer == LayerOptions.Attributes)
             {
                 toolStripBtnBrush.Enabled = true;
@@ -640,7 +640,7 @@ namespace Intersect.Editor.Forms
             {
                 toolStripBtnBrush.Enabled = true;
                 toolStripBtnRect.Enabled = true;
-                toolStripBtnDropper.Enabled = true;
+                toolStripBtnEyeDrop.Enabled = true;
             }
 
             switch (Globals.CurrentTool)
@@ -671,9 +671,9 @@ namespace Intersect.Editor.Forms
                         toolStripBtnErase.Checked = false;
                     }
 
-                    if (toolStripBtnDropper.Checked)
+                    if (toolStripBtnEyeDrop.Checked)
                     {
-                        toolStripBtnDropper.Checked = false;
+                        toolStripBtnEyeDrop.Checked = false;
                     }
 
                     if (toolStripBtnCut.Enabled)
@@ -723,9 +723,9 @@ namespace Intersect.Editor.Forms
                         toolStripBtnErase.Checked = false;
                     }
 
-                    if (toolStripBtnDropper.Checked)
+                    if (toolStripBtnEyeDrop.Checked)
                     {
-                        toolStripBtnDropper.Checked = false;
+                        toolStripBtnEyeDrop.Checked = false;
                     }
 
                     if (!toolStripBtnCut.Enabled)
@@ -775,9 +775,9 @@ namespace Intersect.Editor.Forms
                         toolStripBtnErase.Checked = false;
                     }
 
-                    if (toolStripBtnDropper.Checked)
+                    if (toolStripBtnEyeDrop.Checked)
                     {
-                        toolStripBtnDropper.Checked = false;
+                        toolStripBtnEyeDrop.Checked = false;
                     }
 
                     if (toolStripBtnCut.Enabled)
@@ -827,9 +827,9 @@ namespace Intersect.Editor.Forms
                         toolStripBtnErase.Checked = false;
                     }
 
-                    if (toolStripBtnDropper.Checked)
+                    if (toolStripBtnEyeDrop.Checked)
                     {
-                        toolStripBtnDropper.Checked = false;
+                        toolStripBtnEyeDrop.Checked = false;
                     }
 
                     if (toolStripBtnCut.Enabled)
@@ -879,9 +879,9 @@ namespace Intersect.Editor.Forms
                         toolStripBtnErase.Checked = true;
                     }
 
-                    if (toolStripBtnDropper.Checked)
+                    if (toolStripBtnEyeDrop.Checked)
                     {
-                        toolStripBtnDropper.Checked = false;
+                        toolStripBtnEyeDrop.Checked = false;
                     }
 
                     if (toolStripBtnCut.Enabled)
@@ -931,9 +931,9 @@ namespace Intersect.Editor.Forms
                         toolStripBtnErase.Checked = false;
                     }
 
-                    if (!toolStripBtnDropper.Checked)
+                    if (!toolStripBtnEyeDrop.Checked)
                     {
-                        toolStripBtnDropper.Checked = true;
+                        toolStripBtnEyeDrop.Checked = true;
                     }
 
                     if (toolStripBtnCut.Enabled)
@@ -1243,11 +1243,7 @@ namespace Intersect.Editor.Forms
         {
             PacketSender.SendOpenEditor(GameObjectType.Npc);
         }
-        private void PetEditorToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            PacketSender.SendOpenEditor(GameObjectType.Pet);
-        }
-
+   
         private void spellEditorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             PacketSender.SendOpenEditor(GameObjectType.Spell);
@@ -1445,7 +1441,7 @@ namespace Intersect.Editor.Forms
             Globals.CurMapSelH = 0;
         }
 
-        private void toolStripBtnDropper_Click(object sender, EventArgs e)
+        private void toolStripBtnEyeDrop_Click(object sender, EventArgs e)
         {
             Globals.CurrentTool = EditingTool.Dropper;
             Globals.CurMapSelX = 0;
@@ -2261,6 +2257,10 @@ namespace Intersect.Editor.Forms
             return filesProcessed;
         }
 
+        private void toolStripMenuItem2_Click(object sender, EventArgs e)
+        {
+            PacketSender.SendOpenEditor(GameObjectType.Pet);
+        }
     }
 
 }

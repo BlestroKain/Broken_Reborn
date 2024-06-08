@@ -2389,6 +2389,7 @@ Tick timer saved in server config.json.";
                 {"resetstatallocations", @"Reset Stat Point Allocations"},
                 {"givejobexperience", @"Give Job Experience"},
                 {"setjoblevel", @"Set Job Level"},
+                {"spawnPet", @"Spawn Pet"},
             };
 
         }

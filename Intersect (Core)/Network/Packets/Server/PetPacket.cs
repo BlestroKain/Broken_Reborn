@@ -10,23 +10,12 @@ namespace Intersect.Network.Packets.Server
         {
         }
 
-        [Key(0)]
-        public string PetId { get; set; }
-
-        [Key(1)]
-        public int PetLevel { get; set; }
-
-        [Key(2)]
-        public long PetExperience { get; set; }
-
-        [Key(3)]
+        [Key(25)]
         public PetState CurrentState { get; set; }
 
-        public PetPacket(string petId, int petLevel, long petExperience,PetState currentState /*, ... otros campos */)
+        public PetPacket(PetState currentState /*, ... otros campos */)
         {
-            PetId = petId;
-            PetLevel = petLevel;
-            PetExperience = petExperience;
+            
             CurrentState = currentState;
         }
     }

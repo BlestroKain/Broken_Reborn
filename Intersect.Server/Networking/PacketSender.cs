@@ -596,7 +596,22 @@ namespace Intersect.Server.Networking
                 }
             }
         }
+        public static void SendPetAggressionToProximity(Pet en)
+        {
+            if (en == null)
+            {
+                return;
+            }
 
+            foreach (var mapInstance in MapController.GetSurroundingMapInstances(en.Map.Id, en.MapInstanceId, true))
+            {
+                var players = mapInstance.GetPlayers();
+                foreach (var pl in players)
+                {
+                    SendPetAggressionTo(pl, en);
+                }
+            }
+        }
         //NpcAggressionPacket
         public static void SendNpcAggressionTo(Player player, Npc npc)
         {
@@ -607,7 +622,15 @@ namespace Intersect.Server.Networking
 
             player.SendPacket(new NpcAggressionPacket(npc.Id, npc.GetAggression(player)), TransmissionMode.Any);
         }
+        public static void SendPetAggressionTo(Player player, Pet npc)
+        {
+            if (player == null || npc == null)
+            {
+                return;
+            }
 
+          //  player.SendPacket(new NpcAggressionPacket(npc.Id, npc.GetAggression(player)), TransmissionMode.Any);
+        }
         //EntityLeftArea
         public static void SendEntityLeaveMap(Entity en, Guid leftMap)
         {

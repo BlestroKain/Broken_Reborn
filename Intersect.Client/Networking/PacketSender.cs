@@ -438,7 +438,10 @@ namespace Intersect.Client.Networking
         {
             Network.SendPacket(new BankSortPacket());
         }
-
+        /*public static void SendPetCommand(PetCommandType commandType, Guid petId)
+        {
+            Network.SendPacket(new PetCommandPacket(commandType, petId));
+        }*/
     }
 
 }

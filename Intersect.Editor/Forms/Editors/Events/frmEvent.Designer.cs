@@ -156,14 +156,13 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode64});
             System.Windows.Forms.TreeNode treeNode66 = new System.Windows.Forms.TreeNode("Give Job Experience");
             System.Windows.Forms.TreeNode treeNode67 = new System.Windows.Forms.TreeNode("Change Job Level");
-            System.Windows.Forms.TreeNode treeNode69 = new System.Windows.Forms.TreeNode("Spawn Pet");
             System.Windows.Forms.TreeNode treeNode68 = new System.Windows.Forms.TreeNode("Jobs", new System.Windows.Forms.TreeNode[] {
             treeNode66,
             treeNode67
             });
-           /* System.Windows.Forms.TreeNode treeNode69 = new System.Windows.Forms.TreeNode("Spawn Pet");
+            System.Windows.Forms.TreeNode treeNode69 = new System.Windows.Forms.TreeNode("Spawn Pet");
             System.Windows.Forms.TreeNode treeNode70 = new System.Windows.Forms.TreeNode("Pets", new System.Windows.Forms.TreeNode[] {
-            treeNode70});*/
+            treeNode69});
 
             this.lblName = new System.Windows.Forms.Label();
             this.txtEventname = new DarkUI.Controls.DarkTextBox();
@@ -1056,13 +1055,12 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode67.Name = "setjoblevel";
             treeNode67.Tag = "202";
             treeNode67.Text = "Set Job Level";
-            treeNode68.Name = "jobs";
-            treeNode68.Text = "Jobs";
+           
             treeNode69.Name = "spawnPet";
-            treeNode69.Tag = "59";
+            treeNode69.Tag = "203";
             treeNode69.Text = "Spawn Pet";
-           // treeNode70.Name = "pets";
-           // treeNode70.Text = "Pets";
+            treeNode70.Name = "pets";
+           treeNode70.Text = "Pets";
 
             this.lstCommands.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             treeNode5,
@@ -1075,7 +1073,7 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode60,
             treeNode65,
              treeNode68,
-            // treeNode70
+            treeNode70
             });
             this.lstCommands.Size = new System.Drawing.Size(445, 465);
             this.lstCommands.TabIndex = 2;

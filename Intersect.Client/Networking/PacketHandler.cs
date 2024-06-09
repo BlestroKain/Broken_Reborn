@@ -308,24 +308,7 @@ namespace Intersect.Client.Networking
                 Globals.Entities.Add(entity.Id, entity);
             }
         }
-        //PetEntityPacket
-        public void HandlePacket(IPacketSender packetSender, PetPacket packet)
-        {
-            var en = Globals.GetEntity(packet.EntityId, EntityType.Pet);
-            if (en != null)
-            {
-                en.Load(packet);
-                en.State = packet.CurrentState;
-            }
-            else
-            {
-                var entity = new Entity(packet.EntityId, packet, EntityType.Pet)
-                {
-                    State = packet.CurrentState,
-            };
-                Globals.Entities.Add(entity.Id, entity);
-            }
-        }
+      
         //ResourceEntityPacket
         public void HandlePacket(IPacketSender packetSender, ResourceEntityPacket packet)
         {
@@ -2284,10 +2267,10 @@ namespace Intersect.Client.Networking
                 Audio.AddGameSound(flashSound, false);
             }
         }
-    
-    // Combat Effect packet
-    public void HandlePacket(IPacketSender packetSender, CombatEffectPacket packet)
-        {
+       
+        // Combat Effect packet
+        public void HandlePacket(IPacketSender packetSender, CombatEffectPacket packet)
+         {
             if (Globals.Me == null) return;
 
             var someTarget = packet.TargetId != null && packet.TargetId != Guid.Empty && Globals.Entities.ContainsKey(packet.TargetId);
@@ -2322,6 +2305,18 @@ namespace Intersect.Client.Networking
                 Globals.Me.Flash = true;
                 Globals.Me.FlashColor = packet.EntityFlashColor;
                 Globals.Me.FlashEndTime = Timing.Global.Milliseconds + 200; // TODO config
+            }
+         }
+        public void HandlePacket(IPacketSender packetSender, PetPacket packet)
+        {
+            var pet = Globals.GetEntity(packet.EntityId, EntityType.Pet) as Pet;
+            if (pet != null)
+            {
+                pet.Load(packet);
+            }
+            else
+            {
+                Globals.Entities.Add(packet.EntityId, new Pet(packet.EntityId, packet));
             }
         }
     }

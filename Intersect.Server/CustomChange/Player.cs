@@ -809,12 +809,11 @@ namespace Intersect.Server.Entities
 
         #region Pets
 
-          // Nueva propiedad para almacenar la mascota actual del jugador
-    [NotMapped]
-    public Pet CurrentPet { get; set; }
+        // Nueva propiedad para almacenar la mascota actual del jugador
+        [NotMapped]
+        public Pet CurrentPet { get; set; }
 
-        // Método para invocar una mascota
-        public void SummonPet(Guid petId, MapInstance mapInstance)
+        public void SummonPet(Guid petId)
         {
             if (CurrentPet != null)
             {
@@ -831,12 +830,16 @@ namespace Intersect.Server.Entities
                     Y = this.Y,
                     Dir = this.Dir
                 };
-                mapInstance.AddEntity(CurrentPet);
-                PacketSender.SendEntityDataToProximity(CurrentPet);
+
+                // Asegurarse de que se esté utilizando una instancia del mapa válida
+                if (MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var mapInstance))
+                {
+                    mapInstance.AddEntity(CurrentPet);
+                    PacketSender.SendEntityDataToProximity(CurrentPet);
+                }
             }
         }
 
-        // Método para retirar la mascota actual
         public void DespawnPet()
         {
             if (CurrentPet != null)
@@ -846,25 +849,40 @@ namespace Intersect.Server.Entities
             }
         }
 
-        // Método para actualizar la posición de la mascota
-        public void UpdatePetPosition()
+        public void UpdatePetPosition(long timeMs)
         {
             if (CurrentPet != null)
             {
-                if (!CurrentPet.InRangeOf(this, 5))
+                if (!CurrentPet.InRangeOf(this, 10))
                 {
-                    CurrentPet.Warp(this.MapId, this.X, this.Y, this.Dir);
+                    // Ajustar la posición para que la mascota aparezca a un lado o detrás del jugador
+                    var targetX = this.X;
+                    var targetY = this.Y;
+
+                    switch (this.Dir)
+                    {
+                        case Direction.Up:
+                            targetY += 1;
+                            break;
+                        case Direction.Down:
+                            targetY -= 1;
+                            break;
+                        case Direction.Left:
+                            targetX += 1;
+                            break;
+                        case Direction.Right:
+                            targetX -= 1;
+                            break;
+                    }
+
+                    CurrentPet.Warp(this.MapId, targetX, targetY, this.Dir);
                 }
                 else
                 {
-                    CurrentPet.FollowOwner();
+                    CurrentPet.FollowOwner(timeMs);
                 }
             }
         }
-
-
-
-
         #endregion
     }
 }

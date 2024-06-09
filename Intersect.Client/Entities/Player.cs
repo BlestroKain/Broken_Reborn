@@ -252,8 +252,11 @@ namespace Intersect.Client.Entities
             {
                 HandleInput();
             }
-
-
+            if (Pet != null)
+            {
+                Pet.Update();
+            }
+                             
             if (!IsBusy)
             {
                 if (this == Globals.Me && IsMoving == false)
@@ -319,6 +322,7 @@ namespace Intersect.Client.Entities
             var returnval = base.Update();
 
             return returnval;
+
         }
 
         //Loading
@@ -1684,7 +1688,11 @@ namespace Intersect.Client.Entities
                     {
                         continue;
                     }
-
+                    // Evitar ataques a la mascota del jugador
+                    if (en.Value is Pet pet && pet.OwnerId == Globals.Me.Id)
+                    {
+                        continue;
+                    }
                     // Skip if the entity can't be attacked.
                     if (!en.Value.CanBeAttacked)
                     {
@@ -2697,6 +2705,21 @@ namespace Intersect.Client.Entities
         public int CookingLevel { get; set; } = 1;
         public int AlchemyLevel { get; set; } = 1;
         public int CraftingLevel { get; set; } = 1;
+
+        public Pet Pet { get; set; }
+
+        public void UpdatePet(PetPacket packet)
+        {
+            if (Pet == null)
+            {
+                Pet = new Pet(packet.Id, packet);
+            }
+            else
+            {
+                Pet.Load(packet);
+            }
+        }
+
     }
 
 }

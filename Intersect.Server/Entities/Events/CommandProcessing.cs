@@ -982,21 +982,21 @@ namespace Intersect.Server.Entities.Events
                 player.SpawnedNpcs.Add(npc);
             }
         }
-        //Spawn Pet Command
         private static void ProcessCommand(
-            SpawnPetCommand command,
-            Player player,
-            Event eventInstance,
-            CommandInstance stackInfo,
-            Stack<CommandInstance> callStack
-        )
+        SpawnPetCommand command,
+        Player player,
+        Event eventInstance,
+        CommandInstance stackInfo,
+        Stack<CommandInstance> callStack
+    )
         {
-            var PetId = command.PetId;
+            var petId = command.PetId;
             var mapId = command.MapId;
             var tileX = 0;
             var tileY = 0;
-            Direction direction = (byte)Direction.Up;
+            Direction direction = Direction.Up;
             var targetEntity = (Entity)player;
+
             if (mapId != Guid.Empty)
             {
                 tileX = command.X;
@@ -1017,7 +1017,6 @@ namespace Intersect.Server.Entities.Events
                         if (evt.Value.BaseEvent.Id == command.EntityId)
                         {
                             targetEntity = evt.Value.PageInstance;
-
                             break;
                         }
                     }
@@ -1035,19 +1034,16 @@ namespace Intersect.Server.Entities.Events
                             case Direction.Down:
                                 yDiff *= -1;
                                 xDiff *= -1;
-
                                 break;
                             case Direction.Left:
                                 tmp = yDiff;
                                 yDiff = xDiff;
                                 xDiff = tmp;
-
                                 break;
                             case Direction.Right:
                                 tmp = yDiff;
                                 yDiff = xDiff;
                                 xDiff = -tmp;
-
                                 break;
                         }
 
@@ -1067,11 +1063,11 @@ namespace Intersect.Server.Entities.Events
             var tile = new TileHelper(mapId, tileX, tileY);
             if (tile.TryFix() && MapController.TryGetInstanceFromMap(mapId, player.MapInstanceId, out var instance))
             {
-                var Pet = instance.SpawnPet((byte)tileX, (byte)tileY, direction, PetId, player);
-                Pet.Owner = player;
-                player.SpawnedPets.Add(Pet);
+                // Aquí llamamos al método de invocación de la mascota del jugador
+                player.SummonPet(petId);
             }
         }
+
 
         //Despawn Npcs Command
         private static void ProcessCommand(

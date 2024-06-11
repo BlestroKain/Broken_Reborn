@@ -1130,6 +1130,7 @@ namespace Intersect.Server.Entities
             }
 
             RecalculateStatsAndPoints();
+            RecalculateSpellPoints();
             UnequipInvalidItems();
             PacketSender.SendEntityDataToProximity(this);
             PacketSender.SendExperience(this);
@@ -1166,6 +1167,9 @@ namespace Intersect.Server.Entities
                         }
                     }
                 }
+
+                // Ganar un punto de hechizo por nivel
+                GainSpellPoints(levels);
             }
 
             PacketSender.SendChatMsg(this, Strings.Player.levelup.ToString(Level), ChatMessageType.Experience, CustomColors.Combat.LevelUp, Name);
@@ -1181,7 +1185,7 @@ namespace Intersect.Server.Entities
                     this, Strings.Player.statpoints.ToString(StatPoints), ChatMessageType.Experience, CustomColors.Combat.StatPoints, Name
                 );
             }
-
+            RecalculateSpellPoints();
             RecalculateStatsAndPoints();
             UnequipInvalidItems();
             PacketSender.SendExperience(this);
@@ -1191,7 +1195,8 @@ namespace Intersect.Server.Entities
             //Search for level up activated events and run them
             StartCommonEventsWithTrigger(CommonEventTrigger.LevelUp);
         }
-      
+
+
         public void GiveExperience(long amount)
         {
             Exp += (int) Math.Round(amount + (amount * (GetEquipmentBonusEffect(ItemEffect.EXP) / 100f)));

@@ -170,6 +170,29 @@ namespace Intersect.GameObjects
                 .Select(i => (SpellBase)i.Value)
                 .ToArray();
         }
+        public int Level { get; set; } = 1;
+
+        public int MaxLevel { get; set; } = 5;
+
+        // Método para mejorar el nivel del hechizo
+        public void LevelUp()
+        {
+            if (Level < MaxLevel)
+            {
+                Level++;
+                ImproveAttributes();
+            }
+        }
+
+        // Método para mejorar los atributos conforme sube de nivel
+        private void ImproveAttributes()
+        {
+            // Incrementar los valores de SpellCombatData, como ejemplo:
+            Combat.CritChance += 1; // Aumenta la probabilidad de crítico
+            Combat.CritMultiplier += 0.1; // Aumenta el multiplicador de crítico
+            Combat.VitalDiff = Combat.VitalDiff.Select(v => v + 10).ToArray(); // Aumenta el daño o curación
+                                                                               // Otros incrementos según los atributos del hechizo
+        }
     }
 
     [Owned]

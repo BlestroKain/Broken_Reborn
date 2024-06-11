@@ -1,12 +1,14 @@
 using System;
 
 using Intersect.Admin.Actions;
+using Intersect.Client.Entities;
 using Intersect.Client.Entities.Events;
 using Intersect.Client.General;
 using Intersect.Client.Interface.Game;
 using Intersect.Client.Maps;
 using Intersect.Enums;
 using Intersect.Network.Packets.Client;
+
 using AdminAction = Intersect.Admin.Actions.AdminAction;
 
 namespace Intersect.Client.Networking
@@ -439,6 +441,24 @@ namespace Intersect.Client.Networking
             Network.SendPacket(new BankSortPacket());
         }
 
+       
+            public static void SendAssignSpellPoint(int slot)
+            {
+                Network.SendPacket(new AssignSpellPointPacket(slot));
+            }
+
+            public static void SendSpellUpdate(Player player, int slot)
+            {
+                if (player == null)
+                {
+                    return;
+                }
+
+                var spellSlot = player.Spells[slot];
+                var packet = new Intersect.Network.Packets.Server.SpellUpdatePacket(slot, spellSlot.Id, spellSlot.Level);
+                Network.SendPacket(packet);
+            }
+                
     }
 
 }

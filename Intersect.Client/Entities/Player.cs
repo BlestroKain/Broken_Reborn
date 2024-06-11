@@ -21,6 +21,7 @@ using Intersect.Enums;
 using Intersect.GameObjects;
 using Intersect.GameObjects.Maps;
 using Intersect.Logging;
+using Intersect.Network.Packets.Client;
 using Intersect.Network.Packets.Server;
 using Intersect.Utilities;
 using MapAttribute = Intersect.Enums.MapAttribute;
@@ -1167,7 +1168,33 @@ namespace Intersect.Client.Entities
 
             return -1;
         }
+        public void AssignSpellPoint(int slot)
+        {
+            if (SpellPoints <= 0)
+            {
+                // No hay suficientes puntos de hechizo para asignar
+                return;
+            }
 
+            var spellSlot = Spells[slot];
+            var spell = SpellBase.Get(spellSlot.Id);
+
+            if (spell == null || spell.Level >= spell.MaxLevel)
+            {
+                // El hechizo no existe o ya ha alcanzado el nivel máximo
+                return;
+            }
+
+            // Subir de nivel el hechizo
+            spell.Level++;
+            SpellPoints--;
+
+            // Enviar la actualización al servidor
+            PacketSender.SendAssignSpellPoint(slot);
+            PacketSender.SendSpellUpdate(this, slot);
+        }
+
+       
         //Hotbar Processing
         public void AddToHotbar(int hotbarSlot, sbyte itemType, int itemSlot)
         {
@@ -2685,7 +2712,6 @@ namespace Intersect.Client.Entities
                     return false;
             }
         }
-                
 
         //Professions
         public int FarmingLevel { get; set; } = 1;
@@ -2697,6 +2723,7 @@ namespace Intersect.Client.Entities
         public int CookingLevel { get; set; } = 1;
         public int AlchemyLevel { get; set; } = 1;
         public int CraftingLevel { get; set; } = 1;
+        public int SpellPoints { get; set; }
     }
 
 }

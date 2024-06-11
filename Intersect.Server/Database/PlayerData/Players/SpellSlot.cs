@@ -1,28 +1,15 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
-
+using Intersect.GameObjects;
+using Intersect.Server.Database.PlayerData.Players;
 using Intersect.Server.Entities;
-
+using Intersect.Server.Networking;
 using Newtonsoft.Json;
 
-// ReSharper disable UnusedAutoPropertyAccessor.Local
-// ReSharper disable AutoPropertyCanBeMadeGetOnly.Local
-
-namespace Intersect.Server.Database.PlayerData.Players
+namespace Intersect.Server.Database
 {
-
     public partial class SpellSlot : Spell, ISlot, IPlayerOwned
     {
-
-        public SpellSlot()
-        {
-        }
-
-        public SpellSlot(int slot)
-        {
-            Slot = slot;
-        }
-
         [DatabaseGenerated(DatabaseGeneratedOption.Identity), JsonIgnore]
         public Guid Id { get; private set; }
 
@@ -34,6 +21,25 @@ namespace Intersect.Server.Database.PlayerData.Players
 
         public int Slot { get; private set; }
 
-    }
+        public SpellSlot() { }
 
+        public SpellSlot(int slot)
+        {
+            Slot = slot;
+        }
+
+        [NotMapped]
+        public int Level => SpellBase.Get(SpellId).Level;
+
+        public void LevelUp()
+        {
+            var spell = SpellBase.Get(SpellId);
+            if (spell != null && spell.Level < spell.MaxLevel)
+            {
+                spell.LevelUp();
+                // Enviar la actualización al cliente
+                PacketSender.SendSpellUpdate(Player, this);
+            }
+        }
+    }
 }

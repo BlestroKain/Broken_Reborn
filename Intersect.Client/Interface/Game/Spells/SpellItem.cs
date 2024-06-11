@@ -17,7 +17,6 @@ namespace Intersect.Client.Interface.Game.Spells
 
     public partial class SpellItem
     {
-
         public ImagePanel Container;
 
         public bool IsDragging;
@@ -27,6 +26,8 @@ namespace Intersect.Client.Interface.Game.Spells
         private long mClickTime;
 
         private Label mCooldownLabel;
+
+        private Label mLevelLabel; // Nueva etiqueta para mostrar el nivel del hechizo
 
         private Guid mCurrentSpellId;
 
@@ -68,6 +69,10 @@ namespace Intersect.Client.Interface.Game.Spells
             mCooldownLabel = new Label(Pnl, "SpellCooldownLabel");
             mCooldownLabel.IsHidden = true;
             mCooldownLabel.TextColor = new Color(0, 255, 255, 255);
+
+            mLevelLabel = new Label(Pnl, "SpellLevelLabel"); // Nueva etiqueta para el nivel
+            mLevelLabel.IsHidden = true;
+            mLevelLabel.TextColor = new Color(255, 215, 0, 255); // Color dorado
         }
 
         private void Pnl_DoubleClicked(Base sender, ClickedEventArgs arguments)
@@ -89,7 +94,7 @@ namespace Intersect.Client.Interface.Game.Spells
             else
             {
                 Globals.Me.TryForgetSpell(mYindex);
-            }   
+            }
         }
 
         void pnl_HoverLeave(Base sender, EventArgs arguments)
@@ -154,6 +159,7 @@ namespace Intersect.Client.Interface.Game.Spells
                  Globals.Me.GetSpellCooldown(Globals.Me.Spells[mYindex].Id) > Timing.Global.Milliseconds))
             {
                 mCooldownLabel.IsHidden = true;
+                mLevelLabel.IsHidden = true; // Ocultar etiqueta de nivel por defecto
                 if (spell != null)
                 {
                     var spellTex = Globals.ContentManager.GetTexture(Framework.Content.TextureType.Spell, spell.Icon);
@@ -187,7 +193,7 @@ namespace Intersect.Client.Interface.Game.Spells
                     {
                         mCooldownLabel.IsHidden = false;
                         var secondsRemaining =
-                            (float) (Globals.Me.GetSpellCooldown(Globals.Me.Spells[mYindex].Id) -
+                            (float)(Globals.Me.GetSpellCooldown(Globals.Me.Spells[mYindex].Id) -
                                      Timing.Global.Milliseconds) /
                             1000f;
 
@@ -202,6 +208,10 @@ namespace Intersect.Client.Interface.Game.Spells
                             );
                         }
                     }
+
+                    // Mostrar el nivel del hechizo
+                    mLevelLabel.Text = $"Lvl {spell.Level}";
+                    mLevelLabel.IsHidden = false;
                 }
                 else
                 {
@@ -329,19 +339,19 @@ namespace Intersect.Client.Interface.Game.Spells
                                     bestIntersectIndex = i;
                                 }
                             }
+
+                            if (bestIntersectIndex > -1)
+                            {
+                                Globals.Me.AddToHotbar((byte)bestIntersectIndex, 1, mYindex);
+                            }
                         }
 
-                        if (bestIntersectIndex > -1)
-                        {
-                            Globals.Me.AddToHotbar((byte) bestIntersectIndex, 1, mYindex);
-                        }
+                        mDragIcon.Dispose();
                     }
-
-                    mDragIcon.Dispose();
                 }
             }
         }
-
     }
+
 
 }

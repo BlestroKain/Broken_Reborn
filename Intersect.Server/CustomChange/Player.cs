@@ -1,8 +1,15 @@
 using Intersect.Enums;
+using Intersect.GameObjects;
+using Intersect.Server.Database;
+using Intersect.Server.Database.PlayerData.Players;
 using Intersect.Server.Localization;
 using Intersect.Server.Networking;
+using Intersect.Utilities;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
 namespace Intersect.Server.Entities
 {
@@ -800,6 +807,86 @@ namespace Intersect.Server.Entities
 
             return (long)Math.Floor(skillBase * (((Math.Pow(level, Gain)))));
         }
+
+        #endregion
+
+        #region SpellLevel
+        public int SpellPoints { get; set; }
+
+                // Método para asignar puntos de hechizo a un hechizo específico
+        public void AssignSpellPoint(SpellSlot spellSlot)
+        {
+            if (SpellPoints > 0 && spellSlot.Level < 5)
+            {
+                spellSlot.LevelUp();
+                SpellPoints--;
+                // Actualizar interfaz y enviar notificación al cliente
+                PacketSender.SendSpellUpdate(this, spellSlot);
+            }
+        }
+
+        // Método para ganar puntos de hechizo al subir de nivel
+        public void GainSpellPoints(int points)
+        {
+            SpellPoints += points;
+        }
+
+        public void RecalculateSpellPoints()
+        {
+            // Puntos de hechizo base por nivel, podría ser constante o configurable
+            const int baseSpellPoints = 1;
+
+            // Calculamos los puntos de hechizo esperados en función del nivel del jugador
+            var expectedSpellPoints = baseSpellPoints * (Level - 1);
+
+            // Calculamos los puntos actuales de hechizo
+            var currentPoints = SpellPoints + SpellPointAllocations.Sum();
+
+            // Ajustamos los puntos de hechizo si es necesario
+            if (expectedSpellPoints > currentPoints)
+            {
+                SpellPoints += expectedSpellPoints - currentPoints;
+            }
+            else if (expectedSpellPoints < currentPoints)
+            {
+                var removePoints = currentPoints - expectedSpellPoints;
+                SpellPoints -= removePoints;
+                if (SpellPoints < 0)
+                {
+                    removePoints = Math.Abs(SpellPoints);
+                    SpellPoints = 0;
+                }
+
+                // Reajustamos las asignaciones de puntos de hechizo
+                var i = 0;
+                while (removePoints > 0 && SpellPointAllocations.Sum() > 0)
+                {
+                    if (SpellPointAllocations[i] > 0)
+                    {
+                        SpellPointAllocations[i]--;
+                        removePoints--;
+                    }
+
+                    i++;
+                    if (i >= Options.MaxPlayerSkills) // Aseguramos que no excedemos el límite de hechizos
+                    {
+                        i = 0;
+                    }
+                }
+            }
+
+            // Aquí se pueden agregar más ajustes si es necesario, por ejemplo, validar las asignaciones de puntos de hechizo.
+        }
+        // Persistencia de las asignaciones de puntos de hechizo
+        [JsonIgnore, Column(nameof(SpellPointAllocations))]
+        public string SpellPointsJson
+        {
+            get => DatabaseUtils.SaveIntArray(SpellPointAllocations, Options.MaxPlayerSkills);
+            set => SpellPointAllocations = DatabaseUtils.LoadIntArray(value, Options.MaxPlayerSkills);
+        }
+
+        [NotMapped]
+        public int[] SpellPointAllocations { get; set; } = new int[Options.MaxPlayerSkills];
 
         #endregion
     }

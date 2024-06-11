@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Intersect.Client.Spells
 {
@@ -7,6 +7,7 @@ namespace Intersect.Client.Spells
     {
 
         public Guid Id { get; set; }
+        public int Level { get;  set; }
 
         public Spell Clone()
         {

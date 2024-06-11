@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 using Intersect.Client.Core;
@@ -41,6 +41,9 @@ namespace Intersect.Client.Interface.Game.Spells
         private MenuItem mForgetSpellContextItem;
 
         //Init
+        private MenuItem mLevelUpSpellContextItem; // Nueva opción para subir de nivel el hechizo
+
+        //Init
         public SpellsWindow(Canvas gameCanvas)
         {
             mSpellWindow = new WindowControl(gameCanvas, Strings.Spells.title, false, "SpellsWindow");
@@ -60,6 +63,11 @@ namespace Intersect.Client.Interface.Game.Spells
             mUseSpellContextItem.Clicked += MUseSpellContextItem_Clicked;
             mForgetSpellContextItem = mContextMenu.AddItem(Strings.SpellContextMenu.Forget);
             mForgetSpellContextItem.Clicked += MForgetSpellContextItem_Clicked;
+
+            // Nueva opción para subir de nivel el hechizo
+            mLevelUpSpellContextItem = mContextMenu.AddItem("Level Up");
+            mLevelUpSpellContextItem.Clicked += MLevelUpSpellContextItem_Clicked;
+
             mContextMenu.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
         }
 
@@ -68,6 +76,7 @@ namespace Intersect.Client.Interface.Game.Spells
             // Clear out the old options.
             mContextMenu.RemoveChild(mUseSpellContextItem, false);
             mContextMenu.RemoveChild(mForgetSpellContextItem, false);
+            mContextMenu.RemoveChild(mLevelUpSpellContextItem, false);
             mContextMenu.Children.Clear();
 
             var spell = SpellBase.Get(Globals.Me.Spells[slot].Id);
@@ -89,11 +98,24 @@ namespace Intersect.Client.Interface.Game.Spells
                 mForgetSpellContextItem.SetText(Strings.SpellContextMenu.Forget.ToString(spell.Name));
             }
 
+            // Agregar la opción para subir de nivel el hechizo si el hechizo no ha alcanzado el nivel máximo
+            if (spell.Level < spell.MaxLevel)
+            {
+                mContextMenu.AddChild(mLevelUpSpellContextItem);
+                mLevelUpSpellContextItem.SetText($"Level Up {spell.Name}");
+            }
+
             // Set our spell slot as userdata for future reference.
             mContextMenu.UserData = slot;
 
             mContextMenu.SizeToChildren();
             mContextMenu.Open(Framework.Gwen.Pos.None);
+        }
+
+        private void MLevelUpSpellContextItem_Clicked(Base sender, Framework.Gwen.Control.EventArguments.ClickedEventArgs arguments)
+        {
+            var slot = (int)sender.Parent.UserData;
+            Globals.Me.AssignSpellPoint(slot); // Asigna un punto de hechizo al hechizo en la ranura especificada
         }
 
         private void MForgetSpellContextItem_Clicked(Base sender, Framework.Gwen.Control.EventArguments.ClickedEventArgs arguments)

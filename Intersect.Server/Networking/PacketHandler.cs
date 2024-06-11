@@ -4172,5 +4172,33 @@ namespace Intersect.Server.Networking
 
             player.BankInterface.SortBank();
         }
+
+        public void HandlePacket(Client client, AssignSpellPointPacket packet)
+        {
+            var player = client.Entity;
+            if (player == null)
+            {
+                return;
+            }
+
+            var slot = packet.Slot;
+            var spellSlot = player.Spells[slot];
+            var spell = SpellBase.Get(spellSlot.SpellId);
+
+            if (spell == null || spellSlot.Level >= Options.MaxPlayerSkills)
+            {
+                // El hechizo no existe o ya ha alcanzado el nivel máximo
+                return;
+            }
+
+            // Subir de nivel el hechizo
+            spellSlot.LevelUp();
+            player.SpellPoints--;
+
+            // Enviar la actualización al cliente
+            PacketSender.SendPlayerSpellUpdate(player, slot);
+            PacketSender.SendPointsTo(player); // Enviar actualización de puntos de hechizo
+        }
+
     }
 }

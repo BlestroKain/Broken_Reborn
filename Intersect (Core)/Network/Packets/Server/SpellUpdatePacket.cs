@@ -1,4 +1,4 @@
-﻿using MessagePack;
+using MessagePack;
 using System;
 
 namespace Intersect.Network.Packets.Server
@@ -11,10 +11,11 @@ namespace Intersect.Network.Packets.Server
         {
         }
 
-        public SpellUpdatePacket(int slot, Guid spellId)
+        public SpellUpdatePacket(int slot, Guid spellId, int level)
         {
             Slot = slot;
             SpellId = spellId;
+            Level = level;
         }
 
         [Key(0)]
@@ -22,6 +23,10 @@ namespace Intersect.Network.Packets.Server
 
         [Key(1)]
         public Guid SpellId { get; set; }
+
+        [Key(2)]
+        public int Level { get; set; }
+
 
     }
 

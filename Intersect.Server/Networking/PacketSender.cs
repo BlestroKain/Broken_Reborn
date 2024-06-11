@@ -1197,7 +1197,8 @@ namespace Intersect.Server.Networking
             var spells = new SpellUpdatePacket[Options.MaxPlayerSkills];
             for (var i = 0; i < Options.MaxPlayerSkills; i++)
             {
-                spells[i] = new SpellUpdatePacket(i, player.Spells[i].SpellId);
+                var spellSlot = player.Spells[i];
+                spells[i] = new SpellUpdatePacket(i, spellSlot.SpellId, spellSlot.Level);
             }
 
             player.SendPacket(new SpellsPacket(spells));
@@ -1211,7 +1212,8 @@ namespace Intersect.Server.Networking
                 return;
             }
 
-            player.SendPacket(new SpellUpdatePacket(slot, player.Spells[slot].SpellId));
+            var spellSlot = player.Spells[slot];
+            player.SendPacket(new SpellUpdatePacket(slot, spellSlot.SpellId, spellSlot.Level));
         }
 
         //EquipmentPacket
@@ -2325,6 +2327,34 @@ namespace Intersect.Server.Networking
         public static void SendCombatEffectPacket(Client client, Guid targetId, float shakeAmount, Color entityFlashColor, string sound, float flashIntensity, float flashDuration, Color flashColor)
         {
             client?.Send(new CombatEffectPacket(targetId, shakeAmount, entityFlashColor, sound, flashIntensity, flashDuration, flashColor));
+        }
+
+        public static void SendSpellUpdate(Player player, SpellSlot spellSlot)
+        {
+            // Crear un paquete con la información del hechizo y su nivel
+            var packet = new SpellUpdatePacket
+            {
+                SpellId = spellSlot.SpellId,
+                Level = spellSlot.Level
+            };
+
+            // Enviar el paquete al cliente del jugador
+            SendSpellUpdatePacket(player.Client, packet);
+        }
+
+        // Método para enviar el paquete al cliente
+        public static void SendSpellUpdatePacket(Client client, SpellUpdatePacket packet)
+        {
+            client?.Send(packet);
+        }
+        public static void SendAssignSpellPoint(Client client, int slot)
+        {
+            if (client == null)
+            {
+                return;
+            }
+
+            client.Send(new Network.Packets.Client.AssignSpellPointPacket(slot));
         }
     }
 

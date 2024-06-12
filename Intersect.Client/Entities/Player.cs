@@ -1170,31 +1170,12 @@ namespace Intersect.Client.Entities
         }
         public void AssignSpellPoint(int slot)
         {
-            if (SpellPoints <= 0)
+            if (SpellPoints > 0 && Spells[slot].Level < 5)
             {
-                // No hay suficientes puntos de hechizo para asignar
-                return;
+                PacketSender.SendAssignSpellPoint(slot); // Enviar la solicitud de subida de nivel al servidor
             }
-
-            var spellSlot = Spells[slot];
-            var spell = SpellBase.Get(spellSlot.Id);
-
-            if (spell == null || spell.Level >= spell.MaxLevel)
-            {
-                // El hechizo no existe o ya ha alcanzado el nivel máximo
-                return;
-            }
-
-            // Subir de nivel el hechizo
-            spell.Level++;
-            SpellPoints--;
-
-            // Enviar la actualización al servidor
-            PacketSender.SendAssignSpellPoint(slot);
-            PacketSender.SendSpellUpdate(this, slot);
         }
 
-       
         //Hotbar Processing
         public void AddToHotbar(int hotbarSlot, sbyte itemType, int itemSlot)
         {

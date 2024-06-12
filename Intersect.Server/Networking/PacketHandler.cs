@@ -4185,9 +4185,9 @@ namespace Intersect.Server.Networking
             var spellSlot = player.Spells[slot];
             var spell = SpellBase.Get(spellSlot.SpellId);
 
-            if (spell == null || spellSlot.Level >= Options.MaxPlayerSkills)
+            if (spell == null || spellSlot.Level >= 5 || player.SpellPoints <= 0)
             {
-                // El hechizo no existe o ya ha alcanzado el nivel máximo
+                // El hechizo no existe, ya ha alcanzado el nivel máximo o no hay suficientes puntos de hechizo
                 return;
             }
 
@@ -4197,8 +4197,7 @@ namespace Intersect.Server.Networking
 
             // Enviar la actualización al cliente
             PacketSender.SendPlayerSpellUpdate(player, slot);
-            PacketSender.SendPointsTo(player); // Enviar actualización de puntos de hechizo
+            PacketSender.SendSpellPoints(player); // Enviar actualización de puntos de hechizo
         }
-
     }
 }

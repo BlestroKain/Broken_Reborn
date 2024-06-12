@@ -458,7 +458,9 @@ namespace Intersect.Client.Networking
                 var packet = new Intersect.Network.Packets.Server.SpellUpdatePacket(slot, spellSlot.Id, spellSlot.Level);
                 Network.SendPacket(packet);
             }
-                
+        
+
+
     }
 
 }

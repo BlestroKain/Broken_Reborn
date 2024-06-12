@@ -208,9 +208,9 @@ namespace Intersect.Client.Interface.Game.Spells
                             );
                         }
                     }
-
-                    // Mostrar el nivel del hechizo
-                    mLevelLabel.Text = $"Lvl {spell.Level}";
+                   // Mostrar el nivel del hechizo
+                   // mLevelLabel.Text = $"Lvl: {Globals.Me.Spells[mYindex].Level}";
+                    mLevelLabel.Text = $"Lvl: {spell.Level}";
                     mLevelLabel.IsHidden = false;
                 }
                 else
@@ -351,6 +351,8 @@ namespace Intersect.Client.Interface.Game.Spells
                 }
             }
         }
+
+        
     }
 
 

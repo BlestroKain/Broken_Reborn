@@ -1282,9 +1282,10 @@ namespace Intersect.Client.Networking
             if (Globals.Me != null)
             {
                 Globals.Me.Spells[packet.Slot].Load(packet.SpellId);
+                Globals.Me.Spells[packet.Slot].Level = packet.Level; // Establecer el nivel del hechizo
             }
         }
-
+        
         //EquipmentPacket
         public void HandlePacket(IPacketSender packetSender, EquipmentPacket packet)
         {
@@ -2307,6 +2308,16 @@ namespace Intersect.Client.Networking
                 Globals.Me.FlashEndTime = Timing.Global.Milliseconds + 200; // TODO config
             }
         }
+
+        public void HandlePacket(IPacketSender packetSender, SpellPointsPacket packet)
+        {
+            if (Globals.Me != null)
+            {
+                Globals.Me.SpellPoints = packet.SpellPoints;
+            }
+        }
+
+       
     }
 
 }

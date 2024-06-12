@@ -27,14 +27,21 @@ namespace Intersect.Server.Database
         {
             Slot = slot;
         }
-
+   
         [NotMapped]
-        public int Level => SpellBase.Get(SpellId).Level;
+        public int Level
+        {
+            get
+            {
+                var spell = SpellBase.Get(SpellId);
+                return spell?.Level ?? 0; // Devolver 0 si spell es null
+            }
+        }
 
         public void LevelUp()
         {
             var spell = SpellBase.Get(SpellId);
-            if (spell != null && spell.Level < spell.MaxLevel)
+            if (spell != null && spell.Level < 5)
             {
                 spell.LevelUp();
                 // Enviar la actualización al cliente

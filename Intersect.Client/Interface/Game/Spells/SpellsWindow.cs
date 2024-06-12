@@ -12,52 +12,53 @@ using Intersect.GameObjects;
 
 namespace Intersect.Client.Interface.Game.Spells
 {
-
     public partial class SpellsWindow
     {
-
-        //Spell List
+        // Spell List
         public List<SpellItem> Items = new List<SpellItem>();
 
-        //Initialized
+        // Initialized
         private bool mInitializedSpells;
 
-        //Item/Spell Rendering
+        // Item/Spell Rendering
         private ScrollControl mItemContainer;
 
-        //Controls
+        // Controls
         private WindowControl mSpellWindow;
+        private Label mSpellPointsLabel; // Nueva etiqueta para mostrar los puntos de hechizo
 
-        //Location
+        // Location
         public int X;
-
         public int Y;
 
         // Context menu
         private Framework.Gwen.Control.Menu mContextMenu;
-
         private MenuItem mUseSpellContextItem;
-
         private MenuItem mForgetSpellContextItem;
 
-        //Init
+        // Init
         private MenuItem mLevelUpSpellContextItem; // Nueva opción para subir de nivel el hechizo
 
-        //Init
+        // Init
         public SpellsWindow(Canvas gameCanvas)
         {
             mSpellWindow = new WindowControl(gameCanvas, Strings.Spells.title, false, "SpellsWindow");
             mSpellWindow.DisableResizing();
+            // Nueva etiqueta para mostrar los puntos de hechizo
+            mSpellPointsLabel = new Label(mSpellWindow, "SpellPointsLabel");
+            mSpellPointsLabel.TextColor = Color.White;
 
             mItemContainer = new ScrollControl(mSpellWindow, "SpellsContainer");
             mItemContainer.EnableScroll(false, true);
+                       
+
             mSpellWindow.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
 
             // Generate our context menu with basic options.
             mContextMenu = new Framework.Gwen.Control.Menu(gameCanvas, "SpellContextMenu");
             mContextMenu.IsHidden = true;
             mContextMenu.IconMarginDisabled = true;
-            //TODO: Is this a memory leak?
+            // TODO: Is this a memory leak?
             mContextMenu.Children.Clear();
             mUseSpellContextItem = mContextMenu.AddItem(Strings.SpellContextMenu.Cast);
             mUseSpellContextItem.Clicked += MUseSpellContextItem_Clicked;
@@ -99,11 +100,11 @@ namespace Intersect.Client.Interface.Game.Spells
             }
 
             // Agregar la opción para subir de nivel el hechizo si el hechizo no ha alcanzado el nivel máximo
-            if (spell.Level < spell.MaxLevel)
-            {
+           // if (spell.Level < spell.MaxLevel)
+           // {
                 mContextMenu.AddChild(mLevelUpSpellContextItem);
                 mLevelUpSpellContextItem.SetText($"Level Up {spell.Name}");
-            }
+           // }
 
             // Set our spell slot as userdata for future reference.
             mContextMenu.UserData = slot;
@@ -130,7 +131,7 @@ namespace Intersect.Client.Interface.Game.Spells
             Globals.Me.TryUseSpell(slot);
         }
 
-        //Methods
+        // Methods
         public void Update()
         {
             if (!mInitializedSpells)
@@ -139,13 +140,17 @@ namespace Intersect.Client.Interface.Game.Spells
                 mInitializedSpells = true;
             }
 
-            if (mSpellWindow.IsHidden == true)
+            if (mSpellWindow.IsHidden)
             {
                 return;
             }
 
             X = mSpellWindow.X;
             Y = mSpellWindow.Y;
+
+            // Actualizar los puntos de hechizo
+            mSpellPointsLabel.Text = $"Spell Points: {Globals.Me.SpellPoints}";
+
             for (var i = 0; i < Options.MaxPlayerSkills; i++)
             {
                 var spell = SpellBase.Get(Globals.Me.Spells[i].Id);
@@ -153,9 +158,11 @@ namespace Intersect.Client.Interface.Game.Spells
                 if (spell != null)
                 {
                     Items[i].Update();
+                    
                 }
             }
         }
+
 
         private void InitItemContainer()
         {
@@ -213,7 +220,5 @@ namespace Intersect.Client.Interface.Game.Spells
 
             return rect;
         }
-
     }
-
 }

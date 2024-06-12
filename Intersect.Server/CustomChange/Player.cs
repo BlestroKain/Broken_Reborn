@@ -822,6 +822,7 @@ namespace Intersect.Server.Entities
                 SpellPoints--;
                 // Actualizar interfaz y enviar notificación al cliente
                 PacketSender.SendSpellUpdate(this, spellSlot);
+                PacketSender.SendPointsTo(this);
             }
         }
 
@@ -829,7 +830,20 @@ namespace Intersect.Server.Entities
         public void GainSpellPoints(int points)
         {
             SpellPoints += points;
+
+            // Enviar mensaje de chat indicando que el jugador ha ganado puntos de hechizo
+            PacketSender.SendChatMsg(
+                this,
+                Strings.Player.spellpoints.ToString(SpellPoints),
+                ChatMessageType.Experience,
+                CustomColors.Combat.StatPoints,
+                Name
+            );
+
+            // Enviar la actualización de los puntos de hechizo al cliente
+            PacketSender.SendPointsTo(this);
         }
+
 
         public void RecalculateSpellPoints()
         {

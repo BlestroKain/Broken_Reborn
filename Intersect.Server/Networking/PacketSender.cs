@@ -1213,7 +1213,7 @@ namespace Intersect.Server.Networking
             }
 
             var spellSlot = player.Spells[slot];
-            player.SendPacket(new SpellUpdatePacket(slot, spellSlot.SpellId, spellSlot.Level));
+            player.SendPacket(new SpellUpdatePacket(slot, player.Spells[slot].SpellId, player.Spells[slot].Level));
         }
 
         //EquipmentPacket
@@ -1261,7 +1261,9 @@ namespace Intersect.Server.Networking
         public static void SendPointsTo(Player player)
         {
             player.SendPacket(new StatPointsPacket(player.StatPoints), TransmissionMode.Any);
+            player.SendPacket(new SpellPointsPacket(player.SpellPoints), TransmissionMode.Any); // Enviar puntos de hechizo
         }
+
 
         //HotbarPacket
         public static void SendHotbarSlots(Player player)
@@ -2355,6 +2357,13 @@ namespace Intersect.Server.Networking
             }
 
             client.Send(new Network.Packets.Client.AssignSpellPointPacket(slot));
+        }
+
+       
+
+        public static void SendSpellPoints(Player player)
+        {
+            player?.SendPacket(new SpellPointsPacket(player.SpellPoints));
         }
     }
 

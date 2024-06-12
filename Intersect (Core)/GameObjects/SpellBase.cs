@@ -22,11 +22,13 @@ namespace Intersect.GameObjects
         public SpellBase(Guid id) : base(id)
         {
             Name = "New Spell";
+            Level = 1;
         }
 
         public SpellBase()
         {
             Name = "New Spell";
+            Level = 1;
         }
 
         public SpellType SpellType { get; set; }

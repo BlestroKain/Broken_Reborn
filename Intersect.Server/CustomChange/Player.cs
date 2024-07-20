@@ -3,6 +3,7 @@ using Intersect.GameObjects;
 using Intersect.Server.Localization;
 using Intersect.Server.Maps;
 using Intersect.Server.Networking;
+using Intersect.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -812,6 +813,8 @@ namespace Intersect.Server.Entities
         // Nueva propiedad para almacenar la mascota actual del jugador
         [NotMapped]
         public Pet CurrentPet { get; set; }
+        [NotMapped]
+        public Entity LastAttacker { get; set; }
 
         public void SummonPet(Guid petId)
         {
@@ -882,6 +885,17 @@ namespace Intersect.Server.Entities
                     CurrentPet.FollowOwner(timeMs);
                 }
             }
+        }
+
+        public bool IsUnderAttack()
+        {
+            return CombatTimer > Timing.Global.Milliseconds;
+        }
+
+        public Entity GetLastAttacker()
+        {
+            // Assuming there's a way to track the last attacker
+            return LastAttacker;
         }
         #endregion
     }

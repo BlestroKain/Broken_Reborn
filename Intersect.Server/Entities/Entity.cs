@@ -511,6 +511,11 @@ namespace Intersect.Server.Entities
                         blockerType = MovementBlockerType.Entity;
                         entityType = EntityType.Resource;
                         return false;
+                    case Pet _:
+                        // There should honestly be an Npc EntityType...
+                        blockerType = MovementBlockerType.Entity;
+                        entityType = EntityType.Player;
+                        return false;
                 }
             }
 
@@ -542,10 +547,10 @@ namespace Intersect.Server.Entities
         protected virtual bool IgnoresNpcAvoid => true;
 
         private bool IsBlockedByMapAttribute(
-            Direction direction,
-            Intersect.GameObjects.Maps.MapAttribute mapAttribute,
-            out MovementBlockerType blockerType
-        )
+     Direction direction,
+     Intersect.GameObjects.Maps.MapAttribute mapAttribute,
+     out MovementBlockerType blockerType
+ )
         {
             blockerType = MovementBlockerType.NotBlocked;
             if (mapAttribute == default)
@@ -557,7 +562,7 @@ namespace Intersect.Server.Entities
             {
                 case MapBlockedAttribute _:
                 case MapAnimationAttribute animationAttribute when animationAttribute.IsBlock:
-                case MapNpcAvoidAttribute _ when !IgnoresNpcAvoid:
+                case MapNpcAvoidAttribute _ when !IgnoresNpcAvoid: // Aquí se utiliza la propiedad
                     blockerType = MovementBlockerType.MapAttribute;
                     break;
 
@@ -572,6 +577,7 @@ namespace Intersect.Server.Entities
 
             return blockerType != MovementBlockerType.NotBlocked;
         }
+
 
         protected virtual bool CanPassPlayer(MapController targetMap) => false;
 

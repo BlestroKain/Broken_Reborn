@@ -2356,6 +2356,12 @@ namespace Intersect.Server.Networking
         {
             client?.Send(new CombatEffectPacket(targetId, shakeAmount, entityFlashColor, sound, flashIntensity, flashDuration, flashColor));
         }
+
+        public static void SendPetPersonalityUpdate(Client client, Guid petId, PetPersonality personality)
+        {
+            var packet = new PetPersonalityUpdatePacket(petId, personality);
+            client?.Send(packet);
+        }
     }
 
 }

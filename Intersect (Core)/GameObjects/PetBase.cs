@@ -140,4 +140,5 @@ public partial class PetBase : DatabaseObject<PetBase>, IFolderable
     public int ScalingStat { get; set; }
     public int AttackSpeedModifier { get; set; }
     public decimal AttackSpeedValue { get; set; }
+    public int RequiredLevel { get; set; }
 }

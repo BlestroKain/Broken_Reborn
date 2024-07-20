@@ -8,9 +8,7 @@ namespace Intersect.Network.Packets.Server
     [MessagePackObject]
     public class PetPacket : EntityPacket
     {
-        public PetPacket()
-        {
-        }
+        public PetPacket() { }
 
         [Key(24)]
         public PetState CurrentState { get; set; }
@@ -38,8 +36,37 @@ namespace Intersect.Network.Packets.Server
 
         [Key(32)]
         public float MovementSpeed { get; set; }
+
         [Key(33)]
         public Guid Id { get; set; }
+
+        // Nuevos campos para las propiedades de mascotas
+        [Key(34)]
+        public string Name { get; set; }
+
+        [Key(35)]
+        public Gender Gender { get; set; }
+
+        [Key(36)]
+        public PetRarity Rarity { get; set; }
+
+        [Key(37)]
+        public PetPersonality Personality { get; set; }
+
+        [Key(38)]
+        public int Health { get; set; }
+
+        [Key(39)]
+        public int MaxHealth { get; set; }
+
+        [Key(40)]
+        public int Hunger { get; set; }
+
+        [Key(41)]
+        public int Mood { get; set; }
+
+        [Key(42)]
+        public int BreedCount { get; set; }
 
         public PetPacket(
             PetState currentState,
@@ -50,9 +77,18 @@ namespace Intersect.Network.Packets.Server
             int y,
             int z,
             Direction dir,
-            float movementSpeed
-        /*, ... otros campos */
-        )
+            float movementSpeed,
+            string name,
+       
+            Gender gender,
+            PetRarity rarity,
+            PetPersonality personality,
+            int health,
+            int maxHealth,
+            int hunger,
+            int mood,
+            int breedCount
+        ) : base()
         {
             CurrentState = currentState;
             OwnerId = ownerId;
@@ -63,6 +99,16 @@ namespace Intersect.Network.Packets.Server
             Z = z;
             Dir = dir;
             MovementSpeed = movementSpeed;
+            Name = name;
+         
+            Gender = gender;
+            Rarity = rarity;
+            Personality = personality;
+            Health = health;
+            MaxHealth = maxHealth;
+            Hunger = hunger;
+            Mood = mood;
+            BreedCount = breedCount;
         }
     }
 }

@@ -68,7 +68,7 @@ namespace Intersect.Server.Entities
 
         [JsonIgnore][NotMapped] public List<Pet> SpawnedPets = new List<Pet>();
         #endregion
-
+   
         public static int OnlineCount => OnlinePlayers.Count;
 
         [JsonProperty("MaxVitals"), NotMapped]
@@ -1409,6 +1409,8 @@ namespace Intersect.Server.Entities
 
         public void TryAttack(Entity target)
         {
+            
+
             if (IsCasting)
             {
                 if (Options.Combat.EnableCombatChatMessages)
@@ -1535,7 +1537,7 @@ namespace Intersect.Server.Entities
             {
                 return false;
             }
-
+                     
             var friendly = spell?.Combat != null && spell.Combat.Friendly;
             if (entity is Player player)
             {

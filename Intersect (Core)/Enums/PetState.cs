@@ -12,5 +12,34 @@ namespace Intersect.Enums
             Following,
             Attacking
         }
-    
+    // Comportamientos de la mascota
+    public enum PetBehavior
+    {
+        Passive,
+        Defensive,
+        Aggressive
+    }
+    public enum PetRarity
+    {
+        Common,
+        Rare,
+        Epic,
+        Legendary
+    }
+
+    public enum PetPersonality
+    {
+        Joyful,
+        Serious,
+        Playful,
+        Shy,
+        Brave,
+        Protective,
+        Energetic,
+        Leader,
+        Mysterious,
+        Wise,
+        Fierce
+    }
+
 }

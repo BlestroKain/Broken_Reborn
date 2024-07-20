@@ -2,11 +2,8 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 using Intersect.Enums;
 using Intersect.GameObjects;
-using Intersect.GameObjects.Events;
 using Intersect.GameObjects.Maps;
 using Intersect.Logging;
 using Intersect.Network.Packets.Server;
@@ -30,18 +27,13 @@ namespace Intersect.Server.Entities
         // Nivel y experiencia de la mascota
         public int Level { get; set; }
         public long Experience { get; set; }
+        public Gender PetGender { get; set; }
 
         // Estadísticas base de la mascota
         public int[] BaseStats { get; set; }
         public int[] CurrentStats { get; set; }
         protected override bool IgnoresNpcAvoid => true; // Mascotas ignoran NpcAvoid
-        // Comportamientos de la mascota
-        public enum PetBehavior
-        {
-            Passive,
-            Defensive,
-            Aggressive
-        }
+
         public PetBehavior Behavior { get; set; }
         public int[] MaxVital { get; set; }
         public int[] VitalRegen { get; set; }
@@ -49,24 +41,14 @@ namespace Intersect.Server.Entities
         public PetBase PetBase { get; }
         public MapController AggroCenterMap;
 
-        /// <summary>
-        /// The X value on which this NPC was "aggro'd" and started chasing a target.
-        /// </summary>
+        // Posiciones de aggro
         public int AggroCenterX;
-
-        /// <summary>
-        /// The Y value on which this NPC was "aggro'd" and started chasing a target.
-        /// </summary>
         public int AggroCenterY;
-
-        /// <summary>
-        /// The Z value on which this NPC was "aggro'd" and started chasing a target.
-        /// </summary>
         public int AggroCenterZ;
 
         // Velocidad de movimiento de la mascota
         public float MovementSpeed { get; set; }
-        public PetState CurrentState { get;  set; }
+        public PetState CurrentState { get; set; }
         public Guid OwnerId { get; set; }
         public byte Range;
 
@@ -76,7 +58,20 @@ namespace Intersect.Server.Entities
         public int FindTargetDelay = 500;
 
         private int mTargetFailCounter = 0;
-        private int mTargetFailMax = 10;
+
+        // Propiedades nuevas
+        public int Hunger { get; set; } = 100;
+        public int Mood { get; set; } = 100;
+        public int Maturity { get; set; } = 0;
+        public int BreedCount { get; set; } = 0;
+        public bool IsSterile { get; set; } = false;
+        public bool IsGhost { get; set; } = false;
+        public int LifeHP { get; set; } = 100; // HP de vida fuera de combate
+
+        // Rareza y Personalidad
+        public PetRarity Rarity { get; set; } = PetRarity.Common;
+        public PetPersonality Personality { get; set; } = PetPersonality.Joyful; // Personalidad por defecto
+
         public Pet(Player owner, PetBase petBase)
         {
             PetBase = petBase;
@@ -86,7 +81,7 @@ namespace Intersect.Server.Entities
             Level = petBase.Level;
             Experience = petBase.Experience;
             Behavior = PetBehavior.Defensive;
-
+            PetGender = Gender.Male;
             BaseStats = petBase.PetStats;
             CurrentStats = new int[BaseStats.Length];
             Array.Copy(BaseStats, CurrentStats, BaseStats.Length);
@@ -104,7 +99,77 @@ namespace Intersect.Server.Entities
 
             // Ajustar la velocidad de movimiento a la del propietario
             MovementSpeed = CurrentStats[(int)Enums.Stat.Speed];
-                }
+        }
+
+        // Métodos nuevos
+        public void Feed(int foodAmount)
+        {
+            Hunger += foodAmount;
+            if (Hunger > 100) Hunger = 100;
+        }
+
+        public void Play()
+        {
+            Mood += 10;
+            if (Mood > 100) Mood = 100;
+        }
+
+        public void Train()
+        {
+            Experience += 50;
+            CheckForLevelUp();
+        }
+
+        public void CheckForLevelUp()
+        {
+            // Lógica para subir de nivel
+        }
+
+        public void Evolve()
+        {
+            if (Level >= PetBase.RequiredLevel)
+            {
+                Level++;
+                // Actualizar atributos y apariencia
+            }
+        }
+
+        public void Breed(Pet partner)
+        {
+            if (BreedCount < 10 && partner.BreedCount < 10 && !IsSterile && !partner.IsSterile)
+            {
+                BreedCount++;
+                partner.BreedCount++;
+                if (BreedCount >= 10) IsSterile = true;
+                if (partner.BreedCount >= 10) partner.IsSterile = true;
+                // Lógica de reproducción y generación de crías
+            }
+        }
+
+        public void ConvertToGhost()
+        {
+            IsGhost = true;
+            // Lógica adicional para manejar el estado de fantasma
+        }
+
+        public void Revive()
+        {
+            if (IsGhost)
+            {
+                IsGhost = false;
+                LifeHP = 50; // HP inicial tras revivir
+            }
+        }
+
+        public void DecreaseLifeHP(int amount)
+        {
+            LifeHP -= amount;
+            if (LifeHP <= 0)
+            {
+                ConvertToGhost();
+            }
+        }
+
         public void SetBehavior(PetBehavior newBehavior)
         {
             if (Behavior != newBehavior)
@@ -113,6 +178,7 @@ namespace Intersect.Server.Entities
                 PacketSender.SendChatMsg(Owner, $"Tu mascota ahora está en modo {Behavior}.", ChatMessageType.Notice);
             }
         }
+
         public void FollowOwner(long timeMs)
         {
             if (Owner == null || Owner.IsDisposed)
@@ -297,11 +363,6 @@ namespace Intersect.Server.Entities
                                     var spawns = projectile?.Spawns?.ToArray() ?? Array.Empty<ProjectileSpawn>();
                                     foreach (var spawn in spawns)
                                     {
-                                        if (spawn == null)
-                                        {
-                                            continue;
-                                        }
-
                                         if (spawn.IsAtLocation(MapId, X, Y, Z) && spawn.HitEntity(this))
                                         {
                                             spawn.Dead = true;
@@ -333,7 +394,7 @@ namespace Intersect.Server.Entities
                     {
                         if (((MapSlideAttribute)attribute).Direction > 0)
                         {
-                            Dir = (Direction)(((MapSlideAttribute)attribute).Direction - 1);
+                            Dir = ((MapSlideAttribute)attribute).Direction - 1;
                         }
 
                         var dash = new Dash(this, 1, Dir);
@@ -341,8 +402,6 @@ namespace Intersect.Server.Entities
                 }
             }
         }
-
-
 
         public override void Warp(Guid newMapId,
             float newX,
@@ -400,7 +459,6 @@ namespace Intersect.Server.Entities
                 }
             }
         }
-
 
         public void TryFindNewTarget(long timeMs, Guid avoidId = new Guid(), bool ignoreTimer = false, Entity attackedBy = null)
         {
@@ -463,11 +521,11 @@ namespace Intersect.Server.Entities
             else
             {
                 mTargetFailCounter += 1;
-                
             }
 
             FindTargetWaitTime = timeMs + FindTargetDelay;
         }
+
         public void AssignTarget(Entity en)
         {
             var oldTarget = Target;
@@ -514,7 +572,6 @@ namespace Intersect.Server.Entities
                     }
                 }
 
-                
             }
             else
             {
@@ -545,6 +602,7 @@ namespace Intersect.Server.Entities
 
             mPathFinder = null;
         }
+
         #region Attack
         public override void TryAttack(Entity target)
         {
@@ -576,22 +634,12 @@ namespace Intersect.Server.Entities
                 return;
             }
 
-            // Puedes definir una animación de ataque específica para la mascota, si es necesario.
-            // if (Base.AttackAnimation != null)
-            // {
-            //     PacketSender.SendAnimationToProximity(
-            //         Base.AttackAnimationId, -1, Guid.Empty, target.MapId, (byte)target.X, (byte)target.Y,
-            //         Dir, target.MapInstanceId
-            //     );
-            // }
-
             base.TryAttack(
-               target, PetBase.Damage, (DamageType)PetBase.DamageType, (Enums.Stat)PetBase.ScalingStat, (int)PetBase.Scaling,
-               PetBase.CritChance, PetBase.CritMultiplier, deadAnimations, aliveAnimations
-               );
-           PacketSender.SendEntityAttack(this, CalculateAttackTime());
+                target, PetBase.Damage, (DamageType)PetBase.DamageType, (Enums.Stat)PetBase.ScalingStat, (int)PetBase.Scaling,
+                PetBase.CritChance, PetBase.CritMultiplier, deadAnimations, aliveAnimations
+            );
+            PacketSender.SendEntityAttack(this, CalculateAttackTime());
         }
-
 
         public bool CanPetCombat(Entity enemy, bool friendly = false)
         {
@@ -618,6 +666,7 @@ namespace Intersect.Server.Entities
 
             return false;
         }
+
         public override bool CanAttack(Entity entity, SpellBase spell)
         {
             var npc = entity as Npc;
@@ -686,8 +735,9 @@ namespace Intersect.Server.Entities
 
             return true;
         }
-       
+
         #endregion
+
         public override EntityPacket EntityPacket(EntityPacket packet = null, Player forPlayer = null)
         {
             if (packet == null)
@@ -701,7 +751,16 @@ namespace Intersect.Server.Entities
                     Y,
                     Z,
                     Dir,
-                    MovementSpeed
+                    MovementSpeed,
+                    Name,
+                    PetGender,
+                    Rarity,
+                    Personality,
+                    LifeHP,
+                    MaxVital[(int)Vital.Health],
+                    Hunger,
+                    Mood,
+                    BreedCount
                 );
             }
 
@@ -717,9 +776,17 @@ namespace Intersect.Server.Entities
             pkt.Z = Z;
             pkt.Dir = Dir;
             pkt.MovementSpeed = MovementSpeed;
+            pkt.Name = Name;
+            pkt.Gender = PetGender;
+            pkt.Rarity = Rarity;
+            pkt.Personality = Personality;
+            pkt.Health = LifeHP;
+            pkt.MaxHealth = MaxVital[(int)Vital.Health];
+            pkt.Hunger = Hunger;
+            pkt.Mood = Mood;
+            pkt.BreedCount = BreedCount;
 
             return pkt;
         }
-
     }
 }

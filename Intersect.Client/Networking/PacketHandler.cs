@@ -2319,6 +2319,15 @@ namespace Intersect.Client.Networking
                 Globals.Entities.Add(packet.EntityId, new Pet(packet.EntityId, packet));
             }
         }
+        private static void HandlePacket(IPacketSender packetSender, PetPersonalityUpdatePacket packet)
+        {
+            var pet = Globals.Entities[packet.PetId] as Pet;
+            if (pet != null)
+            {
+                pet.Personality = packet.Personality;
+                pet.SetPersonalityHandler(); // Método para actualizar el manejador de personalidad
+            }
+        }
     }
 
 }

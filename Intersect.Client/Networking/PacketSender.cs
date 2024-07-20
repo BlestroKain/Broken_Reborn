@@ -442,6 +442,7 @@ namespace Intersect.Client.Networking
         {
             Network.SendPacket(new PetCommandPacket(commandType, petId));
         }*/
+       
     }
 
 }

@@ -123,6 +123,8 @@ public partial class SeedUsers : SeedData<User>
                     player.Stat[i].BaseStat = 0;
                 }
 
+                player.InitializeJobs();
+
                 user.Players?.Add(player);
                 player.ValidateLists();
             }

@@ -910,14 +910,20 @@ internal sealed partial class PacketHandler
 
                 case 3:
                     cmd = Strings.Guilds.GuildCommand;
+
                     break;
 
-                case 4: //admin
+                case 4: //trade
+                    cmd = Strings.Chat.TradeCommand;
+                    
+                    break;
+
+                case 5: //admin
                     cmd = Strings.Chat.AdminCommand;
 
                     break;
 
-                case 5: //private
+                case 6: //private
                     PacketSender.SendChatMsg(player, msg, ChatMessageType.Local);
 
                     return;
@@ -1121,6 +1127,18 @@ internal sealed partial class PacketHandler
             {
                 PacketSender.SendChatMsg(player, Strings.Player.Offline, ChatMessageType.PM, CustomColors.Alerts.Error);
             }
+        }
+        else if (cmd == Strings.Chat.TradeCommand){
+            if (msg.Trim().Length == 0)
+            {
+                return;
+            }
+            else
+            {
+                PacketSender.SendTradeMsg(player, Strings.Chat.Trade.ToString(player.Name, msg), CustomColors.Chat.TradeChat);
+                ChatHistory.LogMessage(player, msg.Trim(), ChatMessageType.Trade,Guid.Empty);
+            }
+
         }
         else
         {

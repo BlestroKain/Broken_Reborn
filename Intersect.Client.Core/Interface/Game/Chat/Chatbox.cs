@@ -140,7 +140,7 @@ public partial class Chatbox
         mChannelLabel.IsHidden = true;
 
         mChannelCombobox = new ComboBox(mChatboxWindow, "ChatChannelCombobox");
-        for (var i = 0; i < 4; i++)
+        for (var i = 0; i < 5; i++)
         {
             var menuItem = mChannelCombobox.AddItem(Strings.Chatbox.Channels[i]);
             menuItem.UserData = i;
@@ -151,7 +151,7 @@ public partial class Chatbox
         if (Globals.Me.Type > 0)
         {
             var menuItem = mChannelCombobox.AddItem(Strings.Chatbox.ChannelAdmin);
-            menuItem.UserData = 4;
+            menuItem.UserData = 5;
             menuItem.Selected += MenuItem_Selected;
         }
 
@@ -346,6 +346,10 @@ public partial class Chatbox
 
             case ChatboxTab.Guild:
                 mChannelCombobox.SelectByUserData(3);
+                break;
+
+            case ChatboxTab.Trade:
+                mChannelCombobox.SelectByUserData(4);
                 break;
 
             default:
@@ -575,6 +579,7 @@ public partial class Chatbox
         mTabButtons[ChatboxTab.Local].Show();
         mTabButtons[ChatboxTab.Party].Show();
         mTabButtons[ChatboxTab.Guild].Show();
+        mTabButtons[ChatboxTab.Trade].Show();
         mTabButtons[ChatboxTab.Global].Show();
         mTabButtons[ChatboxTab.System].Show();
         mChatboxMessages.Show();
@@ -587,6 +592,7 @@ public partial class Chatbox
         mTabButtons[ChatboxTab.Local].Hide();
         mTabButtons[ChatboxTab.Party].Hide();
         mTabButtons[ChatboxTab.Guild].Hide();
+        mTabButtons[ChatboxTab.Trade].Hide();
         mTabButtons[ChatboxTab.Global].Hide();
         mTabButtons[ChatboxTab.System].Hide();
         mChatboxMessages.Hide();

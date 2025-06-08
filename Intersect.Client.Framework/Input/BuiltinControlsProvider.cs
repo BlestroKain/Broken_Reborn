@@ -22,6 +22,7 @@ internal sealed class BuiltinControlsProvider : IControlsProvider
         { Control.OpenMenu, new ControlMapping(new ControlBinding(Keys.None, Keys.Escape), ControlBinding.Default) },
         { Control.OpenInventory, new ControlMapping(new ControlBinding(Keys.None, Keys.I), ControlBinding.Default) },
         { Control.OpenQuests, new ControlMapping(new ControlBinding(Keys.None, Keys.L), ControlBinding.Default) },
+        { Control.OpenJobs, new ControlMapping(new ControlBinding(Keys.None, Keys.J), ControlBinding.Default) },
         { Control.OpenCharacterInfo, new ControlMapping(new ControlBinding(Keys.None, Keys.C), ControlBinding.Default) },
         { Control.OpenParties, new ControlMapping(new ControlBinding(Keys.None, Keys.P), ControlBinding.Default) },
         { Control.OpenSpells, new ControlMapping(new ControlBinding(Keys.None, Keys.K), ControlBinding.Default) },

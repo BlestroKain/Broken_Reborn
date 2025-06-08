@@ -8,6 +8,7 @@ using Intersect.Client.Interface.Game.Character;
 using Intersect.Client.Interface.Game.Chat;
 using Intersect.Client.Interface.Game.Inventory;
 using Intersect.Client.Interface.Game.Spells;
+using Intersect.Client.Interface.Game.Job;
 using Intersect.Client.Localization;
 using Intersect.Client.Networking;
 using Intersect.Enums;
@@ -34,6 +35,10 @@ public partial class MenuContainer : Panel
     private readonly ImagePanel _questsButtonContainer;
     private readonly Button _questsButton;
     private readonly QuestsWindow _questsWindow;
+
+    private readonly ImagePanel _jobsButtonContainer;
+    private readonly Button _jobsButton;
+    private readonly JobsWindow _jobsWindow;
 
     private readonly ImagePanel _friendsButtonContainer;
     private readonly Button _friendsButton;
@@ -135,6 +140,25 @@ public partial class MenuContainer : Panel
         _questsButton.SetStateTexture(componentState: ComponentState.Hovered, textureName: "questsicon_hovered.png");
         _questsButton.SetToolTipText(text: Strings.GameMenu.Quest);
         _questsButton.Clicked += QuestBtn_Clicked;
+
+        _jobsButtonContainer = new ImagePanel(parent: this, name: nameof(_jobsButtonContainer))
+        {
+            Dock = Pos.Left,
+            MaximumSize = new Point(x: 36, y: 36),
+            MinimumSize = new Point(x: 36, y: 36),
+            Padding = new Padding(size: 2),
+            Size = new Point(x: 36, y: 36),
+            TextureFilename = "menuitem.png",
+        };
+        _jobsButton = new Button(parent: _jobsButtonContainer, name: nameof(_jobsButton), disableText: true)
+        {
+            Alignment = [Alignments.Center],
+            Size = new Point(x: 32, y: 32),
+        };
+        _jobsButton.SetStateTexture(ComponentState.Normal, "jobicon.png");
+        _jobsButton.SetStateTexture(ComponentState.Hovered, "jobicon_hovered.png");
+        _jobsButton.SetToolTipText(Strings.GameMenu.Jobs);
+        _jobsButton.Clicked += JobsButton_Clicked;
 
         _friendsButtonContainer = new ImagePanel(parent: this, name: nameof(_friendsButtonContainer))
         {
@@ -239,6 +263,7 @@ public partial class MenuContainer : Panel
         _spellsWindow = new SpellsWindow(gameCanvas: gameCanvas);
         _characterWindow = new CharacterWindow(gameCanvas: gameCanvas);
         _questsWindow = new QuestsWindow(gameCanvas: gameCanvas);
+        _jobsWindow = new JobsWindow(gameCanvas: gameCanvas);
         _mapItemWindow = new MapItemWindow(gameCanvas: gameCanvas);
         _guildWindow = new GuildWindow(gameCanvas: gameCanvas);
     }
@@ -252,6 +277,7 @@ public partial class MenuContainer : Panel
         _partyWindow.Update();
         _friendsWindow.Update();
         _questsWindow.Update(updateQuestLog);
+        _jobsWindow.Update();
         _mapItemWindow.Update();
         _guildWindow.Update();
     }
@@ -279,6 +305,7 @@ public partial class MenuContainer : Panel
         _inventoryWindow.Hide();
         _partyWindow.Hide();
         _questsWindow.Hide();
+        _jobsWindow.Hide();
         _spellsWindow.Hide();
         _guildWindow.Hide();
     }
@@ -384,6 +411,19 @@ public partial class MenuContainer : Panel
         }
     }
 
+    public void ToggleJobsWindow()
+    {
+        if (_jobsWindow.IsVisible())
+        {
+            _jobsWindow.Hide();
+        }
+        else
+        {
+            HideWindows();
+            _jobsWindow.Show();
+        }
+    }
+
     public void ToggleSimplifiedEscapeMenu()
     {
         Interface.GameUi.SimplifiedEscapeMenu.ToggleHidden(_escapeMenuButton);
@@ -411,6 +451,7 @@ public partial class MenuContainer : Panel
         _inventoryWindow.Hide();
 
         _questsWindow.Hide();
+        _jobsWindow.Hide();
 
         _spellsWindow.Hide();
 
@@ -425,6 +466,7 @@ public partial class MenuContainer : Panel
                           _friendsWindow.IsVisible ||
                           _inventoryWindow.IsVisibleInTree ||
                           _questsWindow.IsVisible() ||
+                          _jobsWindow.IsVisible() ||
                           _spellsWindow.IsVisibleInTree ||
                           _partyWindow.IsVisible() ||
                           _guildWindow.IsVisibleInTree;
@@ -471,6 +513,11 @@ public partial class MenuContainer : Panel
     private void QuestBtn_Clicked(Base sender, MouseButtonState arguments)
     {
         ToggleQuestsWindow();
+    }
+
+    private void JobsButton_Clicked(Base sender, MouseButtonState arguments)
+    {
+        ToggleJobsWindow();
     }
 
     private void InventoryButton_Clicked(Base sender, MouseButtonState arguments)

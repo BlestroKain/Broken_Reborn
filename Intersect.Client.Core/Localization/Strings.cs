@@ -889,6 +889,7 @@ public static partial class Strings
             {"openmenu", @"Open Menu:"},
             {"openinventory", @"Open Inventory:"},
             {"openquests", @"Open Quests:"},
+            {"openjobs", @"Open Jobs:"},
             {"opencharacterinfo", @"Open Character Info:"},
             {"openparties", @"Open Parties:"},
             {"openspells", @"Open Spells:"},
@@ -1257,6 +1258,9 @@ public static partial class Strings
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString Quest = @"Quest Log";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Jobs = @"Jobs";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString Spells = @"Spell Book";
@@ -2357,6 +2361,12 @@ If you are sure you want to hand over your guild enter '\c{{#ff8080}}{02}\c{{}}'
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString Title = @"Quest Offer";
+    }
+
+    public partial struct Jobs
+    {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Title = @"Jobs";
     }
 
     public partial struct Regex

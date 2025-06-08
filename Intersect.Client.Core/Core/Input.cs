@@ -304,6 +304,10 @@ public static partial class Input
                             Interface.Interface.GameUi.GameMenu?.ToggleQuestsWindow();
                             break;
 
+                        case Control.OpenJobs:
+                            Interface.Interface.GameUi.GameMenu?.ToggleJobsWindow();
+                            break;
+
                         case Control.OpenCharacterInfo:
                             Interface.Interface.GameUi.GameMenu?.ToggleCharacterWindow();
                             break;

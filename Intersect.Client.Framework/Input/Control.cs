@@ -32,6 +32,8 @@ public enum Control
 
     OpenQuests,
 
+    OpenJobs,
+
     OpenCharacterInfo,
 
     OpenParties,

@@ -283,6 +283,8 @@ public partial class Entity : IEntity
     //     set => Position = Position with { Y = Y + (value / TileHeight) };
     // }
 
+    public bool HasPermissionToTrade { get; }
+
     public Entity(Guid id, EntityPacket? packet, EntityType entityType)
     {
         Id = id;

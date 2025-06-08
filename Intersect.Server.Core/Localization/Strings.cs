@@ -1,5 +1,6 @@
 using System.Text;
 using Intersect.Config;
+using Intersect.Framework.Core.Config;
 using Intersect.Core;
 using Intersect.Localization;
 using Intersect.Server.Core;
@@ -1114,6 +1115,16 @@ public static partial class Strings
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public readonly LocalizedString LevelUp = @"You have leveled up! You are now level {00}!";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly Dictionary<JobType, LocalizedString> JobLevelUpMessages = new()
+        {
+            { JobType.Farming, @"Your Farming job is now level {00}!" },
+            { JobType.Mining, @"Your Mining job is now level {00}!" }
+        };
+
+        public LocalizedString GetJobLevelUpMessage(JobType jobType) =>
+            JobLevelUpMessages.TryGetValue(jobType, out var msg) ? msg : @"";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public readonly LocalizedString Moderator = @"{00} has been given moderation powers!";

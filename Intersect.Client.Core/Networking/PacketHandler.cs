@@ -2022,6 +2022,12 @@ internal sealed partial class PacketHandler
         }
     }
 
+    //JobSyncPacket
+    public void HandlePacket(IPacketSender packetSender, JobSyncPacket packet)
+    {
+        Globals.Me?.UpdateJobsFromPacket(packet.Jobs);
+    }
+
     //TradePacket
     public void HandlePacket(IPacketSender packetSender, TradePacket packet)
     {

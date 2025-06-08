@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Intersect.Core;
 using Intersect.Enums;
 using Intersect.Framework.Core;
@@ -415,6 +416,7 @@ public static partial class PacketSender
             SendQuestsProgress(player);
             SendItemCooldowns(player);
             SendSpellCooldowns(player);
+            SendJobSync(player);
         }
 
         switch (entity)
@@ -1581,6 +1583,22 @@ public static partial class PacketSender
     public static void SendExperience(Player player)
     {
         player.SendPacket(new ExperiencePacket(player.Exp, player.ExperienceToNextLevel), TransmissionMode.Any);
+    }
+
+    public static void SendJobSync(Player player)
+    {
+        var jobs = new Dictionary<JobType, JobData>();
+        foreach (var (type, job) in player.Jobs)
+        {
+            jobs[type] = new JobData
+            {
+                Level = job.Level,
+                Experience = job.Experience,
+                ExperienceToNextLevel = job.GetExperienceToNextLevel()
+            };
+        }
+
+        player.SendPacket(new JobSyncPacket(jobs), TransmissionMode.Any);
     }
 
     //PlayAnimationPacket

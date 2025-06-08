@@ -3,6 +3,7 @@ using Intersect.Config;
 using Intersect.Config.Guilds;
 using Intersect.Core;
 using Intersect.Framework.Annotations;
+using Intersect.Framework.Core.Config;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -224,6 +225,11 @@ public partial record Options
 
     public ItemOptions Items { get; set; } = new();
 
+    /// <summary>
+    /// Configuration for the job system.
+    /// </summary>
+    public JobOptions Jobs { get; set; } = new();
+
     #endregion Other Game Properties
 
     #endregion Configuration Properties
@@ -315,6 +321,11 @@ public partial record Options
     }
 
     public static event OptionsLoadedEventHandler? OptionsLoaded;
+
+    /// <summary>
+    /// Provides easy access to job configuration.
+    /// </summary>
+    public static JobOptions JobOptions => Instance.Jobs;
 
     public Options DeepClone() => JsonConvert.DeserializeObject<Options>(
         JsonConvert.SerializeObject(this, PrivateSerializerSettings)

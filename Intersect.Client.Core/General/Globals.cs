@@ -3,6 +3,7 @@ using Intersect.Client.Entities;
 using Intersect.Client.Entities.Events;
 using Intersect.Client.Framework.Database;
 using Intersect.Client.Framework.Entities;
+using System;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Graphics;
 using Intersect.Client.Framework.Input;
@@ -104,6 +105,7 @@ public static partial class Globals
 
     //Only need 1 table, and that is the one we see at a given moment in time.
     public static CraftingTableDescriptor? ActiveCraftingTable { get; set; }
+    public static Guid FixedCraftingTableId { get; set; } = Guid.Empty;
 
     public static int AnimationFrame { get; set; }
 

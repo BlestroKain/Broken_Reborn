@@ -1979,6 +1979,23 @@ public static partial class CommandProcessing
         }
     }
 
+    private static void ProcessCommand(
+        GiveJobExperienceCommand command,
+        Player player,
+        Event instance,
+        CommandInstance stackInfo,
+        Stack<CommandInstance> callStack
+    )
+    {
+        foreach (var (jobType, exp) in command.JobExp)
+        {
+            if (exp != 0)
+            {
+                player.GiveJobExperience(jobType, exp);
+            }
+        }
+    }
+
     private static void ProcessVariableModification(
         SetVariableCommand command,
         IntegerVariableMod mod,

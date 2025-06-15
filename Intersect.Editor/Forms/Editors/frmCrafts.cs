@@ -9,6 +9,7 @@ using Intersect.Framework.Core.GameObjects.Events;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.GameObjects;
 using Intersect.Models;
+using Intersect.Config;
 
 namespace Intersect.Editor.Forms.Editors;
 
@@ -125,6 +126,8 @@ public partial class FrmCrafts : EditorForm
             }
 
             cmbEvent.SelectedIndex = EventDescriptor.ListIndex(mEditorItem.EventId) + 1;
+            cmbJobType.SelectedIndex = (int)mEditorItem.Jobs;
+            NudExpAmount.Value = mEditorItem.ExperienceAmount;
         }
         else
         {
@@ -428,6 +431,11 @@ public partial class FrmCrafts : EditorForm
 
     private void frmCrafting_Load(object sender, EventArgs e)
     {
+        cmbJobType.Items.Clear();
+        for (var i = 0; i < (int)JobType.JobCount; i++)
+        {
+            cmbJobType.Items.Add(Globals.GetJobName(i));
+        }
         InitLocalization();
         UpdateEditor();
     }
@@ -577,6 +585,16 @@ public partial class FrmCrafts : EditorForm
     {
         return !string.IsNullOrWhiteSpace(txtSearch.Text) &&
                txtSearch.Text != Strings.CraftsEditor.searchplaceholder;
+    }
+
+    private void cmbJobType_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        mEditorItem.Jobs = (JobType)cmbJobType.SelectedIndex;
+    }
+
+    private void NudExpAmount_ValueChanged(object sender, EventArgs e)
+    {
+        mEditorItem.ExperienceAmount = (int)NudExpAmount.Value;
     }
 
     private void txtSearch_Click(object sender, EventArgs e)

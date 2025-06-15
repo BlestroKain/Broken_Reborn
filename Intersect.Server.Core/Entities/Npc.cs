@@ -430,9 +430,17 @@ public partial class Npc : Entity
             );
         }
 
+        var dmg = Descriptor.Damage.FirstOrDefault();
         base.TryAttack(
-            target, Descriptor.Damage, (DamageType)Descriptor.DamageType, (Stat)Descriptor.ScalingStat, Descriptor.Scaling,
-            Descriptor.CritChance, Descriptor.CritMultiplier, deadAnimations, aliveAnimations
+            target,
+            dmg.Amount,
+            dmg.DamageType,
+            (Stat)Descriptor.ScalingStat,
+            Descriptor.Scaling,
+            Descriptor.CritChance,
+            Descriptor.CritMultiplier,
+            deadAnimations,
+            aliveAnimations
         );
 
         PacketSender.SendEntityAttack(this, CalculateAttackTime());

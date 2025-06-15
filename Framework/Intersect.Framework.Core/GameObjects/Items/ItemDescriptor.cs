@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using Intersect.Enums;
@@ -123,8 +124,7 @@ public partial class ItemDescriptor : DatabaseObject<ItemDescriptor>, IFolderabl
     /// </summary>
     public bool IgnoreCooldownReduction { get; set; } = false;
 
-    [NotMapped]
-    public int Damage
+   public int Damage
     {
         get => Damages.FirstOrDefault();
         set

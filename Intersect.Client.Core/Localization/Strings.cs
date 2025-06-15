@@ -2,6 +2,7 @@ using System.Reflection;
 using Intersect.Client.Core.Controls;
 using Intersect.Client.Framework.Content;
 using Intersect.Client.Framework.Input;
+using System.Linq;
 using Intersect.Client.Interface.Shared;
 using Intersect.Configuration;
 using Intersect.Core;
@@ -1742,12 +1743,11 @@ If you are sure you want to hand over your guild enter '\c{{#ff8080}}{02}\c{{}}'
         };
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public static Dictionary<int, LocalizedString> DamageTypes = new Dictionary<int, LocalizedString>()
-        {
-            {0, @"Physical"},
-            {1, @"Magic"},
-            {2, @"True"},
-        };
+        public static Dictionary<int, LocalizedString> DamageTypes =
+            Enum.GetValues<DamageType>().ToDictionary(
+                dt => (int) dt,
+                dt => (LocalizedString) dt.ToString()
+            );
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static Dictionary<int, LocalizedString> ItemTypes = new Dictionary<int, LocalizedString>
@@ -2635,12 +2635,11 @@ If you are sure you want to hand over your guild enter '\c{{#ff8080}}{02}\c{{}}'
         // Integer Dictionaries (A - Z):
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public static Dictionary<int, LocalizedString> DamageTypes = new Dictionary<int, LocalizedString>
-        {
-            {0, @"Physical"},
-            {1, @"Magic"},
-            {2, @"True"},
-        };
+        public static Dictionary<int, LocalizedString> DamageTypes =
+            Enum.GetValues<DamageType>().ToDictionary(
+                dt => (int) dt,
+                dt => (LocalizedString) dt.ToString()
+            );
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static Dictionary<int, LocalizedString> Effects = new Dictionary<int, LocalizedString>

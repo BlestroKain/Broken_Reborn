@@ -293,10 +293,11 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
         if (_itemDescriptor.EquipmentSlot == Options.Instance.Equipment.WeaponSlot)
         {
             // Base Damage:
-            rows.AddKeyValueRow(Strings.ItemDescription.BaseDamage, _itemDescriptor.Damage.ToString());
+            var dmg = _itemDescriptor.Damage.FirstOrDefault();
+            rows.AddKeyValueRow(Strings.ItemDescription.BaseDamage, dmg.Amount.ToString());
 
             // Damage Type:
-            Strings.ItemDescription.DamageTypes.TryGetValue(_itemDescriptor.DamageType, out var damageType);
+            Strings.ItemDescription.DamageTypes.TryGetValue((int)dmg.DamageType, out var damageType);
             rows.AddKeyValueRow(Strings.ItemDescription.BaseDamageType, damageType);
 
             if (_itemDescriptor.Scaling > 0)

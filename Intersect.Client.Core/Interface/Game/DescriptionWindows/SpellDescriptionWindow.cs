@@ -3,6 +3,7 @@ using Intersect.GameObjects;
 using Intersect.Client.Localization;
 using Intersect.Utilities;
 using Intersect.Client.Framework.File_Management;
+using System.Linq;
 
 namespace Intersect.Client.Interface.Game.DescriptionWindows;
 
@@ -234,9 +235,21 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
             }
         }
 
-        // Damage Type:
-        Strings.SpellDescription.DamageTypes.TryGetValue(_spellDescriptor.Combat.DamageType, out var damageType);
-        rows.AddKeyValueRow(Strings.SpellDescription.DamageType, damageType);
+        var combatDamagePairs = GetDamagePairs(_spellDescriptor.Combat);
+        if (combatDamagePairs != null)
+        {
+            foreach (var pair in combatDamagePairs)
+            {
+                Strings.SpellDescription.DamageTypes.TryGetValue(pair.Key, out var dmgType);
+                rows.AddKeyValueRow(Strings.SpellDescription.DamageType, $"{dmgType}: {pair.Value}");
+            }
+        }
+        else
+        {
+            // Damage Type:
+            Strings.SpellDescription.DamageTypes.TryGetValue(_spellDescriptor.Combat.DamageType, out var damageType);
+            rows.AddKeyValueRow(Strings.SpellDescription.DamageType, damageType);
+        }
 
         if (_spellDescriptor.Combat.Scaling > 0)
         {
@@ -386,5 +399,35 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
             // Resize and position the container.
             rows.SizeToChildren(true, true);
         }
+    }
+
+    private static IEnumerable<KeyValuePair<int, int>>? GetDamagePairs(object descriptor)
+    {
+        var type = descriptor.GetType();
+        var dictProp = type.GetProperty("Damages") ?? type.GetProperty("DamageAmounts") ?? type.GetProperty("DamageValues");
+        if (dictProp != null)
+        {
+            if (dictProp.GetValue(descriptor) is IEnumerable<KeyValuePair<int, int>> pairs)
+            {
+                return pairs;
+            }
+
+            if (dictProp.GetValue(descriptor) is IDictionary<int, int> dictionary)
+            {
+                return dictionary;
+            }
+        }
+
+        var typesProp = type.GetProperty("DamageTypes");
+        var amountsProp = type.GetProperty("DamageAmounts");
+        if (typesProp != null && amountsProp != null)
+        {
+            if (typesProp.GetValue(descriptor) is IEnumerable<int> types && amountsProp.GetValue(descriptor) is IEnumerable<int> amounts)
+            {
+                return types.Zip(amounts, (t, a) => new KeyValuePair<int, int>(t, a));
+            }
+        }
+
+        return null;
     }
 }

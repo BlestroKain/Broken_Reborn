@@ -8,6 +8,7 @@ using Intersect.Utilities;
 using Microsoft.Extensions.Logging;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen.Input;
+using System.Linq;
 
 namespace Intersect.Client.Interface.Game.DescriptionWindows;
 
@@ -292,12 +293,24 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
         // Is this a weapon?
         if (_itemDescriptor.EquipmentSlot == Options.Instance.Equipment.WeaponSlot)
         {
-            // Base Damage:
-            rows.AddKeyValueRow(Strings.ItemDescription.BaseDamage, _itemDescriptor.Damage.ToString());
+            var damagePairs = GetDamagePairs(_itemDescriptor);
+            if (damagePairs != null)
+            {
+                foreach (var pair in damagePairs)
+                {
+                    Strings.ItemDescription.DamageTypes.TryGetValue(pair.Key, out var dmgType);
+                    rows.AddKeyValueRow(dmgType, pair.Value.ToString());
+                }
+            }
+            else
+            {
+                // Base Damage:
+                rows.AddKeyValueRow(Strings.ItemDescription.BaseDamage, _itemDescriptor.Damage.ToString());
 
-            // Damage Type:
-            Strings.ItemDescription.DamageTypes.TryGetValue(_itemDescriptor.DamageType, out var damageType);
-            rows.AddKeyValueRow(Strings.ItemDescription.BaseDamageType, damageType);
+                // Damage Type:
+                Strings.ItemDescription.DamageTypes.TryGetValue(_itemDescriptor.DamageType, out var damageType);
+                rows.AddKeyValueRow(Strings.ItemDescription.BaseDamageType, damageType);
+            }
 
             if (_itemDescriptor.Scaling > 0)
             {
@@ -610,5 +623,36 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
             // Resize and position the container.
             rows.SizeToChildren(true, true);
         }
+    }
+
+    private static IEnumerable<KeyValuePair<int, int>>? GetDamagePairs(object descriptor)
+    {
+        var type = descriptor.GetType();
+        // Common property names that may store damage pair data
+        var dictProp = type.GetProperty("Damages") ?? type.GetProperty("DamageAmounts") ?? type.GetProperty("DamageValues");
+        if (dictProp != null)
+        {
+            if (dictProp.GetValue(descriptor) is IEnumerable<KeyValuePair<int, int>> pairs)
+            {
+                return pairs;
+            }
+
+            if (dictProp.GetValue(descriptor) is IDictionary<int, int> dictionary)
+            {
+                return dictionary;
+            }
+        }
+
+        var typesProp = type.GetProperty("DamageTypes");
+        var amountsProp = type.GetProperty("DamageAmounts");
+        if (typesProp != null && amountsProp != null)
+        {
+            if (typesProp.GetValue(descriptor) is IEnumerable<int> types && amountsProp.GetValue(descriptor) is IEnumerable<int> amounts)
+            {
+                return types.Zip(amounts, (t, a) => new KeyValuePair<int, int>(t, a));
+            }
+        }
+
+        return null;
     }
 }

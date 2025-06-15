@@ -1,4 +1,5 @@
 using System.Reflection;
+using Intersect.Config;
 using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Conditions;
 using Intersect.Framework.Core.GameObjects.Conditions.ConditionMetadata;
@@ -2306,6 +2307,29 @@ Tick timer saved in server config.json.";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString resetstatpointallocations = @"Reset Player Stat Point Allocations";
+        public static readonly Dictionary<JobType, LocalizedString> JobExperienceMessages = new Dictionary<JobType, LocalizedString>
+    {
+        { JobType.Farming, "Give Player {00} Farming Experience" },
+        { JobType.Mining, "Give Player {00} Mining Experience" },
+        { JobType.Lumberjack, "Give Player {00} Wood Experience" },
+        { JobType.Fishing, "Give Player {00} Fishing Experience" },
+        { JobType.Hunter, "Give Player {00} Hunting Experience" },
+        { JobType.Alchemy, "Give Player {00} Alchemy Experience" },
+        { JobType.Cooking, "Give Player {00} Cooking Experience" },
+        { JobType.Smithing, "Give Player {00} Blacksmith Experience" },
+        { JobType.Crafting, "Give Player {00} Crafting Experience" },
+        { JobType.Jewerly, "Give Player {00} Jewerly Experience" },
+        { JobType.Tanner, "Give Player {00} Tanner Experience" },
+        { JobType.Tailoring, "Give Player {00} Weaver Experience" }
+    };
+
+        // Método para obtener el mensaje de experiencia según el JobType
+        public static LocalizedString GetJobExperienceMessage(JobType jobType)
+        {
+            return JobExperienceMessages.TryGetValue(jobType, out var message)
+                ? message
+                : "Invalid Job Experience"; // Retorno por defecto si el JobType no existe
+        }
     }
 
     public partial struct EventChangePlayerColor
@@ -2406,6 +2430,8 @@ Tick timer saved in server config.json.";
             {"resetstatallocations", @"Reset Stat Point Allocations"},
             {"castspellon", @"Cast Spell On"},
             {"fade", @"Screen Fade"},
+            {"jobs",@"Jobs" },
+            {"givejobexperience", @"Give Job Experience"},
         };
 
     }

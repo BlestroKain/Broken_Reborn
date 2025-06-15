@@ -203,7 +203,7 @@ public partial record Options
     public MapOptions Map { get; set; } = new();
 
     public PlayerOptions Player { get; set; } = new();
-
+    public JobOptions JobOpts { get; set; } = new();
     public PartyOptions Party { get; set; } = new();
 
     public LootOptions Loot { get; set; } = new();

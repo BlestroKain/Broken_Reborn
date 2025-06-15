@@ -35,7 +35,7 @@ namespace Intersect.Editor.Forms.Editors
             grpResources = new DarkGroupBox();
             btnClearSearch = new DarkButton();
             txtSearch = new DarkTextBox();
-            lstGameObjects = new Controls.GameObjectList();
+            lstGameObjects = new Intersect.Editor.Forms.Controls.GameObjectList();
             grpGeneral = new DarkGroupBox();
             nudHpRegen = new DarkNumericUpDown();
             chkUseExplicitMaxHealthForResourceStates = new DarkCheckBox();
@@ -48,6 +48,11 @@ namespace Intersect.Editor.Forms.Editors
             nudSpawnDuration = new DarkNumericUpDown();
             cmbDeathAnimation = new DarkComboBox();
             lblDeathAnimation = new Label();
+            GrpExp = new DarkGroupBox();
+            cmbJobType = new DarkComboBox();
+            label2 = new Label();
+            NudExpAmount = new DarkNumericUpDown();
+            label1 = new Label();
             lblMaxHp = new Label();
             lblSpawnDuration = new Label();
             chkWalkableAfter = new DarkCheckBox();
@@ -117,6 +122,8 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)nudMaxHp).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudMinHp).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudSpawnDuration).BeginInit();
+            GrpExp.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)NudExpAmount).BeginInit();
             grpGraphics.SuspendLayout();
             grpGraphicData.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)nudStateRangeMax).BeginInit();
@@ -372,6 +379,78 @@ namespace Intersect.Editor.Forms.Editors
             lblDeathAnimation.Size = new Size(100, 15);
             lblDeathAnimation.TabIndex = 36;
             lblDeathAnimation.Text = "Death Animation:";
+            // 
+            // GrpExp
+            // 
+            GrpExp.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
+            GrpExp.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+            GrpExp.Controls.Add(cmbJobType);
+            GrpExp.Controls.Add(label2);
+            GrpExp.Controls.Add(NudExpAmount);
+            GrpExp.Controls.Add(label1);
+            GrpExp.ForeColor = System.Drawing.Color.Gainsboro;
+            GrpExp.Location = new System.Drawing.Point(539, 198);
+            GrpExp.Margin = new Padding(2);
+            GrpExp.Name = "GrpExp";
+            GrpExp.Size = new Size(285, 68);
+            GrpExp.TabIndex = 34;
+            GrpExp.TabStop = false;
+            GrpExp.Text = "Exp";
+            // 
+            // cmbJobType
+            // 
+            cmbJobType.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            cmbJobType.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+            cmbJobType.BorderStyle = ButtonBorderStyle.Solid;
+            cmbJobType.ButtonColor = System.Drawing.Color.FromArgb(43, 43, 43);
+            cmbJobType.DrawDropdownHoverOutline = false;
+            cmbJobType.DrawFocusRectangle = false;
+            cmbJobType.DrawMode = DrawMode.OwnerDrawFixed;
+            cmbJobType.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbJobType.FlatStyle = FlatStyle.Flat;
+            cmbJobType.ForeColor = System.Drawing.Color.Gainsboro;
+            cmbJobType.FormattingEnabled = true;
+            cmbJobType.Location = new System.Drawing.Point(9, 37);
+            cmbJobType.Margin = new Padding(4, 3, 4, 3);
+            cmbJobType.Name = "cmbJobType";
+            cmbJobType.Size = new Size(116, 24);
+            cmbJobType.TabIndex = 32;
+            cmbJobType.Text = null;
+            cmbJobType.TextPadding = new Padding(2);
+            cmbJobType.SelectedIndexChanged += cmbJobType_SelectedIndexChanged;
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new System.Drawing.Point(156, 19);
+            label2.Margin = new Padding(4, 0, 4, 0);
+            label2.Name = "label2";
+            label2.Size = new Size(77, 15);
+            label2.TabIndex = 31;
+            label2.Text = "EXP Amount:";
+            // 
+            // NudExpAmount
+            // 
+            NudExpAmount.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            NudExpAmount.ForeColor = System.Drawing.Color.Gainsboro;
+            NudExpAmount.Location = new System.Drawing.Point(157, 37);
+            NudExpAmount.Margin = new Padding(4, 3, 4, 3);
+            NudExpAmount.Maximum = new decimal(new int[] { 9999999, 0, 0, 0 });
+            NudExpAmount.Name = "NudExpAmount";
+            NudExpAmount.Size = new Size(114, 23);
+            NudExpAmount.TabIndex = 30;
+            NudExpAmount.Value = new decimal(new int[] { 0, 0, 0, 0 });
+            NudExpAmount.ValueChanged += NudExpAmount_ValueChanged;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new System.Drawing.Point(5, 19);
+            label1.Margin = new Padding(2, 0, 2, 0);
+            label1.Name = "label1";
+            label1.Size = new Size(25, 15);
+            label1.TabIndex = 26;
+            label1.Text = "Job";
             // 
             // lblMaxHp
             // 
@@ -776,6 +855,7 @@ namespace Intersect.Editor.Forms.Editors
             pnlContainer.Controls.Add(grpCommonEvent);
             pnlContainer.Controls.Add(grpDrops);
             pnlContainer.Controls.Add(grpGeneral);
+            pnlContainer.Controls.Add(GrpExp);
             pnlContainer.Controls.Add(grpGraphics);
             pnlContainer.Location = new System.Drawing.Point(258, 45);
             pnlContainer.Margin = new Padding(4, 3, 4, 3);
@@ -1177,7 +1257,6 @@ namespace Intersect.Editor.Forms.Editors
             AutoSize = true;
             BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
             ClientSize = new Size(1119, 728);
-            ControlBox = true;
             Controls.Add(toolStrip);
             Controls.Add(btnCancel);
             Controls.Add(btnSave);
@@ -1186,8 +1265,8 @@ namespace Intersect.Editor.Forms.Editors
             FormBorderStyle = FormBorderStyle.FixedSingle;
             KeyPreview = true;
             Margin = new Padding(4, 3, 4, 3);
-            MinimizeBox = false;
             MaximizeBox = false;
+            MinimizeBox = false;
             Name = "FrmResource";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Resource Editor";
@@ -1202,6 +1281,9 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)nudMaxHp).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudMinHp).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudSpawnDuration).EndInit();
+            GrpExp.ResumeLayout(false);
+            GrpExp.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)NudExpAmount).EndInit();
             grpGraphics.ResumeLayout(false);
             grpGraphics.PerformLayout();
             grpGraphicData.ResumeLayout(false);
@@ -1306,5 +1388,10 @@ namespace Intersect.Editor.Forms.Editors
         private DarkNumericUpDown nudStateRangeMin;
         private DarkCheckBox chkUseExplicitMaxHealthForResourceStates;
         private Label lblHpRegen;
+        private DarkGroupBox GrpExp;
+        private DarkComboBox cmbJobType;
+        private Label label2;
+        private DarkNumericUpDown NudExpAmount;
+        private Label label1;
     }
 }

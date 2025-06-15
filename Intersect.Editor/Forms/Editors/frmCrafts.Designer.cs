@@ -40,6 +40,11 @@ namespace Intersect.Editor.Forms.Editors
             this.lstGameObjects = new Intersect.Editor.Forms.Controls.GameObjectList();
             this.pnlContainer = new System.Windows.Forms.Panel();
             this.grpGeneral = new DarkUI.Controls.DarkGroupBox();
+            this.GrpExp = new DarkUI.Controls.DarkGroupBox();
+            this.cmbJobType = new DarkUI.Controls.DarkComboBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.NudExpAmount = new DarkUI.Controls.DarkNumericUpDown();
+            this.label1 = new System.Windows.Forms.Label();
             this.btnCraftRequirements = new DarkUI.Controls.DarkButton();
             this.nudItemLossChance = new DarkUI.Controls.DarkNumericUpDown();
             this.lblItemLossChance = new System.Windows.Forms.Label();
@@ -85,6 +90,8 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)(this.nudFailureChance)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudCraftQuantity)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudSpeed)).BeginInit();
+            this.GrpExp.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.NudExpAmount)).BeginInit();
             this.grpIngredients.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudQuantity)).BeginInit();
             this.toolStrip.SuspendLayout();
@@ -196,6 +203,7 @@ namespace Intersect.Editor.Forms.Editors
             this.grpGeneral.Controls.Add(this.lblName);
             this.grpGeneral.Controls.Add(this.txtName);
             this.grpGeneral.Controls.Add(this.lblSpeed);
+            this.grpGeneral.Controls.Add(this.GrpExp);
             this.grpGeneral.ForeColor = System.Drawing.Color.Gainsboro;
             this.grpGeneral.Location = new System.Drawing.Point(5, 4);
             this.grpGeneral.Name = "grpGeneral";
@@ -419,7 +427,71 @@ namespace Intersect.Editor.Forms.Editors
             this.lblSpeed.Size = new System.Drawing.Size(55, 13);
             this.lblSpeed.TabIndex = 3;
             this.lblSpeed.Text = "Time (ms):";
-            // 
+            //
+            // GrpExp
+            //
+            this.GrpExp.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
+            this.GrpExp.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
+            this.GrpExp.Controls.Add(this.cmbJobType);
+            this.GrpExp.Controls.Add(this.label2);
+            this.GrpExp.Controls.Add(this.NudExpAmount);
+            this.GrpExp.Controls.Add(this.label1);
+            this.GrpExp.ForeColor = System.Drawing.Color.Gainsboro;
+            this.GrpExp.Location = new System.Drawing.Point(9, 271);
+            this.GrpExp.Name = "GrpExp";
+            this.GrpExp.Size = new System.Drawing.Size(254, 74);
+            this.GrpExp.TabIndex = 51;
+            this.GrpExp.TabStop = false;
+            this.GrpExp.Text = "Exp";
+            //
+            // cmbJobType
+            //
+            this.cmbJobType.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(69)))), ((int)(((byte)(73)))), ((int)(((byte)(74)))));
+            this.cmbJobType.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
+            this.cmbJobType.BorderStyle = System.Windows.Forms.ButtonBorderStyle.Solid;
+            this.cmbJobType.ButtonColor = System.Drawing.Color.FromArgb(((int)(((byte)(43)))), ((int)(((byte)(43)))), ((int)(((byte)(43)))));
+            this.cmbJobType.DrawDropdownHoverOutline = false;
+            this.cmbJobType.DrawFocusRectangle = false;
+            this.cmbJobType.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.cmbJobType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbJobType.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.cmbJobType.ForeColor = System.Drawing.Color.Gainsboro;
+            this.cmbJobType.FormattingEnabled = true;
+            this.cmbJobType.Location = new System.Drawing.Point(6, 36);
+            this.cmbJobType.Name = "cmbJobType";
+            this.cmbJobType.Size = new System.Drawing.Size(112, 21);
+            this.cmbJobType.TabIndex = 32;
+            this.cmbJobType.SelectedIndexChanged += new System.EventHandler(this.cmbJobType_SelectedIndexChanged);
+            //
+            // label2
+            //
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(138, 18);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(72, 13);
+            this.label2.TabIndex = 31;
+            this.label2.Text = "EXP Amount:";
+            //
+            // NudExpAmount
+            //
+            this.NudExpAmount.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(69)))), ((int)(((byte)(73)))), ((int)(((byte)(74)))));
+            this.NudExpAmount.ForeColor = System.Drawing.Color.Gainsboro;
+            this.NudExpAmount.Location = new System.Drawing.Point(140, 36);
+            this.NudExpAmount.Maximum = new decimal(new int[] { 999999, 0, 0, 0 });
+            this.NudExpAmount.Name = "NudExpAmount";
+            this.NudExpAmount.Size = new System.Drawing.Size(108, 20);
+            this.NudExpAmount.TabIndex = 30;
+            this.NudExpAmount.ValueChanged += new System.EventHandler(this.NudExpAmount_ValueChanged);
+            //
+            // label1
+            //
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(6, 18);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(24, 13);
+            this.label1.TabIndex = 26;
+            this.label1.Text = "Job";
+            //
             // grpIngredients
             // 
             this.grpIngredients.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
@@ -734,6 +806,9 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)(this.nudFailureChance)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudCraftQuantity)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudSpeed)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.NudExpAmount)).EndInit();
+            this.GrpExp.ResumeLayout(false);
+            this.GrpExp.PerformLayout();
             this.grpIngredients.ResumeLayout(false);
             this.grpIngredients.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudQuantity)).EndInit();
@@ -791,5 +866,10 @@ namespace Intersect.Editor.Forms.Editors
         private DarkNumericUpDown nudFailureChance;
         private System.Windows.Forms.Label lblFailureChance;
         private DarkButton btnCraftRequirements;
+        private DarkUI.Controls.DarkGroupBox GrpExp;
+        private DarkUI.Controls.DarkComboBox cmbJobType;
+        private System.Windows.Forms.Label label2;
+        private DarkUI.Controls.DarkNumericUpDown NudExpAmount;
+        private System.Windows.Forms.Label label1;
     }
 }

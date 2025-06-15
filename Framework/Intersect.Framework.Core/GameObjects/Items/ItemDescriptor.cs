@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using Intersect.Enums;
@@ -122,9 +123,16 @@ public partial class ItemDescriptor : DatabaseObject<ItemDescriptor>, IFolderabl
     /// </summary>
     public bool IgnoreCooldownReduction { get; set; } = false;
 
-    public int Damage { get; set; }
+    [NotMapped]
+    public List<DamageProfile> Damage { get; set; } = new();
 
-    public int DamageType { get; set; }
+    [Column("Damage")]
+    [JsonIgnore]
+    public string DamageJson
+    {
+        get => DatabaseUtils.SaveDamageProfiles(Damage);
+        set => Damage = DatabaseUtils.LoadDamageProfiles(value);
+    }
 
     public int AttackSpeedModifier { get; set; }
 

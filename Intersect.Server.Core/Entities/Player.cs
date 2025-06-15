@@ -1772,9 +1772,18 @@ public partial class Player : Entity
 
         if (weapon != null)
         {
+            var dmg = weapon.Damage.FirstOrDefault();
             base.TryAttack(
-                target, weapon.Damage, (DamageType)weapon.DamageType, (Stat)weapon.ScalingStat, weapon.Scaling,
-                weapon.CritChance, weapon.CritMultiplier, null, null, weapon
+                target,
+                dmg.Amount,
+                dmg.DamageType,
+                (Stat)weapon.ScalingStat,
+                weapon.Scaling,
+                weapon.CritChance,
+                weapon.CritMultiplier,
+                null,
+                null,
+                weapon
             );
         }
         else
@@ -1782,9 +1791,15 @@ public partial class Player : Entity
             var classBase = ClassDescriptor.Get(ClassId);
             if (classBase != null)
             {
+                var dmg = classBase.Damage.FirstOrDefault();
                 base.TryAttack(
-                    target, classBase.Damage, (DamageType)classBase.DamageType, (Stat)classBase.ScalingStat,
-                    classBase.Scaling, classBase.CritChance, classBase.CritMultiplier
+                    target,
+                    dmg.Amount,
+                    dmg.DamageType,
+                    (Stat)classBase.ScalingStat,
+                    classBase.Scaling,
+                    classBase.CritChance,
+                    classBase.CritMultiplier
                 );
             }
             else
@@ -3901,7 +3916,7 @@ public partial class Player : Entity
             return 0;
         }
 
-        return item.Descriptor.Damage;
+        return item.Descriptor.Damage.FirstOrDefault().Amount;
     }
 
     /// <summary>

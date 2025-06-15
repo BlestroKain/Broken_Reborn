@@ -235,7 +235,8 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
         }
 
         // Damage Type:
-        Strings.SpellDescription.DamageTypes.TryGetValue(_spellDescriptor.Combat.DamageType, out var damageType);
+        var dmg = _spellDescriptor.Combat.Damage.FirstOrDefault();
+        Strings.SpellDescription.DamageTypes.TryGetValue((int)dmg.DamageType, out var damageType);
         rows.AddKeyValueRow(Strings.SpellDescription.DamageType, damageType);
 
         if (_spellDescriptor.Combat.Scaling > 0)

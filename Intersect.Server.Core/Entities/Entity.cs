@@ -1646,9 +1646,19 @@ public abstract partial class Entity : IEntity
 
         if (parentSpell == null)
         {
+            var dmg = parentItem.Damage.FirstOrDefault();
             Attack(
-                target, parentItem.Damage, 0, (DamageType)parentItem.DamageType, (Stat)parentItem.ScalingStat,
-                parentItem.Scaling, parentItem.CritChance, parentItem.CritMultiplier, null, null, true
+                target,
+                dmg.Amount,
+                0,
+                dmg.DamageType,
+                (Stat)parentItem.ScalingStat,
+                parentItem.Scaling,
+                parentItem.CritChance,
+                parentItem.CritMultiplier,
+                null,
+                null,
+                true
             );
         }
 
@@ -1873,14 +1883,23 @@ public abstract partial class Entity : IEntity
 
         var damageHealth = spellDescriptor.Combat.VitalDiff[(int)Vital.Health];
         var damageMana = spellDescriptor.Combat.VitalDiff[(int)Vital.Mana];
+        var spellDmg = spellDescriptor.Combat.Damage.FirstOrDefault();
 
         if ((spellDescriptor.Combat.Effect != SpellEffect.OnHit || onHitTrigger) &&
             spellDescriptor.Combat.Effect != SpellEffect.Shield)
         {
             Attack(
-                target, damageHealth, damageMana, (DamageType)spellDescriptor.Combat.DamageType,
-                (Stat)spellDescriptor.Combat.ScalingStat, spellDescriptor.Combat.Scaling, spellDescriptor.Combat.CritChance,
-                spellDescriptor.Combat.CritMultiplier, deadAnimations, aliveAnimations, false
+                target,
+                damageHealth,
+                damageMana,
+                spellDmg.DamageType,
+                (Stat)spellDescriptor.Combat.ScalingStat,
+                spellDescriptor.Combat.Scaling,
+                spellDescriptor.Combat.CritChance,
+                spellDescriptor.Combat.CritMultiplier,
+                deadAnimations,
+                aliveAnimations,
+                false
             );
         }
 

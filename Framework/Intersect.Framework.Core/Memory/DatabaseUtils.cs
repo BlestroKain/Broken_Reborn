@@ -112,4 +112,8 @@ public static partial class DatabaseUtils
         return color;
     }
 
+    public static string SaveDamageProfiles(List<Intersect.GameObjects.DamageProfile> profiles) => JsonConvert.SerializeObject(profiles ?? new());
+
+    public static List<Intersect.GameObjects.DamageProfile> LoadDamageProfiles(string json) => json != null ? JsonConvert.DeserializeObject<List<Intersect.GameObjects.DamageProfile>>(json) ?? new() : new();
+
 }

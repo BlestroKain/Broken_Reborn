@@ -108,6 +108,7 @@ namespace Intersect.Editor.Forms.Editors
             cmbAttackAnimation = new DarkComboBox();
             lblAttackAnimation = new Label();
             lblDamage = new Label();
+            btnEditDamages = new DarkButton();
             grpCommonEvents = new DarkGroupBox();
             cmbOnDeathEventParty = new DarkComboBox();
             lblOnDeathEventParty = new Label();
@@ -967,6 +968,7 @@ namespace Intersect.Editor.Forms.Editors
             grpCombat.Controls.Add(lblScaling);
             grpCombat.Controls.Add(cmbDamageType);
             grpCombat.Controls.Add(lblDamageType);
+            grpCombat.Controls.Add(btnEditDamages);
             grpCombat.Controls.Add(lblCritChance);
             grpCombat.Controls.Add(cmbAttackAnimation);
             grpCombat.Controls.Add(lblAttackAnimation);
@@ -1244,7 +1246,17 @@ namespace Intersect.Editor.Forms.Editors
             lblDamage.Size = new Size(81, 15);
             lblDamage.TabIndex = 48;
             lblDamage.Text = "Base Damage:";
-            // 
+            //
+            // btnEditDamages
+            //
+            btnEditDamages.Location = new System.Drawing.Point(13, 200);
+            btnEditDamages.Name = "btnEditDamages";
+            btnEditDamages.Padding = new Padding(5);
+            btnEditDamages.Size = new Size(188, 23);
+            btnEditDamages.TabIndex = 60;
+            btnEditDamages.Text = "Edit Damage List";
+            btnEditDamages.Click += btnEditDamages_Click;
+            //
             // grpCommonEvents
             // 
             grpCommonEvents.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
@@ -2265,6 +2277,7 @@ namespace Intersect.Editor.Forms.Editors
         private DarkComboBox cmbAttackAnimation;
         private System.Windows.Forms.Label lblAttackAnimation;
         private System.Windows.Forms.Label lblDamage;
+        private DarkButton btnEditDamages;
         private DarkComboBox cmbHostileNPC;
         private DarkComboBox cmbSpell;
         private DarkNumericUpDown nudSpd;

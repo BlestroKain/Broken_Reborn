@@ -13,6 +13,8 @@ using Intersect.Framework.Core.GameObjects.Maps.MapList;
 using Intersect.GameObjects;
 using Intersect.Utilities;
 using Graphics = System.Drawing.Graphics;
+using System.Collections.Generic;
+using System.Windows.Forms;
 
 namespace Intersect.Editor.Forms.Editors;
 
@@ -211,11 +213,6 @@ public partial class FrmSpell : EditorForm
         lblHPDamage.Text = Strings.SpellEditor.hpdamage;
         lblManaDamage.Text = Strings.SpellEditor.mpdamage;
         chkFriendly.Text = Strings.SpellEditor.friendly;
-        cmbDamageType.Items.Clear();
-        for (var i = 0; i < Strings.Combat.damagetypes.Count; i++)
-        {
-            cmbDamageType.Items.Add(Strings.Combat.damagetypes[i]);
-        }
 
         lblScalingStat.Text = Strings.SpellEditor.scalingstat;
         lblScaling.Text = Strings.SpellEditor.scalingamount;
@@ -369,8 +366,8 @@ public partial class FrmSpell : EditorForm
             nudSpdPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int)Stat.Speed];
 
             chkFriendly.Checked = Convert.ToBoolean(mEditorItem.Combat.Friendly);
-            cmbDamageType.SelectedIndex = mEditorItem.Combat.DamageType;
             cmbScalingStat.SelectedIndex = mEditorItem.Combat.ScalingStat;
+            RefreshDamageGrid();
             nudScaling.Value = mEditorItem.Combat.Scaling;
             nudCritChance.Value = mEditorItem.Combat.CritChance;
             nudCritMultiplier.Value = (decimal)mEditorItem.Combat.CritMultiplier;
@@ -704,10 +701,6 @@ public partial class FrmSpell : EditorForm
         mEditorItem.Combat.Friendly = chkFriendly.Checked;
     }
 
-    private void cmbDamageType_SelectedIndexChanged(object sender, EventArgs e)
-    {
-        mEditorItem.Combat.DamageType = cmbDamageType.SelectedIndex;
-    }
 
     private void cmbScalingStat_SelectedIndexChanged(object sender, EventArgs e)
     {
@@ -719,6 +712,7 @@ public partial class FrmSpell : EditorForm
         var frm = new FrmDynamicRequirements(mEditorItem.CastingRequirements, RequirementType.Spell);
         frm.ShowDialog();
     }
+
 
     private void cmbCastSprite_SelectedIndexChanged(object sender, EventArgs e)
     {
@@ -1099,5 +1093,61 @@ public partial class FrmSpell : EditorForm
     {
         Guid animationId = AnimationDescriptor.IdFromList(cmbTickAnimation.SelectedIndex - 1);
         mEditorItem.TickAnimation = AnimationDescriptor.Get(animationId);
+    }
+
+    private void RefreshDamageGrid()
+    {
+        gridDamages.Rows.Clear();
+        for (var i = 0; i < mEditorItem.Combat.Damages.Length; i++)
+        {
+            var type = (DamageType)mEditorItem.Combat.DamageTypes[i];
+            var amt = mEditorItem.Combat.Damages[i];
+            gridDamages.Rows.Add(type, amt);
+        }
+    }
+
+    private void SaveDamageGrid()
+    {
+        var types = new List<int>();
+        var amounts = new List<int>();
+        foreach (DataGridViewRow row in gridDamages.Rows)
+        {
+            if (row.IsNewRow)
+            {
+                continue;
+            }
+
+            if (row.Cells[0].Value is DamageType type && int.TryParse(row.Cells[1].Value?.ToString(), out var amt))
+            {
+                types.Add((int)type);
+                amounts.Add(amt);
+            }
+        }
+
+        mEditorItem.Combat.DamageTypes = types.ToArray();
+        mEditorItem.Combat.Damages = amounts.ToArray();
+    }
+
+    private void btnAddDamage_Click(object sender, EventArgs e)
+    {
+        gridDamages.Rows.Add(DamageType.Physical, 0);
+        SaveDamageGrid();
+    }
+
+    private void btnRemoveDamage_Click(object sender, EventArgs e)
+    {
+        if (gridDamages.CurrentCell != null)
+        {
+            gridDamages.Rows.RemoveAt(gridDamages.CurrentCell.RowIndex);
+            SaveDamageGrid();
+        }
+    }
+
+    private void gridDamages_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+    {
+        if (e.RowIndex >= 0)
+        {
+            SaveDamageGrid();
+        }
     }
 }

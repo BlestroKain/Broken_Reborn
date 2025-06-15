@@ -1108,6 +1108,7 @@ public static partial class Strings
         public static LocalizedString critmultiplier = @"Crit Multiplier (Default 1.5x):";
 
         public static LocalizedString damagetype = @"Damage Type:";
+        public static LocalizedString editdamages = @"Edit Damage List";
 
         public static LocalizedString delete = @"Delete Class";
 
@@ -4507,6 +4508,7 @@ Tick timer saved in server config.json.";
         public static LocalizedString critmultiplier = @"Crit Multiplier (Default 1.5x):";
 
         public static LocalizedString damagetype = @"Damage Type:";
+        public static LocalizedString editdamages = @"Edit Damage List";
 
         public static LocalizedString defense = @"Defense:";
 
@@ -5380,6 +5382,8 @@ Tick timer saved in server config.json.";
         public static LocalizedString cannotcast = @"Cannot Cast Message:";
 
         public static LocalizedString requirementsbutton = @"Edit Casting Requirements";
+
+        public static LocalizedString editdamages = @"Edit Damage List";
 
         public static LocalizedString save = @"Save";
 

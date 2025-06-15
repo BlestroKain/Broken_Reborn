@@ -13,6 +13,8 @@ using Intersect.GameObjects;
 using Intersect.Localization;
 using Intersect.Utilities;
 using Graphics = System.Drawing.Graphics;
+using System.Collections.Generic;
+using System.Windows.Forms;
 
 namespace Intersect.Editor.Forms.Editors;
 
@@ -249,11 +251,6 @@ public partial class FrmItem : EditorForm
         lblCritChance.Text = Strings.ItemEditor.critchance;
         lblCritMultiplier.Text = Strings.ItemEditor.critmultiplier;
         lblDamageType.Text = Strings.ItemEditor.damagetype;
-        cmbDamageType.Items.Clear();
-        for (var i = 0; i < Strings.Combat.damagetypes.Count; i++)
-        {
-            cmbDamageType.Items.Add(Strings.Combat.damagetypes[i]);
-        }
 
         lblScalingStat.Text = Strings.ItemEditor.scalingstat;
         lblScalingAmount.Text = Strings.ItemEditor.scalingamount;
@@ -376,7 +373,6 @@ public partial class FrmItem : EditorForm
             nudHPRegen.Value = mEditorItem.VitalsRegen[0];
             nudMpRegen.Value = mEditorItem.VitalsRegen[1];
 
-            nudDamage.Value = mEditorItem.Damage;
             nudCritChance.Value = mEditorItem.CritChance;
             nudCritMultiplier.Value = (decimal)mEditorItem.CritMultiplier;
             cmbAttackSpeedModifier.SelectedIndex = mEditorItem.AttackSpeedModifier;
@@ -440,8 +436,8 @@ public partial class FrmItem : EditorForm
                 DrawItemPaperdoll(Gender.Female);
             }
 
-            cmbDamageType.SelectedIndex = mEditorItem.DamageType;
             cmbScalingStat.SelectedIndex = mEditorItem.ScalingStat;
+            RefreshDamageGrid();
 
             //External References
             cmbProjectile.SelectedIndex = ProjectileDescriptor.ListIndex(mEditorItem.ProjectileId) + 1;
@@ -784,10 +780,6 @@ public partial class FrmItem : EditorForm
             AnimationDescriptor.Get(AnimationDescriptor.IdFromList(cmbAttackAnimation.SelectedIndex - 1));
     }
 
-    private void cmbDamageType_SelectedIndexChanged(object sender, EventArgs e)
-    {
-        mEditorItem.DamageType = cmbDamageType.SelectedIndex;
-    }
 
     private void cmbScalingStat_SelectedIndexChanged(object sender, EventArgs e)
     {
@@ -804,6 +796,7 @@ public partial class FrmItem : EditorForm
         var frm = new FrmDynamicRequirements(mEditorItem.UsageRequirements, RequirementType.Item);
         frm.ShowDialog();
     }
+
 
     private void cmbAnimation_SelectedIndexChanged(object sender, EventArgs e)
     {
@@ -830,10 +823,6 @@ public partial class FrmItem : EditorForm
         mEditorItem.Scaling = (int)nudScaling.Value;
     }
 
-    private void nudDamage_ValueChanged(object sender, EventArgs e)
-    {
-        mEditorItem.Damage = (int)nudDamage.Value;
-    }
 
     private void nudCritChance_ValueChanged(object sender, EventArgs e)
     {
@@ -1546,5 +1535,61 @@ public partial class FrmItem : EditorForm
         mEditorItem.EventTriggers[SelectedEventTrigger.Value] = EventDescriptor.IdFromList(cmbEventTriggers.SelectedIndex - 1);
 
         PopulateEventTriggerList(lstEventTriggers.SelectedIndex);
+    }
+
+    private void RefreshDamageGrid()
+    {
+        gridDamages.Rows.Clear();
+        for (var i = 0; i < mEditorItem.Damages.Length; i++)
+        {
+            var type = (DamageType)mEditorItem.DamageTypes[i];
+            var amount = mEditorItem.Damages[i];
+            gridDamages.Rows.Add(type, amount);
+        }
+    }
+
+    private void SaveDamageGrid()
+    {
+        var types = new List<int>();
+        var amounts = new List<int>();
+        foreach (DataGridViewRow row in gridDamages.Rows)
+        {
+            if (row.IsNewRow)
+            {
+                continue;
+            }
+
+            if (row.Cells[0].Value is DamageType type && int.TryParse(row.Cells[1].Value?.ToString(), out var amt))
+            {
+                types.Add((int)type);
+                amounts.Add(amt);
+            }
+        }
+
+        mEditorItem.DamageTypes = types.ToArray();
+        mEditorItem.Damages = amounts.ToArray();
+    }
+
+    private void btnAddDamage_Click(object sender, EventArgs e)
+    {
+        gridDamages.Rows.Add(DamageType.Physical, 0);
+        SaveDamageGrid();
+    }
+
+    private void btnRemoveDamage_Click(object sender, EventArgs e)
+    {
+        if (gridDamages.CurrentCell != null)
+        {
+            gridDamages.Rows.RemoveAt(gridDamages.CurrentCell.RowIndex);
+            SaveDamageGrid();
+        }
+    }
+
+    private void gridDamages_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+    {
+        if (e.RowIndex >= 0)
+        {
+            SaveDamageGrid();
+        }
     }
 }

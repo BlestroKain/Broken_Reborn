@@ -120,6 +120,7 @@ namespace Intersect.Editor.Forms.Editors
             this.cmbAttackAnimation = new DarkUI.Controls.DarkComboBox();
             this.lblAttackAnimation = new System.Windows.Forms.Label();
             this.lblDamage = new System.Windows.Forms.Label();
+            this.btnEditDamages = new DarkUI.Controls.DarkButton();
             this.grpRegen = new DarkUI.Controls.DarkGroupBox();
             this.nudMpRegen = new DarkUI.Controls.DarkNumericUpDown();
             this.nudHPRegen = new DarkUI.Controls.DarkNumericUpDown();
@@ -1163,6 +1164,7 @@ namespace Intersect.Editor.Forms.Editors
             this.grpCombat.Controls.Add(this.lblScalingAmount);
             this.grpCombat.Controls.Add(this.cmbDamageType);
             this.grpCombat.Controls.Add(this.lblDamageType);
+            this.grpCombat.Controls.Add(this.btnEditDamages);
             this.grpCombat.Controls.Add(this.lblCritChance);
             this.grpCombat.Controls.Add(this.cmbAttackAnimation);
             this.grpCombat.Controls.Add(this.lblAttackAnimation);
@@ -1485,7 +1487,17 @@ namespace Intersect.Editor.Forms.Editors
             this.lblDamage.Size = new System.Drawing.Size(77, 13);
             this.lblDamage.TabIndex = 48;
             this.lblDamage.Text = "Base Damage:";
-            // 
+            //
+            // btnEditDamages
+            //
+            this.btnEditDamages.Location = new System.Drawing.Point(12, 330);
+            this.btnEditDamages.Name = "btnEditDamages";
+            this.btnEditDamages.Padding = new System.Windows.Forms.Padding(5);
+            this.btnEditDamages.Size = new System.Drawing.Size(192, 23);
+            this.btnEditDamages.TabIndex = 60;
+            this.btnEditDamages.Text = "Edit Damage List";
+            this.btnEditDamages.Click += new System.EventHandler(this.btnEditDamages_Click);
+            //
             // grpRegen
             // 
             this.grpRegen.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
@@ -2453,6 +2465,7 @@ namespace Intersect.Editor.Forms.Editors
         private DarkComboBox cmbAttackAnimation;
         private System.Windows.Forms.Label lblAttackAnimation;
         private System.Windows.Forms.Label lblDamage;
+        private DarkButton btnEditDamages;
         private DarkComboBox cmbSpell;
         private DarkNumericUpDown nudLevel;
         private DarkNumericUpDown nudY;

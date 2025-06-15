@@ -12,6 +12,7 @@ using Intersect.Framework.Core.GameObjects.Events;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.GameObjects;
+using Intersect.Editor.Forms.Editors.Damages;
 using Intersect.Utilities;
 using EventDescriptor = Intersect.Framework.Core.GameObjects.Events.EventDescriptor;
 using Graphics = System.Drawing.Graphics;
@@ -234,6 +235,7 @@ public partial class FrmNpc : EditorForm
         lblCritChance.Text = Strings.NpcEditor.critchance;
         lblCritMultiplier.Text = Strings.NpcEditor.critmultiplier;
         lblDamageType.Text = Strings.NpcEditor.damagetype;
+        btnEditDamages.Text = Strings.SpellEditor.editdamages;
         cmbDamageType.Items.Clear();
         for (var i = 0; i < Strings.Combat.damagetypes.Count; i++)
         {
@@ -624,6 +626,16 @@ public partial class FrmNpc : EditorForm
     private void cmbScalingStat_SelectedIndexChanged(object sender, EventArgs e)
     {
         mEditorItem.ScalingStat = cmbScalingStat.SelectedIndex;
+    }
+
+    private void btnEditDamages_Click(object sender, EventArgs e)
+    {
+        var dlg = new Damages.FrmDamageList(mEditorItem.DamageTypes, mEditorItem.Damages);
+        if (dlg.ShowDialog() == DialogResult.OK)
+        {
+            mEditorItem.DamageTypes = dlg.DamageTypes.ToArray();
+            mEditorItem.Damages = dlg.DamageAmounts.ToArray();
+        }
     }
 
     private void lstSpells_SelectedIndexChanged(object sender, EventArgs e)

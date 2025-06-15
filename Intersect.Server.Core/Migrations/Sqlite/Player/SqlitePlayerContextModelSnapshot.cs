@@ -421,6 +421,34 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.ToTable("Player_Quests");
                 });
 
+            modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.Achievement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AchievementId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Completed")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Progress")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerId");
+
+                    b.HasIndex("AchievementId", "PlayerId")
+                        .IsUnique();
+
+                    b.ToTable("Player_Achievements");
+                });
+
             modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.SpellSlot", b =>
                 {
                     b.Property<Guid>("Id")

@@ -33,6 +33,8 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
 
     public DbSet<Quest> Player_Quests { get; set; }
 
+    public DbSet<Achievement> Player_Achievements { get; set; }
+
     public DbSet<SpellSlot> Player_Spells { get; set; }
 
     public DbSet<PlayerVariable> Player_Variables { get; set; }
@@ -99,6 +101,9 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
 
         modelBuilder.Entity<Player>().HasMany(b => b.Quests).WithOne(p => p.Player);
         modelBuilder.Entity<Quest>().HasIndex(p => new { p.QuestId, p.PlayerId }).IsUnique();
+
+        modelBuilder.Entity<Player>().HasMany(b => b.Achievements).WithOne(p => p.Player);
+        modelBuilder.Entity<Achievement>().HasIndex(p => new { p.AchievementId, p.PlayerId }).IsUnique();
 
         modelBuilder.Entity<Player>().HasMany(b => b.Bank).WithOne(p => p.Player);
 
@@ -187,6 +192,9 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
             Entry(itm).State = EntityState.Detached;
 
         foreach (var itm in player.Quests)
+            Entry(itm).State = EntityState.Detached;
+
+        foreach (var itm in player.Achievements)
             Entry(itm).State = EntityState.Detached;
 
         foreach (var itm in player.Bank)

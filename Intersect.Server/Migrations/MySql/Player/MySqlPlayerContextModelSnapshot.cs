@@ -469,6 +469,37 @@ namespace Intersect.Server.Migrations.MySql.Player
                     b.ToTable("Player_Quests");
                 });
 
+            modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.Achievement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)")
+                        .UseCollation("ascii_general_ci");
+
+                    b.Property<Guid>("AchievementId")
+                        .HasColumnType("char(36)")
+                        .UseCollation("ascii_general_ci");
+
+                    b.Property<bool>("Completed")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("Progress")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("char(36)")
+                        .UseCollation("ascii_general_ci");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerId");
+
+                    b.HasIndex("AchievementId", "PlayerId")
+                        .IsUnique();
+
+                    b.ToTable("Player_Achievements");
+                });
+
             modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.SpellSlot", b =>
                 {
                     b.Property<Guid>("Id")

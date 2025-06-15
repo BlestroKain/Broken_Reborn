@@ -1025,6 +1025,38 @@ namespace Intersect.Server.Migrations.Sqlite.Game
                     b.ToTable("Quests");
                 });
 
+            modelBuilder.Entity("Intersect.GameObjects.AchievementDescriptor", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Category")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Difficulty")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Folder")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("TEXT")
+                        .HasColumnOrder(0);
+
+                    b.Property<string>("Requirements")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Rewards")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("TimeCreated")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Achievements");
+                });
+
             modelBuilder.Entity("Intersect.GameObjects.ShopDescriptor", b =>
                 {
                     b.Property<Guid>("Id")

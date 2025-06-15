@@ -7,6 +7,7 @@ using Intersect.Models;
 using Intersect.Server.Utilities;
 using Intersect.Utilities;
 using Newtonsoft.Json;
+using System.Linq;
 
 namespace Intersect.Framework.Core.GameObjects.PlayerClass;
 
@@ -170,15 +171,54 @@ public partial class ClassDescriptor : DatabaseObject<ClassDescriptor>, IFoldera
 
     //Combat
     [NotMapped]
-    public List<DamageProfile> Damage { get; set; } = new();
-
-    [Column("Damage")]
-    [JsonIgnore]
-    public string DamageJson
+    public int Damage
     {
-        get => DatabaseUtils.SaveDamageProfiles(Damage);
-        set => Damage = DatabaseUtils.LoadDamageProfiles(value);
+        get => Damages.FirstOrDefault();
+        set
+        {
+            if (Damages.Length == 0)
+            {
+                Damages = new int[1];
+            }
+            Damages[0] = value;
+        }
     }
+
+    [NotMapped]
+    public int DamageType
+    {
+        get => DamageTypes.FirstOrDefault();
+        set
+        {
+            if (DamageTypes.Length == 0)
+            {
+                DamageTypes = new int[1];
+            }
+            DamageTypes[0] = value;
+        }
+    }
+
+    [Column("Damages")]
+    [JsonIgnore]
+    public string DamagesJson
+    {
+        get => DatabaseUtils.SaveIntArray(Damages, Damages.Length);
+        set => Damages = DatabaseUtils.LoadIntArray(value, 1);
+    }
+
+    [NotMapped]
+    public int[] Damages { get; set; } = new int[1];
+
+    [Column("DamageTypes")]
+    [JsonIgnore]
+    public string DamageTypesJson
+    {
+        get => DatabaseUtils.SaveIntArray(DamageTypes, DamageTypes.Length);
+        set => DamageTypes = DatabaseUtils.LoadIntArray(value, 1);
+    }
+
+    [NotMapped]
+    public int[] DamageTypes { get; set; } = new int[1];
 
     public int AttackSpeedModifier { get; set; }
 

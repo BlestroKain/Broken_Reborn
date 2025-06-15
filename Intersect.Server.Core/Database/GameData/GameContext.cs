@@ -112,6 +112,11 @@ public abstract partial class GameContext : IntersectDbContext<GameContext>, IGa
         {
             FixQuestTaskCompletionEventsMigration.Run(this);
         }
+
+        if (migrations.IndexOf("20250606120000_DamageLists") > -1)
+        {
+            DamageListMigration.Run(this);
+        }
     }
 
     internal static partial class Queries

@@ -4,6 +4,7 @@ using Intersect.Enums;
 using Intersect.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using System.Linq;
 
 namespace Intersect.GameObjects;
 
@@ -17,17 +18,31 @@ public partial class SpellCombatDescriptor
 
     public double CritMultiplier { get; set; } = 1.5;
 
+    [NotMapped]
+    public int DamageType
+    {
+        get => DamageTypes.FirstOrDefault();
+        set
+        {
+            if (DamageTypes.Length == 0)
+            {
+                DamageTypes = new int[1];
+            }
+            DamageTypes[0] = value;
+        }
+    }
+
+    [Column("DamageTypes")]
+    [JsonIgnore]
+    public string DamageTypesJson
+    {
+        get => DatabaseUtils.SaveIntArray(DamageTypes, DamageTypes.Length);
+        set => DamageTypes = DatabaseUtils.LoadIntArray(value, 1);
+    }
 
     [NotMapped]
-    public List<DamageProfile> Damage { get; set; } = new();
+    public int[] DamageTypes { get; set; } = new int[1];
 
-    [Column("Damage")]
-    [JsonIgnore]
-    public string DamageJson
-    {
-        get => DatabaseUtils.SaveDamageProfiles(Damage);
-        set => Damage = DatabaseUtils.LoadDamageProfiles(value);
-    }
     public int HitRadius { get; set; }
 
     public bool Friendly { get; set; }

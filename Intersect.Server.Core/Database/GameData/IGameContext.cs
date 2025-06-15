@@ -6,6 +6,7 @@ using Intersect.Framework.Core.GameObjects.Mapping.Tilesets;
 using Intersect.Framework.Core.GameObjects.Maps.MapList;
 using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
+using Intersect.Framework.Core.GameObjects.Achievements;
 using Intersect.Framework.Core.GameObjects.Resources;
 using Intersect.Framework.Core.GameObjects.Variables;
 using Intersect.GameObjects;
@@ -39,6 +40,8 @@ public interface IGameContext : IDbContext
     DbSet<ProjectileDescriptor> Projectiles { get; set; }
 
     DbSet<QuestDescriptor> Quests { get; set; }
+
+    DbSet<AchievementDescriptor> Achievements { get; set; }
 
     DbSet<ResourceDescriptor> Resources { get; set; }
 

@@ -1068,6 +1068,39 @@ namespace Intersect.Server.Migrations.MySql.Game
                     b.ToTable("Quests");
                 });
 
+            modelBuilder.Entity("Intersect.GameObjects.AchievementDescriptor", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("char(36)")
+                        .UseCollation("ascii_general_ci");
+
+                    b.Property<string>("Category")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("Difficulty")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Folder")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("longtext")
+                        .HasColumnOrder(0);
+
+                    b.Property<string>("Requirements")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Rewards")
+                        .HasColumnType("longtext");
+
+                    b.Property<long>("TimeCreated")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Achievements");
+                });
+
             modelBuilder.Entity("Intersect.GameObjects.ShopDescriptor", b =>
                 {
                     b.Property<Guid>("Id")

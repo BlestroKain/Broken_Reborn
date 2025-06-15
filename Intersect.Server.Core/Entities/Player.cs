@@ -18,6 +18,7 @@ using Intersect.Framework.Core.GameObjects.Maps.Attributes;
 using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.GameObjects.Quests;
+using Intersect.Framework.Core.GameObjects.Achievements;
 using Intersect.Framework.Core.GameObjects.Variables;
 using Intersect.GameObjects;
 using Intersect.Network;
@@ -169,6 +170,9 @@ public partial class Player : Entity
 
     //Quests
     public virtual List<Quest> Quests { get; set; } = [];
+
+    //Achievements
+    public virtual List<Achievement> Achievements { get; set; } = [];
 
     //Variables
     public virtual List<PlayerVariable> Variables { get; set; } = [];

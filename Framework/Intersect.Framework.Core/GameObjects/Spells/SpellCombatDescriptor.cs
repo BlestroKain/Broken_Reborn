@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using Intersect.Enums;
 using Intersect.Utilities;
@@ -16,8 +17,17 @@ public partial class SpellCombatDescriptor
 
     public double CritMultiplier { get; set; } = 1.5;
 
-    public int DamageType { get; set; } = 1;
 
+    [NotMapped]
+    public List<DamageProfile> Damage { get; set; } = new();
+
+    [Column("Damage")]
+    [JsonIgnore]
+    public string DamageJson
+    {
+        get => DatabaseUtils.SaveDamageProfiles(Damage);
+        set => Damage = DatabaseUtils.LoadDamageProfiles(value);
+    }
     public int HitRadius { get; set; }
 
     public bool Friendly { get; set; }

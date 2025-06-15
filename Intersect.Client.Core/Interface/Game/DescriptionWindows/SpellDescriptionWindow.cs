@@ -234,7 +234,6 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
                 isDamage = true;
             }
         }
-
         var combatDamagePairs = GetDamagePairs(_spellDescriptor.Combat);
         if (combatDamagePairs != null)
         {
@@ -250,7 +249,6 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
             Strings.SpellDescription.DamageTypes.TryGetValue(_spellDescriptor.Combat.DamageType, out var damageType);
             rows.AddKeyValueRow(Strings.SpellDescription.DamageType, damageType);
         }
-
         if (_spellDescriptor.Combat.Scaling > 0)
         {
             Strings.SpellDescription.Stats.TryGetValue(_spellDescriptor.Combat.ScalingStat, out var stat);

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Animations;
@@ -168,9 +169,16 @@ public partial class ClassDescriptor : DatabaseObject<ClassDescriptor>, IFoldera
     public double CritMultiplier { get; set; } = 1.5;
 
     //Combat
-    public int Damage { get; set; } = 1;
+    [NotMapped]
+    public List<DamageProfile> Damage { get; set; } = new();
 
-    public int DamageType { get; set; }
+    [Column("Damage")]
+    [JsonIgnore]
+    public string DamageJson
+    {
+        get => DatabaseUtils.SaveDamageProfiles(Damage);
+        set => Damage = DatabaseUtils.LoadDamageProfiles(value);
+    }
 
     public int AttackSpeedModifier { get; set; }
 

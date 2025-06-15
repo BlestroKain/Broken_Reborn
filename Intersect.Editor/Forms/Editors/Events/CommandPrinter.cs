@@ -1724,5 +1724,21 @@ public static partial class CommandPrinter
 
         return Strings.EventCommandList.invalid;
     }
+    private static string GetCommandText(GiveJobExperienceCommand command, MapInstance map)
+    {
+        // Iterar sobre el diccionario JobExp en el comando
+        foreach (var jobExp in command.JobExp)
+        {
+            if (jobExp.Value > 0) // Si el trabajo tiene experiencia asignada
+            {
+                // Obtener el mensaje del trabajo desde EventCommandList
+                var format = Strings.EventCommandList.GetJobExperienceMessage(jobExp.Key);
+                return string.Format(format, jobExp.Value); // Devuelve el mensaje formateado con la experiencia
+            }
+        }
+
+        // Si no hay experiencias asignadas, retorna null
+        return null;
+    }
 
 }

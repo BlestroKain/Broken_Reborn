@@ -2299,5 +2299,21 @@ public static partial class CommandProcessing
             }
         }
     }
-
+    // Give Job Experience Command
+    private static void ProcessCommand(
+        GiveJobExperienceCommand command,
+        Player player,
+        Event instance,
+        CommandInstance stackInfo,
+        Stack<CommandInstance> callStack
+    )
+    {
+        foreach (var jobExp in command.JobExp)
+        {
+            if (jobExp.Value > 0) // Si el trabajo tiene experiencia asignada
+            {
+                player.GiveJobExperience(jobExp.Key, jobExp.Value);
+            }
+        }
+    }
 }

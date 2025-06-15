@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "Intersect.Editor": {
+    "Intersect.Server.Core": {
       "commandName": "Project",
       "workingDirectory": "C:\\Users\\jlroo\\Desktop\\Broken Bridge Online 2025 8.0\\Client and Editor"
     }

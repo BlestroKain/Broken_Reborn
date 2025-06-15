@@ -78,6 +78,8 @@ namespace Intersect.Client.Interface.Game.Job
             InitializeJobsPanel();
             mJobsWindow.AddChild(JobsPanel);
             mJobsWindow.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+            // Start hidden until explicitly shown
+            Hide();
         }
 
         private void InitializeJobsPanel()
@@ -292,11 +294,16 @@ namespace Intersect.Client.Interface.Game.Job
             if (mRecipePanel != null)
             {
                 InfoPanel.RemoveChild(mRecipePanel, true);
+                mRecipePanel = null;
+                mItems.Clear();
+                mValues.Clear();
             }
+
             // Clear the old item description box
-            if (mCombinedItem != null && mCombinedItem.DescWindow != null)
+            if (mCombinedItem?.DescWindow != null)
             {
                 mCombinedItem.DescWindow.Dispose();
+                mCombinedItem = null;
             }
             mRecipePanel = new ScrollControl(InfoPanel, "RecipePanel");
             mRecipePanel.SetPosition(10, 220); // Ajusta según sea necesario
@@ -408,10 +415,9 @@ namespace Intersect.Client.Interface.Game.Job
                 for (var i = 0; i < recipe.Ingredients.Count; i++)
                 {
                     mItems.Add(new RecipeItem(this, recipe.Ingredients[i]));
-                    mItems[mItems.Count - 1].Container = new ImagePanel(ingredientsPanel, "IngredientContainer");
-                    mItems[mItems.Count - 1].Setup("IngredientItemIcon");
-                    ingredientsPanel.AddChild(mItems[mItems.Count - 1].Container);
-                    recipeContainer.AddChild(ingredientsPanel);
+                    mItems[^1].Container = new ImagePanel(ingredientsPanel, "IngredientContainer");
+                    mItems[^1].Setup("IngredientItemIcon");
+                    ingredientsPanel.AddChild(mItems[^1].Container);
                     var lblTemp = new Label(mItems[mItems.Count - 1].Container, "IngredientItemValue");
 
                     var onHand = 0;
@@ -453,6 +459,7 @@ namespace Intersect.Client.Interface.Game.Job
                     xOffset += 32 + 5; // Espacio entre ingredientes
 
                 }
+                recipeContainer.AddChild(ingredientsPanel);
 
                 // Añadir el contenedor de la receta al panel principal
                 mRecipePanel.AddChild(recipeContainer);

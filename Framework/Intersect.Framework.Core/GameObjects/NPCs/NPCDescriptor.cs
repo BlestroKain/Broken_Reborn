@@ -6,6 +6,7 @@ using Intersect.Framework.Core.GameObjects.Events;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.GameObjects;
 using Intersect.Models;
+using System.Linq;
 using Intersect.Utilities;
 using Newtonsoft.Json;
 
@@ -187,9 +188,55 @@ public partial class NPCDescriptor : DatabaseObject<NPCDescriptor>, IFolderable
     }
 
     //Combat
-    public int Damage { get; set; } = 1;
+    [NotMapped]
+    public int Damage
+    {
+        get => Damages.FirstOrDefault();
+        set
+        {
+            if (Damages.Length == 0)
+            {
+                Damages = new int[1];
+            }
+            Damages[0] = value;
+        }
+    }
 
-    public int DamageType { get; set; }
+    [NotMapped]
+    public int DamageType
+    {
+        get => DamageTypes.FirstOrDefault();
+        set
+        {
+            if (DamageTypes.Length == 0)
+            {
+                DamageTypes = new int[1];
+            }
+            DamageTypes[0] = value;
+        }
+    }
+
+    [Column("Damages")]
+    [JsonIgnore]
+    public string DamagesJson
+    {
+        get => DatabaseUtils.SaveIntArray(Damages, Damages.Length);
+        set => Damages = DatabaseUtils.LoadIntArray(value, 1);
+    }
+
+    [NotMapped]
+    public int[] Damages { get; set; } = new int[1];
+
+    [Column("DamageTypes")]
+    [JsonIgnore]
+    public string DamageTypesJson
+    {
+        get => DatabaseUtils.SaveIntArray(DamageTypes, DamageTypes.Length);
+        set => DamageTypes = DatabaseUtils.LoadIntArray(value, 1);
+    }
+
+    [NotMapped]
+    public int[] DamageTypes { get; set; } = new int[1];
 
     public int CritChance { get; set; }
 

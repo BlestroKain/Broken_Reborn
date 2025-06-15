@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
+using System.Linq;
 using Intersect.Collections.Slotting;
 using Intersect.Core;
 using Intersect.Enums;
@@ -2066,7 +2067,8 @@ public abstract partial class Entity : IEntity
         double critMultiplier,
         List<KeyValuePair<Guid, Direction>> deadAnimations = null,
         List<KeyValuePair<Guid, Direction>> aliveAnimations = null,
-        bool isAutoAttack = false
+        bool isAutoAttack = false,
+        IEnumerable<DamageProfile>? damageProfiles = null
     )
     {
         var damagingAttack = baseDamage > 0;
@@ -2092,12 +2094,47 @@ public abstract partial class Entity : IEntity
             isCrit = true;
         }
 
+        var profiles = (damageProfiles?.ToList() ??
+            new List<DamageProfile>
+            {
+                new() { DamageType = damageType, Damage = baseDamage, SecondaryDamage = secondaryDamage }
+            });
+
+        baseDamage = 0;
+        secondaryDamage = 0;
+
         //If the enemy is a resource, the original base damage value will be used on "Calculate Damages", if not, we need change...
-        if (!(enemy is Resource))
+        for (var i = 0; i < profiles.Count; i++)
         {
-            baseDamage = Formulas.CalculateDamage(
-            baseDamage, damageType, scalingStat, scaling, critMultiplier, this, enemy
-        );
+            var profile = profiles[i];
+
+            if (!(enemy is Resource))
+            {
+                profile.Damage = Formulas.CalculateDamage(
+                    profile.Damage,
+                    profile.DamageType,
+                    scalingStat,
+                    scaling,
+                    critMultiplier,
+                    this,
+                    enemy
+                );
+
+                if (profile.SecondaryDamage != 0)
+                {
+                    profile.SecondaryDamage = Formulas.CalculateDamage(
+                        profile.SecondaryDamage,
+                        profile.DamageType,
+                        scalingStat,
+                        scaling,
+                        critMultiplier,
+                        this,
+                        enemy
+                    );
+                }
+            }
+
+            profiles[i] = profile;
         }
 
         //Check on each attack if the enemy is a player AND if they are blocking.
@@ -2106,7 +2143,7 @@ public abstract partial class Entity : IEntity
             if (player.TryGetEquipmentSlot(Options.Instance.Equipment.ShieldSlot, out var slot) && player.TryGetItemAt(slot, out var itm))
             {
                 var item = itm.Descriptor;
-                var originalBaseDamage = baseDamage;
+                var totalDamage = profiles.Sum(p => p.Damage);
                 var blockChance = item.BlockChance;
                 var blockAmount = item.BlockAmount / 100.0;
                 var blockAbsorption = item.BlockAbsorption / 100.0;
@@ -2114,20 +2151,30 @@ public abstract partial class Entity : IEntity
                 //Generate a new attempt to block
                 if (Randomization.Next(0, 101) < blockChance)
                 {
+                    var originalTotalDamage = totalDamage;
+
                     if (item.BlockAmount < 100)
                     {
-                        baseDamage -= (int)Math.Round(baseDamage * blockAmount);
+                        totalDamage -= (int)Math.Round(totalDamage * blockAmount);
                     }
                     else
                     {
-                        baseDamage = 0;
+                        totalDamage = 0;
                     }
 
-                    var absorptionAmount = (int)Math.Round(baseDamage * blockAbsorption);
+                    var ratio = originalTotalDamage > 0 ? totalDamage / (double)originalTotalDamage : 0;
+                    for (var i = 0; i < profiles.Count; i++)
+                    {
+                        var p = profiles[i];
+                        p.Damage = (long)Math.Round(p.Damage * ratio);
+                        profiles[i] = p;
+                    }
+
+                    var absorptionAmount = (int)Math.Round(totalDamage * blockAbsorption);
 
                     if (absorptionAmount == 0)
                     {
-                        absorptionAmount = (int)Math.Round(originalBaseDamage * blockAbsorption);
+                        absorptionAmount = (int)Math.Round(originalTotalDamage * blockAbsorption);
                     }
 
                     if (blockAbsorption > 0)
@@ -2135,8 +2182,9 @@ public abstract partial class Entity : IEntity
                         player.AddVital(Vital.Health, absorptionAmount);
 
                         PacketSender.SendActionMsg(
-                        enemy, Strings.Combat.AddSymbol + Math.Abs(absorptionAmount),
-                        CustomColors.Combat.Heal
+                            enemy,
+                            Strings.Combat.AddSymbol + Math.Abs(absorptionAmount),
+                            CustomColors.Combat.Heal
                         );
                     }
 
@@ -2146,9 +2194,9 @@ public abstract partial class Entity : IEntity
         }
 
         //Calculate Damages
+        baseDamage = profiles.Sum(p => p.Damage);
         if (baseDamage != 0)
         {
-
             if (baseDamage < 0 && damagingAttack)
             {
                 baseDamage = 0;
@@ -2161,41 +2209,53 @@ public abstract partial class Entity : IEntity
                     PacketSender.SendActionMsg(enemy, Strings.Combat.Critical, CustomColors.Combat.Critical);
                 }
 
-                enemy.SubVital(Vital.Health, baseDamage);
-                switch (damageType)
+                foreach (var profile in profiles)
                 {
-                    case DamageType.Physical:
-                        PacketSender.SendActionMsg(
-                            enemy, Strings.Combat.RemoveSymbol + baseDamage,
-                            CustomColors.Combat.PhysicalDamage
-                        );
+                    var dmg = profile.Damage;
+                    if (dmg == 0)
+                    {
+                        continue;
+                    }
 
-                        break;
-                    case DamageType.Magic:
-                        PacketSender.SendActionMsg(
-                            enemy, Strings.Combat.RemoveSymbol + baseDamage, CustomColors.Combat.MagicDamage
-                        );
+                    enemy.SubVital(Vital.Health, dmg);
+                    switch (profile.DamageType)
+                    {
+                        case DamageType.Physical:
+                            PacketSender.SendActionMsg(
+                                enemy,
+                                Strings.Combat.RemoveSymbol + dmg,
+                                CustomColors.Combat.PhysicalDamage
+                            );
 
-                        break;
-                    case DamageType.True:
-                        PacketSender.SendActionMsg(
-                            enemy, Strings.Combat.RemoveSymbol + baseDamage, CustomColors.Combat.TrueDamage
-                        );
+                            break;
+                        case DamageType.Magic:
+                            PacketSender.SendActionMsg(
+                                enemy,
+                                Strings.Combat.RemoveSymbol + dmg,
+                                CustomColors.Combat.MagicDamage
+                            );
 
-                        break;
+                            break;
+                        case DamageType.True:
+                            PacketSender.SendActionMsg(
+                                enemy,
+                                Strings.Combat.RemoveSymbol + dmg,
+                                CustomColors.Combat.TrueDamage
+                            );
+
+                            break;
+                    }
                 }
 
                 var toRemove = new List<Status>();
-                foreach (var status in enemy.CachedStatuses.ToArray())  // ToArray the Array since removing a status will.. you know, change the collection.
+                foreach (var status in enemy.CachedStatuses.ToArray())
                 {
-                    //Wake up any sleeping targets targets and take stealthed entities out of stealth
                     if (status.Type == SpellEffect.Sleep || status.Type == SpellEffect.Stealth)
                     {
                         status.RemoveStatus();
                     }
                 }
 
-                // Add the attacker to the Npcs threat and loot table.
                 if (enemy is Npc enemyNpc)
                 {
                     var dmgMap = enemyNpc.DamageMap;
@@ -2213,17 +2273,16 @@ public abstract partial class Entity : IEntity
             {
                 enemy.AddVital(Vital.Health, -baseDamage);
                 PacketSender.SendActionMsg(
-                    enemy, Strings.Combat.AddSymbol + Math.Abs(baseDamage), CustomColors.Combat.Heal
+                    enemy,
+                    Strings.Combat.AddSymbol + Math.Abs(baseDamage),
+                    CustomColors.Combat.Heal
                 );
             }
         }
 
+        secondaryDamage = profiles.Sum(p => p.SecondaryDamage);
         if (secondaryDamage != 0)
         {
-            secondaryDamage = Formulas.CalculateDamage(
-                secondaryDamage, damageType, scalingStat, scaling, critMultiplier, this, enemy
-            );
-
             if (secondaryDamage < 0 && secondaryDamagingAttack)
             {
                 secondaryDamage = 0;
@@ -2231,13 +2290,13 @@ public abstract partial class Entity : IEntity
 
             if (secondaryDamage > 0 && enemy.HasVital(Vital.Mana) && !invulnerable)
             {
-                //If we took damage lets reset our combat timer
                 enemy.SubVital(Vital.Mana, secondaryDamage);
                 PacketSender.SendActionMsg(
-                    enemy, Strings.Combat.RemoveSymbol + secondaryDamage, CustomColors.Combat.RemoveMana
+                    enemy,
+                    Strings.Combat.RemoveSymbol + secondaryDamage,
+                    CustomColors.Combat.RemoveMana
                 );
 
-                //No Matter what, if we attack the entitiy, make them chase us
                 if (enemy is Npc enemyNpc)
                 {
                     enemyNpc.TryFindNewTarget(Timing.Global.Milliseconds, default, false, this);
@@ -2249,7 +2308,9 @@ public abstract partial class Entity : IEntity
             {
                 enemy.AddVital(Vital.Mana, -secondaryDamage);
                 PacketSender.SendActionMsg(
-                    enemy, Strings.Combat.AddSymbol + Math.Abs(secondaryDamage), CustomColors.Combat.AddMana
+                    enemy,
+                    Strings.Combat.AddSymbol + Math.Abs(secondaryDamage),
+                    CustomColors.Combat.AddMana
                 );
             }
         }

@@ -1,4 +1,4 @@
-﻿namespace Intersect.Framework.Core.GameObjects.Events;
+namespace Intersect.Framework.Core.GameObjects.Events;
 
 public enum EventCommandType
 {
@@ -136,4 +136,5 @@ public enum EventCommandType
     CastSpellOn,
 
     Fade,
+    GiveJobExperience=200,
 }

@@ -3,6 +3,7 @@ using Intersect.Client.Core.Controls;
 using Intersect.Client.Framework.Content;
 using Intersect.Client.Framework.Input;
 using Intersect.Client.Interface.Shared;
+using Intersect.Config;
 using Intersect.Configuration;
 using Intersect.Core;
 using Intersect.Enums;
@@ -306,6 +307,101 @@ public static partial class Strings
         nameof(SerializeDictionary),
         BindingFlags.NonPublic | BindingFlags.Static
     ) ?? throw new InvalidOperationException();
+
+    public partial struct Job
+    {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString job = "Jobs Window";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Farming = "Farming";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Fishing = "Fishing";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Mining = "Mining";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Lumberjack = "Lumberjack";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Hunting = "Hunting";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Blacksmith = "Blacksmith";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Cooking = "Cooking";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Alchemy = "Alchemy";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Crafting = "Crafting";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Jewerly = "Jewerly";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Tanner = "Tanner";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Tailoring = "Tailoring";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString None = "None";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString MaxLevel = "Max Level";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString ExpValue = "{0} / {1}";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Exp = "EXP: ";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Level = "Level {0}";
+
+
+        public static string GetJobName(JobType jobType)
+        {
+            return jobType switch
+            {
+                JobType.Farming => Strings.Job.Farming,
+                JobType.Fishing => Strings.Job.Fishing,
+                JobType.Mining => Strings.Job.Mining,
+                JobType.Lumberjack => Strings.Job.Lumberjack,
+                JobType.Hunter => Strings.Job.Hunting,
+                JobType.Smithing => Strings.Job.Blacksmith,
+                JobType.Cooking => Strings.Job.Cooking,
+                JobType.Alchemy => Strings.Job.Alchemy,
+                JobType.Crafting => Strings.Job.Crafting,
+                JobType.Jewerly => Strings.Job.Jewerly,
+                JobType.Tanner => Strings.Job.Tanner,
+                JobType.Tailoring => Strings.Job.Tailoring,
+                _ => Strings.Job.None
+            };
+        }
+        public static string GetJobDescription(JobType jobType)
+        {
+            return jobType switch
+            {
+                JobType.None => "No description available.",
+                JobType.Farming => "Become a master of agriculture by cultivating fields, planting crops, and raising livestock to sustain your community and trade resources.",
+                JobType.Mining => "Delve into the depths of the earth to extract rare ores, precious gems, and essential minerals for crafting and trade.",
+                JobType.Fishing => "Explore rivers, lakes, and oceans to catch an array of aquatic life, from common fish to rare underwater treasures.",
+                JobType.Lumberjack => "Traverse dense forests to fell mighty trees, gathering wood and rare timber for construction and crafting needs.",
+                JobType.Hunter => "Embark on thrilling hunts to track and capture wild creatures, collecting valuable hides and meat for crafting and sustenance.",
+                JobType.Alchemy => "Experiment with a variety of ingredients to brew potent elixirs, healing potions, and magical concoctions to aid adventurers.",
+                JobType.Smithing => "Harness the forge to shape metal into powerful weapons, resilient armor, and essential tools for survival and warfare.",
+                JobType.Cooking => "Prepare exquisite meals and beverages that not only restore vitality but also provide unique buffs and enhancements.",
+                JobType.Crafting => "Combine skill and creativity to assemble intricate tools, decorations, and practical items that enhance daily life.",
+                JobType.Jewerly => "Design and create elegant jewelry embedded with precious stones, enhancing the wearer's abilities and aesthetic appeal.",
+                JobType.Tanner => "Transform raw animal hides into durable leather goods and protective armor, essential for adventurers and traders alike.",
+                JobType.Tailoring => "Spin fine threads and weave luxurious textiles to produce elegant clothing and essential materials for crafting.",
+                _ => "Description not found for this job."
+            };
+        }
+    }
+
 
     private static void DeserializeDictionary<TKey>(
         List<string> missingStrings,
@@ -944,6 +1040,9 @@ public static partial class Strings
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString RecipeListEntry = @"{00}) {01}";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Exp = @"EXP: {00}";
     }
 
     public partial struct Credits
@@ -1258,6 +1357,8 @@ public static partial class Strings
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString Spells = @"Spell Book";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Jobs = @"Jobs";
     }
 
     public partial struct General

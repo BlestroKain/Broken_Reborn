@@ -755,6 +755,11 @@ public partial class FrmEvent : Form
                 tmpCommand = new ScreenFadeCommand();
 
                 break;
+
+            case EventCommandType.GiveJobExperience:
+                tmpCommand = new GiveJobExperienceCommand();
+
+                break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
@@ -1415,6 +1420,11 @@ public partial class FrmEvent : Form
                 break;
             case EventCommandType.Fade:
                 cmdWindow = new EventCommand_ScreenFade((ScreenFadeCommand)command, this);
+
+                break;
+             
+            case EventCommandType.GiveJobExperience:
+                cmdWindow = new EventCommandGiveJobExperience((GiveJobExperienceCommand)command, this);
 
                 break;
             default:

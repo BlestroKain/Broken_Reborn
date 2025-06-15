@@ -495,6 +495,39 @@ public static partial class Strings
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public readonly LocalizedString RequirementsNotMet = @"You do not meet the requirements to craft this item!";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString JobExperience = @"You have received {00} experience points in {01}.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString UnknownJobType = @"The job type {00} is not recognized.";
+
+        public static string GetJobExperienceMessage(JobType jobType, long experienceAmount)
+        {
+            var jobName = jobType switch
+            {
+                JobType.Farming => "Farming",
+                JobType.Mining => "Mining",
+                JobType.Fishing => "Fishing",
+                JobType.Lumberjack => "Woodcutting",
+                JobType.Hunter => "Hunting",
+                JobType.Alchemy => "Alchemy",
+                JobType.Smithing => "Blacksmithing",
+                JobType.Cooking => "Cooking",
+                JobType.Crafting => "Crafting",
+                JobType.Jewerly => "Jewerly ",
+                JobType.Tanner => "Tanner",
+                JobType.Tailoring => "Tailoring",
+                _ => null
+            };
+
+            if (jobName != null)
+            {
+                return string.Format(Strings.Crafting.JobExperience, experienceAmount, jobName);
+            }
+
+            return string.Format(Strings.Crafting.UnknownJobType, jobType);
+        }
     }
 
     public sealed partial class DatabaseNamespace : LocaleNamespace
@@ -1147,6 +1180,26 @@ public static partial class Strings
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public readonly LocalizedString WarpedToYou = @"{00} warped to you.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly Dictionary<JobType, LocalizedString> JobLevelUpMessages = new Dictionary<JobType, LocalizedString>
+{
+    { JobType.Farming, @"Your Farming Job is now level {00}!" },
+    { JobType.Cooking, @"Your Cooking Job is now level {00}!" },
+    { JobType.Hunter, @"Your Hunting Job is now level {00}!" },
+    { JobType.Smithing, @"Your Blacksmith Job is now level {00}!" },
+    { JobType.Alchemy, @"Your Alchemy Job is now level {00}!" },
+    { JobType.Lumberjack, @"Your Wood Job is now level {00}!" },
+    { JobType.Fishing, @"Your Fishing Job is now level {00}!" },
+    { JobType.Mining, @"Your Mining Job is now level {00}!" }
+};
+        public LocalizedString GetJobLevelUpMessage(JobType jobType)
+        {
+            return JobLevelUpMessages.TryGetValue(jobType, out var message)
+                ? message
+                : @"Invalid Job Level Up!"; // Retorno por defecto si el JobType no existe
+        }
+
     }
 
     public sealed partial class PortcheckingNamespace : LocaleNamespace

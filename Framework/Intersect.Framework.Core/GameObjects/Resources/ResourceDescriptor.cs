@@ -4,6 +4,7 @@ using Intersect.Framework.Core.GameObjects.Conditions;
 using Intersect.Framework.Core.GameObjects.Events;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Models;
+using Intersect.Config;
 using Newtonsoft.Json;
 
 namespace Intersect.Framework.Core.GameObjects.Resources;
@@ -93,6 +94,10 @@ public partial class ResourceDescriptor : DatabaseObject<ResourceDescriptor>, IF
     public int SpawnDuration { get; set; }
 
     public int Tool { get; set; } = -1;
+
+    public JobType Jobs { get; set; } = JobType.None;
+
+    public long ExperienceAmount { get; set; } = 0;
 
     public bool WalkableAfter { get; set; }
 

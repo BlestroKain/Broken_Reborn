@@ -415,6 +415,7 @@ public static partial class PacketSender
             SendQuestsProgress(player);
             SendItemCooldowns(player);
             SendSpellCooldowns(player);
+            SendJobSync(player);
         }
 
         switch (entity)

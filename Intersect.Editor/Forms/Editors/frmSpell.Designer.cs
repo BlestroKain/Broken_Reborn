@@ -136,8 +136,12 @@ namespace Intersect.Editor.Forms.Editors
             this.chkFriendly = new DarkUI.Controls.DarkCheckBox();
             this.lblCritChance = new System.Windows.Forms.Label();
             this.lblScaling = new System.Windows.Forms.Label();
-            this.cmbDamageType = new DarkUI.Controls.DarkComboBox();
             this.lblDamageType = new System.Windows.Forms.Label();
+            this.gridDamages = new DarkUI.Controls.DarkDataGridView();
+            this.colDamageType = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.colDamageAmount = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.btnAddDamage = new DarkUI.Controls.DarkButton();
+            this.btnRemoveDamage = new DarkUI.Controls.DarkButton();
             this.lblHPDamage = new System.Windows.Forms.Label();
             this.lblManaDamage = new System.Windows.Forms.Label();
             this.grpEvent = new DarkUI.Controls.DarkGroupBox();
@@ -1663,7 +1667,9 @@ namespace Intersect.Editor.Forms.Editors
             this.grpDamage.Controls.Add(this.chkFriendly);
             this.grpDamage.Controls.Add(this.lblCritChance);
             this.grpDamage.Controls.Add(this.lblScaling);
-            this.grpDamage.Controls.Add(this.cmbDamageType);
+            this.grpDamage.Controls.Add(this.gridDamages);
+            this.grpDamage.Controls.Add(this.btnAddDamage);
+            this.grpDamage.Controls.Add(this.btnRemoveDamage);
             this.grpDamage.Controls.Add(this.lblDamageType);
             this.grpDamage.Controls.Add(this.lblHPDamage);
             this.grpDamage.Controls.Add(this.lblManaDamage);
@@ -1853,30 +1859,6 @@ namespace Intersect.Editor.Forms.Editors
             this.lblScaling.TabIndex = 52;
             this.lblScaling.Text = "Scaling Amount:";
             // 
-            // cmbDamageType
-            // 
-            this.cmbDamageType.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(69)))), ((int)(((byte)(73)))), ((int)(((byte)(74)))));
-            this.cmbDamageType.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
-            this.cmbDamageType.BorderStyle = System.Windows.Forms.ButtonBorderStyle.Solid;
-            this.cmbDamageType.ButtonColor = System.Drawing.Color.FromArgb(((int)(((byte)(43)))), ((int)(((byte)(43)))), ((int)(((byte)(43)))));
-            this.cmbDamageType.DrawDropdownHoverOutline = false;
-            this.cmbDamageType.DrawFocusRectangle = false;
-            this.cmbDamageType.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            this.cmbDamageType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbDamageType.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.cmbDamageType.ForeColor = System.Drawing.Color.Gainsboro;
-            this.cmbDamageType.FormattingEnabled = true;
-            this.cmbDamageType.Items.AddRange(new object[] {
-            "Physical",
-            "Magic",
-            "True"});
-            this.cmbDamageType.Location = new System.Drawing.Point(9, 152);
-            this.cmbDamageType.Name = "cmbDamageType";
-            this.cmbDamageType.Size = new System.Drawing.Size(190, 21);
-            this.cmbDamageType.TabIndex = 50;
-            this.cmbDamageType.Text = "Physical";
-            this.cmbDamageType.TextPadding = new System.Windows.Forms.Padding(2);
-            this.cmbDamageType.SelectedIndexChanged += new System.EventHandler(this.cmbDamageType_SelectedIndexChanged);
             // 
             // lblDamageType
             // 
@@ -1904,6 +1886,48 @@ namespace Intersect.Editor.Forms.Editors
             this.lblManaDamage.Size = new System.Drawing.Size(80, 13);
             this.lblManaDamage.TabIndex = 47;
             this.lblManaDamage.Text = "Mana Damage:";
+            //
+            // gridDamages
+            //
+            this.gridDamages.AllowUserToAddRows = false;
+            this.gridDamages.AllowUserToResizeRows = false;
+            this.gridDamages.BackgroundColor = System.Drawing.Color.FromArgb(60, 63, 65);
+            this.gridDamages.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.gridDamages.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.gridDamages.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.colDamageType,
+            this.colDamageAmount});
+            this.gridDamages.Location = new System.Drawing.Point(9, 152);
+            this.gridDamages.Name = "gridDamages";
+            this.gridDamages.Size = new System.Drawing.Size(190, 150);
+            this.gridDamages.TabIndex = 60;
+            this.gridDamages.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.gridDamages_CellValueChanged);
+
+            this.colDamageType.HeaderText = "Type";
+            this.colDamageType.DisplayStyle = System.Windows.Forms.DataGridViewComboBoxDisplayStyle.ComboBox;
+            this.colDamageType.Items.AddRange(System.Enum.GetNames(typeof(Intersect.Enums.DamageType)));
+            this.colDamageType.Width = 80;
+
+            this.colDamageAmount.HeaderText = "Amount";
+            this.colDamageAmount.Width = 70;
+
+            // btnAddDamage
+            //
+            this.btnAddDamage.Location = new System.Drawing.Point(9, 310);
+            this.btnAddDamage.Name = "btnAddDamage";
+            this.btnAddDamage.Size = new System.Drawing.Size(60, 23);
+            this.btnAddDamage.TabIndex = 61;
+            this.btnAddDamage.Text = "Add";
+            this.btnAddDamage.Click += new System.EventHandler(this.btnAddDamage_Click);
+
+            // btnRemoveDamage
+            //
+            this.btnRemoveDamage.Location = new System.Drawing.Point(75, 310);
+            this.btnRemoveDamage.Name = "btnRemoveDamage";
+            this.btnRemoveDamage.Size = new System.Drawing.Size(80, 23);
+            this.btnRemoveDamage.TabIndex = 62;
+            this.btnRemoveDamage.Text = "Remove";
+            this.btnRemoveDamage.Click += new System.EventHandler(this.btnRemoveDamage_Click);
             // 
             // grpEvent
             // 
@@ -2599,7 +2623,11 @@ namespace Intersect.Editor.Forms.Editors
         private DarkCheckBox chkFriendly;
         private System.Windows.Forms.Label lblCritChance;
         private System.Windows.Forms.Label lblScaling;
-        private DarkComboBox cmbDamageType;
+        private DarkUI.Controls.DarkDataGridView gridDamages;
+        private System.Windows.Forms.DataGridViewComboBoxColumn colDamageType;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colDamageAmount;
+        private DarkButton btnAddDamage;
+        private DarkButton btnRemoveDamage;
         private System.Windows.Forms.Label lblDamageType;
         private System.Windows.Forms.Label lblHPDamage;
         private System.Windows.Forms.Label lblManaDamage;

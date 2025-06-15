@@ -195,12 +195,10 @@ namespace Intersect.Editor.Forms.Editors
             lblAttackSpeedModifier = new Label();
             nudScaling = new DarkNumericUpDown();
             nudCritChance = new DarkNumericUpDown();
-            nudDamage = new DarkNumericUpDown();
             cmbProjectile = new DarkComboBox();
             cmbScalingStat = new DarkComboBox();
             lblScalingStat = new Label();
             lblScalingAmount = new Label();
-            cmbDamageType = new DarkComboBox();
             lblDamageType = new Label();
             lblCritChance = new Label();
             cmbAttackAnimation = new DarkComboBox();
@@ -210,6 +208,11 @@ namespace Intersect.Editor.Forms.Editors
             cmbToolType = new DarkComboBox();
             lblProjectile = new Label();
             lblDamage = new Label();
+            gridDamages = new DarkUI.Controls.DarkDataGridView();
+            colDamageType = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            colDamageAmount = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            btnAddDamage = new DarkButton();
+            btnRemoveDamage = new DarkButton();
             grpShieldProperties = new DarkGroupBox();
             nudBlockDmgAbs = new DarkNumericUpDown();
             lblBlockDmgAbs = new Label();
@@ -288,7 +291,6 @@ namespace Intersect.Editor.Forms.Editors
             ((ISupportInitialize)nudAttackSpeedValue).BeginInit();
             ((ISupportInitialize)nudScaling).BeginInit();
             ((ISupportInitialize)nudCritChance).BeginInit();
-            ((ISupportInitialize)nudDamage).BeginInit();
             grpShieldProperties.SuspendLayout();
             ((ISupportInitialize)nudBlockDmgAbs).BeginInit();
             ((ISupportInitialize)nudBlockAmount).BeginInit();
@@ -2351,13 +2353,14 @@ namespace Intersect.Editor.Forms.Editors
             grpWeaponProperties.Controls.Add(grpAttackSpeed);
             grpWeaponProperties.Controls.Add(nudScaling);
             grpWeaponProperties.Controls.Add(nudCritChance);
-            grpWeaponProperties.Controls.Add(nudDamage);
             grpWeaponProperties.Controls.Add(cmbProjectile);
             grpWeaponProperties.Controls.Add(cmbScalingStat);
             grpWeaponProperties.Controls.Add(lblScalingStat);
             grpWeaponProperties.Controls.Add(lblScalingAmount);
-            grpWeaponProperties.Controls.Add(cmbDamageType);
             grpWeaponProperties.Controls.Add(lblDamageType);
+            grpWeaponProperties.Controls.Add(gridDamages);
+            grpWeaponProperties.Controls.Add(btnAddDamage);
+            grpWeaponProperties.Controls.Add(btnRemoveDamage);
             grpWeaponProperties.Controls.Add(lblCritChance);
             grpWeaponProperties.Controls.Add(cmbAttackAnimation);
             grpWeaponProperties.Controls.Add(lblAttackAnimation);
@@ -2532,18 +2535,6 @@ namespace Intersect.Editor.Forms.Editors
             nudCritChance.Value = new decimal(new int[] { 0, 0, 0, 0 });
             nudCritChance.ValueChanged += nudCritChance_ValueChanged;
             // 
-            // nudDamage
-            // 
-            nudDamage.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
-            nudDamage.ForeColor = System.Drawing.Color.Gainsboro;
-            nudDamage.Location = new System.Drawing.Point(18, 42);
-            nudDamage.Margin = new Padding(4, 3, 4, 3);
-            nudDamage.Maximum = new decimal(new int[] { 10000, 0, 0, 0 });
-            nudDamage.Name = "nudDamage";
-            nudDamage.Size = new Size(247, 23);
-            nudDamage.TabIndex = 49;
-            nudDamage.Value = new decimal(new int[] { 0, 0, 0, 0 });
-            nudDamage.ValueChanged += nudDamage_ValueChanged;
             // 
             // cmbProjectile
             // 
@@ -2609,28 +2600,6 @@ namespace Intersect.Editor.Forms.Editors
             lblScalingAmount.TabIndex = 44;
             lblScalingAmount.Text = "Scaling Amount:";
             // 
-            // cmbDamageType
-            // 
-            cmbDamageType.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
-            cmbDamageType.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
-            cmbDamageType.BorderStyle = ButtonBorderStyle.Solid;
-            cmbDamageType.ButtonColor = System.Drawing.Color.FromArgb(43, 43, 43);
-            cmbDamageType.DrawDropdownHoverOutline = false;
-            cmbDamageType.DrawFocusRectangle = false;
-            cmbDamageType.DrawMode = DrawMode.OwnerDrawFixed;
-            cmbDamageType.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbDamageType.FlatStyle = FlatStyle.Flat;
-            cmbDamageType.ForeColor = System.Drawing.Color.Gainsboro;
-            cmbDamageType.FormattingEnabled = true;
-            cmbDamageType.Items.AddRange(new object[] { "Physical", "Magic", "True" });
-            cmbDamageType.Location = new System.Drawing.Point(18, 175);
-            cmbDamageType.Margin = new Padding(4, 3, 4, 3);
-            cmbDamageType.Name = "cmbDamageType";
-            cmbDamageType.Size = new Size(248, 24);
-            cmbDamageType.TabIndex = 42;
-            cmbDamageType.Text = "Physical";
-            cmbDamageType.TextPadding = new Padding(2);
-            cmbDamageType.SelectedIndexChanged += cmbDamageType_SelectedIndexChanged;
             // 
             // lblDamageType
             // 
@@ -2746,7 +2715,47 @@ namespace Intersect.Editor.Forms.Editors
             lblDamage.Size = new Size(81, 15);
             lblDamage.TabIndex = 11;
             lblDamage.Text = "Base Damage:";
-            // 
+            //
+            // gridDamages
+            //
+            gridDamages.AllowUserToAddRows = false;
+            gridDamages.AllowUserToResizeRows = false;
+            gridDamages.BackgroundColor = System.Drawing.Color.FromArgb(60, 63, 65);
+            gridDamages.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            gridDamages.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            gridDamages.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] { colDamageType, colDamageAmount });
+            gridDamages.Location = new System.Drawing.Point(18, 42);
+            gridDamages.Name = "gridDamages";
+            gridDamages.Size = new System.Drawing.Size(247, 130);
+            gridDamages.TabIndex = 60;
+            gridDamages.CellValueChanged += gridDamages_CellValueChanged;
+
+            colDamageType.HeaderText = "Type";
+            colDamageType.DisplayStyle = System.Windows.Forms.DataGridViewComboBoxDisplayStyle.ComboBox;
+            colDamageType.Items.AddRange(System.Enum.GetNames(typeof(Intersect.Enums.DamageType)));
+            colDamageType.Width = 120;
+
+            colDamageAmount.HeaderText = "Amount";
+            colDamageAmount.Width = 80;
+
+            // btnAddDamage
+            //
+            btnAddDamage.Location = new System.Drawing.Point(18, 178);
+            btnAddDamage.Name = "btnAddDamage";
+            btnAddDamage.Size = new System.Drawing.Size(60, 23);
+            btnAddDamage.TabIndex = 61;
+            btnAddDamage.Text = "Add";
+            btnAddDamage.Click += btnAddDamage_Click;
+
+            // btnRemoveDamage
+            //
+            btnRemoveDamage.Location = new System.Drawing.Point(84, 178);
+            btnRemoveDamage.Name = "btnRemoveDamage";
+            btnRemoveDamage.Size = new System.Drawing.Size(80, 23);
+            btnRemoveDamage.TabIndex = 62;
+            btnRemoveDamage.Text = "Remove";
+            btnRemoveDamage.Click += btnRemoveDamage_Click;
+            //
             // grpShieldProperties
             // 
             grpShieldProperties.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
@@ -3058,7 +3067,6 @@ namespace Intersect.Editor.Forms.Editors
             ((ISupportInitialize)nudAttackSpeedValue).EndInit();
             ((ISupportInitialize)nudScaling).EndInit();
             ((ISupportInitialize)nudCritChance).EndInit();
-            ((ISupportInitialize)nudDamage).EndInit();
             grpShieldProperties.ResumeLayout(false);
             grpShieldProperties.PerformLayout();
             ((ISupportInitialize)nudBlockDmgAbs).EndInit();
@@ -3125,11 +3133,15 @@ namespace Intersect.Editor.Forms.Editors
         private DarkGroupBox grpEvent;
         private DarkComboBox cmbFemalePaperdoll;
         private DarkComboBox cmbAttackAnimation;
-        private DarkComboBox cmbDamageType;
         private DarkComboBox cmbScalingStat;
         private DarkComboBox cmbProjectile;
         private DarkToolStrip toolStrip;
         private DarkButton btnEditRequirements;
+        private DarkUI.Controls.DarkDataGridView gridDamages;
+        private System.Windows.Forms.DataGridViewComboBoxColumn colDamageType;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colDamageAmount;
+        private DarkButton btnAddDamage;
+        private DarkButton btnRemoveDamage;
         private DarkComboBox cmbAnimation;
         private DarkComboBox cmbTeachSpell;
         private DarkComboBox cmbEvent;
@@ -3152,7 +3164,6 @@ namespace Intersect.Editor.Forms.Editors
         private Label lblStr;
         private DarkNumericUpDown nudScaling;
         private DarkNumericUpDown nudCritChance;
-        private DarkNumericUpDown nudDamage;
         private DarkCheckBox chkStackable;
         private DarkCheckBox chkCanDrop;
         private DarkGroupBox grpVitalBonuses;

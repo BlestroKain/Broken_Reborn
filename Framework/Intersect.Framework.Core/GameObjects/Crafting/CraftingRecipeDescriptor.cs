@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using Intersect.Config;
 using Intersect.Framework.Core.GameObjects.Conditions;
 using Intersect.Framework.Core.GameObjects.Events;
 using Intersect.Models;
@@ -72,4 +73,6 @@ public partial class CraftingRecipeDescriptor : DatabaseObject<CraftingRecipeDes
         get => CraftingRequirements.Data();
         set => CraftingRequirements.Load(value ?? "[]");
     }
+    public JobType Jobs { get; set; }
+    public long ExperienceAmount { get; set; }
 }

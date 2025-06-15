@@ -7,6 +7,7 @@ using Intersect.Client.General;
 using Intersect.Client.Interface.Game.Character;
 using Intersect.Client.Interface.Game.Chat;
 using Intersect.Client.Interface.Game.Inventory;
+using Intersect.Client.Interface.Game.Job;
 using Intersect.Client.Interface.Game.Spells;
 using Intersect.Client.Localization;
 using Intersect.Client.Networking;
@@ -49,7 +50,9 @@ public partial class MenuContainer : Panel
 
     private readonly ImagePanel _escapeMenuButtonContainer;
     private readonly Button _escapeMenuButton;
-
+    private readonly JobsWindow mJobsWindow;
+    private readonly ImagePanel mJobsBackground;
+    private readonly Button mJobsButton;
     private readonly MapItemWindow _mapItemWindow;
 
     public MenuContainer(Canvas gameCanvas) : base(parent: gameCanvas, name: nameof(MenuContainer))
@@ -211,6 +214,26 @@ public partial class MenuContainer : Panel
         _escapeMenuButton.SetStateTexture(componentState: ComponentState.Hovered, textureName: "menuicon_hovered.png");
         _escapeMenuButton.SetToolTipText(text: Strings.GameMenu.Menu);
         _escapeMenuButton.Clicked += EscapeMenuButtonClicked;
+        // ... (código existente de inicialización de otros botones)
+
+        mJobsBackground = new ImagePanel(parent: this, name: "JobsContainer")
+        {
+            Dock = Pos.Left,
+            MaximumSize = new Point(x: 36, y: 36),
+            MinimumSize = new Point(x: 36, y: 36),
+            Padding = new Padding(size: 2),
+            Size = new Point(x: 36, y: 36),
+            TextureFilename = "menuitem.png",
+        };
+        mJobsButton = new Button(parent: mJobsBackground, name: "JobsButton", disableText: true)
+        {
+            Alignment = [Alignments.Center],
+            Size = new Point(x: 32, y: 32),
+        };
+        mJobsButton.SetStateTexture(componentState: ComponentState.Normal, textureName: "menuicon.png");
+        mJobsButton.SetStateTexture(componentState: ComponentState.Hovered, textureName: "menuicon_hovered.png");
+        mJobsButton.SetToolTipText(Strings.GameMenu.Jobs);
+        mJobsButton.Clicked += JobsButton_Clicked;
 
         var x = 0;
         foreach (var child in Children)
@@ -241,6 +264,7 @@ public partial class MenuContainer : Panel
         _questsWindow = new QuestsWindow(gameCanvas: gameCanvas);
         _mapItemWindow = new MapItemWindow(gameCanvas: gameCanvas);
         _guildWindow = new GuildWindow(gameCanvas: gameCanvas);
+        mJobsWindow= new JobsWindow(gameCanvas: gameCanvas);
     }
 
     //Methods
@@ -254,6 +278,8 @@ public partial class MenuContainer : Panel
         _questsWindow.Update(updateQuestLog);
         _mapItemWindow.Update();
         _guildWindow.Update();
+        mJobsWindow.Update();
+
     }
 
     public void UpdateFriendsList()
@@ -281,6 +307,7 @@ public partial class MenuContainer : Panel
         _questsWindow.Hide();
         _spellsWindow.Hide();
         _guildWindow.Hide();
+        mJobsWindow.Hide();
     }
 
     public void ToggleCharacterWindow()
@@ -427,7 +454,8 @@ public partial class MenuContainer : Panel
                           _questsWindow.IsVisible() ||
                           _spellsWindow.IsVisibleInTree ||
                           _partyWindow.IsVisible() ||
-                          _guildWindow.IsVisibleInTree;
+                          _guildWindow.IsVisibleInTree ||
+        mJobsWindow.IsVisible();
         return windowsOpen;
     }
 
@@ -486,5 +514,19 @@ public partial class MenuContainer : Panel
     private void CharacterButton_Clicked(Base sender, MouseButtonState arguments)
     {
         ToggleCharacterWindow();
+    }
+
+    // Add the missing method 'JobsButton_Clicked' to handle the Clicked event for the mJobsButton.  
+    private void JobsButton_Clicked(Base sender, MouseButtonState arguments)
+    {
+        if (mJobsWindow.IsVisible())
+        {
+            mJobsWindow.Hide();
+        }
+        else
+        {
+            HideWindows();
+            mJobsWindow.Show();
+        }
     }
 }

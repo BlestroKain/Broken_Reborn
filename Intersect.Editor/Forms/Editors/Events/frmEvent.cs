@@ -755,6 +755,11 @@ public partial class FrmEvent : Form
                 tmpCommand = new ScreenFadeCommand();
 
                 break;
+
+            case EventCommandType.GiveJobExperience:
+                tmpCommand = new GiveJobExperienceCommand();
+
+                break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
@@ -961,11 +966,28 @@ public partial class FrmEvent : Form
 
         for (var i = 0; i < lstCommands.Nodes.Count; i++)
         {
-            lstCommands.Nodes[i].Text = Strings.EventCommands.commands[lstCommands.Nodes[i].Name];
+            string nodeName = lstCommands.Nodes[i].Name;
+            if (Strings.EventCommands.commands.ContainsKey(nodeName))
+            {
+                string commandText = Strings.EventCommands.commands[nodeName];
+                lstCommands.Nodes[i].Text = commandText;
+            }
+            else
+            {
+                Console.WriteLine($"Key not found in dictionary: {nodeName}");
+            }
             for (var x = 0; x < lstCommands.Nodes[i].Nodes.Count; x++)
             {
-                lstCommands.Nodes[i].Nodes[x].Text =
-                    Strings.EventCommands.commands[lstCommands.Nodes[i].Nodes[x].Name];
+                string subNodeName = lstCommands.Nodes[i].Nodes[x].Name;
+                if (Strings.EventCommands.commands.ContainsKey(subNodeName))
+                {
+                    string subCommandText = Strings.EventCommands.commands[subNodeName];
+                    lstCommands.Nodes[i].Nodes[x].Text = subCommandText;
+                }
+                else
+                {
+                    Console.WriteLine($"Key not found in dictionary: {subNodeName}");
+                }
             }
         }
     }
@@ -1398,6 +1420,11 @@ public partial class FrmEvent : Form
                 break;
             case EventCommandType.Fade:
                 cmdWindow = new EventCommand_ScreenFade((ScreenFadeCommand)command, this);
+
+                break;
+             
+            case EventCommandType.GiveJobExperience:
+                cmdWindow = new EventCommandGiveJobExperience((GiveJobExperienceCommand)command, this);
 
                 break;
             default:

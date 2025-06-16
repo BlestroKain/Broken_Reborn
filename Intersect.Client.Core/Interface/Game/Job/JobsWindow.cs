@@ -12,9 +12,8 @@ using Intersect.Client.Framework.Gwen.Control.EventArguments;
 
 namespace Intersect.Client.Interface.Game.Job
 {
-    public class JobsWindow
+    public partial class JobsWindow : Window
     {
-        private WindowControl mJobsWindow;
         private ImagePanel InfoPanel;
         private ImagePanel JobsPanel;
 
@@ -49,21 +48,20 @@ namespace Intersect.Client.Interface.Game.Job
 
         public Label mXpLabel;
 
-        public JobsWindow(Canvas gameCanvas)
+        public JobsWindow(Canvas gameCanvas) : base(gameCanvas, Strings.Job.job, false, nameof(JobsWindow))
         {
-            mJobsWindow = new WindowControl(gameCanvas, Strings.Job.job, false, "JobsWindow");
-            mJobsWindow.DisableResizing();
+            DisableResizing();
           
-            InfoPanel = new ImagePanel(mJobsWindow, "InfoPanel");
+            InfoPanel = new ImagePanel(this, "InfoPanel");
 
           
             // Initialize the InfoPanel
             InitializeInfoPanel(SelectedJob);
 
-            JobsPanel = new ImagePanel(mJobsWindow, "JobsPanel");
+            JobsPanel = new ImagePanel(this, "JobsPanel");
     
             JobsPanel.SetPosition(0, 0);
-            mJobsWindow.SetSize(600, 400); // Tamaño general reducido
+            SetSize(600, 400); // Tamaño general reducido
 
             JobsPanel.SetSize(200, 400); // Panel izquierdo más angosto
             JobsPanel.SetPosition(0, 0);
@@ -76,8 +74,10 @@ namespace Intersect.Client.Interface.Game.Job
             var jobIconSize = 40; // Íconos más pequeños
 
             InitializeJobsPanel();
-            mJobsWindow.AddChild(JobsPanel);
-            mJobsWindow.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+            AddChild(JobsPanel);
+            LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+            // Start hidden until explicitly shown
+            Hide();
         }
 
         private void InitializeJobsPanel()
@@ -292,11 +292,16 @@ namespace Intersect.Client.Interface.Game.Job
             if (mRecipePanel != null)
             {
                 InfoPanel.RemoveChild(mRecipePanel, true);
+                mRecipePanel = null;
+                mItems.Clear();
+                mValues.Clear();
             }
+
             // Clear the old item description box
-            if (mCombinedItem != null && mCombinedItem.DescWindow != null)
+            if (mCombinedItem?.DescWindow != null)
             {
                 mCombinedItem.DescWindow.Dispose();
+                mCombinedItem = null;
             }
             mRecipePanel = new ScrollControl(InfoPanel, "RecipePanel");
             mRecipePanel.SetPosition(10, 220); // Ajusta según sea necesario
@@ -408,10 +413,9 @@ namespace Intersect.Client.Interface.Game.Job
                 for (var i = 0; i < recipe.Ingredients.Count; i++)
                 {
                     mItems.Add(new RecipeItem(this, recipe.Ingredients[i]));
-                    mItems[mItems.Count - 1].Container = new ImagePanel(ingredientsPanel, "IngredientContainer");
-                    mItems[mItems.Count - 1].Setup("IngredientItemIcon");
-                    ingredientsPanel.AddChild(mItems[mItems.Count - 1].Container);
-                    recipeContainer.AddChild(ingredientsPanel);
+                    mItems[^1].Container = new ImagePanel(ingredientsPanel, "IngredientContainer");
+                    mItems[^1].Setup("IngredientItemIcon");
+                    ingredientsPanel.AddChild(mItems[^1].Container);
                     var lblTemp = new Label(mItems[mItems.Count - 1].Container, "IngredientItemValue");
 
                     var onHand = 0;
@@ -453,6 +457,7 @@ namespace Intersect.Client.Interface.Game.Job
                     xOffset += 32 + 5; // Espacio entre ingredientes
 
                 }
+                recipeContainer.AddChild(ingredientsPanel);
 
                 // Añadir el contenedor de la receta al panel principal
                 mRecipePanel.AddChild(recipeContainer);
@@ -483,7 +488,7 @@ namespace Intersect.Client.Interface.Game.Job
             JobDescriptionLabel?.Show();
             
             SelectedJob = JobType.None;
-            mJobsWindow.IsHidden = false;            
+            IsHidden = false;
         }
 
         public void Hide()
@@ -499,12 +504,12 @@ namespace Intersect.Client.Interface.Game.Job
             JobDescriptionLabel.Hide();
             JobDescriptionLabel.ClearText();
 
-            mJobsWindow.IsHidden = true;
+            IsHidden = true;
         }
 
         public bool IsVisible()
         {
-            return !mJobsWindow.IsHidden;
+            return !IsHidden;
         }
         public void Update()
         {

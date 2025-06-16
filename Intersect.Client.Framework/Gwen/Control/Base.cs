@@ -2236,7 +2236,9 @@ public partial class Base : IDisposable
         {
             foreach (var child in @this.HostedChildren)
             {
-                child.Dispose();
+                // Dispose is deferred to avoid double disposal when the
+                // child has already been scheduled for delayed deletion.
+                child.DelayedDelete();
             }
         }
 

@@ -73,7 +73,7 @@ namespace Intersect.Client.Interface.Game.Job
             var jobContainerWidth = 190; // Más compacto
             var jobIconSize = 40; // Íconos más pequeños
 
-            InitializeJobsPanel();
+            InitializeJobsPanel();    
             AddChild(JobsPanel);
             LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
             // Start hidden until explicitly shown

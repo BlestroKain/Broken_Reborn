@@ -12,9 +12,8 @@ using Intersect.Client.Framework.Gwen.Control.EventArguments;
 
 namespace Intersect.Client.Interface.Game.Job
 {
-    public class JobsWindow
+    public partial class JobsWindow : Window
     {
-        private WindowControl mJobsWindow;
         private ImagePanel InfoPanel;
         private ImagePanel JobsPanel;
 
@@ -49,21 +48,20 @@ namespace Intersect.Client.Interface.Game.Job
 
         public Label mXpLabel;
 
-        public JobsWindow(Canvas gameCanvas)
+        public JobsWindow(Canvas gameCanvas) : base(gameCanvas, Strings.Job.job, false, nameof(JobsWindow))
         {
-            mJobsWindow = new WindowControl(gameCanvas, Strings.Job.job, false, "JobsWindow");
-            mJobsWindow.DisableResizing();
+            DisableResizing();
           
-            InfoPanel = new ImagePanel(mJobsWindow, "InfoPanel");
+            InfoPanel = new ImagePanel(this, "InfoPanel");
 
           
             // Initialize the InfoPanel
             InitializeInfoPanel(SelectedJob);
 
-            JobsPanel = new ImagePanel(mJobsWindow, "JobsPanel");
+            JobsPanel = new ImagePanel(this, "JobsPanel");
     
             JobsPanel.SetPosition(0, 0);
-            mJobsWindow.SetSize(600, 400); // Tamaño general reducido
+            SetSize(600, 400); // Tamaño general reducido
 
             JobsPanel.SetSize(200, 400); // Panel izquierdo más angosto
             JobsPanel.SetPosition(0, 0);
@@ -76,8 +74,8 @@ namespace Intersect.Client.Interface.Game.Job
             var jobIconSize = 40; // Íconos más pequeños
 
             InitializeJobsPanel();
-            mJobsWindow.AddChild(JobsPanel);
-            mJobsWindow.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+            AddChild(JobsPanel);
+            LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
             // Start hidden until explicitly shown
             Hide();
         }
@@ -490,7 +488,7 @@ namespace Intersect.Client.Interface.Game.Job
             JobDescriptionLabel?.Show();
             
             SelectedJob = JobType.None;
-            mJobsWindow.IsHidden = false;            
+            IsHidden = false;
         }
 
         public void Hide()
@@ -506,12 +504,12 @@ namespace Intersect.Client.Interface.Game.Job
             JobDescriptionLabel.Hide();
             JobDescriptionLabel.ClearText();
 
-            mJobsWindow.IsHidden = true;
+            IsHidden = true;
         }
 
         public bool IsVisible()
         {
-            return !mJobsWindow.IsHidden;
+            return !IsHidden;
         }
         public void Update()
         {

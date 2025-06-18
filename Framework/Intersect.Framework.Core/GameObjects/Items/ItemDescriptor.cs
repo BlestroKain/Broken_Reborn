@@ -175,6 +175,8 @@ public partial class ItemDescriptor : DatabaseObject<ItemDescriptor>, IFolderabl
 
     public ItemType ItemType { get; set; }
 
+    public int Subtype { get; set; }
+
     public string MalePaperdoll { get; set; } = string.Empty;
 
     public string Icon { get; set; } = string.Empty;

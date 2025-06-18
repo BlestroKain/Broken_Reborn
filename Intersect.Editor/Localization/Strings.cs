@@ -519,6 +519,7 @@ public static partial class Strings
                 ItemEditor.rarity[rarityName] = $"{rarity}:{rarityName}";
             }
         }
+
     }
 
     private static void PostLoad()
@@ -3929,6 +3930,31 @@ Tick timer saved in server config.json.";
             {"Legendary", @"Legendary"},
         };
 
+        public static Dictionary<int, Dictionary<int, LocalizedString>> SubtypesDynamic = new();
+
+        public static void LoadDynamicSubtypes()
+        {
+            SubtypesDynamic.Clear();
+            if (Intersect.Options.Instance == default)
+            {
+                return;
+            }
+
+            if (Intersect.Options.Instance.Items.ItemSubtypes != null)
+            {
+                foreach (var kvp in Intersect.Options.Instance.Items.ItemSubtypes)
+                {
+                    var list = new Dictionary<int, LocalizedString>();
+                    for (var i = 0; i < kvp.Value.Count; i++)
+                    {
+                        list[i] = kvp.Value[i];
+                    }
+
+                    SubtypesDynamic[kvp.Key] = list;
+                }
+            }
+        }
+
         public static LocalizedString projectile = @"Projectile:";
 
         public static LocalizedString requirementsgroup = @"Requirements";
@@ -3952,6 +3978,8 @@ Tick timer saved in server config.json.";
         public static LocalizedString sortalphabetically = @"Order Alphabetically";
 
         public static LocalizedString slot = @"Equipment Slot:";
+
+        public static LocalizedString subtype = @"Subtype:";
 
         public static LocalizedString speedbonus = @"Speed:";
 

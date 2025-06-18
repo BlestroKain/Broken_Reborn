@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Intersect.Framework.Core.GameObjects.Items;
 using Newtonsoft.Json;
 
 namespace Intersect.Config;
@@ -22,6 +23,9 @@ public class ItemOptions
         @"Epic",
         @"Legendary",
     ];
+
+    [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
+    public Dictionary<int, List<string>> ItemSubtypes { get; set; } = new();
 
     public bool TryGetRarityName(int rarityLevel, [NotNullWhen(true)] out string? rarityName)
     {

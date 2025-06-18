@@ -19,6 +19,8 @@ public class Item : IItem
 
     public ItemDescriptor Descriptor => ItemDescriptor.Get(ItemId);
 
+    public string Subtype => Descriptor.Subtype;
+
     public void Load(Guid id, int quantity, Guid? bagId, ItemProperties itemProperties)
     {
         ItemId = id;

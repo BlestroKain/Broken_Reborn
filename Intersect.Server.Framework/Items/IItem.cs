@@ -9,5 +9,6 @@ public interface IItem
     ItemDescriptor Descriptor { get; }
     int Quantity { get; }
     string ItemName { get; }
+    string Subtype { get; }
     double DropChance { get; }
 }

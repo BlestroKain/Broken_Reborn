@@ -339,7 +339,14 @@ public static partial class Strings
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString Crafting = "Crafting";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Jewerly = "Jewerly";
 
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Tanner = "Tanner";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Tailoring = "Tailoring";
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString None = "None";
 
@@ -367,6 +374,9 @@ public static partial class Strings
                 JobType.Cooking => Strings.Job.Cooking,
                 JobType.Alchemy => Strings.Job.Alchemy,
                 JobType.Crafting => Strings.Job.Crafting,
+                JobType.Jewerly => Strings.Job.Jewerly,
+                JobType.Tanner => Strings.Job.Tanner,
+                JobType.Tailoring => Strings.Job.Tailoring,
                 _ => Strings.Job.None
             };
         }
@@ -375,15 +385,18 @@ public static partial class Strings
             return jobType switch
             {
                 JobType.None => "No description available.",
-                JobType.Farming => "Master the art of farming, growing crops, and raising livestock.",
-                JobType.Mining => "Excavate valuable ores and materials from the earth.",
-                JobType.Fishing => "Catch fish and other aquatic treasures from lakes and seas.",
-                JobType.Lumberjack => "Chop down trees and gather wood for crafting.",
-                JobType.Hunter => "Track and hunt wild animals for resources.",
-                JobType.Alchemy => "Combine ingredients to create powerful potions and elixirs.",
-                JobType.Smithing => "Forge weapons and armor using various materials.",
-                JobType.Cooking => "Prepare delicious meals to recover health and grant buffs.",
-                JobType.Crafting => "Assemble tools, decorations, and other useful items.",
+                JobType.Farming => "Become a master of agriculture by cultivating fields, planting crops, and raising livestock to sustain your community and trade resources.",
+                JobType.Mining => "Delve into the depths of the earth to extract rare ores, precious gems, and essential minerals for crafting and trade.",
+                JobType.Fishing => "Explore rivers, lakes, and oceans to catch an array of aquatic life, from common fish to rare underwater treasures.",
+                JobType.Lumberjack => "Traverse dense forests to fell mighty trees, gathering wood and rare timber for construction and crafting needs.",
+                JobType.Hunter => "Embark on thrilling hunts to track and capture wild creatures, collecting valuable hides and meat for crafting and sustenance.",
+                JobType.Alchemy => "Experiment with a variety of ingredients to brew potent elixirs, healing potions, and magical concoctions to aid adventurers.",
+                JobType.Smithing => "Harness the forge to shape metal into powerful weapons, resilient armor, and essential tools for survival and warfare.",
+                JobType.Cooking => "Prepare exquisite meals and beverages that not only restore vitality but also provide unique buffs and enhancements.",
+                JobType.Crafting => "Combine skill and creativity to assemble intricate tools, decorations, and practical items that enhance daily life.",
+                JobType.Jewerly => "Design and create elegant jewelry embedded with precious stones, enhancing the wearer's abilities and aesthetic appeal.",
+                JobType.Tanner => "Transform raw animal hides into durable leather goods and protective armor, essential for adventurers and traders alike.",
+                JobType.Tailoring => "Spin fine threads and weave luxurious textiles to produce elegant clothing and essential materials for crafting.",
                 _ => "Description not found for this job."
             };
         }

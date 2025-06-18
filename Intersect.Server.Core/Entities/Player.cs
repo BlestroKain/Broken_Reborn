@@ -14,6 +14,7 @@ using Intersect.Framework.Core.GameObjects.Events;
 using Intersect.Framework.Core.GameObjects.Events.Commands;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Maps;
+using Intersect.Config;
 using Intersect.Framework.Core.GameObjects.Maps.Attributes;
 using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
@@ -4309,6 +4310,13 @@ public partial class Player : Entity
                     if (craftDescriptor.Event != default)
                     {
                         EnqueueStartCommonEvent(craftDescriptor.Event);
+                    }
+
+                    if (craftDescriptor.ExperienceAmount > 0 && craftDescriptor.Jobs != JobType.None)
+                    {
+                        GiveJobExperience(craftDescriptor.Jobs, craftDescriptor.ExperienceAmount);
+                        var message = Strings.Crafting.GetJobExperienceMessage(craftDescriptor.Jobs, craftDescriptor.ExperienceAmount);
+                        PacketSender.SendChatMsg(this, message, ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
                     }
                 }
                 else

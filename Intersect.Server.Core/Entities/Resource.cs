@@ -3,6 +3,8 @@ using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Resources;
 using Intersect.Framework.Reflection;
 using Intersect.Network.Packets.Server;
+using Intersect.Config;
+using Intersect.Server.Localization;
 using Intersect.Server.Database;
 using Intersect.Server.Database.PlayerData.Players;
 using Intersect.Server.Framework.Entities;
@@ -17,11 +19,17 @@ public partial class Resource : Entity
 {
     public readonly ResourceDescriptor Descriptor;
 
+    public JobType Jobs { get; set; } = JobType.None;
+
+    public long ExperienceAmount { get; set; } = 0;
+
     public Resource(ResourceDescriptor descriptor)
     {
         ArgumentNullException.ThrowIfNull(descriptor);
 
         Descriptor = descriptor;
+        Jobs = descriptor.Jobs;
+        ExperienceAmount = descriptor.ExperienceAmount;
         Name = descriptor.Name;
 
         SetMaxVital(
@@ -55,6 +63,13 @@ public partial class Resource : Entity
         Passable = Descriptor.WalkableAfter;
         IsDead = true;
 
+        if (killer is Player player && ExperienceAmount > 0 && Jobs != JobType.None)
+        {
+            player.GiveJobExperience(Jobs, ExperienceAmount);
+            var message = Strings.Crafting.GetJobExperienceMessage(Jobs, ExperienceAmount);
+            PacketSender.SendChatMsg(player, message, ChatMessageType.Experience, CustomColors.Chat.PlayerMsg);
+        }
+
         if (dropItems)
         {
             SpawnResourceItems(killer);
@@ -82,6 +97,9 @@ public partial class Resource : Entity
 
         Passable = Descriptor.WalkableBefore;
         Items.Clear();
+
+        Jobs = Descriptor.Jobs;
+        ExperienceAmount = Descriptor.ExperienceAmount;
 
         // Give Resource Drops
         var itemSlot = 0;

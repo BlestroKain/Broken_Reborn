@@ -93,6 +93,8 @@ public class Item : IItem
 
     [JsonIgnore, NotMapped] public ItemDescriptor Descriptor => ItemDescriptor.Get(ItemId);
 
+    [JsonIgnore, NotMapped] public string Subtype => Descriptor.Subtype;
+
     public static Item None => new();
 
     public Item Clone()

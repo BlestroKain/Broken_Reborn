@@ -8,6 +8,7 @@ using Intersect.GameObjects;
 using Intersect.GameObjects.Ranges;
 using Intersect.Models;
 using Intersect.Utilities;
+using Intersect.Config;
 using Newtonsoft.Json;
 
 namespace Intersect.Framework.Core.GameObjects.Items;
@@ -174,6 +175,26 @@ public partial class ItemDescriptor : DatabaseObject<ItemDescriptor>, IFolderabl
     public string FemalePaperdoll { get; set; } = string.Empty;
 
     public ItemType ItemType { get; set; }
+
+    public string Subtype { get; set; } = string.Empty;
+
+    public bool SetSubtype(string subtype)
+    {
+        var validSubtypes = Options.Instance.Items.GetSubtypesFor(ItemType);
+        if (string.IsNullOrWhiteSpace(subtype))
+        {
+            Subtype = string.Empty;
+            return true;
+        }
+
+        if (validSubtypes.Contains(subtype))
+        {
+            Subtype = subtype;
+            return true;
+        }
+
+        return false;
+    }
 
     public string MalePaperdoll { get; set; } = string.Empty;
 

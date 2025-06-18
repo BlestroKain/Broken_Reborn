@@ -9,6 +9,7 @@ public interface IItem
     ItemDescriptor Descriptor { get; }
     Guid ItemId { get; set; }
     int Quantity { get; set; }
+    string Subtype { get; }
     ItemProperties ItemProperties { get; set; }
 
     void Load(Guid id, int quantity, Guid? bagId, ItemProperties itemProperties);

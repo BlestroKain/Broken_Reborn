@@ -11,6 +11,7 @@ using Intersect.Framework.Core.GameObjects.Animations;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Resources;
 using Intersect.Utilities;
+using Intersect.Config;
 using EventDescriptor = Intersect.Framework.Core.GameObjects.Events.EventDescriptor;
 using Graphics = System.Drawing.Graphics;
 
@@ -196,6 +197,11 @@ public partial class FrmResource : EditorForm
         cmbDropItem.Items.Clear();
         cmbDropItem.Items.Add(Strings.General.None);
         cmbDropItem.Items.AddRange(ItemDescriptor.Names);
+        cmbJobType.Items.Clear();
+        for (var i = 0; i < (int)JobType.JobCount; i++)
+        {
+            cmbJobType.Items.Add(Globals.GetJobName(i));
+        }
         InitLocalization();
         UpdateEditor();
     }
@@ -298,6 +304,8 @@ public partial class FrmResource : EditorForm
             cmbEvent.SelectedIndex = EventDescriptor.ListIndex(_editorItem.EventId) + 1;
             txtCannotHarvest.Text = _editorItem.CannotHarvestMessage;
             nudHpRegen.Value = _editorItem.VitalRegen;
+            cmbJobType.SelectedIndex = (int)_editorItem.Jobs;
+            NudExpAmount.Value = _editorItem.ExperienceAmount;
             picResource.Hide();
 
             _stateList.Clear();
@@ -1191,6 +1199,22 @@ public partial class FrmResource : EditorForm
         if (txtSearch.Text == Strings.ResourceEditor.searchplaceholder)
         {
             txtSearch.SelectAll();
+        }
+    }
+
+    private void cmbJobType_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (_editorItem != null)
+        {
+            _editorItem.Jobs = (JobType)cmbJobType.SelectedIndex;
+        }
+    }
+
+    private void NudExpAmount_ValueChanged(object sender, EventArgs e)
+    {
+        if (_editorItem != null)
+        {
+            _editorItem.ExperienceAmount = (int)NudExpAmount.Value;
         }
     }
 

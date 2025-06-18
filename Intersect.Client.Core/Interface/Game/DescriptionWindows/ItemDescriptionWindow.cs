@@ -171,6 +171,35 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
         // Set up the description telling us what type of item this is.
         // if equipment, also list what kind.
         Strings.ItemDescription.ItemTypes.TryGetValue((int)_itemDescriptor.ItemType, out var typeDesc);
+        var subtypeText = string.Empty;
+        if (_itemDescriptor.ItemType == ItemType.Equipment)
+        {
+            var equipSlot = _itemDescriptor.EquipmentSlot;
+            if (equipSlot == Options.Instance.Equipment.WeaponSlot)
+            {
+                if (Options.Instance.Items.ItemSubtypes.TryGetValue((ItemType)(int)ItemType.Equipment, out var weaponTypes))
+                {
+
+                    if (int.TryParse(_itemDescriptor.Subtype, out var subtypeValue) && subtypeValue >= 0 && subtypeValue < weaponTypes.Count)
+                    {
+                        subtypeText = weaponTypes[subtypeValue];
+                    }
+             
+                }
+            }
+            else if (equipSlot >= 0 && equipSlot < Options.Instance.Equipment.Slots.Count)
+            {
+                subtypeText = Options.Instance.Equipment.Slots[equipSlot];
+            }
+        }
+        else if (Options.Instance.Items.ItemSubtypes.TryGetValue(_itemDescriptor.ItemType, out var subtypes))
+        {
+            if (int.TryParse(_itemDescriptor.Subtype, out var subtypeIndex) && subtypeIndex >= 0 && subtypeIndex < subtypes.Count)
+            {
+                subtypeText = subtypes[subtypeIndex];
+            }
+        }
+
         if (_itemDescriptor.ItemType == ItemType.Equipment)
         {
             var equipSlot = Options.Instance.Equipment.Slots[_itemDescriptor.EquipmentSlot];
@@ -179,11 +208,21 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
             {
                 extraInfo = $"{Strings.ItemDescription.TwoHand} {equipSlot}";
             }
-            header.SetSubtitle($"{typeDesc} - {extraInfo}", Color.White);
+            var subtitle = $"{typeDesc} - {extraInfo}";
+            if (!string.IsNullOrEmpty(subtypeText))
+            {
+                subtitle += $" - {subtypeText}";
+            }
+            header.SetSubtitle(subtitle, Color.White);
         }
         else
         {
-            header.SetSubtitle(typeDesc, Color.White);
+            var subtitle = typeDesc;
+            if (!string.IsNullOrEmpty(subtypeText))
+            {
+                subtitle += $" - {subtypeText}";
+            }
+            header.SetSubtitle(subtitle, Color.White);
         }
 
         // Set up the item rarity label.

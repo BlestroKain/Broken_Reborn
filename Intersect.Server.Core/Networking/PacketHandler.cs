@@ -2786,6 +2786,56 @@ internal sealed partial class PacketHandler
         PacketSender.SendGuild(player);
     }
 
+    //CreateGuildPacket
+    public void HandlePacket(Client client, CreateGuildPacket packet)
+    {
+        var player = client.Entity;
+        if (player == null)
+        {
+            return;
+        }
+
+        var name = packet.Name?.Trim();
+        if (!FieldChecking.IsValidGuildName(name, Strings.Regex.GuildName))
+        {
+            PacketSender.SendChatMsg(player, Strings.Guilds.VariableInvalid, ChatMessageType.Guild, CustomColors.Alerts.Error);
+            return;
+        }
+
+        if (Guild.GetGuild(name) != null)
+        {
+            PacketSender.SendChatMsg(player, Strings.Guilds.GuildNameInUse, ChatMessageType.Guild, CustomColors.Alerts.Error);
+            return;
+        }
+
+        if (player.Guild != null)
+        {
+            PacketSender.SendChatMsg(player, Strings.Guilds.AlreadyInGuild, ChatMessageType.Guild, CustomColors.Alerts.Error);
+            return;
+        }
+
+        var guild = Guild.CreateGuild(player, name);
+        if (guild == null)
+        {
+            PacketSender.SendChatMsg(player, Strings.Guilds.VariableInvalid, ChatMessageType.Guild, CustomColors.Alerts.Error);
+            return;
+        }
+
+        guild.SetLogo(
+            packet.LogoBackground,
+            packet.BackgroundR,
+            packet.BackgroundG,
+            packet.BackgroundB,
+            packet.LogoSymbol,
+            packet.SymbolR,
+            packet.SymbolG,
+            packet.SymbolB
+        );
+
+        PacketSender.SendGuild(player);
+        PacketSender.SendChatMsg(player, Strings.Guilds.Welcome.ToString(name), ChatMessageType.Guild, CustomColors.Alerts.Success);
+    }
+
 
     //UpdateGuildMemberPacket
     public void HandlePacket(Client client, UpdateGuildMemberPacket packet)

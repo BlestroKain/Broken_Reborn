@@ -46,6 +46,22 @@ public partial class Guild
     /// </summary>
     public string Name { get; private set; }
 
+    public string LogoBackground { get; set; } = string.Empty;
+
+    public int BackgroundR { get; set; } = 255;
+
+    public int BackgroundG { get; set; } = 255;
+
+    public int BackgroundB { get; set; } = 255;
+
+    public string LogoSymbol { get; set; } = string.Empty;
+
+    public int SymbolR { get; set; } = 255;
+
+    public int SymbolG { get; set; } = 255;
+
+    public int SymbolB { get; set; } = 255;
+
     /// <summary>
     /// The date on which this guild was founded.
     /// </summary>
@@ -900,6 +916,27 @@ public partial class Guild
                 context.SaveChanges();
             }
         }
+    }
+
+    public void SetLogo(
+        string backgroundFile,
+        int bgR, int bgG, int bgB,
+        string symbolFile,
+        int symR, int symG, int symB
+    )
+    {
+        LogoBackground = backgroundFile ?? string.Empty;
+        BackgroundR = bgR;
+        BackgroundG = bgG;
+        BackgroundB = bgB;
+
+        LogoSymbol = symbolFile ?? string.Empty;
+        SymbolR = symR;
+        SymbolG = symG;
+        SymbolB = symB;
+
+        Save();
+        UpdateMemberList();
     }
 
     /// <summary>

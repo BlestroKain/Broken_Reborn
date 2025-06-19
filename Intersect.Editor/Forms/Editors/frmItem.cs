@@ -47,6 +47,9 @@ public partial class FrmItem : EditorForm
         cmbProjectile.Items.Clear();
         cmbProjectile.Items.Add(Strings.General.None);
         cmbProjectile.Items.AddRange(ProjectileDescriptor.Names);
+
+        Strings.ItemEditor.LoadDynamicSubtypes();
+        PopulateSubtypeCombo();
         _btnSave = btnSave;
         _btnCancel = btnCancel;
 
@@ -188,6 +191,7 @@ public partial class FrmItem : EditorForm
         grpGeneral.Text = Strings.ItemEditor.general;
         lblName.Text = Strings.ItemEditor.name;
         lblType.Text = Strings.ItemEditor.type;
+        lblSubType.Text = Strings.ItemEditor.subtype;
         cmbType.Items.Clear();
         for (var i = 0; i < Strings.ItemEditor.types.Count; i++)
         {
@@ -341,6 +345,7 @@ public partial class FrmItem : EditorForm
             cmbFolder.Text = mEditorItem.Folder;
             txtDesc.Text = mEditorItem.Description;
             cmbType.SelectedIndex = (int)mEditorItem.ItemType;
+            PopulateSubtypeCombo();
             cmbPic.SelectedIndex = cmbPic.FindString(TextUtils.NullToNone(mEditorItem.Icon));
             nudRgbaR.Value = mEditorItem.Color.R;
             nudRgbaG.Value = mEditorItem.Color.G;
@@ -552,6 +557,8 @@ public partial class FrmItem : EditorForm
             chkStackable.Enabled = false;
         }
 
+        PopulateSubtypeCombo();
+
         mEditorItem.ItemType = (ItemType)cmbType.SelectedIndex;
 
         PopulateEventTriggerList();
@@ -602,9 +609,48 @@ public partial class FrmItem : EditorForm
         }
     }
 
+    private void PopulateSubtypeCombo()
+    {
+        cmbSubType.Items.Clear();
+        cmbSubType.Items.Add(Strings.General.None);
+
+        var itemType = (ItemType)cmbType.SelectedIndex;
+        if (itemType == ItemType.Equipment)
+        {
+            var equipSlot = cmbEquipmentSlot.SelectedIndex;
+            if (equipSlot == Options.Instance.Equipment.WeaponSlot &&
+                Strings.ItemEditor.SubtypesDynamic.TryGetValue((int)ItemType.Equipment, out var weaponTypes))
+            {
+                foreach (var val in weaponTypes.Values)
+                {
+                    cmbSubType.Items.Add(val.ToString());
+                }
+            }
+            else if (equipSlot >= 0 && equipSlot < Options.Instance.Equipment.Slots.Count)
+            {
+                cmbSubType.Items.Add(Options.Instance.Equipment.Slots[equipSlot]);
+            }
+        }
+        else if (Strings.ItemEditor.SubtypesDynamic.TryGetValue((int)itemType, out var subtypes))
+        {
+            foreach (var val in subtypes.Values)
+            {
+                cmbSubType.Items.Add(val.ToString());
+            }
+        }
+
+        var idx = mEditorItem.Subtype + 1;
+        if (idx < 0 || idx >= cmbSubType.Items.Count)
+        {
+            idx = 0;
+        }
+        cmbSubType.SelectedIndex = idx;
+    }
+
     private void cmbType_SelectedIndexChanged(object sender, EventArgs e)
     {
         RefreshExtendedData();
+        PopulateSubtypeCombo();
     }
 
     private void txtName_TextChanged(object sender, EventArgs e)
@@ -668,11 +714,18 @@ public partial class FrmItem : EditorForm
             mEditorItem.Damage = 0;
             mEditorItem.TwoHanded = false;
         }
+
+        PopulateSubtypeCombo();
     }
 
     private void cmbToolType_SelectedIndexChanged(object sender, EventArgs e)
     {
         mEditorItem.Tool = cmbToolType.SelectedIndex - 1;
+    }
+
+    private void cmbSubType_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        mEditorItem.Subtype = cmbSubType.SelectedIndex - 1;
     }
 
     private void cmbEquipmentBonus_SelectedIndexChanged(object sender, EventArgs e)

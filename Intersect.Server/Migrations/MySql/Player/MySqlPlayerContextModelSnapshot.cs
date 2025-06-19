@@ -262,6 +262,30 @@ namespace Intersect.Server.Migrations.MySql.Player
                     b.Property<string>("Name")
                         .HasColumnType("longtext");
 
+                    b.Property<string>("LogoBackground")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("BackgroundR")
+                        .HasColumnType("int");
+
+                    b.Property<int>("BackgroundG")
+                        .HasColumnType("int");
+
+                    b.Property<int>("BackgroundB")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LogoSymbol")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("SymbolR")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SymbolG")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SymbolB")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.ToTable("Guilds");

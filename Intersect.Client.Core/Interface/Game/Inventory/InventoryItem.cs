@@ -35,10 +35,13 @@ public partial class InventoryItem : SlotItem
     private readonly MenuItem _actionItemMenuItem;
     private readonly MenuItem _dropItemMenuItem;
 
+    public int DisplaySlot { get; set; }
+
     public InventoryItem(InventoryWindow inventoryWindow, Base parent, int index, ContextMenu contextMenu)
         : base(parent, nameof(InventoryItem), index, contextMenu)
     {
         _inventoryWindow = inventoryWindow;
+        DisplaySlot = index;
         TextureFilename = "inventoryitem.png";
 
         Icon.HoverEnter += Icon_HoverEnter;
@@ -107,7 +110,7 @@ public partial class InventoryItem : SlotItem
         // Clear out the old options since we might not show all of them
         contextMenu.ClearChildren();
 
-        if (Globals.Me?.Inventory[SlotIndex] is not { } inventorySlot)
+        if (Globals.Me?.Inventory[DisplaySlot] is not { } inventorySlot)
         {
             return;
         }
@@ -140,7 +143,7 @@ public partial class InventoryItem : SlotItem
 
             case ItemType.Equipment:
                 contextMenu.AddChild(_useItemMenuItem);
-                var equipItemLabel = Globals.Me.MyEquipment.Contains(SlotIndex) ? Strings.ItemContextMenu.Unequip : Strings.ItemContextMenu.Equip;
+                var equipItemLabel = Globals.Me.MyEquipment.Contains(DisplaySlot) ? Strings.ItemContextMenu.Unequip : Strings.ItemContextMenu.Equip;
                 _useItemMenuItem.Text = equipItemLabel.ToString(descriptor.Name);
                 break;
         }
@@ -179,32 +182,32 @@ public partial class InventoryItem : SlotItem
 
     private void _useItemContextItem_Clicked(Base sender, MouseButtonState arguments)
     {
-        Globals.Me?.TryUseItem(SlotIndex);
+        Globals.Me?.TryUseItem(DisplaySlot);
     }
 
     private void _actionItemContextItem_Clicked(Base sender, MouseButtonState arguments)
     {
         if (Globals.GameShop != null)
         {
-            Globals.Me?.TrySellItem(SlotIndex);
+            Globals.Me?.TrySellItem(DisplaySlot);
         }
         else if (Globals.InBank)
         {
-            Globals.Me?.TryStoreItemInBank(SlotIndex);
+            Globals.Me?.TryStoreItemInBank(DisplaySlot);
         }
         else if (Globals.InBag)
         {
-            Globals.Me?.TryStoreItemInBag(SlotIndex, -1);
+            Globals.Me?.TryStoreItemInBag(DisplaySlot, -1);
         }
         else if (Globals.InTrade)
         {
-            Globals.Me?.TryOfferItemToTrade(SlotIndex);
+            Globals.Me?.TryOfferItemToTrade(DisplaySlot);
         }
     }
 
     private void _dropItemContextItem_Clicked(Base sender, MouseButtonState arguments)
     {
-        Globals.Me?.TryDropItem(SlotIndex);
+        Globals.Me?.TryDropItem(DisplaySlot);
     }
 
     #endregion
@@ -220,22 +223,22 @@ public partial class InventoryItem : SlotItem
 
         if (Globals.GameShop != null)
         {
-            Globals.Me.TrySellItem(SlotIndex);
+            Globals.Me.TrySellItem(DisplaySlot);
         }
         else if (Globals.InBank)
         {
             if (Globals.InputManager.IsKeyDown(Framework.GenericClasses.Keys.Shift))
             {
                 Globals.Me.TryStoreItemInBank(
-                    SlotIndex,
+                    DisplaySlot,
                     skipPrompt: true
                 );
             }
             else
             {
-                var slot = Globals.Me.Inventory[SlotIndex];
+                var slot = Globals.Me.Inventory[DisplaySlot];
                 Globals.Me.TryStoreItemInBank(
-                    SlotIndex,
+                    DisplaySlot,
                     slot,
                     quantityHint: slot.Quantity,
                     skipPrompt: false
@@ -244,15 +247,15 @@ public partial class InventoryItem : SlotItem
         }
         else if (Globals.InBag)
         {
-            Globals.Me.TryStoreItemInBag(SlotIndex, -1);
+            Globals.Me.TryStoreItemInBag(DisplaySlot, -1);
         }
         else if (Globals.InTrade)
         {
-            Globals.Me.TryOfferItemToTrade(SlotIndex);
+            Globals.Me.TryOfferItemToTrade(DisplaySlot);
         }
         else
         {
-            Globals.Me.TryUseItem(SlotIndex);
+            Globals.Me.TryUseItem(DisplaySlot);
         }
     }
 
@@ -276,23 +279,23 @@ public partial class InventoryItem : SlotItem
 
         if (Globals.GameShop != null)
         {
-            player.TrySellItem(SlotIndex);
+            player.TrySellItem(DisplaySlot);
         }
         else if (Globals.InBank)
         {
-            player.TryStoreItemInBank(SlotIndex);
+            player.TryStoreItemInBank(DisplaySlot);
         }
         else if (Globals.InBag)
         {
-            player.TryStoreItemInBag(SlotIndex, -1);
+            player.TryStoreItemInBag(DisplaySlot, -1);
         }
         else if (Globals.InTrade)
         {
-            player.TryOfferItemToTrade(SlotIndex);
+            player.TryOfferItemToTrade(DisplaySlot);
         }
         else
         {
-            player.TryDropItem(SlotIndex);
+            player.TryDropItem(DisplaySlot);
         }
     }
 
@@ -313,7 +316,7 @@ public partial class InventoryItem : SlotItem
             return;
         }
 
-        if (Globals.Me?.Inventory[SlotIndex] is not { } inventorySlot)
+        if (Globals.Me?.Inventory[DisplaySlot] is not { } inventorySlot)
         {
             return;
         }
@@ -398,14 +401,14 @@ public partial class InventoryItem : SlotItem
             return false;
         }
 
-        if (inventory[SlotIndex] is not { } inventorySlot)
+        if (inventory[DisplaySlot] is not { } inventorySlot)
         {
             return false;
         }
 
         if (!Interface.DoesMouseHitInterface() && !player.IsBusy)
         {
-            PacketSender.SendDropItem(SlotIndex, inventorySlot.Quantity);
+            PacketSender.SendDropItem(DisplaySlot, inventorySlot.Quantity);
             return true;
         }
 
@@ -417,21 +420,21 @@ public partial class InventoryItem : SlotItem
             switch (targetNode)
             {
                 case InventoryItem inventoryItem:
-                    if (inventoryItem.SlotIndex == SlotIndex)
+                    if (inventoryItem.DisplaySlot == DisplaySlot)
                     {
                         return false;
                     }
 
-                    player.SwapItems(SlotIndex, inventoryItem.SlotIndex);
+                    player.SwapItems(DisplaySlot, inventoryItem.DisplaySlot);
                     return true;
 
                 case BagItem bagItem:
-                    player.TryStoreItemInBag(SlotIndex, bagItem.SlotIndex);
+                    player.TryStoreItemInBag(DisplaySlot, bagItem.SlotIndex);
                     return true;
 
                 case BankItem bankItem:
                     player.TryStoreItemInBank(
-                        SlotIndex,
+                        DisplaySlot,
                         bankSlotIndex: bankItem.SlotIndex,
                         quantityHint: inventorySlot.Quantity,
                         skipPrompt: true
@@ -439,11 +442,11 @@ public partial class InventoryItem : SlotItem
                     return true;
 
                 case HotbarItem hotbarItem:
-                    player.AddToHotbar(hotbarItem.SlotIndex, 0, SlotIndex);
+                    player.AddToHotbar(hotbarItem.SlotIndex, 0, DisplaySlot);
                     return true;
 
                 case ShopWindow:
-                    player.TrySellItem(SlotIndex);
+                    player.TrySellItem(DisplaySlot);
                     return true;
 
                 default:
@@ -465,12 +468,12 @@ public partial class InventoryItem : SlotItem
             return;
         }
 
-        if (slotIndex != SlotIndex)
+        if (slotIndex != DisplaySlot)
         {
             return;
         }
 
-        if (Globals.Me.Inventory[SlotIndex] == default)
+        if (Globals.Me.Inventory[DisplaySlot] == default)
         {
             return;
         }
@@ -486,7 +489,7 @@ public partial class InventoryItem : SlotItem
             return;
         }
 
-        if (Globals.Me.Inventory[SlotIndex] is not { } inventorySlot)
+        if (Globals.Me.Inventory[DisplaySlot] is not { } inventorySlot)
         {
             return;
         }
@@ -497,7 +500,7 @@ public partial class InventoryItem : SlotItem
             return;
         }
 
-        var equipped = Globals.Me.MyEquipment.Any(s => s == SlotIndex);
+        var equipped = Globals.Me.MyEquipment.Any(s => s == DisplaySlot);
         var isDragging = Icon.IsDragging;
         _equipImageBackground.IsVisibleInParent = !isDragging && equipped;
         _equipLabel.IsVisibleInParent = !isDragging && equipped;
@@ -508,10 +511,10 @@ public partial class InventoryItem : SlotItem
             _quantityLabel.Text = Strings.FormatQuantityAbbreviated(inventorySlot.Quantity);
         }
 
-        _cooldownLabel.IsVisibleInParent = !isDragging && Globals.Me.IsItemOnCooldown(SlotIndex);
+        _cooldownLabel.IsVisibleInParent = !isDragging && Globals.Me.IsItemOnCooldown(DisplaySlot);
         if (_cooldownLabel.IsVisibleInParent)
         {
-            var itemCooldownRemaining = Globals.Me.GetItemRemainingCooldown(SlotIndex);
+            var itemCooldownRemaining = Globals.Me.GetItemRemainingCooldown(DisplaySlot);
             _cooldownLabel.Text = TimeSpan.FromMilliseconds(itemCooldownRemaining).WithSuffix("0.0");
             Icon.RenderColor.A = 100;
         }
@@ -529,7 +532,7 @@ public partial class InventoryItem : SlotItem
         if (itemTexture != null)
         {
             Icon.Texture = itemTexture;
-            Icon.RenderColor = Globals.Me.IsItemOnCooldown(SlotIndex)
+            Icon.RenderColor = Globals.Me.IsItemOnCooldown(DisplaySlot)
                 ? new Color(100, descriptor.Color.R, descriptor.Color.G, descriptor.Color.B)
                 : descriptor.Color;
             Icon.IsVisibleInParent = true;

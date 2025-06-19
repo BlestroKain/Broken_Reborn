@@ -26,7 +26,7 @@ public class ItemOptions
 
     [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
     public Dictionary<ItemType, List<string>> ItemSubtypes { get; set; } = new()
-{
+    {
     { ItemType.Consumable, new() { "Drink", "Food", "Potion", "Scroll" } },
     { ItemType.Equipment, new() { "Axe", "Bow", "Dagger", "Hammer", "Spear", "Staff", "Sword", "Wand" } },
     { ItemType.Resource, new()
@@ -36,7 +36,7 @@ public class ItemOptions
             "Paw", "Plant", "Powder", "Root", "Rune", "Scale", "Seed", "Shell", "Soul", "Tail", "Vegetables", "Wing", "Wood"
         }
     }
-};
+    };
 
     public bool TryGetRarityName(int rarityLevel, [NotNullWhen(true)] out string? rarityName)
     {

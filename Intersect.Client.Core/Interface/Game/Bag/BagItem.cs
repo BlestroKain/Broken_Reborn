@@ -157,7 +157,7 @@ public partial class BagItem : SlotItem
                     return true;
 
                 case InventoryItem inventoryItem:
-                    Globals.Me?.TryRetrieveItemFromBag(SlotIndex, inventoryItem.SlotIndex);
+                    Globals.Me?.TryRetrieveItemFromBag(SlotIndex, inventoryItem.DisplaySlot);
                     return true;
 
                 default:

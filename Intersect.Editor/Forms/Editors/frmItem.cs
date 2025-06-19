@@ -611,9 +611,11 @@ public partial class FrmItem : EditorForm
 
     private void PopulateSubtypeCombo()
     {
+        // 1) Limpiar el combo
         cmbSubType.Items.Clear();
         cmbSubType.Items.Add(Strings.General.None);
 
+        // 2) Rellenar según tipo
         var itemType = (ItemType)cmbType.SelectedIndex;
         if (itemType == ItemType.Equipment)
         {
@@ -639,13 +641,23 @@ public partial class FrmItem : EditorForm
             }
         }
 
-        var idx = mEditorItem.Subtype + 1;
+        if (!int.TryParse(mEditorItem.Subtype, out var subtypeIndex))
+        {
+            subtypeIndex = 0;
+        }
+
+        var idx = subtypeIndex + 1;
+
+        // Validar rango
         if (idx < 0 || idx >= cmbSubType.Items.Count)
         {
             idx = 0;
         }
+
+        // Asignar al combo
         cmbSubType.SelectedIndex = idx;
     }
+
 
     private void cmbType_SelectedIndexChanged(object sender, EventArgs e)
     {
@@ -725,7 +737,7 @@ public partial class FrmItem : EditorForm
 
     private void cmbSubType_SelectedIndexChanged(object sender, EventArgs e)
     {
-        mEditorItem.Subtype = cmbSubType.SelectedIndex - 1;
+        mEditorItem.Subtype = (cmbSubType.SelectedIndex - 1).ToString();
     }
 
     private void cmbEquipmentBonus_SelectedIndexChanged(object sender, EventArgs e)

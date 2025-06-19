@@ -56,6 +56,9 @@ public partial class GameInterface : MutableInterface
 
     private SpellDescriptionWindow? _spellDescriptionWindow;
 
+    private GuildCreationWindow? _guildCreationWindow;
+    private bool _shouldOpenGuildCreation;
+
     private bool mShouldCloseBag;
 
     private bool _shouldCloseBank;
@@ -289,6 +292,29 @@ public partial class GameInterface : MutableInterface
         mCraftJournal = false;
     }
 
+    // Guild Creation
+    public void NotifyOpenGuildCreation()
+    {
+        _shouldOpenGuildCreation = true;
+    }
+
+    public void NotifyCloseGuildCreation()
+    {
+        if (_guildCreationWindow != null)
+        {
+            _guildCreationWindow.Close();
+            _guildCreationWindow = null;
+        }
+        _shouldOpenGuildCreation = false;
+    }
+
+    private void OpenGuildCreation()
+    {
+        _guildCreationWindow?.Close();
+        _guildCreationWindow = new GuildCreationWindow(GameCanvas);
+        _shouldOpenGuildCreation = false;
+    }
+
     public void OpenCraftingTable()
     {
         if (mCraftingWindow != null)
@@ -463,6 +489,23 @@ public partial class GameInterface : MutableInterface
         }
 
         mShouldCloseCraftingTable = false;
+
+        if (_shouldOpenGuildCreation)
+        {
+            OpenGuildCreation();
+        }
+
+        if (_guildCreationWindow != null)
+        {
+            if (!_guildCreationWindow.IsVisibleInTree)
+            {
+                _guildCreationWindow = null;
+            }
+            else
+            {
+                _guildCreationWindow.Update();
+            }
+        }
 
         //Trading update
         if (mShouldOpenTrading)

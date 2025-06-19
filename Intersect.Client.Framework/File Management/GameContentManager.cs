@@ -51,6 +51,8 @@ public abstract partial class GameContentManager : IContentManager
 
     protected readonly Dictionary<string, IAsset> mMusicDict = [];
 
+    protected readonly Dictionary<string, IAsset> mGuildDict = [];
+
     protected readonly Dictionary<string, IAsset> mPaperdollDict = [];
 
     protected readonly Dictionary<string, IAsset> mResourceDict = [];
@@ -81,6 +83,7 @@ public abstract partial class GameContentManager : IContentManager
         { ContentType.Interface, mGuiDict.Values },
         { ContentType.Item, mItemDict.Values },
         { ContentType.Miscellaneous, mMiscDict.Values },
+        { ContentType.Guild, mGuildDict.Values },
         { ContentType.Paperdoll, mPaperdollDict.Values },
         { ContentType.Resource, mResourceDict.Values },
         { ContentType.Spell, mSpellDict.Values },
@@ -119,6 +122,7 @@ public abstract partial class GameContentManager : IContentManager
         LoadFogs();
         LoadResources();
         LoadPaperdolls();
+        LoadGuilds();
         LoadMisc();
         LoadGui();
         LoadFonts();
@@ -146,6 +150,8 @@ public abstract partial class GameContentManager : IContentManager
     public abstract void LoadResources();
 
     public abstract void LoadPaperdolls();
+
+    public abstract void LoadGuilds();
 
     public abstract void LoadGui();
 
@@ -212,6 +218,9 @@ public abstract partial class GameContentManager : IContentManager
 
             case TextureType.Paperdoll:
                 return mPaperdollDict.Keys.ToArray();
+
+            case TextureType.Guild:
+                return mGuildDict.Keys.ToArray();
 
             case TextureType.Gui:
                 return mGuiDict.Keys.ToArray();
@@ -287,6 +296,11 @@ public abstract partial class GameContentManager : IContentManager
 
             case TextureType.Paperdoll:
                 textureDict = mPaperdollDict;
+
+                break;
+
+            case TextureType.Guild:
+                textureDict = mGuildDict;
 
                 break;
 
@@ -560,6 +574,9 @@ public abstract partial class GameContentManager : IContentManager
 
             case ContentType.Miscellaneous:
                 return mMiscDict;
+
+            case ContentType.Guild:
+                return mGuildDict;
 
             case ContentType.Paperdoll:
                 return mPaperdollDict;

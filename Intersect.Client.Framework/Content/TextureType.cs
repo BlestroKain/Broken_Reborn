@@ -27,4 +27,5 @@ public enum TextureType
 
     Misc,
 
+    Guild,
 }

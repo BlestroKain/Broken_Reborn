@@ -52,6 +52,9 @@ public enum ContentType
     Spell,
 
     [AssetType(typeof(IGameTexture))]
+    Guild,
+
+    [AssetType(typeof(IGameTexture))]
     TextureAtlas,
 
     [AssetType(typeof(IGameTexture))]

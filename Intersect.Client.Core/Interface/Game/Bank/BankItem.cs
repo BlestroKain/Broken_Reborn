@@ -219,7 +219,7 @@ public partial class BankItem : SlotItem
 
                     player.TryRetrieveItemFromBank(
                         SlotIndex,
-                        inventorySlotIndex: inventoryItem.SlotIndex,
+                        inventorySlotIndex: inventoryItem.DisplaySlot,
                         quantityHint: slot.Quantity,
                         skipPrompt: true
                     );

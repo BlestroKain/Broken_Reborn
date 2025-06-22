@@ -7,6 +7,7 @@ using Intersect.Client.Interface.Game.Chat;
 using Intersect.Client.Interface.Game.Crafting;
 using Intersect.Client.Interface.Game.DescriptionWindows;
 using Intersect.Client.Interface.Game.EntityPanel;
+using Intersect.Client.Interface.Game.Guilds;
 using Intersect.Client.Interface.Game.Hotbar;
 using Intersect.Client.Interface.Game.Inventory;
 using Intersect.Client.Interface.Game.Shop;
@@ -49,7 +50,7 @@ public partial class GameInterface : MutableInterface
     private ShopWindow _shopWindow;
 
     private MapItemWindow mMapItemWindow;
-
+    private GuildCreationWindow mCreateGuildWindow;
     private SettingsWindow? _settingsWindow;
 
     private ItemDescriptionWindow? _itemDescriptionWindow;
@@ -160,6 +161,7 @@ public partial class GameInterface : MutableInterface
 
         mQuestOfferWindow = new QuestOfferWindow(GameCanvas);
         mMapItemWindow = new MapItemWindow(GameCanvas);
+        mCreateGuildWindow = new GuildCreationWindow(GameCanvas);
     }
 
     //Chatbox
@@ -355,7 +357,7 @@ public partial class GameInterface : MutableInterface
         mMapItemWindow.Update();
         AnnouncementWindow?.Update();
         mPictureWindow?.Update();
-
+        mCreateGuildWindow?.Update();
         var questDescriptorId = Globals.QuestOffers.FirstOrDefault();
         if (questDescriptorId == default)
         {

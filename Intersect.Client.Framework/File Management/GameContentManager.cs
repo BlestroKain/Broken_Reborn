@@ -64,7 +64,7 @@ public abstract partial class GameContentManager : IContentManager
     protected readonly Dictionary<string, IAsset> mSpellDict = [];
 
     protected readonly  Dictionary<string, IAsset> mTexturePackDict = [];
-
+    protected readonly Dictionary<string, IAsset> mGuildDict = [];
     protected readonly Dictionary<string, IAsset> mTilesetDict = [];
     private static GameContentManager? _current;
     private static readonly char[] DirectorySeparators = [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar];
@@ -123,6 +123,7 @@ public abstract partial class GameContentManager : IContentManager
         LoadGui();
         LoadFonts();
         LoadShaders();
+        LoadGuild();
     }
 
     public abstract void LoadTexturePacks();
@@ -154,6 +155,7 @@ public abstract partial class GameContentManager : IContentManager
     public abstract void LoadFonts();
 
     public abstract void LoadShaders();
+    public abstract void LoadGuild();
 
     //Audio Loading
     public void LoadAudio()

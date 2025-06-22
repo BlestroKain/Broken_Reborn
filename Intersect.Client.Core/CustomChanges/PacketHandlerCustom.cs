@@ -68,4 +68,6 @@ internal sealed partial class PacketHandler
             //PacketSender.SendChatMsg($"[DEBUG] Trabajo {job.Key}: Nivel {jobData.Level}, Exp {jobData.Experience}/{jobData.ExperienceToNextLevel}", 5);
         }
     }
+
+  
 }

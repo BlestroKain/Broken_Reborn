@@ -202,6 +202,12 @@ public partial class MonoContentManager : GameContentManager
     {
         LoadTextureGroup("misc", mMiscDict);
     }
+    public override void LoadGuild()
+    {
+        LoadTextureGroup("Guild", mGuildDict);
+    }
+
+
 
     public override void LoadFonts()
     {
@@ -411,6 +417,7 @@ public partial class MonoContentManager : GameContentManager
             case ContentType.Image:
             case ContentType.Interface:
             case ContentType.Item:
+            case ContentType.Guild:
             case ContentType.Miscellaneous:
             case ContentType.Paperdoll:
             case ContentType.Resource:

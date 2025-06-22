@@ -15,4 +15,6 @@ public enum ItemType
     Event = 5,
 
     Bag = 6,
+
+    Resource = 7,
 }

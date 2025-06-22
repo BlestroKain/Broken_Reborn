@@ -1854,6 +1854,7 @@ If you are sure you want to hand over your guild enter '\c{{#ff8080}}{02}\c{{}}'
             {4, @"Spell"},
             {5, @"Special"},
             {6, @"Bag"},
+            {7, @"Resource" },
         };
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

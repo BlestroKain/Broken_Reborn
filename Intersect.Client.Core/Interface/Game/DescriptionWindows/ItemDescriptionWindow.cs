@@ -169,21 +169,34 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
         header.SetTitle(_itemDescriptor.Name, rarityColor ?? Color.White);
 
         // Set up the description telling us what type of item this is.
-        // if equipment, also list what kind.
         Strings.ItemDescription.ItemTypes.TryGetValue((int)_itemDescriptor.ItemType, out var typeDesc);
+
         if (_itemDescriptor.ItemType == ItemType.Equipment)
         {
             var equipSlot = Options.Instance.Equipment.Slots[_itemDescriptor.EquipmentSlot];
-            var extraInfo = equipSlot;
-            if (_itemDescriptor.EquipmentSlot == Options.Instance.Equipment.WeaponSlot && _itemDescriptor.TwoHanded)
+
+            if (_itemDescriptor.EquipmentSlot == Options.Instance.Equipment.WeaponSlot && !string.IsNullOrWhiteSpace(_itemDescriptor.Subtype))
             {
-                extraInfo = $"{Strings.ItemDescription.TwoHand} {equipSlot}";
+                // 🔥 Mostrar solo el subtipo si es arma
+                header.SetSubtitle($"{_itemDescriptor.Subtype}", Color.White);
             }
-            header.SetSubtitle($"{typeDesc} - {extraInfo}", Color.White);
+            else
+            {
+                // 🔥 Mostrar info extra si no tiene subtipo o no es arma
+                var extraInfo = _itemDescriptor.EquipmentSlot == Options.Instance.Equipment.WeaponSlot && _itemDescriptor.TwoHanded
+                    ? $"{Strings.ItemDescription.TwoHand} {equipSlot}"
+                    : equipSlot;
+
+                header.SetSubtitle($"{extraInfo}", Color.White);
+            }
         }
         else
         {
-            header.SetSubtitle(typeDesc, Color.White);
+            // 🔥 Mostrar subtipo si lo tiene, si no solo el tipo
+            var subtypeInfo = !string.IsNullOrWhiteSpace(_itemDescriptor.Subtype)
+       ? _itemDescriptor.Subtype
+       : typeDesc?.ToString() ?? "";
+            header.SetSubtitle(subtypeInfo, Color.White);
         }
 
         // Set up the item rarity label.

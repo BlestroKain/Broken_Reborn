@@ -204,12 +204,13 @@ public partial class GuildCreationWindow : Window
         foreach (var file in files)
         {
             var fileName = Path.GetFileName(file);
+            var relativePath = Path.Combine("Symbols", fileName);
             var container = new ImagePanel(_symbolPanel, "SymbolContainer");
             container.SetSize(48, 48);
 
             var symbolImg = new ImagePanel(container, "SymbolImage")
             {
-                Texture = Globals.ContentManager.GetTexture(Framework.Content.TextureType.Guild, fileName)
+                Texture = Globals.ContentManager.GetTexture(Framework.Content.TextureType.Guild, relativePath)
             };
 
             if (symbolImg.Texture != null)
@@ -227,7 +228,7 @@ public partial class GuildCreationWindow : Window
             {
                 _originalLogoElements[1] = symbolImg.Texture;
                 _logoElements[1] = symbolImg.Texture;
-                _selectedSymbolFile = fileName;
+                _selectedSymbolFile = relativePath;
                 UpdateLogoPreview();
             };
 
@@ -262,6 +263,7 @@ public partial class GuildCreationWindow : Window
         foreach (var file in files)
         {
             var fileName = Path.GetFileName(file);
+            var relativePath = Path.Combine("Background", fileName);
             var container = new ImagePanel(_backgroundPanel, "BackgroundContainer");
             container.SetSize(containerSize, containerSize);
             var posX = index % columns * (containerSize + spacing);
@@ -271,7 +273,7 @@ public partial class GuildCreationWindow : Window
 
             var bgImg = new ImagePanel(container, "BackgroundImage")
             {
-                Texture = Globals.ContentManager.GetTexture(Framework.Content.TextureType.Guild, fileName)
+                Texture = Globals.ContentManager.GetTexture(Framework.Content.TextureType.Guild, relativePath)
             };
 
             if (bgImg.Texture != null)
@@ -289,7 +291,7 @@ public partial class GuildCreationWindow : Window
             {
                 _originalLogoElements[0] = bgImg.Texture;
                 _logoElements[0] = bgImg.Texture;
-                _selectedBackgroundFile = fileName;
+                _selectedBackgroundFile = relativePath;
                 UpdateLogoPreview();
             };
 

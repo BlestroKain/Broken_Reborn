@@ -47,6 +47,8 @@ public partial class FrmItem : EditorForm
         cmbProjectile.Items.Clear();
         cmbProjectile.Items.Add(Strings.General.None);
         cmbProjectile.Items.AddRange(ProjectileDescriptor.Names);
+
+        Strings.ItemEditor.LoadDynamicSubtypes();
         _btnSave = btnSave;
         _btnCancel = btnCancel;
 
@@ -188,6 +190,7 @@ public partial class FrmItem : EditorForm
         grpGeneral.Text = Strings.ItemEditor.general;
         lblName.Text = Strings.ItemEditor.name;
         lblType.Text = Strings.ItemEditor.type;
+        lblSubType.Text = Strings.ItemEditor.subtype;
         cmbType.Items.Clear();
         for (var i = 0; i < Strings.ItemEditor.types.Count; i++)
         {
@@ -341,7 +344,7 @@ public partial class FrmItem : EditorForm
             cmbFolder.Text = mEditorItem.Folder;
             txtDesc.Text = mEditorItem.Description;
             cmbType.SelectedIndex = (int)mEditorItem.ItemType;
-            cmbPic.SelectedIndex = cmbPic.FindString(TextUtils.NullToNone(mEditorItem.Icon));
+             cmbPic.SelectedIndex = cmbPic.FindString(TextUtils.NullToNone(mEditorItem.Icon));
             nudRgbaR.Value = mEditorItem.Color.R;
             nudRgbaG.Value = mEditorItem.Color.G;
             nudRgbaB.Value = mEditorItem.Color.B;
@@ -404,7 +407,48 @@ public partial class FrmItem : EditorForm
             nudBlockAmount.Value = mEditorItem.BlockAmount;
             nudBlockDmgAbs.Value = mEditorItem.BlockAbsorption;
             RefreshExtendedData();
+            // Actualizar `cmbSubType` según el tipo de ítem cargado
+            cmbSubType.Items.Clear();
+            cmbSubType.Enabled = false;
+          
+            var itemType = mEditorItem.ItemType;
 
+            // Validar si es Equipment y WeaponSlot
+            if (itemType == ItemType.Equipment && mEditorItem.EquipmentSlot == Options.Instance.Equipment.WeaponSlot)
+            {
+                if (Strings.ItemEditor.SubtypesDynamic.TryGetValue(ItemType.Equipment, out var weaponSubtypes))
+                {
+                    cmbSubType.Items.AddRange(weaponSubtypes.ToArray());
+                    cmbSubType.Enabled = weaponSubtypes.Count > 0;
+                }
+            }
+            else
+            {
+                if (Strings.ItemEditor.SubtypesDynamic.TryGetValue(itemType, out var subtypes))
+                {
+                    cmbSubType.Items.AddRange(subtypes.ToArray());
+                    cmbSubType.Enabled = subtypes.Count > 0;
+                }
+            }
+
+            // Si el ítem tiene un subtipo válido, seleccionarlo
+            if (!string.IsNullOrWhiteSpace(mEditorItem.Subtype) && cmbSubType.Items.Contains(mEditorItem.Subtype))
+            {
+                cmbSubType.SelectedItem = mEditorItem.Subtype;
+            }
+            else if (cmbSubType.Items.Count > 0)
+            {
+                cmbSubType.SelectedIndex = 0;
+                mEditorItem.Subtype = cmbSubType.SelectedItem.ToString();
+            }
+            else
+            {
+                mEditorItem.Subtype = null;
+            }
+
+            var subtype = cmbSubType.SelectedItem?.ToString();
+
+           
             chk2Hand.Checked = mEditorItem.TwoHanded;
             cmbMalePaperdoll.SelectedIndex =
                 cmbMalePaperdoll.FindString(TextUtils.NullToNone(mEditorItem.MalePaperdoll));
@@ -602,9 +646,47 @@ public partial class FrmItem : EditorForm
         }
     }
 
+
+
     private void cmbType_SelectedIndexChanged(object sender, EventArgs e)
     {
         RefreshExtendedData();
+        var selectedType = (ItemType)cmbType.SelectedIndex;
+
+        cmbSubType.Items.Clear();
+        cmbSubType.Enabled = false;
+
+        // Validar si es Equipment y WeaponSlot
+        if (selectedType == ItemType.Equipment && cmbEquipmentSlot.SelectedIndex == Options.Instance.Equipment.WeaponSlot)
+        {
+            // Cargar subtipos dinámicos específicos para armas (si los hay)
+            if (Strings.ItemEditor.SubtypesDynamic.TryGetValue(ItemType.Equipment, out var weaponSubtypes))
+            {
+                cmbSubType.Items.Add("None");
+                cmbSubType.Items.AddRange(weaponSubtypes.ToArray());
+                cmbSubType.Enabled = weaponSubtypes.Count > 0;
+            }
+        }
+        else
+        {
+            // Para otros tipos como Resource, Consumable, etc.
+            if (Strings.ItemEditor.SubtypesDynamic.TryGetValue(selectedType, out var dynamicSubtypes))
+            {
+                cmbSubType.Items.Add("None");
+                cmbSubType.Items.AddRange(dynamicSubtypes.ToArray());
+                cmbSubType.Enabled = dynamicSubtypes.Count > 0;
+            }
+        }
+
+        // 🔥 Asignar subtipo actual o el primero por defecto
+        if (cmbSubType.Items.Count > 0)
+        {
+            cmbSubType.SelectedItem = mEditorItem.Subtype ?? cmbSubType.Items[0];
+        }
+        else
+        {
+            mEditorItem.Subtype = null;
+        }
     }
 
     private void txtName_TextChanged(object sender, EventArgs e)
@@ -668,11 +750,20 @@ public partial class FrmItem : EditorForm
             mEditorItem.Damage = 0;
             mEditorItem.TwoHanded = false;
         }
+
     }
 
     private void cmbToolType_SelectedIndexChanged(object sender, EventArgs e)
     {
         mEditorItem.Tool = cmbToolType.SelectedIndex - 1;
+    }
+
+    private void cmbSubType_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (cmbSubType.SelectedIndex >= 0)
+        {
+            mEditorItem.Subtype = cmbSubType.SelectedItem.ToString();
+        }
     }
 
     private void cmbEquipmentBonus_SelectedIndexChanged(object sender, EventArgs e)

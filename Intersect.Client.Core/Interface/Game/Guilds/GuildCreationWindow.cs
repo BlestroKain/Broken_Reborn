@@ -170,8 +170,7 @@ public partial class GuildCreationWindow : Window
             BackgroundIconPanel.Clicked += (_, _) =>
             {
                 _logoElements[0] = tex;
-                _selectedBackgroundFile = fn;
-
+           
                 UpdateLogoPreview();
             };
 
@@ -223,8 +222,7 @@ public partial class GuildCreationWindow : Window
             SymbolIconPanel.Clicked += (_, _) =>
             {
                 _logoElements[1] = tex;
-                _selectedSymbolFile = fn;
-
+                
                 UpdateLogoPreview();
             };
 

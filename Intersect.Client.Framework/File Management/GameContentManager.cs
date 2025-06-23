@@ -85,6 +85,7 @@ public abstract partial class GameContentManager : IContentManager
         { ContentType.Resource, mResourceDict.Values },
         { ContentType.Spell, mSpellDict.Values },
         { ContentType.Tileset, mTilesetDict.Values },
+        {ContentType.Guild, mGuildDict.Values },
     };
 
     /// <summary>
@@ -220,6 +221,8 @@ public abstract partial class GameContentManager : IContentManager
 
             case TextureType.Misc:
                 return mMiscDict.Keys.ToArray();
+                case TextureType.Guild: 
+                return mGuildDict.Keys.ToArray();
         }
 
         return null;
@@ -301,7 +304,9 @@ public abstract partial class GameContentManager : IContentManager
                 textureDict = mMiscDict;
 
                 break;
-
+                case TextureType.Guild:
+                    textureDict = mGuildDict;
+                break;
             default:
                 return null;
         }
@@ -589,7 +594,8 @@ public abstract partial class GameContentManager : IContentManager
 
             case ContentType.Sound:
                 return mSoundDict;
-
+                case ContentType.Guild:
+                    return mGuildDict;
             default:
                 throw new ArgumentOutOfRangeException(nameof(contentType), contentType, null);
         }

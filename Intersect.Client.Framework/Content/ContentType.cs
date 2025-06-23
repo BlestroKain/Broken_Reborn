@@ -56,7 +56,9 @@ public enum ContentType
 
     [AssetType(typeof(IGameTexture))]
     Tileset,
-
+    [AssetType(typeof(IGameTexture))]
+    Guild,
     [Obsolete] Gui = Interface,
-    Guild = 17
+
+  
 }

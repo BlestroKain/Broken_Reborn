@@ -225,10 +225,10 @@ public partial class MonoContentManager : GameContentManager
         }
         else
         {
-            var items = Directory.GetFiles(dir, "*.png");
+            var items = Directory.GetFiles(dir, "*.png", SearchOption.AllDirectories);
             foreach (var item in items)
             {
-                var filename = item.Replace(dir, string.Empty).TrimStart(Path.DirectorySeparatorChar).ToLower();
+                var filename = Path.GetRelativePath(dir, item).Replace("\\", "/").ToLower();
                 if (dict.ContainsKey(filename))
                 {
                     continue;

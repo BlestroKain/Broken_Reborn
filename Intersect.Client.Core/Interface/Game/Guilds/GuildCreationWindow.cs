@@ -134,14 +134,14 @@ public partial class GuildCreationWindow : Window
         var path = Path.Combine(ClientConfiguration.ResourcesDirectory, "Guild", "Background");
         if (!Directory.Exists(path)) Directory.CreateDirectory(path);
 
-        var files = Directory.GetFiles(path, "*.png");
+        var files = Directory.GetFiles(path, "*.png", SearchOption.AllDirectories);
         const int size = 48;
         int x = 5, y = 5;
         int maxW = _backgroundPanel.Width;
 
         foreach (var file in files)
         {
-            var fn = Path.GetFileName(file);
+            var fn = Path.GetRelativePath(path, file).Replace("\\", "/");
          
             var tex = Globals.ContentManager.GetTexture(Framework.Content.TextureType.Guild, fn);
             if (tex == null) continue;
@@ -170,7 +170,8 @@ public partial class GuildCreationWindow : Window
             BackgroundIconPanel.Clicked += (_, _) =>
             {
                 _logoElements[0] = tex;
-           
+                _selectedBackgroundFile = fn;
+
                 UpdateLogoPreview();
             };
 
@@ -186,7 +187,7 @@ public partial class GuildCreationWindow : Window
         var path = Path.Combine(ClientConfiguration.ResourcesDirectory, "Guild", "Symbols");
         if (!Directory.Exists(path)) Directory.CreateDirectory(path);
 
-        var files = Directory.GetFiles(path, "*.png");
+        var files = Directory.GetFiles(path, "*.png", SearchOption.AllDirectories);
     
         const int size = 48;
         int x = 5, y = 5;
@@ -194,7 +195,7 @@ public partial class GuildCreationWindow : Window
 
         foreach (var file in files)
         {
-            var fn = Path.GetFileName(file);
+            var fn = Path.GetRelativePath(path, file).Replace("\\", "/");
         
             var tex = Globals.ContentManager.GetTexture(Framework.Content.TextureType.Guild, fn);
             if (tex == null) continue;
@@ -222,7 +223,8 @@ public partial class GuildCreationWindow : Window
             SymbolIconPanel.Clicked += (_, _) =>
             {
                 _logoElements[1] = tex;
-                
+                _selectedSymbolFile = fn;
+
                 UpdateLogoPreview();
             };
 

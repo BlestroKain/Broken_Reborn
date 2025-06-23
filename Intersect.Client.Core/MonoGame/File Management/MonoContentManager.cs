@@ -204,7 +204,61 @@ public partial class MonoContentManager : GameContentManager
     }
     public override void LoadGuild()
     {
-        LoadTextureGroup("Guild", mGuildDict);
+        mGuildDict.Clear();
+
+        // Load guild backgrounds
+        AppendTextureGroup(Path.Combine("Guild", "Background"), mGuildDict);
+
+        // Load guild symbols
+        AppendTextureGroup(Path.Combine("Guild", "Symbols"), mGuildDict);
+    }
+
+    private void AppendTextureGroup(string directory, Dictionary<string, IAsset> dict)
+    {
+        var dir = Path.Combine(ClientConfiguration.ResourcesDirectory, directory);
+        if (!Directory.Exists(dir))
+        {
+            if (!Directory.Exists(Path.Combine(ClientConfiguration.ResourcesDirectory, "packs")))
+            {
+                Directory.CreateDirectory(dir);
+            }
+        }
+        else
+        {
+            var items = Directory.GetFiles(dir, "*.png");
+            foreach (var item in items)
+            {
+                var filename = item.Replace(dir, string.Empty).TrimStart(Path.DirectorySeparatorChar).ToLower();
+                if (dict.ContainsKey(filename))
+                {
+                    continue;
+                }
+
+                dict.Add(
+                    filename,
+                    Core.Graphics.Renderer.LoadTexture(
+                        Path.Combine(dir, filename),
+                        Path.Combine(dir, item.Replace(dir, string.Empty).TrimStart(Path.DirectorySeparatorChar))
+                    )
+                );
+            }
+        }
+
+        var packItems = AtlasReference.GetAllFor(directory);
+        foreach (var itm in packItems)
+        {
+            var filename = Path.GetFileName(itm.Name.ToLower().Replace("\\", "/"));
+            if (!dict.ContainsKey(filename))
+            {
+                dict.Add(
+                    filename,
+                    Core.Graphics.Renderer.LoadTexture(
+                        Path.Combine(dir, filename),
+                        Path.Combine(dir, Path.Combine(dir, filename))
+                    )
+                );
+            }
+        }
     }
 
 

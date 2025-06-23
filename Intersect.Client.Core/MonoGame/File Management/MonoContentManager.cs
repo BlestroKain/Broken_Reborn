@@ -116,9 +116,13 @@ public partial class MonoContentManager : GameContentManager
         }
     }
 
-    public void LoadTextureGroup(string directory, Dictionary<string, IAsset> dict)
+    public void LoadTextureGroup(string directory, Dictionary<string, IAsset> dict, string? prefix = null, bool clear = true)
     {
-        dict.Clear();
+        if (clear)
+        {
+            dict.Clear();
+        }
+
         var dir = Path.Combine(ClientConfiguration.ResourcesDirectory, directory);
         if (!Directory.Exists(dir))
         {
@@ -133,7 +137,11 @@ public partial class MonoContentManager : GameContentManager
             for (var i = 0; i < items.Length; i++)
             {
                 var filename = items[i].Replace(dir, "").TrimStart(Path.DirectorySeparatorChar).ToLower();
-                dict.Add(filename, Core.Graphics.Renderer.LoadTexture(Path.Combine(dir, filename), Path.Combine(dir, items[i].Replace(dir, "").TrimStart(Path.DirectorySeparatorChar))));
+                var key = string.IsNullOrEmpty(prefix) ? filename : Path.Combine(prefix.ToLower(), filename).Replace("\\", "/");
+                dict[key] = Core.Graphics.Renderer.LoadTexture(
+                    Path.Combine(dir, filename),
+                    Path.Combine(dir, items[i].Replace(dir, "").TrimStart(Path.DirectorySeparatorChar))
+                );
             }
         }
 
@@ -141,9 +149,13 @@ public partial class MonoContentManager : GameContentManager
         foreach (var itm in packItems)
         {
             var filename = Path.GetFileName(itm.Name.ToLower().Replace("\\", "/"));
-            if (!dict.ContainsKey(filename))
+            var key = string.IsNullOrEmpty(prefix) ? filename : Path.Combine(prefix.ToLower(), filename).Replace("\\", "/");
+            if (!dict.ContainsKey(key))
             {
-                dict.Add(filename, Core.Graphics.Renderer.LoadTexture(Path.Combine(dir, filename), Path.Combine(dir, Path.Combine(dir, filename))));
+                dict[key] = Core.Graphics.Renderer.LoadTexture(
+                    Path.Combine(dir, filename),
+                    Path.Combine(dir, Path.Combine(dir, filename))
+                );
             }
         }
     }
@@ -202,9 +214,13 @@ public partial class MonoContentManager : GameContentManager
     {
         LoadTextureGroup("misc", mMiscDict);
     }
+
     public override void LoadGuild()
     {
-        LoadTextureGroup("Guild", mGuildDict);
+        mGuildDict.Clear();
+        LoadTextureGroup(Path.Combine("Guild", "Background"), mGuildDict, "Background", false);
+        LoadTextureGroup(Path.Combine("Guild", "Symbols"), mGuildDict, "Symbols", false);
+        LoadTextureGroup("Guild", mGuildDict, clear: false);
     }
 
 

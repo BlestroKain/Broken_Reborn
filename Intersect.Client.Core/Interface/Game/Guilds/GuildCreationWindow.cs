@@ -142,8 +142,8 @@ public partial class GuildCreationWindow : Window
         foreach (var file in files)
         {
             var fn = Path.GetFileName(file);
-            var rel = Path.Combine("Background", fn);
-            var tex = GameContentManager.Current.GetTexture(Framework.Content.TextureType.Guild, rel);
+            var rel = Path.Combine("Background", fn).Replace('\\', '/');
+            var tex = Globals.ContentManager.GetTexture(Framework.Content.TextureType.Guild, rel);
             if (tex == null) continue;
 
             if (x + size > maxW)
@@ -195,8 +195,8 @@ public partial class GuildCreationWindow : Window
         foreach (var file in files)
         {
             var fn = Path.GetFileName(file);
-            var rel = Path.Combine("Symbols", fn);
-            var tex = GameContentManager.Current.GetTexture(Framework.Content.TextureType.Guild, rel);
+            var rel = Path.Combine("Symbols", fn).Replace('\\', '/');
+            var tex = Globals.ContentManager.GetTexture(Framework.Content.TextureType.Guild, rel);
             if (tex == null) continue;
 
             if (x + size > maxW)

@@ -2362,6 +2362,11 @@ internal sealed partial class PacketHandler
         );
     }
 
+    public void HandlePacket(IPacketSender packetSender, GuildCreationWindowPacket packet)
+    {
+        Interface.Interface.EnqueueInGame(gameInterface => gameInterface.NotifyOpenGuildCreation());
+    }
+
     public void HandlePacket(IPacketSender packetSender, FadePacket packet)
     {
         switch (packet.FadeType)

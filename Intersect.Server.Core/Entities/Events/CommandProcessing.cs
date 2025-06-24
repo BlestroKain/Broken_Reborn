@@ -1431,77 +1431,7 @@ public static partial class CommandProcessing
         Stack<CommandInstance> callStack
     )
     {
-        var success = false;
-        var playerVariable = PlayerVariableDescriptor.Get(command.VariableId);
-
-        // We only accept Strings as our Guild Names!
-        if (playerVariable.DataType == VariableDataType.String)
-        {
-            // Get our intended guild name
-            var gname = player.GetVariable(playerVariable.Id)?.Value.String?.Trim();
-
-            // Can we use this name according to our configuration?
-            if (gname != null && FieldChecking.IsValidGuildName(gname, Strings.Regex.GuildName))
-            {
-                // Is the name already in use?
-                if (Guild.GetGuild(gname) == null)
-                {
-                    // Is the player already in a guild?
-                    if (player.Guild == null)
-                    {
-                        // Finally, we can actually MAKE this guild happen!
-                        var guild = Guild.CreateGuild(player, gname);
-                        if (guild != null)
-                        {
-                            // Send them a welcome message!
-                            PacketSender.SendChatMsg(player, Strings.Guilds.Welcome.ToString(gname), ChatMessageType.Guild, CustomColors.Alerts.Success);
-
-                            // Denote that we were successful.
-                            success = true;
-                        }
-                    }
-                    else
-                    {
-                        // This cheeky bugger is already in a guild, tell him so!
-                        PacketSender.SendChatMsg(player, Strings.Guilds.AlreadyInGuild, ChatMessageType.Guild, CustomColors.Alerts.Error);
-                    }
-                }
-                else
-                {
-                    // This name already exists, oh dear!
-                    PacketSender.SendChatMsg(player, Strings.Guilds.GuildNameInUse, ChatMessageType.Guild, CustomColors.Alerts.Error);
-                }
-            }
-            else
-            {
-                // Let our player know they need to adjust their name.
-                PacketSender.SendChatMsg(player, Strings.Guilds.VariableInvalid, ChatMessageType.Guild, CustomColors.Alerts.Error);
-            }
-        }
-        else
-        {
-            // Notify the user that something went wrong, the user really shouldn't see this.. Assuming the creator set up his events properly.
-            PacketSender.SendChatMsg(player, Strings.Guilds.VariableNotString, ChatMessageType.Guild, CustomColors.Alerts.Error);
-        }
-
-        List<EventCommand> newCommandList = null;
-        if (success && stackInfo.Page.CommandLists.ContainsKey(command.BranchIds[0]))
-        {
-            newCommandList = stackInfo.Page.CommandLists[command.BranchIds[0]];
-        }
-
-        if (!success && stackInfo.Page.CommandLists.ContainsKey(command.BranchIds[1]))
-        {
-            newCommandList = stackInfo.Page.CommandLists[command.BranchIds[1]];
-        }
-
-        var tmpStack = new CommandInstance(stackInfo.Page)
-        {
-            CommandList = newCommandList,
-            CommandIndex = 0,
-        };
-
-        callStack.Push(tmpStack);
+        PacketSender.SendOpenGuildWindow(player);
     }
 
     private static void ProcessCommand(

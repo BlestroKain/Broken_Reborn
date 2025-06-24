@@ -67,6 +67,9 @@ public partial class GameInterface : MutableInterface
 
     private bool mShouldCloseTrading;
 
+    private bool mShouldOpenGuildCreation;
+    private bool mShouldCloseGuildCreation;
+
     private bool mShouldOpenAdminWindow;
 
     private bool mShouldOpenBag;
@@ -248,6 +251,30 @@ public partial class GameInterface : MutableInterface
         _bankWindow = new BankWindow(GameCanvas) { DeleteOnClose = true };
         mShouldOpenBank = false;
         Globals.InBank = true;
+    }
+
+    //Guild Creation
+    public void NotifyOpenGuildCreation()
+    {
+        mShouldOpenGuildCreation = true;
+    }
+
+    public void NotifyCloseGuildCreation()
+    {
+        mShouldCloseGuildCreation = true;
+    }
+
+    public void OpenGuildCreationWindow()
+    {
+        mCreateGuildWindow ??= new GuildCreationWindow(GameCanvas);
+        mCreateGuildWindow.Show();
+        mShouldOpenGuildCreation = false;
+    }
+
+    public void CloseGuildCreation()
+    {
+        mCreateGuildWindow?.Hide();
+        mShouldCloseGuildCreation = false;
     }
 
     //Bag
@@ -491,6 +518,16 @@ public partial class GameInterface : MutableInterface
                     mTradingWindow.Update();
                 }
             }
+        }
+
+        //Guild Creation window update
+        if (mShouldOpenGuildCreation)
+        {
+            OpenGuildCreationWindow();
+        }
+        else if (mShouldCloseGuildCreation)
+        {
+            CloseGuildCreation();
         }
 
         if (mShouldUpdateFriendsList)

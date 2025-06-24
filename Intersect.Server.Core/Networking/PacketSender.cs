@@ -2296,6 +2296,12 @@ public static partial class PacketSender
         player.SendPacket(new GuildInvitePacket(from?.Name, guildName));
     }
 
+    public static void SendOpenGuildWindow(Player player)
+    {
+        if (player == null) return;
+        player.SendPacket(new GuildCreationWindowPacket());
+    }
+
     public static void SendFade(Player player, FadeType fadeType, bool waitForCompletion, int speedMs)
     {
         player.SendPacket(new FadePacket(fadeType, waitForCompletion, speedMs));

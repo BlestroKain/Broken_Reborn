@@ -110,12 +110,6 @@
     <Compile Update="Forms\Editors\Events\Event Commands\EventCommand_ChangeName.Designer.cs">
       <DependentUpon>EventCommand_ChangeName.cs</DependentUpon>
     </Compile>
-    <Compile Update="Forms\Editors\Events\Event Commands\EventCommand_CreateGuild.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Update="Forms\Editors\Events\Event Commands\EventCommand_CreateGuild.Designer.cs">
-      <DependentUpon>EventCommand_CreateGuild.cs</DependentUpon>
-    </Compile>
     <Compile Update="Forms\frmUpdate.cs">
       <SubType>Form</SubType>
     </Compile>

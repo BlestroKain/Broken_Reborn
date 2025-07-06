@@ -2290,44 +2290,37 @@ internal sealed partial class PacketHandler
     }
 
     //GuildPacket
-    public void HandlePacket(IPacketSender packetSender, GuildPacket packet)
+       public void HandlePacket(IPacketSender packetSender, GuildPacket packet)
     {
         if (Globals.Me == null || Globals.Me.Guild == null)
         {
             return;
         }
 
-        var updatedGuildMembers = packet.Members.OrderByDescending(m => m.Online).ThenBy(m => m.Rank)
-            .ThenBy(m => m.Name).ToArray();
+        var updatedGuildMembers = packet.Members
+            .OrderByDescending(m => m.Online)
+            .ThenBy(m => m.Rank)
+            .ThenBy(m => m.Name)
+            .ToArray();
 
         var currentGuildMembers = Globals.Me.GuildMembers;
         var hasUpdates = currentGuildMembers?.Length != updatedGuildMembers.Length;
+
         if (!hasUpdates)
         {
             for (var index = 0; index < currentGuildMembers.Length; ++index)
             {
-                var currentGuildMember = currentGuildMembers[index];
-                var updatedGuildMember = updatedGuildMembers[index];
+                var current = currentGuildMembers[index];
+                var updated = updatedGuildMembers[index];
 
-                if (currentGuildMember.Id != updatedGuildMember.Id)
-                {
-                    hasUpdates = true;
-                    break;
-                }
-
-                if (currentGuildMember.Online != updatedGuildMember.Online)
-                {
-                    hasUpdates = true;
-                    break;
-                }
-
-                if (currentGuildMember.Rank != updatedGuildMember.Rank)
-                {
-                    hasUpdates = true;
-                    break;
-                }
-
-                if (!string.Equals(currentGuildMember.Name, updatedGuildMember.Name))
+                if (current.Id != updated.Id ||
+                    current.Online != updated.Online ||
+                    current.Rank != updated.Rank ||
+                    current.Name != updated.Name ||
+                    current.Level != updated.Level ||
+                    !string.Equals(current.MapName, updated.MapName) || 
+                    current.DonatedXp != updated.DonatedXp ||
+                    Math.Abs(current.ExperiencePerc - updated.ExperiencePerc) > 0.01f)
                 {
                     hasUpdates = true;
                     break;
@@ -2338,8 +2331,33 @@ internal sealed partial class PacketHandler
         if (hasUpdates)
         {
             Globals.Me.GuildMembers = updatedGuildMembers;
-            Interface.Interface.EnqueueInGame(gameInterface => gameInterface.NotifyUpdateGuildList());
+            Interface.Interface.GameUi.NotifyUpdateGuildList();
         }
+    }
+    public void HandlePacket(IPacketHandler packetsender, GuildUpdate packet)
+    {
+        if (Globals.Me == null || Globals.Me.Guild == null)
+        {
+            return;
+        }
+        // Si usas el nombre del gremio en el cliente
+        Globals.Me.Guild = packet.Name; // O la propiedad adecuada para almacenar el nombre
+        // Llamada al método GetLogo con TODOS los parámetros
+        // (Asegúrate de tener un método que coincida con esta firma en tu lado cliente)
+        Globals.Me.GetLogo(
+            packet.LogoBackground,
+            packet.BackgroundR,
+            packet.BackgroundG,
+            packet.BackgroundB,
+            packet.LogoSymbol,
+            packet.SymbolR,
+            packet.SymbolG,
+            packet.SymbolB
+        );
+        Globals.Me.GuildBackgroundFile = packet.LogoBackground;
+        Globals.Me.GuildSymbolFile = packet.LogoSymbol;
+        // Por ejemplo, notificar a la interfaz gráfica de que se actualizó la guild
+        //Interface.Interface.GameUi.NotifyUpdateGuild();
     }
 
 
@@ -2361,7 +2379,6 @@ internal sealed partial class PacketHandler
             }
         );
     }
-
     public void HandlePacket(IPacketSender packetSender, FadePacket packet)
     {
         switch (packet.FadeType)

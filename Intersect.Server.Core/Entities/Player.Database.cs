@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using Intersect.Core;
 using Intersect.Framework.Core;
@@ -372,6 +372,7 @@ public partial class Player
         {
             GuildRank = Options.Instance.Guild.Ranks.Length - 1;
         }
+        PacketSender.UpdateGuild(this);
     }
     #endregion
 

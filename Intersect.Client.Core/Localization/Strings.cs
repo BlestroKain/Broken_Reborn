@@ -308,6 +308,51 @@ public static partial class Strings
         BindingFlags.NonPublic | BindingFlags.Static
     ) ?? throw new InvalidOperationException();
 
+    public partial struct Enchanting
+    {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString WindowTitle = "Enchant Items";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Title = "Item Enchanting";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString SelectedItem = "Selected Item";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Cost = "Enchant Cost";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Chance = "Success Chance";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString UseAmulet = "Use Protective Amulet";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Enchant = "Enchant";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString NoItemSelected = "No item selected for enchanting!";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString EnchantSuccess = "The item was successfully enchanted!";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString EnchantFail = "Enchanting failed. Better luck next time!";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString InsufficientCurrency = "You do not have enough currency to enchant this item.";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Close = "Close";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Projection = "Projection";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString MaxEnchantReached = "The item has reached the maximum enchantment level!";
+
+
+    }
+
     public partial struct Job
     {
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

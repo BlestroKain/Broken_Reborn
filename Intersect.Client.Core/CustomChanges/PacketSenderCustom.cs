@@ -39,7 +39,10 @@ public static partial class PacketSender
  
     public static void SendApplyGuildUpgrade(GuildUpgradeType type)
     {
-
        Network.SendPacket(new ApplyGuildUpgradePacket(type));
+    }
+    public static void SendEnchantItem(int itemId, int targetLevel, Guid currencyId, int currencyAmount, bool useAmulet)
+    {
+        Network.SendPacket(new EnchantItemPacket(itemId, targetLevel, currencyId, currencyAmount, useAmulet));
     }
 }

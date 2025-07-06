@@ -135,5 +135,55 @@ internal sealed partial class PacketHandler
             Log.Warning($"Failed to create guild '{packet.Name}' for player '{player.Name}'.");
         }
     }
+    public void HandlePacket(Client client, EnchantItemPacket packet)
+    {
+        var player = client.Entity;
+        if (player == null)
+        {
+            return;
+        }
+
+        // Validar índice del ítem
+        if (packet.ItemIndex < 0 || packet.ItemIndex >= player.Items.Count)
+        {
+            PacketSender.SendChatMsg(player, "Ítem no encontrado en el inventario.", ChatMessageType.Error);
+            return;
+        }
+
+        var item = player.Items[packet.ItemIndex];
+        if (item == null || item.Descriptor?.ItemType != ItemType.Equipment || item.Properties == null || !item.Descriptor.CanBeEnchanted())
+        {
+            PacketSender.SendChatMsg(player, "El ítem no es válido o no se puede encantar.", ChatMessageType.Error);
+            return;
+        }
+
+        // Validar moneda de encantamiento
+        var currency = player.Items.FirstOrDefault(i => i?.ItemId == packet.CurrencyId && i.Quantity >= packet.CurrencyAmount);
+        if (currency == null)
+        {
+            PacketSender.SendChatMsg(player, "No tienes suficiente moneda para encantar el ítem.", ChatMessageType.Error);
+            return;
+        }
+
+        // Validar existencia del amuleto si se quiere usar
+        if (packet.UseAmulet)
+        {
+            var amuletId = item.Descriptor.GetamuletMaterialId();
+            var amuletItem = player.Items.FirstOrDefault(i => i?.ItemId == amuletId && i.Quantity > 0);
+
+            if (amuletItem == null)
+            {
+                PacketSender.SendChatMsg(player, "No tienes amuletos de protección para usar.", ChatMessageType.Error);
+                return;
+            }
+        }
+
+        // Ejecutar mejora
+        player.TryUpgradeItem(packet.ItemIndex, packet.TargetLevel, packet.UseAmulet);
+
+        // Refrescar inventario en cliente
+        PacketSender.SendInventoryItemUpdate(player, packet.ItemIndex);
+    }
+
 
 }

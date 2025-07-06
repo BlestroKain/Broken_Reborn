@@ -422,4 +422,88 @@ public class Item : IItem
 
         return true;
     }
+
+    public void ApplyEnchantment(int newLevel)
+    {
+        if (Descriptor?.ItemType != ItemType.Equipment || Properties == null)
+        {
+            return;
+        }
+
+        newLevel = Math.Clamp(newLevel, 0, 8);
+        int currentLevel = Properties.EnchantmentLevel;
+
+        if (newLevel == currentLevel)
+        {
+            return;
+        }
+
+        if (newLevel > currentLevel)
+        {
+            double factor = 0.01;
+            for (int lvl = currentLevel + 1; lvl <= newLevel; lvl++)
+            {
+                int[] statBonuses = new int[Enum.GetValues(typeof(Stat)).Length];
+                int[] vitalBonuses = new int[Enum.GetValues(typeof(Vital)).Length];
+
+                foreach (Stat stat in Enum.GetValues(typeof(Stat)))
+                {
+                    var statIndex = (int)stat;
+                    int baseStat = Descriptor.StatsGiven[statIndex];
+
+                    double levelInfluence = Math.Log2(lvl + 1) + Math.Sqrt(lvl);
+                    int bonus = (int)Math.Ceiling(baseStat * factor * levelInfluence);
+
+                    Properties.StatModifiers[statIndex] += bonus;
+                    statBonuses[statIndex] = bonus;
+                }
+
+                foreach (Vital vital in Enum.GetValues(typeof(Vital)))
+                {
+                    var vitalIndex = (int)vital;
+                    int baseVital = (int)Descriptor.VitalsGiven[vitalIndex];
+
+                    double levelInfluence = Math.Log2(lvl + 1) + Math.Sqrt(lvl);
+                    int bonus = (int)Math.Ceiling(baseVital * factor * levelInfluence);
+
+                    Properties.VitalModifiers[vitalIndex] += bonus;
+                    vitalBonuses[vitalIndex] = bonus;
+                }
+
+                // Combinar stats y vitals en un solo diccionario con índices consecutivos si quieres,
+                // o guardar por separado si prefieres. Aquí los unimos en uno solo:
+                Properties.EnchantmentRolls[lvl] = statBonuses.Concat(vitalBonuses).ToArray();
+            }
+        }
+        else
+        {
+            for (int lvl = currentLevel; lvl > newLevel; lvl--)
+            {
+                if (Properties.EnchantmentRolls.TryGetValue(lvl, out var levelBonuses))
+                {
+                    int statCount = Enum.GetValues(typeof(Stat)).Length;
+                    int vitalCount = Enum.GetValues(typeof(Vital)).Length;
+
+                    for (int i = 0; i < statCount; i++)
+                    {
+                        int bonus = levelBonuses[i];
+                        Properties.StatModifiers[i] -= bonus;
+                        Properties.StatModifiers[i] = Math.Max(0, Properties.StatModifiers[i]);
+                    }
+
+                    for (int i = 0; i < vitalCount; i++)
+                    {
+                        int bonus = levelBonuses[statCount + i];
+                        Properties.VitalModifiers[i] -= bonus;
+                        Properties.VitalModifiers[i] = Math.Max(0, Properties.VitalModifiers[i]);
+                    }
+
+                    Properties.EnchantmentRolls.Remove(lvl);
+                }
+            }
+        }
+
+        Properties.EnchantmentLevel = newLevel;
+    }
+
 }

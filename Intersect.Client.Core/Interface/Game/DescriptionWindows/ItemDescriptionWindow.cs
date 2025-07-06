@@ -166,7 +166,13 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
 
         // Set up the header as the item name.
         CustomColors.Items.Rarities.TryGetValue(_itemDescriptor.Rarity, out var rarityColor);
-        header.SetTitle(_itemDescriptor.Name, rarityColor ?? Color.White);
+        var itemLevel = _itemProperties?.EnchantmentLevel ?? 0;
+        var name = _itemDescriptor.Name;
+        if (itemLevel > 0)
+        {
+            name += $" +{itemLevel}";
+        }
+        header.SetTitle(name, rarityColor ?? Color.White);
 
         // Set up the description telling us what type of item this is.
         Strings.ItemDescription.ItemTypes.TryGetValue((int)_itemDescriptor.ItemType, out var typeDesc);
@@ -392,19 +398,27 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
         // Vitals
         for (var i = 0; i < Enum.GetValues<Vital>().Length; i++)
         {
-            if (_itemDescriptor.VitalsGiven[i] != 0 && _itemDescriptor.PercentageVitalsGiven[i] != 0)
+            var baseValue = _itemDescriptor.VitalsGiven[i];
+            var percentValue = _itemDescriptor.PercentageVitalsGiven[i];
+            var enchantBonus = _itemProperties?.VitalModifiers[i] ?? 0;
+
+            var totalFlat = baseValue + enchantBonus;
+            var label = Strings.ItemDescription.Vitals[i];
+
+            if (totalFlat != 0 && percentValue != 0)
             {
-                rows.AddKeyValueRow(Strings.ItemDescription.Vitals[i], Strings.ItemDescription.RegularAndPercentage.ToString(_itemDescriptor.VitalsGiven[i], _itemDescriptor.PercentageVitalsGiven[i]));
+                rows.AddKeyValueRow(label, Strings.ItemDescription.RegularAndPercentage.ToString(totalFlat, percentValue));
             }
-            else if (_itemDescriptor.VitalsGiven[i] != 0)
+            else if (totalFlat != 0)
             {
-                rows.AddKeyValueRow(Strings.ItemDescription.Vitals[i], _itemDescriptor.VitalsGiven[i].ToString());
+                rows.AddKeyValueRow(label, totalFlat.ToString());
             }
-            else if (_itemDescriptor.PercentageVitalsGiven[i] != 0)
+            else if (percentValue != 0)
             {
-                rows.AddKeyValueRow(Strings.ItemDescription.Vitals[i], Strings.ItemDescription.Percentage.ToString(_itemDescriptor.PercentageVitalsGiven[i]));
+                rows.AddKeyValueRow(label, Strings.ItemDescription.Percentage.ToString(percentValue));
             }
         }
+
 
         // Vitals Regen
         for (var i = 0; i < Enum.GetValues<Vital>().Length; i++)

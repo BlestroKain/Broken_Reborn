@@ -6,6 +6,7 @@ using Intersect.Client.Interface.Game.Bank;
 using Intersect.Client.Interface.Game.Chat;
 using Intersect.Client.Interface.Game.Crafting;
 using Intersect.Client.Interface.Game.DescriptionWindows;
+using Intersect.Client.Interface.Game.Enchanting;
 using Intersect.Client.Interface.Game.EntityPanel;
 using Intersect.Client.Interface.Game.Guilds;
 using Intersect.Client.Interface.Game.Hotbar;
@@ -48,7 +49,7 @@ public partial class GameInterface : MutableInterface
     private QuestOfferWindow mQuestOfferWindow;
 
     private ShopWindow _shopWindow;
-
+    public EnchantItemWindow mEnchantItemWindow;
     private MapItemWindow mMapItemWindow;
     private GuildCreationWindow mCreateGuildWindow;
     private SettingsWindow? _settingsWindow;
@@ -164,7 +165,8 @@ public partial class GameInterface : MutableInterface
 
         mQuestOfferWindow = new QuestOfferWindow(GameCanvas);
         mMapItemWindow = new MapItemWindow(GameCanvas);
-      //  mCreateGuildWindow = new GuildCreationWindow(GameCanvas);
+        //  mCreateGuildWindow = new GuildCreationWindow(GameCanvas);
+        mEnchantItemWindow = new EnchantItemWindow(GameCanvas);
     }
 
     //Chatbox

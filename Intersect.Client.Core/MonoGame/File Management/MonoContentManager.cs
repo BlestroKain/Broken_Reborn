@@ -202,6 +202,66 @@ public partial class MonoContentManager : GameContentManager
     {
         LoadTextureGroup("misc", mMiscDict);
     }
+    public override void LoadGuild()
+    {
+        mGuildDict.Clear();
+
+        // Load guild backgrounds
+        AppendTextureGroup(Path.Combine("Guild", "Background"), mGuildDict);
+
+        // Load guild symbols
+        AppendTextureGroup(Path.Combine("Guild", "Symbols"), mGuildDict);
+    }
+
+    private void AppendTextureGroup(string directory, Dictionary<string, IAsset> dict)
+    {
+        var dir = Path.Combine(ClientConfiguration.ResourcesDirectory, directory);
+        if (!Directory.Exists(dir))
+        {
+            if (!Directory.Exists(Path.Combine(ClientConfiguration.ResourcesDirectory, "packs")))
+            {
+                Directory.CreateDirectory(dir);
+            }
+        }
+        else
+        {
+            var items = Directory.GetFiles(dir, "*.png", SearchOption.AllDirectories);
+            foreach (var item in items)
+            {
+                var filename = Path.GetRelativePath(dir, item).Replace("\\", "/").ToLower();
+                if (dict.ContainsKey(filename))
+                {
+                    continue;
+                }
+
+                dict.Add(
+                    filename,
+                    Core.Graphics.Renderer.LoadTexture(
+                        Path.Combine(dir, filename),
+                        Path.Combine(dir, item.Replace(dir, string.Empty).TrimStart(Path.DirectorySeparatorChar))
+                    )
+                );
+            }
+        }
+
+        var packItems = AtlasReference.GetAllFor(directory);
+        foreach (var itm in packItems)
+        {
+            var filename = Path.GetFileName(itm.Name.ToLower().Replace("\\", "/"));
+            if (!dict.ContainsKey(filename))
+            {
+                dict.Add(
+                    filename,
+                    Core.Graphics.Renderer.LoadTexture(
+                        Path.Combine(dir, filename),
+                        Path.Combine(dir, Path.Combine(dir, filename))
+                    )
+                );
+            }
+        }
+    }
+
+
 
     public override void LoadFonts()
     {
@@ -411,6 +471,7 @@ public partial class MonoContentManager : GameContentManager
             case ContentType.Image:
             case ContentType.Interface:
             case ContentType.Item:
+            case ContentType.Guild:
             case ContentType.Miscellaneous:
             case ContentType.Paperdoll:
             case ContentType.Resource:

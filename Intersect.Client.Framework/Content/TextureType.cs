@@ -1,4 +1,4 @@
-﻿namespace Intersect.Client.Framework.Content;
+namespace Intersect.Client.Framework.Content;
 
 public enum TextureType
 {
@@ -26,5 +26,5 @@ public enum TextureType
     Gui,
 
     Misc,
-
+    Guild,
 }

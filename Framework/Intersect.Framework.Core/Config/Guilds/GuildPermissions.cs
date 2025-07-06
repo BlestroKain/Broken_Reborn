@@ -1,4 +1,4 @@
-﻿namespace Intersect.Config.Guilds;
+namespace Intersect.Config.Guilds;
 
 public partial class GuildPermissions
 {
@@ -36,4 +36,5 @@ public partial class GuildPermissions
     /// Determines whether or not guild members of this rank can move items around within the guild bank
     /// </summary>
     public bool BankMove { get; set; }
+    public bool ChangeXP { get; set; }
 }

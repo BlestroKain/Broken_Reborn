@@ -649,4 +649,34 @@ public partial class ListBox : ScrollControl
         return base.VerticalScrollBar;
     }
 
+    public ListBoxRow AddRow(params string[] columns)
+    {
+        var computedColumnWidths = _table.ComputedColumnWidths;
+        var row = new ListBoxRow(this, columns.Length, computedColumnWidths)
+        {
+            ClickSound = mItemClickSound,
+            HoverSound = mItemHoverSound,
+            RightClickSound = mItemRightClickSound,
+            TextColor = TextColor,
+            TextColorOverride = TextColorOverride,
+            FontSize = FontSize,
+            Width = InnerWidth,
+        };
+
+        _table.AddRow(row);
+
+        for (int i = 0; i < columns.Length; i++)
+        {
+            row.SetCellText(i, columns[i]);
+        }
+
+        row.Selected += OnRowSelected;
+
+        row.Font = _table.Font ?? row.Font;
+
+        _table.FitContents(Width);
+        _table.DoSizeToContents();
+
+        return row;
+    }
 }

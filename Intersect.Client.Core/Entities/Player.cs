@@ -2,6 +2,7 @@ using Intersect.Client.Core;
 using Intersect.Client.Core.Controls;
 using Intersect.Client.Entities.Events;
 using Intersect.Client.Entities.Projectiles;
+using Intersect.Client.Framework.Content;
 using Intersect.Client.Framework.Entities;
 using Intersect.Client.Framework.GenericClasses;
 using Intersect.Client.Framework.Gwen.Control;
@@ -354,7 +355,14 @@ public partial class Player : Entity, IPlayer
         CombatTimer = playerPacket.CombatTimeRemaining + Timing.Global.Milliseconds;
         Guild = playerPacket.Guild;
         Rank = playerPacket.GuildRank;
-
+        GuildBackgroundFile = playerPacket.GuildBackgroundFile;
+        GuildBackgroundR = playerPacket.GuildBackgroundR;
+        GuildBackgroundG = playerPacket.GuildBackgroundG;
+        GuildBackgroundB = playerPacket.GuildBackgroundB;
+        GuildSymbolFile = playerPacket.GuildSymbolFile;
+        GuildSymbolR = playerPacket.GuildSymbolR;
+        GuildSymbolG = playerPacket.GuildSymbolG;
+        GuildSymbolB = playerPacket.GuildSymbolB;
         if (playerPacket.Equipment != null)
         {
             if (this == Globals.Me && playerPacket.Equipment.InventorySlots != null)
@@ -2788,8 +2796,51 @@ public partial class Player : Entity, IPlayer
             default,
             Color.FromArgb(borderColor.ToArgb())
         );
-    }
 
+        // Dibujar el escudo de gremio al lado
+        DrawGuildLogo(x, (int)y, (int)textSize.X);
+
+    }
+    private void DrawGuildLogo(int baseX, int baseY, int guildNameWidth)
+    {
+        if (string.IsNullOrEmpty(GuildBackgroundFile) || string.IsNullOrEmpty(GuildSymbolFile))
+        {
+            return;
+        }
+
+        const int logoSize = 20;
+        int posX = baseX - (int)Math.Ceiling(guildNameWidth / 2f) - logoSize - 5;
+        int posY = baseY;
+        // === Dibujar Fondo ===
+        var backgroundTex = Globals.ContentManager.GetTexture(TextureType.Guild, GuildBackgroundFile);
+        if (backgroundTex != null)
+        {
+            var bgRect = new FloatRect(posX, posY, logoSize, logoSize);
+            var bgColor = new Color(255, GuildBackgroundR, GuildBackgroundG, GuildBackgroundB);
+            Graphics.DrawGameTexture(backgroundTex, new FloatRect(0, 0, backgroundTex.Width, backgroundTex.Height), bgRect, bgColor);
+        }
+
+        // === Dibujar Símbolo centrado en el fondo ===
+        var symbolTex = Globals.ContentManager.GetTexture(TextureType.Guild, GuildSymbolFile);
+        if (symbolTex != null)
+        {
+            float scale = (float)0.65; // ejemplo: 0.8 = 80%
+            int scaledSize = (int)(logoSize * scale);
+
+
+            // Centrado dentro del logo de fondo
+            var symbolRect = new FloatRect(
+                posX + (logoSize - scaledSize) / 2f,
+                posY + (logoSize - scaledSize) / 2f,
+                scaledSize,
+                scaledSize
+            );
+
+            var symbolColor = new Color(255, GuildSymbolR, GuildSymbolG, GuildSymbolB);
+            Graphics.DrawGameTexture(symbolTex, new FloatRect(0, 0, symbolTex.Width, symbolTex.Height), symbolRect, symbolColor);
+        }
+
+    }
     protected override bool ShouldDrawHpBar
     {
         get

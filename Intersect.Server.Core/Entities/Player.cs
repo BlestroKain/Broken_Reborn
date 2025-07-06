@@ -39,6 +39,7 @@ using Intersect.Utilities;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Stat = Intersect.Enums.Stat;
+using Intersect.Framework.Core.GameObjects.Guild;
 
 namespace Intersect.Server.Entities;
 
@@ -1086,7 +1087,19 @@ public partial class Player : Entity
 
         pkt.Guild = Guild?.Name;
         pkt.GuildRank = GuildRank;
+        if (Guild != null)
+        {
+            pkt.GuildBackgroundFile = Guild.LogoBackground;
+            pkt.GuildBackgroundR = Guild.BackgroundR;
+            pkt.GuildBackgroundG = Guild.BackgroundG;
+            pkt.GuildBackgroundB = Guild.BackgroundB;
 
+            pkt.GuildSymbolFile = Guild.LogoSymbol;
+            pkt.GuildSymbolR = Guild.SymbolR;
+            pkt.GuildSymbolG = Guild.SymbolG;
+            pkt.GuildSymbolB = Guild.SymbolB;
+
+        }
         return pkt;
     }
 
@@ -1380,7 +1393,6 @@ public partial class Player : Entity
 
     public void GiveExperience(long amount)
     {
-        // ReSharper disable once ConvertIfStatementToSwitchStatement
         if (amount == 0)
         {
             return;
@@ -1391,10 +1403,39 @@ public partial class Player : Entity
             TakeExperience(-amount);
             return;
         }
-        var equipmentBonus = (int)Math.Round(amount * GetEquipmentBonusEffect(ItemEffect.EXP) / 100f);
-        Exp += amount + equipmentBonus;
 
+        if (amount <= 0) return;
+
+        // Aplicar bonificación de equipo a la experiencia ganada  
+        long totalExp = (long)Math.Round(amount + (amount * (GetEquipmentBonusEffect(ItemEffect.EXP) / 100f)));
+        // 💡 Bonus adicional por mejoras del gremio  
+        if (IsInGuild && Guild.HasUpgrade(GuildUpgradeType.BonusXp))
+        {
+            float guildBonus = Guild.GetXpBonusMultiplier(); // ej: 1.15  
+            totalExp = (long)Math.Round(totalExp * guildBonus);
+        }
+        // Calcular la cantidad de experiencia que va al gremio y al jugador  
+        long guildExp = (long)(totalExp * (GuildExpPercentage / 100f));
+        long playerExp = totalExp - guildExp;
+
+        // Si el jugador pertenece a un gremio, donar la XP correspondiente  
+        if (IsInGuild && guildExp > 0)
+        {
+            DonateGuildExperience(guildExp);
+        }
+
+        // Agregar la experiencia restante al jugador  
+        Exp += (int)playerExp;
+
+        if (Exp < 0)
+        {
+            Exp = 0;
+        }
+
+        // Cambiar la llamada a CheckLevelUp para que no use el operador '!'  
         CheckLevelUp();
+
+        PacketSender.SendExperience(this);
     }
 
     public void TakeExperience(long amount, bool enableLosingLevels = false, bool force = false)

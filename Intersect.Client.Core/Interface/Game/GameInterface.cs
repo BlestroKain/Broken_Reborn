@@ -7,6 +7,7 @@ using Intersect.Client.Interface.Game.Chat;
 using Intersect.Client.Interface.Game.Crafting;
 using Intersect.Client.Interface.Game.DescriptionWindows;
 using Intersect.Client.Interface.Game.EntityPanel;
+using Intersect.Client.Interface.Game.Guilds;
 using Intersect.Client.Interface.Game.Hotbar;
 using Intersect.Client.Interface.Game.Inventory;
 using Intersect.Client.Interface.Game.Shop;
@@ -49,7 +50,7 @@ public partial class GameInterface : MutableInterface
     private ShopWindow _shopWindow;
 
     private MapItemWindow mMapItemWindow;
-
+    private GuildCreationWindow mCreateGuildWindow;
     private SettingsWindow? _settingsWindow;
 
     private ItemDescriptionWindow? _itemDescriptionWindow;
@@ -65,6 +66,9 @@ public partial class GameInterface : MutableInterface
     private bool mShouldCloseShop;
 
     private bool mShouldCloseTrading;
+
+    private bool mShouldOpenGuildCreation;
+    private bool mShouldCloseGuildCreation;
 
     private bool mShouldOpenAdminWindow;
 
@@ -160,6 +164,7 @@ public partial class GameInterface : MutableInterface
 
         mQuestOfferWindow = new QuestOfferWindow(GameCanvas);
         mMapItemWindow = new MapItemWindow(GameCanvas);
+      //  mCreateGuildWindow = new GuildCreationWindow(GameCanvas);
     }
 
     //Chatbox
@@ -246,6 +251,30 @@ public partial class GameInterface : MutableInterface
         _bankWindow = new BankWindow(GameCanvas) { DeleteOnClose = true };
         mShouldOpenBank = false;
         Globals.InBank = true;
+    }
+
+    //Guild Creation
+    public void NotifyOpenGuildCreation()
+    {
+        mShouldOpenGuildCreation = true;
+    }
+
+    public void NotifyCloseGuildCreation()
+    {
+        mShouldCloseGuildCreation = true;
+    }
+
+    public void OpenGuildCreationWindow()
+    {
+        mCreateGuildWindow ??= new GuildCreationWindow(GameCanvas);
+        mCreateGuildWindow.Show();
+        mShouldOpenGuildCreation = false;
+    }
+
+    public void CloseGuildCreation()
+    {
+        mCreateGuildWindow?.Hide();
+        mShouldCloseGuildCreation = false;
     }
 
     //Bag
@@ -355,7 +384,7 @@ public partial class GameInterface : MutableInterface
         mMapItemWindow.Update();
         AnnouncementWindow?.Update();
         mPictureWindow?.Update();
-
+        mCreateGuildWindow?.Update();
         var questDescriptorId = Globals.QuestOffers.FirstOrDefault();
         if (questDescriptorId == default)
         {
@@ -489,6 +518,16 @@ public partial class GameInterface : MutableInterface
                     mTradingWindow.Update();
                 }
             }
+        }
+
+        //Guild Creation window update
+        if (mShouldOpenGuildCreation)
+        {
+            OpenGuildCreationWindow();
+        }
+        else if (mShouldCloseGuildCreation)
+        {
+            CloseGuildCreation();
         }
 
         if (mShouldUpdateFriendsList)

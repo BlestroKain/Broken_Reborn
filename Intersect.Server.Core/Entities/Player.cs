@@ -1233,7 +1233,7 @@ public partial class Player : Entity
         {
             if (ItemDescriptor.TryGet(item.ItemId, out var descriptor))
             {
-                classVital += descriptor.VitalsGiven[vital] + descriptor.PercentageVitalsGiven[vital] * baseVital / 100;
+                classVital += descriptor.VitalsGiven[vital] + item.Properties?.VitalModifiers?[(int)vital] ?? 0 + descriptor.PercentageVitalsGiven[vital] * baseVital / 100;
             }
         }
 

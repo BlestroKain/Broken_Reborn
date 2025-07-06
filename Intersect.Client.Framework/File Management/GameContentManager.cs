@@ -64,7 +64,7 @@ public abstract partial class GameContentManager : IContentManager
     protected readonly Dictionary<string, IAsset> mSpellDict = [];
 
     protected readonly  Dictionary<string, IAsset> mTexturePackDict = [];
-
+    protected readonly Dictionary<string, IAsset> mGuildDict = [];
     protected readonly Dictionary<string, IAsset> mTilesetDict = [];
     private static GameContentManager? _current;
     private static readonly char[] DirectorySeparators = [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar];
@@ -85,6 +85,7 @@ public abstract partial class GameContentManager : IContentManager
         { ContentType.Resource, mResourceDict.Values },
         { ContentType.Spell, mSpellDict.Values },
         { ContentType.Tileset, mTilesetDict.Values },
+        {ContentType.Guild, mGuildDict.Values },
     };
 
     /// <summary>
@@ -123,6 +124,7 @@ public abstract partial class GameContentManager : IContentManager
         LoadGui();
         LoadFonts();
         LoadShaders();
+        LoadGuild();
     }
 
     public abstract void LoadTexturePacks();
@@ -154,6 +156,7 @@ public abstract partial class GameContentManager : IContentManager
     public abstract void LoadFonts();
 
     public abstract void LoadShaders();
+    public abstract void LoadGuild();
 
     //Audio Loading
     public void LoadAudio()
@@ -218,6 +221,8 @@ public abstract partial class GameContentManager : IContentManager
 
             case TextureType.Misc:
                 return mMiscDict.Keys.ToArray();
+                case TextureType.Guild: 
+                return mGuildDict.Keys.ToArray();
         }
 
         return null;
@@ -299,7 +304,9 @@ public abstract partial class GameContentManager : IContentManager
                 textureDict = mMiscDict;
 
                 break;
-
+                case TextureType.Guild:
+                    textureDict = mGuildDict;
+                break;
             default:
                 return null;
         }
@@ -587,7 +594,8 @@ public abstract partial class GameContentManager : IContentManager
 
             case ContentType.Sound:
                 return mSoundDict;
-
+                case ContentType.Guild:
+                    return mGuildDict;
             default:
                 throw new ArgumentOutOfRangeException(nameof(contentType), contentType, null);
         }

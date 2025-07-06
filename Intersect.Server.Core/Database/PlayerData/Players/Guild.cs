@@ -20,6 +20,7 @@ using Intersect.Server.Localization;
 using static Intersect.Server.Database.Logging.Entities.GuildHistory;
 using Intersect.Server.Collections.Sorting;
 using Microsoft.Extensions.Logging;
+using Intersect.Framework.Core.GameObjects.Guild;
 
 namespace Intersect.Server.Database.PlayerData.Players;
 
@@ -138,7 +139,7 @@ public partial class Guild
         creator.Guild = guild;
         creator.GuildRank = 0;
         creator.GuildJoinDate = DateTime.UtcNow;
-
+        creator.DonateXPGuild = 0;
         context.ChangeTracker.DetectChanges();
         context.SaveChanges();
 
@@ -146,12 +147,12 @@ public partial class Guild
 
         Guilds.AddOrUpdate(guild.Id, guild, (_, _) => guild);
 
-        var member = new GuildMember(creator.Id, creator.Name, creator.GuildRank, creator.Level, creator.ClassName, creator.MapName);
+        var member = new GuildMember(creator.Id, creator.Name, creator.GuildRank, creator.Level, creator.ClassName, creator.MapName,creator.GuildExpPercentage,creator.DonateXPGuild);
         guild.Members.AddOrUpdate(creator.Id, member, (_, _) => member);
 
         // Send our entity data to nearby players.
         PacketSender.SendEntityDataToProximity(Player.FindOnline(creator.Id));
-
+        PacketSender.UpdateGuild(creator);
         return guild;
     }
 
@@ -260,6 +261,8 @@ public partial class Guild
             member.Value.Level = player.Level;
             member.Value.MapName = player.MapName;
             member.Value.Rank = player.GuildRank;
+            member.Value.ExperiencePerc = player.GuildExpPercentage;
+            member.Value.DonatedXp = player.DonateXPGuild;
 
             online.Add(player);
         }
@@ -306,10 +309,18 @@ public partial class Guild
             ApplicationContext.Context.Value?.Logger.LogError(exception, $"Failed to save player {player.Id} before adding them to guild {Id}");
             return false;
         }
+        if (Members.Count >= GetMaxMembers())
+        {
+            // Gremio lleno
+            PacketSender.SendChatMsg(player, "Este gremio ha alcanzado el límite de miembros.", ChatMessageType.Guild);
 
+            return false;
+        }
         using var context = DbInterface.CreatePlayerContext(readOnly: false);
         player.Guild = this;
         player.GuildRank = rank;
+        player.DonateXPGuild = 0;
+        player.GuildExpPercentage = 0;
         player.GuildJoinDate = DateTime.UtcNow;
         context.Update(player);
         context.ChangeTracker.DetectChanges();
@@ -323,7 +334,9 @@ public partial class Guild
             player.GuildRank,
             player.Level,
             player.ClassName,
-            player.MapName
+            player.MapName,
+            player.GuildExpPercentage,
+            player.DonateXPGuild
         );
         Members.AddOrUpdate(player.Id, member, (_, _) => member);
 
@@ -364,6 +377,9 @@ public partial class Guild
         targetPlayer.GuildRank = 0;
         targetPlayer.GuildJoinDate = default;
         targetPlayer.PendingGuildInvite = default;
+
+        targetPlayer.DonateXPGuild = 0;
+        targetPlayer.GuildExpPercentage = 0;
         context.ChangeTracker.DetectChanges();
         context.SaveChanges();
 
@@ -768,16 +784,24 @@ public partial class Guild
     /// Updates the number of bank slots alotted to this guild for use, only expanding because we don't want to risk wiping items
     /// </summary>
     /// <param name="count"></param>
-    public void ExpandBankSlots(int count)
+    public void ExpandBankSlots(int requestedCount)
     {
-        if (BankSlotsCount >= count || count > Options.Instance.Bank.MaxSlots)
-        {
+        // El máximo que puede tener el gremio depende del nivel de mejora
+        var extraSlotsFromUpgrade = GetUpgradeLevel(GuildUpgradeType.ExtraBankSlots) * 10;
+        var maxAllowedSlots = Options.Instance.Guild.InitialBankSlots + extraSlotsFromUpgrade;
+
+        // Nunca permitir más que el máximo definido en config general
+        maxAllowedSlots = Math.Min(maxAllowedSlots, Options.Instance.Bank.MaxSlots);
+
+        // Ajustar si la solicitud supera lo permitido
+        requestedCount = Math.Min(requestedCount, maxAllowedSlots);
+
+        if (BankSlotsCount >= requestedCount)
             return;
-        }
 
         lock (mLock)
         {
-            BankSlotsCount = count;
+            BankSlotsCount = requestedCount;
             SlotHelper.ValidateSlotList(Bank, BankSlotsCount);
             DbInterface.Pool.QueueWorkItem(Save);
         }

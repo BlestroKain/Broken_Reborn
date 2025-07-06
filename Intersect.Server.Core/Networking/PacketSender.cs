@@ -2282,6 +2282,7 @@ public static partial class PacketSender
         }
 
         player.SendPacket(new GuildPacket(members));
+        UpdateGuild(player);
     }
 
     //GuildRequestPacket

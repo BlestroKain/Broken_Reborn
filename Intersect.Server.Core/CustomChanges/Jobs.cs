@@ -92,6 +92,13 @@ namespace Intersect.Server.Entities
             // Aplicar multiplicador del gremio si pertenece a uno
             if (player.Guild != null)
             {
+                var multiplier = player.Guild.GetJobXpBonusMultiplier();
+                amount = (long)(amount * multiplier);
+            }
+
+            // Aplicar multiplicador del gremio si pertenece a uno
+            if (player.Guild != null)
+            {
               //  var multiplier = player.Guild.GetJobXpBonusMultiplier();
                 amount = (long)(amount/* * multiplier*/);
             }

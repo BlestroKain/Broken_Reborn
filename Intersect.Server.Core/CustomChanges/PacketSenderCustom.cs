@@ -71,5 +71,41 @@ public static partial class PacketSender
         // Depuración en el servidor
         //  PacketSender.SendChatMsg(player,$"[DEBUG] Paquete de trabajos enviado a {player.Name} con {jobData.Count} trabajos.",ChatMessageType.Notice);
     }
+    public static void SendOpenGuildWindow(Player player)
+    {
+        if (player == null) return;
+        player.SendPacket(new GuildCreationWindowPacket());
+    }
+    public static void UpdateGuild(Player player)
+    {
+        if (player == null || player.Guild == null)
+        {
+            return;
+        }
+        var guild = player.Guild;
+        var guildUpdatePacket = new GuildUpdate
+        (
+               guild.Name,
+    guild.LogoBackground,
+    guild.BackgroundR, guild.BackgroundG, guild.BackgroundB,
+    guild.LogoSymbol,
+    guild.SymbolR, guild.SymbolG, guild.SymbolB,
+    guild.Level,
+    guild.Experience,
+    guild.ExperienceToNextLevel,
+    guild.GuildPoints,
+    guild.SpentGuildPoints,
+    guild.GuildUpgrades.ToDictionary(kvp => kvp.Key.ToString(), kvp => kvp.Value)
 
+
+        );
+        player.SendPacket(guildUpdatePacket);
+    }
+
+    public static void UpdateExpPercent(Player player)
+    {
+        if (player == null) return;
+
+        player.SendPacket(new GuildExperienceUpdatePacket(player.GuildExpPercentage));
+    }
 }

@@ -9,6 +9,8 @@ namespace Intersect.Config;
 /// </summary>
 public class ItemOptions
 {
+    public string AmuletItemID { get; set; } = "87A72C45-0BCF-4C09-94E3-E9E4966477EE";
+
     /// <summary>
     /// The available rarity tiers.
     /// </summary>
@@ -37,6 +39,7 @@ public class ItemOptions
         }
     }
 };
+    public string EnchantCurrencyItemID { get; set; } = "A58A19FF-1036-4A2C-89CD-E7CB6EAF2BE2";
 
     public bool TryGetRarityName(int rarityLevel, [NotNullWhen(true)] out string? rarityName)
     {

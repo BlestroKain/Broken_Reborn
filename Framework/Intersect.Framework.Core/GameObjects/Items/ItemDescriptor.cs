@@ -488,4 +488,31 @@ public partial class ItemDescriptor : DatabaseObject<ItemDescriptor>, IFolderabl
         Effects = [];
         Color = new Color(255, 255, 255, 255);
     }
+
+    // Verifica si el ítem puede ser encantado (solo si es de tipo Equipment)
+    public bool CanBeEnchanted()
+    {
+        return ItemType == ItemType.Equipment;
+    }
+
+    // Devuelve el ID del material necesario para encantamiento
+    public Guid GetUpgradeMaterialId()
+    {
+        return Guid.Parse( Options.Instance.Items.EnchantCurrencyItemID);
+    }
+    public Guid GetamuletMaterialId()
+    {
+        return Guid.Parse(Options.Instance.Items.AmuletItemID);
+    }
+
+    public int GetUpgradeCost(int level)
+    {
+        return level * 100; // Ejemplo: costo incremental
+    }
+
+    public double GetUpgradeSuccessRate(int level)
+    {
+        return Math.Max(0.1, 1.0 - (0.1 * level)); // Probabilidad decreciente
+    }
+
 }

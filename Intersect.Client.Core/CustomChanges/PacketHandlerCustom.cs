@@ -35,6 +35,7 @@ using Microsoft.Extensions.Logging;
 using Intersect.Config;
 using Intersect.Network.Packets.Client;
 using Intersect.Framework.Core.GameObjects.Guild;
+using Serilog;
 
 namespace Intersect.Client.Networking;
 
@@ -151,5 +152,29 @@ internal sealed partial class PacketHandler
         ChatboxMsg.AddMessage(new ChatboxMsg($"Ahora donas {Globals.Me.GuildXpContribution}% de tu XP a la guild.", Color.ForestGreen, ChatMessageType.Notice));
 
 
+    }
+    public void HandlePacket(IPacketSender packetSender, UpdateItemLevelPacket packet)
+    {
+        // Validar el índice del ítem
+        if (packet.ItemIndex < 0 || packet.ItemIndex >= Globals.Me.Inventory.Length)
+        {
+            Log.Error($"Índice de ítem inválido: {packet.ItemIndex}.");
+            return;
+        }
+
+        // Obtener el ítem del inventario utilizando el índice
+        var inventoryItem = Globals.Me.Inventory[packet.ItemIndex];
+
+        if (inventoryItem != null)
+        {
+            // Actualizar nivel de encantamiento
+            inventoryItem.ItemProperties.EnchantmentLevel = packet.NewEnchantmentLevel;
+            Interface.Interface.GameUi?.mEnchantItemWindow.UpdateProjection();
+
+        }
+        else
+        {
+            Log.Error($"No se encontró ningún ítem en el índice {packet.ItemIndex}.");
+        }
     }
 }

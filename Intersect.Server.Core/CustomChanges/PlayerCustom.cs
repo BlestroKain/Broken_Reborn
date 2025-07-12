@@ -160,6 +160,70 @@ namespace Intersect.Server.Entities
             }
         }
 
+        public void BreakItem(int itemSlot)
+        {
+            if (itemSlot < 0 || itemSlot >= Items.Count)
+            {
+                PacketSender.SendChatMsg(this, "Índice de ítem inválido.", ChatMessageType.Error);
+                return;
+            }
+
+            var item = Items[itemSlot];
+            if (item == null || item.ItemId == Guid.Empty)
+            {
+                PacketSender.SendChatMsg(this, "No hay ítem en ese slot.", ChatMessageType.Error);
+                return;
+            }
+
+            var descriptor = item.Descriptor;
+            if (descriptor == null || descriptor.ItemType != ItemType.Equipment)
+            {
+                PacketSender.SendChatMsg(this, "Solo puedes romper equipamientos.", ChatMessageType.Error);
+                return;
+            }
+
+            // Calcula runas a generar
+            var runes = ItemBreakHelper.CalculateRunesFromItem(descriptor, item.Properties);
+            if (runes.Count == 0)
+            {
+                PacketSender.SendChatMsg(this, $"{descriptor.Name} no generó runas al romperse.", ChatMessageType.Notice);
+            }
+            else
+            {
+                // Verifica espacio para todas las runas
+                foreach (var rune in runes)
+                {
+                    if (!CanGiveItem(rune.Id, 1))
+                    {
+                        PacketSender.SendChatMsg(this, "No tienes suficiente espacio en el inventario para las runas.", ChatMessageType.Error);
+                        return;
+                    }
+                }
+
+                // Quita el ítem a romper
+                if (!TryTakeItem(descriptor.Id, 1))
+                {
+                    PacketSender.SendChatMsg(this, "Error al quitar el ítem.", ChatMessageType.Error);
+                    return;
+                }
+
+                // Da las runas calculadas
+                foreach (var rune in runes)
+                {
+                    TryGiveItem(rune.Id, 1);
+                }
+
+                // Prepara resumen visual
+                var runeSummary = string.Join(", ", runes
+                    .GroupBy(r => r.Name)
+                    .Select(g => $"{g.Count()}x {g.Key}"));
+
+                PacketSender.SendChatMsg(this, $"Rompiste {descriptor.Name} y obtuviste: {runeSummary}.", ChatMessageType.Experience);
+            }
+
+            // Actualiza inventario en cliente
+            PacketSender.SendInventory(this);
+        }
 
 
     }

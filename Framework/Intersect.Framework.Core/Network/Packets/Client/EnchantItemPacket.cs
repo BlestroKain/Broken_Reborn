@@ -44,7 +44,7 @@ public partial class UpgradeItemStatPacket : IntersectPacket
     public UpgradeItemStatPacket(int itemSlot, int orbSlot)
     {
         ItemSlot = itemSlot;
-        OrbSlot = orbSlot;
+        RuneSlot = orbSlot;
     
     }
 
@@ -52,7 +52,7 @@ public partial class UpgradeItemStatPacket : IntersectPacket
     public int ItemSlot { get; set; }
 
     [Key(1)]
-    public int OrbSlot { get; set; }
+    public int RuneSlot { get; set; }
 
 }
 [MessagePackObject]

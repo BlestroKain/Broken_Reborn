@@ -20,7 +20,7 @@ public partial class ItemProperties
         EnchantmentLevel = other.EnchantmentLevel;
         Array.Copy(other.StatModifiers, StatModifiers, Enum.GetValues<Stat>().Length);
         Array.Copy(other.VitalModifiers, VitalModifiers, Enum.GetValues<Vital>().Length);
-        Array.Copy(other.StatOrbUpgradeCounts, StatOrbUpgradeCounts, Enum.GetValues<Stat>().Length);
+      
     }
 
     [Key(0)]
@@ -31,8 +31,7 @@ public partial class ItemProperties
     [Key(2)]
     public Dictionary<int, int[]> EnchantmentRolls { get; set; } = new Dictionary<int, int[]>();
     [Key(3)]
-    public int[] StatOrbUpgradeCounts { get; set; } = new int[Enum.GetValues<Stat>().Length];
-    [Key(4)]
     public int[] VitalModifiers { get; set; } = new int[Enum.GetValues<Vital>().Length];
- 
+    [Key(4)]
+    public int MageSink { get;  set; }
 }

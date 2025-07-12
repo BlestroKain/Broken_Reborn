@@ -41,6 +41,17 @@ namespace Intersect.Editor.Forms.Editors
             btnCancel = new DarkButton();
             btnSave = new DarkButton();
             grpGeneral = new DarkGroupBox();
+            grpEnchanting = new DarkGroupBox();
+            cmbRuneVital = new DarkComboBox();
+            lblRuneVital = new Label();
+            cmbRuneStat = new DarkComboBox();
+            label1 = new Label();
+            label2 = new Label();
+            darkNumericUpDown1 = new DarkNumericUpDown();
+            darkNumericUpDown2 = new DarkNumericUpDown();
+            lblRuneStat = new Label();
+            lblRuneValue = new Label();
+            nudRuneValue = new DarkNumericUpDown();
             grpEvents = new DarkGroupBox();
             cmbEventTriggers = new DarkComboBox();
             lblEventForTrigger = new Label();
@@ -234,6 +245,10 @@ namespace Intersect.Editor.Forms.Editors
             tooltips = new ToolTip(components);
             grpItems.SuspendLayout();
             grpGeneral.SuspendLayout();
+            grpEnchanting.SuspendLayout();
+            ((ISupportInitialize)darkNumericUpDown1).BeginInit();
+            ((ISupportInitialize)darkNumericUpDown2).BeginInit();
+            ((ISupportInitialize)nudRuneValue).BeginInit();
             grpEvents.SuspendLayout();
             grpStack.SuspendLayout();
             ((ISupportInitialize)nudInvStackLimit).BeginInit();
@@ -386,6 +401,7 @@ namespace Intersect.Editor.Forms.Editors
             // 
             grpGeneral.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
             grpGeneral.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+            grpGeneral.Controls.Add(grpEnchanting);
             grpGeneral.Controls.Add(grpEvents);
             grpGeneral.Controls.Add(grpStack);
             grpGeneral.Controls.Add(grpCooldown);
@@ -443,6 +459,153 @@ namespace Intersect.Editor.Forms.Editors
             grpGeneral.TabIndex = 2;
             grpGeneral.TabStop = false;
             grpGeneral.Text = "General";
+            // 
+            // grpEnchanting
+            // 
+            grpEnchanting.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
+            grpEnchanting.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+            grpEnchanting.Controls.Add(cmbRuneVital);
+            grpEnchanting.Controls.Add(lblRuneVital);
+            grpEnchanting.Controls.Add(cmbRuneStat);
+            grpEnchanting.Controls.Add(label1);
+            grpEnchanting.Controls.Add(label2);
+            grpEnchanting.Controls.Add(darkNumericUpDown1);
+            grpEnchanting.Controls.Add(darkNumericUpDown2);
+            grpEnchanting.Controls.Add(lblRuneStat);
+            grpEnchanting.Controls.Add(lblRuneValue);
+            grpEnchanting.Controls.Add(nudRuneValue);
+            grpEnchanting.ForeColor = System.Drawing.Color.Gainsboro;
+            grpEnchanting.Location = new System.Drawing.Point(322, 462);
+            grpEnchanting.Margin = new Padding(4, 3, 4, 3);
+            grpEnchanting.Name = "grpEnchanting";
+            grpEnchanting.Padding = new Padding(4, 3, 4, 3);
+            grpEnchanting.Size = new Size(252, 109);
+            grpEnchanting.TabIndex = 106;
+            grpEnchanting.TabStop = false;
+            grpEnchanting.Text = "Enchanting";
+            // 
+            // cmbRuneVital
+            // 
+            cmbRuneVital.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            cmbRuneVital.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+            cmbRuneVital.BorderStyle = ButtonBorderStyle.Solid;
+            cmbRuneVital.ButtonColor = System.Drawing.Color.FromArgb(43, 43, 43);
+            cmbRuneVital.DrawDropdownHoverOutline = false;
+            cmbRuneVital.DrawFocusRectangle = false;
+            cmbRuneVital.DrawMode = DrawMode.OwnerDrawVariable;
+            cmbRuneVital.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbRuneVital.FlatStyle = FlatStyle.Flat;
+            cmbRuneVital.ForeColor = System.Drawing.Color.Gainsboro;
+            cmbRuneVital.Location = new System.Drawing.Point(91, 16);
+            cmbRuneVital.Name = "cmbRuneVital";
+            cmbRuneVital.Size = new Size(152, 24);
+            cmbRuneVital.TabIndex = 82;
+            cmbRuneVital.Text = null;
+            cmbRuneVital.TextPadding = new Padding(2);
+            cmbRuneVital.SelectedIndexChanged += cmbRuneVital_SelectedIndexChanged;
+            // 
+            // lblRuneVital
+            // 
+            lblRuneVital.Location = new System.Drawing.Point(5, 19);
+            lblRuneVital.Name = "lblRuneVital";
+            lblRuneVital.Size = new Size(80, 23);
+            lblRuneVital.TabIndex = 81;
+            lblRuneVital.Text = "Vital:";
+            // 
+            // cmbRuneStat
+            // 
+            cmbRuneStat.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            cmbRuneStat.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+            cmbRuneStat.BorderStyle = ButtonBorderStyle.Solid;
+            cmbRuneStat.ButtonColor = System.Drawing.Color.FromArgb(43, 43, 43);
+            cmbRuneStat.DrawDropdownHoverOutline = false;
+            cmbRuneStat.DrawFocusRectangle = false;
+            cmbRuneStat.DrawMode = DrawMode.OwnerDrawVariable;
+            cmbRuneStat.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbRuneStat.FlatStyle = FlatStyle.Flat;
+            cmbRuneStat.ForeColor = System.Drawing.Color.Gainsboro;
+            cmbRuneStat.Location = new System.Drawing.Point(91, 46);
+            cmbRuneStat.Name = "cmbRuneStat";
+            cmbRuneStat.Size = new Size(152, 24);
+            cmbRuneStat.TabIndex = 78;
+            cmbRuneStat.Text = null;
+            cmbRuneStat.TextPadding = new Padding(2);
+            cmbRuneStat.SelectedIndexChanged += cmbRuneStat_SelectedIndexChanged;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new System.Drawing.Point(11, 177);
+            label1.Margin = new Padding(4, 0, 4, 0);
+            label1.Name = "label1";
+            label1.Size = new Size(35, 15);
+            label1.TabIndex = 62;
+            label1.Text = "From";
+            label1.TextAlign = ContentAlignment.TopRight;
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new System.Drawing.Point(125, 177);
+            label2.Margin = new Padding(4, 0, 4, 0);
+            label2.Name = "label2";
+            label2.Size = new Size(18, 15);
+            label2.TabIndex = 61;
+            label2.Text = "to";
+            label2.TextAlign = ContentAlignment.TopCenter;
+            // 
+            // darkNumericUpDown1
+            // 
+            darkNumericUpDown1.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            darkNumericUpDown1.ForeColor = System.Drawing.Color.Gainsboro;
+            darkNumericUpDown1.Location = new System.Drawing.Point(54, 175);
+            darkNumericUpDown1.Margin = new Padding(4, 3, 4, 3);
+            darkNumericUpDown1.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
+            darkNumericUpDown1.Minimum = new decimal(new int[] { 1000, 0, 0, int.MinValue });
+            darkNumericUpDown1.Name = "darkNumericUpDown1";
+            darkNumericUpDown1.Size = new Size(54, 23);
+            darkNumericUpDown1.TabIndex = 60;
+            darkNumericUpDown1.Value = new decimal(new int[] { 0, 0, 0, 0 });
+            // 
+            // darkNumericUpDown2
+            // 
+            darkNumericUpDown2.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            darkNumericUpDown2.ForeColor = System.Drawing.Color.Gainsboro;
+            darkNumericUpDown2.Location = new System.Drawing.Point(152, 175);
+            darkNumericUpDown2.Margin = new Padding(4, 3, 4, 3);
+            darkNumericUpDown2.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
+            darkNumericUpDown2.Minimum = new decimal(new int[] { 1000, 0, 0, int.MinValue });
+            darkNumericUpDown2.Name = "darkNumericUpDown2";
+            darkNumericUpDown2.Size = new Size(54, 23);
+            darkNumericUpDown2.TabIndex = 53;
+            darkNumericUpDown2.Value = new decimal(new int[] { 0, 0, 0, 0 });
+            // 
+            // lblRuneStat
+            // 
+            lblRuneStat.Location = new System.Drawing.Point(5, 49);
+            lblRuneStat.Name = "lblRuneStat";
+            lblRuneStat.Size = new Size(50, 23);
+            lblRuneStat.TabIndex = 77;
+            lblRuneStat.Text = "Stat:";
+            // 
+            // lblRuneValue
+            // 
+            lblRuneValue.Location = new System.Drawing.Point(5, 76);
+            lblRuneValue.Name = "lblRuneValue";
+            lblRuneValue.Size = new Size(64, 23);
+            lblRuneValue.TabIndex = 79;
+            lblRuneValue.Text = "Cantidad:";
+            // 
+            // nudRuneValue
+            // 
+            nudRuneValue.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            nudRuneValue.ForeColor = System.Drawing.Color.Gainsboro;
+            nudRuneValue.Location = new System.Drawing.Point(91, 76);
+            nudRuneValue.Name = "nudRuneValue";
+            nudRuneValue.Size = new Size(152, 23);
+            nudRuneValue.TabIndex = 80;
+            nudRuneValue.Value = new decimal(new int[] { 0, 0, 0, 0 });
+            nudRuneValue.ValueChanged += nudRuneValue_ValueChanged;
             // 
             // grpEvents
             // 
@@ -3020,6 +3183,11 @@ namespace Intersect.Editor.Forms.Editors
             grpItems.PerformLayout();
             grpGeneral.ResumeLayout(false);
             grpGeneral.PerformLayout();
+            grpEnchanting.ResumeLayout(false);
+            grpEnchanting.PerformLayout();
+            ((ISupportInitialize)darkNumericUpDown1).EndInit();
+            ((ISupportInitialize)darkNumericUpDown2).EndInit();
+            ((ISupportInitialize)nudRuneValue).EndInit();
             grpEvents.ResumeLayout(false);
             grpEvents.PerformLayout();
             grpStack.ResumeLayout(false);
@@ -3304,5 +3472,16 @@ namespace Intersect.Editor.Forms.Editors
         private DarkComboBox cmbEventTriggers;
         private Label lblEventForTrigger;
         private ListBox lstEventTriggers;
+        private DarkGroupBox grpEnchanting;
+        private DarkComboBox cmbRuneVital;
+        private Label lblRuneVital;
+        private DarkComboBox cmbRuneStat;
+        private Label label1;
+        private Label label2;
+        private DarkNumericUpDown darkNumericUpDown1;
+        private DarkNumericUpDown darkNumericUpDown2;
+        private Label lblRuneStat;
+        private Label lblRuneValue;
+        private DarkNumericUpDown nudRuneValue;
     }
 }

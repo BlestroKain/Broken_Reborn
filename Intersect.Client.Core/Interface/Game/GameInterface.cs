@@ -3,6 +3,7 @@ using Intersect.Client.General;
 using Intersect.Client.Interface.Game.Admin;
 using Intersect.Client.Interface.Game.Bag;
 using Intersect.Client.Interface.Game.Bank;
+using Intersect.Client.Interface.Game.Breaking;
 using Intersect.Client.Interface.Game.Chat;
 using Intersect.Client.Interface.Game.Crafting;
 using Intersect.Client.Interface.Game.DescriptionWindows;
@@ -50,6 +51,8 @@ public partial class GameInterface : MutableInterface
 
     private ShopWindow _shopWindow;
     public EnchantItemWindow mEnchantItemWindow;
+    private RuneEnchantWindow mRuneItemWindow;
+    private BreakItemWindow mBreakItemWindow;
     private MapItemWindow mMapItemWindow;
     private GuildCreationWindow mCreateGuildWindow;
     private SettingsWindow? _settingsWindow;
@@ -167,6 +170,8 @@ public partial class GameInterface : MutableInterface
         mMapItemWindow = new MapItemWindow(GameCanvas);
         //  mCreateGuildWindow = new GuildCreationWindow(GameCanvas);
         mEnchantItemWindow = new EnchantItemWindow(GameCanvas);
+        mRuneItemWindow = new RuneEnchantWindow(GameCanvas);
+        mBreakItemWindow = new BreakItemWindow(GameCanvas);
     }
 
     //Chatbox
@@ -387,6 +392,9 @@ public partial class GameInterface : MutableInterface
         AnnouncementWindow?.Update();
         mPictureWindow?.Update();
         mCreateGuildWindow?.Update();
+        mBreakItemWindow?.Update();
+        mEnchantItemWindow?.Update();
+        mRuneItemWindow?.Update();
         var questDescriptorId = Globals.QuestOffers.FirstOrDefault();
         if (questDescriptorId == default)
         {

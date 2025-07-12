@@ -185,5 +185,74 @@ internal sealed partial class PacketHandler
         PacketSender.SendInventoryItemUpdate(player, packet.ItemIndex);
     }
 
+    public void HandlePacket(Client client, UpgradeItemStatPacket packet)
+    {
+        var player = client.Entity;
+        if (player == null) return;
 
+        // 1) Validaciones...
+        if (packet.ItemSlot < 0 || packet.ItemSlot >= player.Items.Count ||
+            packet.RuneSlot < 0 || packet.RuneSlot >= player.Items.Count)
+        {
+            PacketSender.SendChatMsg(player, "Ítem o Runa inválido.", ChatMessageType.Error);
+            return;
+        }
+
+        var equipment = player.Items[packet.ItemSlot];
+        var rune = player.Items[packet.RuneSlot];
+
+        if (equipment == null || rune == null)
+        {
+            PacketSender.SendChatMsg(player, "Faltan ítems para el proceso.", ChatMessageType.Error);
+            return;
+        }
+
+        // 2) Aplica la runa
+        if (!equipment.ApplyRuneUpgrade(equipment, rune, out var success, out var message))
+        {
+            PacketSender.SendChatMsg(player, message, ChatMessageType.Error);
+            return;
+        }
+
+        // 3) Ajusta el slot en memoria, pero **no** quites la entidad de EF
+        if (rune.Quantity <= 0)
+        {
+            rune.ItemId = Guid.Empty;
+            rune.Quantity = 0;
+            // opcional: limpia también sus Properties si hace falta
+        }
+
+        // 4) Guarda **solo** las dos filas de inventario
+        using (var ctx = DbInterface.CreatePlayerContext(readOnly: false))
+        {
+            try
+            {
+                ctx.Player_Items.Update(equipment);
+                ctx.Player_Items.Update(rune);
+                ctx.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error guardando mejora de ítem con runa.");
+                PacketSender.SendChatMsg(player, "Ocurrió un error al guardar en la base de datos.", ChatMessageType.Error);
+                return;
+            }
+        }
+
+        // 5) Notifica al usuario y refresca su inventario
+        PacketSender.SendChatMsg(player, message, ChatMessageType.Notice);
+        PacketSender.SendInventory(player);
+    }
+
+
+    public void HandlePacket(Client client, BrokeItemPacket packet)
+    {
+        var player = client.Entity;
+        if (player == null)
+        {
+            return;
+        }
+        ItemBreakHelper.InitializeRunes();
+        player.BreakItem(packet.ItemSlot);
+    }
 }

@@ -514,5 +514,8 @@ public partial class ItemDescriptor : DatabaseObject<ItemDescriptor>, IFolderabl
     {
         return Math.Max(0.1, 1.0 - (0.1 * level)); // Probabilidad decreciente
     }
+    public Stat TargetStat { get; set; }
+    public Vital TargetVital { get; set; }  
+    public int AmountModifier { get; set; }
 
 }

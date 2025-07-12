@@ -2183,6 +2183,7 @@ Tick timer saved in server config.json.";
         public static LocalizedString showplayer = @"Show Player";
 
         public static Dictionary<int, LocalizedString> selfswitches = new Dictionary<int, LocalizedString>
+
         {
             {0, @"A"},
             {1, @"B"},
@@ -2331,6 +2332,12 @@ Tick timer saved in server config.json.";
                 ? message
                 : "Invalid Job Experience"; // Retorno por defecto si el JobType no existe
         }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString openenchantment = @"Open Enchant Window";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString openmage = @"Open Mage Window";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString openbrokeitem = @"Open Broke Items Window";
     }
 
     public partial struct EventChangePlayerColor

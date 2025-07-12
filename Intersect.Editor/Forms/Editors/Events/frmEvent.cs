@@ -760,6 +760,15 @@ public partial class FrmEvent : Form
                 tmpCommand = new GiveJobExperienceCommand();
 
                 break;
+            case EventCommandType.OpenEnchantment:
+                tmpCommand = new OpenEnchantmentWindowCommand();
+                break;
+            case EventCommandType.OpenMage:
+                tmpCommand = new OpenMageWindowCommand();
+                break;
+            case EventCommandType.OpenBrokeItem:
+                tmpCommand = new OpenBrokeItemWindowCommand();
+                break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
@@ -1424,6 +1433,12 @@ public partial class FrmEvent : Form
             case EventCommandType.GiveJobExperience:
                 cmdWindow = new EventCommandGiveJobExperience((GiveJobExperienceCommand)command, this);
 
+                break;
+            case EventCommandType.OpenEnchantment:
+                break;
+            case EventCommandType.OpenMage:
+                break;
+            case EventCommandType.OpenBrokeItem:
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

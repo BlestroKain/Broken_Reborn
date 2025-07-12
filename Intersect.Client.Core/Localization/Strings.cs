@@ -307,6 +307,44 @@ public static partial class Strings
         nameof(SerializeDictionary),
         BindingFlags.NonPublic | BindingFlags.Static
     ) ?? throw new InvalidOperationException();
+    public partial struct Breaking
+    {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString WindowTitle = "Item Dismantling";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Title = "Break Items";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString SelectedItem = "Selected Item";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString ResultItems = "Possible Results";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Break = "Break";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString NoItemSelected = "No item selected for breaking!";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString BreakSuccess = "The item was successfully dismantled.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString BreakFail = "The item could not be dismantled.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString ConfirmBreak = "Are you sure you want to dismantle this item?";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Close = "Close";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString ItemLocked = "This item cannot be broken down.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString NothingToGain = "Breaking this item yields no materials.";
+    }
 
     public partial struct Enchanting
     {

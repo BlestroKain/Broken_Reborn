@@ -505,5 +505,182 @@ public class Item : IItem
 
         Properties.EnchantmentLevel = newLevel;
     }
+    public bool ApplyRuneUpgrade(Item equipment, Item runeItem, out bool success, out string resultMessage)
+    {
+        success = false;
+        resultMessage = "";
+
+        // 1) Validaciones básicas
+        if (Descriptor?.ItemType != ItemType.Equipment || Properties == null)
+        {
+            resultMessage = "El ítem no es un equipamiento válido.";
+            return false;
+        }
+        if (runeItem?.Descriptor == null
+         || runeItem.Descriptor.ItemType != ItemType.Resource
+         || runeItem.Descriptor.Subtype != "Rune")
+        {
+            resultMessage = "El ítem usado no es una Runa válida.";
+            return false;
+        }
+
+        // 2) ¿A qué apunta la runa y cuánto modifica?
+        var desc = runeItem.Descriptor;
+       int targetStat = (int)desc.TargetStat;
+        int targetVit = (int)desc.TargetVital;
+        var amount = desc.AmountModifier;
+
+        if (amount == 0)
+        {
+            resultMessage = "Esta Runa no tiene un modificador válido.";
+            return false;
+        }
+
+        bool isStat = targetStat >= 0 && targetStat < Properties.StatModifiers.Length;
+        bool isVital = targetVit >= 0 && targetVit < Properties.VitalModifiers.Length;
+
+
+        if (!isStat && !isVital)
+        {
+            resultMessage = "La Runa no apunta a un atributo válido.";
+            return false;
+        }
+
+        // 4) Guardar valor actual para posibles penalizaciones
+        int idx = isStat
+            ? (int)targetStat
+            : (int)targetVit;
+        int currentValue = isStat
+            ? Properties.StatModifiers[idx]
+            : Properties.VitalModifiers[idx];
+
+        // 5) Calcular tasa de éxito sólo en función de MageSink
+        var sinkMod = RarityMageoSettings.GetSinkMod(Descriptor.Rarity);
+        double sinkFac = Math.Min(0.35, Properties.MageSink / 100.0);
+        double finalRate = Math.Clamp(0.35 + sinkFac, 0.05, 0.95);
+
+        // 6) Tirada de éxito
+        if (Random.Shared.NextDouble() <= finalRate)
+        {
+            // 6a) Crítico
+            bool isCritical = false;
+            double critChance = 0;
+            if (finalRate >= 0.9) critChance += 0.15;
+            if (Properties.MageSink >= 100) critChance += 0.10;
+            if (Random.Shared.NextDouble() <= critChance)
+            {
+                isCritical = true;
+                amount *= 2;
+            }
+
+            // 6b) Aplicar bonus
+            if (isStat)
+            {
+                Properties.StatModifiers[idx] += amount;
+            }
+            else
+            {
+                Properties.VitalModifiers[idx] += amount;
+            }
+
+            // 6c) Penalización suave si pasamos 2× valor base (30% de chance, -½ amount)
+            int baseVal = isStat
+                ? equipment.Descriptor.StatsGiven[idx]
+                : (int)equipment.Descriptor.VitalsGiven[idx];
+            int newValue = isStat
+                ? Properties.StatModifiers[idx]
+                : Properties.VitalModifiers[idx];
+            if (newValue > baseVal * 2 && Random.Shared.NextDouble() < 0.30)
+            {
+                int penal = Math.Max(1, amount / 2);
+                PenalizeOtherRandomAttribute(isStat, penal);
+            }
+
+            // 6d) Reducir MageSink
+            Properties.MageSink = Math.Max(
+                0,
+                Properties.MageSink - (int)(amount * 5 * sinkMod)
+            );
+
+            // 6e) Mensaje de éxito
+            success = true;
+            var name = (isStat ? targetStat : (object)targetVit).ToString();
+            resultMessage = isCritical
+                ? $"🔥 ¡Éxito Crítico! {name} +{amount}."
+                : $"¡Éxito! {name} +{amount}.";
+        }
+        else
+        {
+            // 7) Fracaso: penalización reducida (-½ amount) y subir MageSink
+            int penalty = Math.Min(currentValue, Math.Max(1, amount / 2));
+            if (penalty > 0)
+            {
+                if (isStat)
+                {
+                    Properties.StatModifiers[idx] -= penalty;
+                }
+                else
+                {
+                    Properties.VitalModifiers[idx] -= penalty;
+                }
+                var name = (isStat ? targetStat : (object)targetVit).ToString();
+                resultMessage = $"Falló. {name} -{penalty}.";
+            }
+            Properties.MageSink += (int)(amount * 10 * sinkMod);
+            resultMessage += $" MageSink: {Properties.MageSink}.";
+        }
+
+        // 8) Consumir la runa
+        runeItem.Quantity--;
+
+        return true;
+    }
+
+    private void PenalizeOtherRandomAttribute(bool isStat, int amount)
+    {
+        var rng = Random.Shared;
+        if (isStat)
+        {
+            // Elegir un stat al azar que tenga valor >0
+            var candidates = Properties.StatModifiers
+                .Select((v, i) => (v, i))
+                .Where(x => x.v > 0)
+                .ToArray();
+            if (candidates.Length == 0) return;
+            var idx = candidates[rng.Next(candidates.Length)].i;
+            int reduce = Math.Min(Properties.StatModifiers[idx], amount);
+            Properties.StatModifiers[idx] -= reduce;
+        }
+        else
+        {
+            // Igual para vitals
+            var candidates = Properties.VitalModifiers
+                .Select((v, i) => (v, i))
+                .Where(x => x.v > 0)
+                .ToArray();
+            if (candidates.Length == 0) return;
+            var idx = candidates[rng.Next(candidates.Length)].i;
+            int reduce = Math.Min(Properties.VitalModifiers[idx], amount);
+            Properties.VitalModifiers[idx] -= reduce;
+        }
+    }
+
+    public static class RarityMageoSettings
+    {
+        // Multiplicador de sink por rareza
+        private static readonly Dictionary<int, double> SinkModTable = new()
+    {
+        { 0, 1.2 },   // None
+        { 1, 1.0 },   // Common
+        { 2, 0.9 },   // Uncommon
+        { 3, 0.8 },   // Rare
+        { 4, 0.7 },   // Epic
+        { 5, 0.6 },   // Legendary
+    };
+
+        public static double GetSinkMod(int rarity)
+            => SinkModTable.TryGetValue(rarity, out var m) ? m : 1.2;
+    }
+
 
 }

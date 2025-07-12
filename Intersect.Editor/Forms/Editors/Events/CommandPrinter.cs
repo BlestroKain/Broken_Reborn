@@ -1675,5 +1675,16 @@ public static partial class CommandPrinter
         // Si no hay experiencias asignadas, retorna null
         return null;
     }
-
+    private static string GetCommandText(OpenEnchantmentWindowCommand command, MapInstance map)
+    {
+        return Strings.EventCommandList.openenchantment;
+    }
+    private static string GetCommandText(OpenMageWindowCommand command, MapInstance map)
+    {
+        return Strings.EventCommandList.openmage;
+    }
+    private static string GetCommandText(OpenBrokeItemWindowCommand command, MapInstance map)
+    {
+        return Strings.EventCommandList.openbrokeitem;
+    }
 }

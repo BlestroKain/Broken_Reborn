@@ -137,4 +137,7 @@ public enum EventCommandType
 
     Fade,
     GiveJobExperience=200,
+    OpenEnchantment = 201,
+    OpenMage = 202,
+    OpenBrokeItem = 203,
 }

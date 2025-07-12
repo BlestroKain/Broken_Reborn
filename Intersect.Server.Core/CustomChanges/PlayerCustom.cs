@@ -234,6 +234,18 @@ namespace Intersect.Server.Entities
             PacketSender.SendInventory(this);
         }
 
+        public void OpenEnchantment()
+        {
+            PacketSender.SendOpenEnchantmentWindow(this);
+        }
 
+        public void OpenMage()
+        {
+            PacketSender.SendOpenMageWindow(this);
+        }
+        public void OpenBrokeItem()
+        {
+            PacketSender.SendOpenBrokeItemWindow(this);
+        }
     }
 }

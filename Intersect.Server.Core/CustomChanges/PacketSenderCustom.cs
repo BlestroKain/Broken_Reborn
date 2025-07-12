@@ -137,4 +137,20 @@ public static partial class PacketSender
         // Enviar el paquete al cliente
         player.SendPacket(packet, TransmissionMode.All);
     }
+
+    public static void SendOpenEnchantmentWindow(Player player)
+    {
+        // Abre la ventana para vender ítems
+        player.SendPacket(new EnchantmentWindowPacket());
+    }
+    public static void SendOpenMageWindow(Player player)
+    {
+        // Abre la ventana para vender ítems
+        player.SendPacket(new MageWindowPacket());
+    }
+    public static void SendOpenBrokeItemWindow(Player player)
+    {
+        // Abre la ventana para vender ítems
+        player.SendPacket(new BrokeItemWindowPacket());
+    }
 }

@@ -173,7 +173,37 @@ public partial class GameInterface : MutableInterface
         mRuneItemWindow = new RuneEnchantWindow(GameCanvas);
         mBreakItemWindow = new BreakItemWindow(GameCanvas);
     }
+    public void OpenEnchantWindow()
+    {
+        if (mEnchantItemWindow != null)
+        {
+            mEnchantItemWindow = new EnchantItemWindow(GameCanvas);
 
+        }
+        mEnchantItemWindow.Show();
+
+    }
+
+    public void OpenRuneItemWindow()
+    {
+        if (mRuneItemWindow == null)
+        {
+            mRuneItemWindow = new RuneEnchantWindow(GameCanvas);
+        }
+        mRuneItemWindow.Show();
+    }
+    public void HideOrbItemWindow()
+    {
+        mRuneItemWindow.Hide();
+    }
+    public void OpenBrokeItemWindow()
+    {
+        if (mBreakItemWindow == null)
+        {
+            mBreakItemWindow = new BreakItemWindow(GameCanvas);
+        }
+        mBreakItemWindow.Show();
+    }
     //Chatbox
     public void SetChatboxText(string msg)
     {
@@ -681,4 +711,5 @@ public partial class GameInterface : MutableInterface
         CloseTrading();
         GameCanvas.Dispose();
     }
+
 }

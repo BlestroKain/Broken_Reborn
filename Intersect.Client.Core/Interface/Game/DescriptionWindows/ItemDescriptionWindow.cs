@@ -138,6 +138,9 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
             case ItemType.Bag:
                 SetupBagInfo();
                 break;
+            case ItemType.Resource:
+                SetupResourceInfo();
+                break;
         }
 
         // Set up additional information such as amounts and shop values.
@@ -145,6 +148,33 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
 
         // Resize the container, correct the display and position our window.
         FinalizeWindow();
+    }
+    protected void SetupResourceInfo()
+    {
+        AddDivider();
+        var rows = AddRowContainer();
+
+        if (_itemDescriptor.Subtype == "Rune")
+        {
+           
+            var amount = _itemDescriptor.AmountModifier;
+
+            if (amount != 0)
+            {
+                if (Enum.IsDefined(typeof(Stat), _itemDescriptor.TargetStat))
+                {
+                    rows.AddKeyValueRow("Stat Modified", _itemDescriptor.TargetStat.ToString());
+                    rows.AddKeyValueRow("Bonus", $"{(amount > 0 ? "+" : "")}{amount}");
+                }
+                else if (Enum.IsDefined(typeof(Vital), _itemDescriptor.TargetVital))
+                {
+                    rows.AddKeyValueRow("Vital Modified", _itemDescriptor.TargetVital.ToString());
+                    rows.AddKeyValueRow("Bonus", $"{(amount > 0 ? "+" : "")}{amount}");
+                }
+            }
+        }
+
+        rows.SizeToChildren(true, true);
     }
 
     protected void SetupHeader()

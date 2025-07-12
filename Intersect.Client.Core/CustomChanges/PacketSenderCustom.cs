@@ -45,4 +45,13 @@ public static partial class PacketSender
     {
         Network.SendPacket(new EnchantItemPacket(itemId, targetLevel, currencyId, currencyAmount, useAmulet));
     }
+    public static void SendUpgradeStat(int itemSlot, int orbSlot)
+    {
+        Network.SendPacket(new UpgradeItemStatPacket(itemSlot, orbSlot));
+    }
+    public static void SendBreakItem(int itemSlot)
+    {
+        var packet = new BrokeItemPacket(itemSlot);
+        Network.SendPacket(packet);
+    }
 }

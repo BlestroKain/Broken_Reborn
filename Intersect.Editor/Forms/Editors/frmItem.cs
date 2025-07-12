@@ -172,7 +172,7 @@ public partial class FrmItem : EditorForm
         nudDef.Minimum = -Options.Instance.Player.MaxStat;
         nudMR.Minimum = -Options.Instance.Player.MaxStat;
         nudSpd.Minimum = -Options.Instance.Player.MaxStat;
-
+        PopulateRuneCombos();
         InitLocalization();
         UpdateEditor();
     }
@@ -343,8 +343,16 @@ public partial class FrmItem : EditorForm
             txtName.Text = mEditorItem.Name;
             cmbFolder.Text = mEditorItem.Folder;
             txtDesc.Text = mEditorItem.Description;
-            cmbType.SelectedIndex = (int)mEditorItem.ItemType;
-             cmbPic.SelectedIndex = cmbPic.FindString(TextUtils.NullToNone(mEditorItem.Icon));
+            var typeIdx = (int)mEditorItem.ItemType;
+            if (typeIdx >= 0 && typeIdx < cmbType.Items.Count)
+            {
+                cmbType.SelectedIndex = typeIdx;
+            }
+            else
+            {
+                cmbType.SelectedIndex = 0;    // O cualquier valor por defecto válido
+            }
+            cmbPic.SelectedIndex = cmbPic.FindString(TextUtils.NullToNone(mEditorItem.Icon));
             nudRgbaR.Value = mEditorItem.Color.R;
             nudRgbaG.Value = mEditorItem.Color.G;
             nudRgbaB.Value = mEditorItem.Color.B;
@@ -410,7 +418,7 @@ public partial class FrmItem : EditorForm
             // Actualizar `cmbSubType` según el tipo de ítem cargado
             cmbSubType.Items.Clear();
             cmbSubType.Enabled = false;
-          
+
             var itemType = mEditorItem.ItemType;
 
             // Validar si es Equipment y WeaponSlot
@@ -448,7 +456,19 @@ public partial class FrmItem : EditorForm
 
             var subtype = cmbSubType.SelectedItem?.ToString();
 
-           
+            if (cmbRuneStat.Items.Count > (int)mEditorItem.TargetStat)
+                cmbRuneStat.SelectedIndex = (int)mEditorItem.TargetStat;
+            else
+                cmbRuneStat.SelectedIndex = -1;
+
+            if (cmbRuneVital.Items.Count > (int)mEditorItem.TargetVital)
+                cmbRuneVital.SelectedIndex = (int)mEditorItem.TargetVital;
+            else
+                cmbRuneVital.SelectedIndex = -1;
+
+            nudRuneValue.Value = mEditorItem.AmountModifier;
+
+
             chk2Hand.Checked = mEditorItem.TwoHanded;
             cmbMalePaperdoll.SelectedIndex =
                 cmbMalePaperdoll.FindString(TextUtils.NullToNone(mEditorItem.MalePaperdoll));
@@ -510,7 +530,7 @@ public partial class FrmItem : EditorForm
         }
 
         var hasItem = mEditorItem != null;
-        
+
         UpdateEditorButtons(hasItem);
         UpdateToolStripItems();
     }
@@ -523,7 +543,9 @@ public partial class FrmItem : EditorForm
         grpEvent.Visible = false;
         grpBags.Visible = false;
         chkStackable.Enabled = true;
-
+        grpEnchanting.Visible = false;
+        var selectedType = (ItemType)cmbType.SelectedIndex;
+        var selectedSubType = cmbSubType.SelectedItem?.ToString();
         if ((int)mEditorItem.ItemType != cmbType.SelectedIndex)
         {
             mEditorItem.Consumable.Type = ConsumableType.Health;
@@ -594,6 +616,10 @@ public partial class FrmItem : EditorForm
             // Whether this item type is stackable is not up for debate.
             chkStackable.Checked = true;
             chkStackable.Enabled = false;
+        }
+        else if (selectedType == ItemType.Resource && selectedSubType == "Rune")
+         {
+            grpEnchanting.Visible = true; // Mostrar grupo de runas y success rate
         }
 
         mEditorItem.ItemType = (ItemType)cmbType.SelectedIndex;
@@ -1638,4 +1664,45 @@ public partial class FrmItem : EditorForm
 
         PopulateEventTriggerList(lstEventTriggers.SelectedIndex);
     }
+
+    private void PopulateRuneCombos()
+    {
+        cmbRuneStat.Items.Clear();
+     
+        foreach (var stat in Enum.GetValues<Stat>())
+        {
+            cmbRuneStat.Items.Add(stat.ToString());
+        }
+
+        cmbRuneVital.Items.Clear();
+
+        foreach (var vital in Enum.GetValues<Vital>())
+        {
+            cmbRuneVital.Items.Add(vital.ToString());
+        }
+    }
+
+    private void cmbRuneStat_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        mEditorItem.TargetStat = (Stat)cmbRuneStat.SelectedIndex;
+
+        // Resetear el TargetVital si se asigna un stat
+        if (cmbRuneStat.SelectedIndex >= 0)
+            cmbRuneVital.SelectedIndex = -1;
+    }
+
+    private void cmbRuneVital_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        mEditorItem.TargetVital = (Vital)cmbRuneVital.SelectedIndex;
+
+        // Resetear el TargetStat si se asigna un vital
+        if (cmbRuneVital.SelectedIndex >= 0)
+            cmbRuneStat.SelectedIndex = -1;
+    }
+
+    private void nudRuneValue_ValueChanged(object sender, EventArgs e)
+    {
+        mEditorItem.AmountModifier = (int)nudRuneValue.Value;
+    }
+
 }

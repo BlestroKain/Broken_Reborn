@@ -366,8 +366,8 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
             // Are we supposed to change our attack time based on a modifier?
             if (_itemDescriptor.AttackSpeedModifier == 0)
             {
-                // No modifier, assuming base attack rate? We have to calculate the speed stat manually here though..!
-                var speed = player.Stat[(int)Stat.Speed];
+                // No modifier, assuming base attack rate? We have to calculate the agility stat manually here though..!
+                var agility = player.Stat[(int)Stat.Agility];
 
                 // Remove currently equipped weapon stats.. We want to create a fair display!
                 var weaponSlot = player.MyEquipment[Options.Instance.Equipment.WeaponSlot];
@@ -377,22 +377,22 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
                     var weapon = ItemDescriptor.Get(player.Inventory[weaponSlot].ItemId);
                     if (weapon != null && randomStats != null)
                     {
-                        speed = (int)Math.Round(speed / ((100 + weapon.PercentageStatsGiven[(int)Stat.Speed]) / 100f));
-                        speed -= weapon.StatsGiven[(int)Stat.Speed];
-                        speed -= randomStats[(int)Stat.Speed];
+                        agility = (int)Math.Round(agility / ((100 + weapon.PercentageStatsGiven[(int)Stat.Agility]) / 100f));
+                        agility -= weapon.StatsGiven[(int)Stat.Agility];
+                        agility -= randomStats[(int)Stat.Agility];
                     }
                 }
 
-                // Add current item's speed stats!
+                // Add current item's agility stats!
                 if (_itemProperties?.StatModifiers != default)
                 {
-                    speed += _itemDescriptor.StatsGiven[(int)Stat.Speed];
-                    speed += _itemProperties.StatModifiers[(int)Stat.Speed];
-                    speed += (int)Math.Floor(speed * (_itemDescriptor.PercentageStatsGiven[(int)Stat.Speed] / 100f));
+                    agility += _itemDescriptor.StatsGiven[(int)Stat.Agility];
+                    agility += _itemProperties.StatModifiers[(int)Stat.Agility];
+                    agility += (int)Math.Floor(agility * (_itemDescriptor.PercentageStatsGiven[(int)Stat.Agility] / 100f));
                 }
 
-                // Display the actual speed this weapon would have based off of our calculated speed stat.
-                rows.AddKeyValueRow(Strings.ItemDescription.AttackSpeed, TimeSpan.FromMilliseconds(player.CalculateAttackTime(speed)).WithSuffix());
+                // Display the actual agility this weapon would have based off of our calculated agility stat.
+                rows.AddKeyValueRow(Strings.ItemDescription.AttackSpeed, TimeSpan.FromMilliseconds(player.CalculateAttackTime(agility)).WithSuffix());
             }
             else if (_itemDescriptor.AttackSpeedModifier == 1)
             {

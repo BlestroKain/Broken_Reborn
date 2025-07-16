@@ -1006,7 +1006,7 @@ public partial class Entity : IEntity
         //Otherwise return the legacy attack speed calculation
         return (int)(Options.Instance.Combat.MaxAttackRate +
                      (Options.Instance.Combat.MinAttackRate - Options.Instance.Combat.MaxAttackRate) *
-                     (((float)Options.Instance.Player.MaxStat - Stat[(int)Enums.Stat.Speed]) /
+                     (((float)Options.Instance.Player.MaxStat - Stat[(int)Enums.Stat.Agility]) /
                       Options.Instance.Player.MaxStat));
     }
 

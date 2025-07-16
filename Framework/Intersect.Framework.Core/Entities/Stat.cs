@@ -4,11 +4,17 @@ public enum Stat
 {
     Attack = 0,
 
-    AbilityPower,
+    Intelligence,
 
     Defense,
 
-    MagicResist,
+    Vitality,
 
     Speed,
+
+    Agility,
+
+    Damages,
+
+    Cures,
 }

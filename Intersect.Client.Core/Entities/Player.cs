@@ -2421,15 +2421,15 @@ public partial class Player : Entity, IPlayer
     }
 
     /// <summary>
-    /// Calculate the attack time for the player as if they have a specified speed stat.
+    /// Calculate the attack time for the player as if they have a specified agility stat.
     /// </summary>
-    /// <param name="speed"></param>
+    /// <param name="agility"></param>
     /// <returns></returns>
-    public virtual int CalculateAttackTime(int speed)
+    public virtual int CalculateAttackTime(int agility)
     {
         return (int)(Options.Instance.Combat.MaxAttackRate +
                       (Options.Instance.Combat.MinAttackRate - Options.Instance.Combat.MaxAttackRate) *
-                      (((float)Options.Instance.Player.MaxStat - speed) /
+                      (((float)Options.Instance.Player.MaxStat - agility) /
                        Options.Instance.Player.MaxStat));
     }
 

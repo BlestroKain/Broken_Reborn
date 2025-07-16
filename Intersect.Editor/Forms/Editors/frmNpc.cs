@@ -304,10 +304,13 @@ public partial class FrmNpc : EditorForm
             cmbOnDeathEventParty.SelectedIndex = EventDescriptor.ListIndex(mEditorItem.OnDeathPartyEventId) + 1;
 
             nudStr.Value = mEditorItem.Stats[(int)Stat.Attack];
-            nudMag.Value = mEditorItem.Stats[(int)Stat.AbilityPower];
+            nudMag.Value = mEditorItem.Stats[(int)Stat.Intelligence];
             nudDef.Value = mEditorItem.Stats[(int)Stat.Defense];
-            nudMR.Value = mEditorItem.Stats[(int)Stat.MagicResist];
+            nudMR.Value = mEditorItem.Stats[(int)Stat.Vitality];
             nudSpd.Value = mEditorItem.Stats[(int)Stat.Speed];
+            nudAgi.Value = mEditorItem.Stats[(int)Stat.Agility];
+            nudDmg.Value = mEditorItem.Stats[(int)Stat.Damages];
+            nudCur.Value = mEditorItem.Stats[(int)Stat.Cures];
             nudHp.Value = mEditorItem.MaxVitals[(int)Vital.Health];
             nudMana.Value = mEditorItem.MaxVitals[(int)Vital.Mana];
             nudExp.Value = mEditorItem.Experience;
@@ -673,7 +676,7 @@ public partial class FrmNpc : EditorForm
 
     private void nudMag_ValueChanged(object sender, EventArgs e)
     {
-        mEditorItem.Stats[(int)Stat.AbilityPower] = (int)nudMag.Value;
+        mEditorItem.Stats[(int)Stat.Intelligence] = (int)nudMag.Value;
     }
 
     private void nudDef_ValueChanged(object sender, EventArgs e)
@@ -683,7 +686,7 @@ public partial class FrmNpc : EditorForm
 
     private void nudMR_ValueChanged(object sender, EventArgs e)
     {
-        mEditorItem.Stats[(int)Stat.MagicResist] = (int)nudMR.Value;
+        mEditorItem.Stats[(int)Stat.Vitality] = (int)nudMR.Value;
     }
 
     private void nudSpd_ValueChanged(object sender, EventArgs e)
@@ -1118,5 +1121,25 @@ public partial class FrmNpc : EditorForm
     private void nudTenacity_ValueChanged(object sender, EventArgs e)
     {
         mEditorItem.Tenacity = (double)nudTenacity.Value;
+    }
+
+    private void pnlContainer_Paint(object sender, PaintEventArgs e)
+    {
+
+    }
+
+    private void nudAgi_ValueChanged(object sender, EventArgs e)
+    {
+        mEditorItem.Stats[(int)Stat.Agility] = (int)nudAgi.Value;
+    }
+
+    private void nudDmg_ValueChanged(object sender, EventArgs e)
+    {
+        mEditorItem.Stats[(int)Stat.Damages] = (int)nudDmg.Value;
+    }
+
+    private void nudCur_ValueChanged(object sender, EventArgs e)
+    {
+        mEditorItem.Stats[(int)Stat.Cures] = (int)nudCur.Value;
     }
 }

@@ -304,9 +304,9 @@ public partial class FrmNpc : EditorForm
             cmbOnDeathEventParty.SelectedIndex = EventDescriptor.ListIndex(mEditorItem.OnDeathPartyEventId) + 1;
 
             nudStr.Value = mEditorItem.Stats[(int)Stat.Attack];
-            nudMag.Value = mEditorItem.Stats[(int)Stat.Intelligence];
+            nudMag.Value = mEditorItem.Stats[(int)Stat.AbilityPower];
             nudDef.Value = mEditorItem.Stats[(int)Stat.Defense];
-            nudMR.Value = mEditorItem.Stats[(int)Stat.Vitality];
+            nudMR.Value = mEditorItem.Stats[(int)Stat.MagicResist];
             nudSpd.Value = mEditorItem.Stats[(int)Stat.Speed];
             nudHp.Value = mEditorItem.MaxVitals[(int)Vital.Health];
             nudMana.Value = mEditorItem.MaxVitals[(int)Vital.Mana];
@@ -673,7 +673,7 @@ public partial class FrmNpc : EditorForm
 
     private void nudMag_ValueChanged(object sender, EventArgs e)
     {
-        mEditorItem.Stats[(int)Stat.Intelligence] = (int)nudMag.Value;
+        mEditorItem.Stats[(int)Stat.AbilityPower] = (int)nudMag.Value;
     }
 
     private void nudDef_ValueChanged(object sender, EventArgs e)
@@ -683,7 +683,7 @@ public partial class FrmNpc : EditorForm
 
     private void nudMR_ValueChanged(object sender, EventArgs e)
     {
-        mEditorItem.Stats[(int)Stat.Vitality] = (int)nudMR.Value;
+        mEditorItem.Stats[(int)Stat.MagicResist] = (int)nudMR.Value;
     }
 
     private void nudSpd_ValueChanged(object sender, EventArgs e)

@@ -1049,7 +1049,7 @@ public static partial class Strings
     public partial struct ClassEditor
     {
 
-        public static LocalizedString abilitypowerboost = @"Intelligence (+{00}):";
+        public static LocalizedString abilitypowerboost = @"Ability Pwr (+{00}):";
 
         public static LocalizedString addsprite = @"Add Sprite";
 
@@ -1075,7 +1075,7 @@ public static partial class Strings
 
         public static LocalizedString attackspeedvalue = @"Value:";
 
-        public static LocalizedString baseabilitypower = @"Intelligence:";
+        public static LocalizedString baseabilitypower = @"Ability Pwr:";
 
         public static LocalizedString basearmor = @"Armor:";
 
@@ -1085,7 +1085,7 @@ public static partial class Strings
 
         public static LocalizedString basehp = @"HP:";
 
-        public static LocalizedString basemagicresist = @"Vitality:";
+        public static LocalizedString basemagicresist = @"Magic Resist:";
 
         public static LocalizedString basemp = @"Mana:";
 
@@ -1164,7 +1164,7 @@ public static partial class Strings
 
         public static LocalizedString locked = @"Class Locked";
 
-        public static LocalizedString magicresistboost = @"Vitality (+{00}):";
+        public static LocalizedString magicresistboost = @"Magic Resist (+{00}):";
 
         public static LocalizedString male = @"Male";
 
@@ -1283,13 +1283,10 @@ Tick timer saved in server config.json.";
         public static Dictionary<int, LocalizedString> stats = new Dictionary<int, LocalizedString>
         {
             {0, @"Attack"},
-            {1, @"Intelligence"},
+            {1, @"Ability Power"},
             {2, @"Defense"},
-            {3, @"Vitality"},
+            {3, @"Magic Resist"},
             {4, @"Speed"},
-            {5, @"Agility"},
-            {6, @"Damages"},
-            {7, @"Cures"},
         };
 
         public static Dictionary<int, LocalizedString> vitals = new Dictionary<int, LocalizedString>
@@ -3711,7 +3708,7 @@ Tick timer saved in server config.json.";
     public partial struct ItemEditor
     {
 
-        public static LocalizedString abilitypowerbonus = @"Intelligence:";
+        public static LocalizedString abilitypowerbonus = @"Ability Pwr:";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString AddBonusEffect = @"Add";
@@ -3894,7 +3891,7 @@ Tick timer saved in server config.json.";
 
         public static LocalizedString items = @"Items";
 
-        public static LocalizedString magicresistbonus = @"Vitality:";
+        public static LocalizedString magicresistbonus = @"Magic Resist:";
 
         public static LocalizedString malepaperdoll = @"Male Paperdoll:";
 
@@ -4516,7 +4513,7 @@ Tick timer saved in server config.json.";
     public partial struct NpcEditor
     {
 
-        public static LocalizedString abilitypower = @"Intelligence:";
+        public static LocalizedString abilitypower = @"Ability Pwr:";
 
         public static LocalizedString addhostility = @"Add";
 
@@ -4624,7 +4621,7 @@ Tick timer saved in server config.json.";
 
         public static LocalizedString individualizedloot = @"Spawn loot for all attackers?";
 
-        public static LocalizedString magicresist = @"Vitality:";
+        public static LocalizedString magicresist = @"Magic Resist:";
 
         public static LocalizedString mana = @"Mana:";
 
@@ -5287,7 +5284,7 @@ Tick timer saved in server config.json.";
     public partial struct SpellEditor
     {
 
-        public static LocalizedString abilitypower = @"Intelligence:";
+        public static LocalizedString abilitypower = @"Ability Pwr:";
 
         public static LocalizedString attack = @"Attack:";
 
@@ -5417,7 +5414,7 @@ Tick timer saved in server config.json.";
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString TickAnimation = @"Tick Animation:";
 
-        public static LocalizedString magicresist = @"Vitality:";
+        public static LocalizedString magicresist = @"Magic Resist:";
 
         public static LocalizedString manacost = @"Mana Cost:";
 

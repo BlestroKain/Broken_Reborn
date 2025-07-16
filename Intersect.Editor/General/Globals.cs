@@ -199,18 +199,12 @@ public static partial class Globals
         {
             case (int) Stat.Attack:
                 return "Attack";
-            case (int) Stat.Intelligence:
-                return "Intelligence";
+            case (int) Stat.AbilityPower:
+                return "Ability Power";
             case (int) Stat.Defense:
                 return "Defense";
-            case (int) Stat.Vitality:
-                return "Vitality";
-            case (int) Stat.Agility:
-                return "Agility";
-            case (int) Stat.Damages:
-                return "Damages";
-            case (int) Stat.Cures:
-                return "Cures";
+            case (int) Stat.MagicResist:
+                return "Magic Resist";
             case (int) Stat.Speed:
                 return "Speed";
             default:

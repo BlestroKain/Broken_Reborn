@@ -150,9 +150,9 @@ public partial class FrmClass : EditorForm
             pnlContainer.Show();
             txtName.Text = mEditorItem.Name;
             nudAttack.Value = mEditorItem.BaseStat[(int) Stat.Attack];
-            nudMag.Value = mEditorItem.BaseStat[(int) Stat.Intelligence];
+            nudMag.Value = mEditorItem.BaseStat[(int) Stat.AbilityPower];
             nudDef.Value = mEditorItem.BaseStat[(int) Stat.Defense];
-            nudMR.Value = mEditorItem.BaseStat[(int) Stat.Vitality];
+            nudMR.Value = mEditorItem.BaseStat[(int) Stat.MagicResist];
             nudSpd.Value = mEditorItem.BaseStat[(int) Stat.Speed];
             nudBaseHP.Value = Math.Max(
                 Math.Min(mEditorItem.BaseVital[(int) Vital.Health], nudBaseHP.Maximum), nudBaseHP.Minimum
@@ -786,11 +786,11 @@ public partial class FrmClass : EditorForm
 
         nudArmorIncrease.Value = Math.Min(nudArmorIncrease.Maximum, mEditorItem.StatIncrease[(int) Stat.Defense]);
         nudMagicIncrease.Value = Math.Min(
-            nudMagicIncrease.Maximum, mEditorItem.StatIncrease[(int) Stat.Intelligence]
+            nudMagicIncrease.Maximum, mEditorItem.StatIncrease[(int) Stat.AbilityPower]
         );
 
         nudMagicResistIncrease.Value = Math.Min(
-            nudMagicResistIncrease.Maximum, mEditorItem.StatIncrease[(int) Stat.Vitality]
+            nudMagicResistIncrease.Maximum, mEditorItem.StatIncrease[(int) Stat.MagicResist]
         );
 
         nudSpeedIncrease.Value = Math.Min(nudSpeedIncrease.Maximum, mEditorItem.StatIncrease[(int) Stat.Speed]);
@@ -972,7 +972,7 @@ public partial class FrmClass : EditorForm
 
     private void nudMag_ValueChanged(object sender, EventArgs e)
     {
-        mEditorItem.BaseStat[(int) Stat.Intelligence] = (int) nudMag.Value;
+        mEditorItem.BaseStat[(int) Stat.AbilityPower] = (int) nudMag.Value;
     }
 
     private void nudDef_ValueChanged(object sender, EventArgs e)
@@ -982,7 +982,7 @@ public partial class FrmClass : EditorForm
 
     private void nudMR_ValueChanged(object sender, EventArgs e)
     {
-        mEditorItem.BaseStat[(int) Stat.Vitality] = (int) nudMR.Value;
+        mEditorItem.BaseStat[(int) Stat.MagicResist] = (int) nudMR.Value;
     }
 
     private void nudPoints_ValueChanged(object sender, EventArgs e)
@@ -1050,7 +1050,7 @@ public partial class FrmClass : EditorForm
 
     private void nudMagicResistIncrease_ValueChanged(object sender, EventArgs e)
     {
-        mEditorItem.StatIncrease[(int) Stat.Vitality] = (int) nudMagicResistIncrease.Value;
+        mEditorItem.StatIncrease[(int) Stat.MagicResist] = (int) nudMagicResistIncrease.Value;
         UpdateIncreases();
     }
 
@@ -1062,7 +1062,7 @@ public partial class FrmClass : EditorForm
 
     private void nudMagicIncrease_ValueChanged(object sender, EventArgs e)
     {
-        mEditorItem.StatIncrease[(int) Stat.Intelligence] = (int) nudMagicIncrease.Value;
+        mEditorItem.StatIncrease[(int) Stat.AbilityPower] = (int) nudMagicIncrease.Value;
         UpdateIncreases();
     }
 

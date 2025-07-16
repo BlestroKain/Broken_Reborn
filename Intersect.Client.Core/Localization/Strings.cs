@@ -990,12 +990,9 @@ public static partial class Strings
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static Dictionary<Stat, LocalizedString> Stats = new() {
             { Stat.Attack, @"Attack" },
-            { Stat.Intelligence, @"Intelligence" },
+            { Stat.AbilityPower, @"Ability Power" },
             { Stat.Defense, @"Defense" },
-            { Stat.Vitality, @"Vitality" },
-            { Stat.Agility, @"Agility" },
-            { Stat.Damages, @"Damages" },
-            { Stat.Cures, @"Cures" },
+            { Stat.MagicResist, @"Magic Resist" },
             { Stat.Speed, @"Speed" },
         };
 
@@ -1947,26 +1944,20 @@ If you are sure you want to hand over your guild enter '\c{{#ff8080}}{02}\c{{}}'
         public static Dictionary<int, LocalizedString> StatCounts = new Dictionary<int, LocalizedString>
         {
             {0, @"Attack:"},
-            {1, @"Intelligence:"},
+            {1, @"Ability Power:"},
             {2, @"Defense:"},
-            {3, @"Vitality:"},
+            {3, @"Magic Resist:"},
             {4, @"Speed:"},
-            {5, @"Agility:"},
-            {6, @"Damages:"},
-            {7, @"Cures:"},
         };
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static Dictionary<int, LocalizedString> Stats = new Dictionary<int, LocalizedString>
         {
             {0, @"Attack"},
-            {1, @"Intelligence"},
+            {1, @"Ability Power"},
             {2, @"Defense"},
-            {3, @"Vitality"},
+            {3, @"Magic Resist"},
             {4, @"Speed"},
-            {5, @"Agility"},
-            {6, @"Damages"},
-            {7, @"Cures"},
         };
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -2856,26 +2847,20 @@ If you are sure you want to hand over your guild enter '\c{{#ff8080}}{02}\c{{}}'
         public static Dictionary<int, LocalizedString> Stats = new Dictionary<int, LocalizedString>
         {
             {0, @"Attack"},
-            {1, @"Intelligence"},
+            {1, @"Ability Power"},
             {2, @"Defense"},
-            {3, @"Vitality"},
+            {3, @"Magic Resist"},
             {4, @"Speed"},
-            {5, @"Agility"},
-            {6, @"Damages"},
-            {7, @"Cures"},
         };
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static Dictionary<int, LocalizedString> StatCounts = new Dictionary<int, LocalizedString>
         {
             {0, @"Attack:"},
-            {1, @"Intelligence:"},
+            {1, @"Ability Power:"},
             {2, @"Defense:"},
-            {3, @"Vitality:"},
+            {3, @"Magic Resist:"},
             {4, @"Speed:"},
-            {5, @"Agility:"},
-            {6, @"Damages:"},
-            {7, @"Cures:"},
         };
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

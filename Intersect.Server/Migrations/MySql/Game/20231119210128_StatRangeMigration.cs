@@ -21,14 +21,20 @@ namespace Intersect.Server.Migrations.MySql.Game
                     DescriptorId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     StatRange_Attack_LowRange = table.Column<int>(type: "int", nullable: true),
                     StatRange_Attack_HighRange = table.Column<int>(type: "int", nullable: true),
-                    StatRange_AbilityPower_LowRange = table.Column<int>(type: "int", nullable: true),
-                    StatRange_AbilityPower_HighRange = table.Column<int>(type: "int", nullable: true),
+                    StatRange_Intelligence_LowRange = table.Column<int>(type: "int", nullable: true),
+                    StatRange_Intelligence_HighRange = table.Column<int>(type: "int", nullable: true),
                     StatRange_Defense_LowRange = table.Column<int>(type: "int", nullable: true),
                     StatRange_Defense_HighRange = table.Column<int>(type: "int", nullable: true),
-                    StatRange_MagicResist_LowRange = table.Column<int>(type: "int", nullable: true),
-                    StatRange_MagicResist_HighRange = table.Column<int>(type: "int", nullable: true),
+                    StatRange_Vitality_LowRange = table.Column<int>(type: "int", nullable: true),
+                    StatRange_Vitality_HighRange = table.Column<int>(type: "int", nullable: true),
                     StatRange_Speed_LowRange = table.Column<int>(type: "int", nullable: true),
-                    StatRange_Speed_HighRange = table.Column<int>(type: "int", nullable: true)
+                    StatRange_Speed_HighRange = table.Column<int>(type: "int", nullable: true),
+                    StatRange_Agility_LowRange = table.Column<int>(type: "int", nullable: true),
+                    StatRange_Agility_HighRange = table.Column<int>(type: "int", nullable: true),
+                    StatRange_Damages_LowRange = table.Column<int>(type: "int", nullable: true),
+                    StatRange_Damages_HighRange = table.Column<int>(type: "int", nullable: true),
+                    StatRange_Cures_LowRange = table.Column<int>(type: "int", nullable: true),
+                    StatRange_Cures_HighRange = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {

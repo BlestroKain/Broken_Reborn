@@ -305,7 +305,7 @@ public partial class FrmClass : EditorForm
             GameContentManager.GetOverridesFor(GameContentManager.TextureType.Entity, "attack").ToArray()
         );
         cmbScalingStat.Items.Clear();
-        for (var x = 0; x < ((int)Stat.Speed) + 1; x++)
+        for (var x = 0; x < Enum.GetValues<Stat>().Length; x++)
         {
             cmbScalingStat.Items.Add(Globals.GetStatName(x));
         }

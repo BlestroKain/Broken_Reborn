@@ -106,13 +106,15 @@ public partial class Formulas
             expression.Parameters["CritMultiplier"] = critMultiplier;
             expression.Parameters["A_Attack"] = attacker.Stat[(int)Stat.Attack].Value();
             expression.Parameters["A_Defense"] = attacker.Stat[(int)Stat.Defense].Value();
-            expression.Parameters["A_Speed"] = attacker.Stat[(int)Stat.Speed].Value();
+            // Use agility in place of speed for combat calculations
+            expression.Parameters["A_Speed"] = attacker.Stat[(int)Stat.Agility].Value();
             expression.Parameters["A_AbilityPwr"] = attacker.Stat[(int)Stat.Intelligence].Value();
             expression.Parameters["A_MagicResist"] = attacker.Stat[(int)Stat.Vitality].Value();
             expression.Parameters["A_Level"] = attacker.Level;
             expression.Parameters["V_Attack"] = victim.Stat[(int)Stat.Attack].Value();
             expression.Parameters["V_Defense"] = victim.Stat[(int)Stat.Defense].Value();
-            expression.Parameters["V_Speed"] = victim.Stat[(int)Stat.Speed].Value();
+            // Use agility in place of speed for combat calculations
+            expression.Parameters["V_Speed"] = victim.Stat[(int)Stat.Agility].Value();
             expression.Parameters["V_AbilityPwr"] = victim.Stat[(int)Stat.Intelligence].Value();
             expression.Parameters["V_MagicResist"] = victim.Stat[(int)Stat.Vitality].Value();
             expression.Parameters["V_Level"] = victim.Level;

@@ -849,6 +849,15 @@ public static partial class Strings
         public static LocalizedString Stats = @"Stats:";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Agility = @"Agility:";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Damages = @"Damages:";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Cures = @"Cures:";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString Tenacity = @"Tenacity: {00}%";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

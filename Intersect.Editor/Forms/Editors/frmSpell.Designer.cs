@@ -1384,7 +1384,7 @@ namespace Intersect.Editor.Forms.Editors
             this.lblMR.Name = "lblMR";
             this.lblMR.Size = new System.Drawing.Size(71, 13);
             this.lblMR.TabIndex = 46;
-            this.lblMR.Text = "Magic Resist:";
+            this.lblMR.Text = "Vitality:";
             // 
             // lblDef
             // 
@@ -1404,7 +1404,7 @@ namespace Intersect.Editor.Forms.Editors
             this.lblMag.Name = "lblMag";
             this.lblMag.Size = new System.Drawing.Size(39, 13);
             this.lblMag.TabIndex = 44;
-            this.lblMag.Text = "Magic:";
+            this.lblMag.Text = "Intelligence:";
             // 
             // lblStr
             // 

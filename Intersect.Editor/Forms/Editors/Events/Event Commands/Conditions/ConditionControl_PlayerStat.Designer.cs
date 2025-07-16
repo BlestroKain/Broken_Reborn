@@ -95,7 +95,7 @@ partial class ConditionControl_PlayerStat
         cmbLevelStat.FlatStyle = FlatStyle.Flat;
         cmbLevelStat.ForeColor = System.Drawing.Color.Gainsboro;
         cmbLevelStat.FormattingEnabled = true;
-        cmbLevelStat.Items.AddRange(new object[] { "Level", "Attack", "Defense", "Speed", "Ability Power", "Magic Resist" });
+        cmbLevelStat.Items.AddRange(new object[] { "Level", "Attack", "Defense", "Speed", "Intelligence", "Vitality" });
         cmbLevelStat.Location = new System.Drawing.Point(92, 27);
         cmbLevelStat.Margin = new Padding(4, 3, 4, 3);
         cmbLevelStat.Name = "cmbLevelStat";

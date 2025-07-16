@@ -528,7 +528,7 @@ namespace Intersect.Editor.Forms.Editors
             this.lblMR.Name = "lblMR";
             this.lblMR.Size = new System.Drawing.Size(71, 13);
             this.lblMR.TabIndex = 8;
-            this.lblMR.Text = "Magic Resist:";
+            this.lblMR.Text = "Vitality:";
             // 
             // lblDef
             // 
@@ -548,7 +548,7 @@ namespace Intersect.Editor.Forms.Editors
             this.lblMag.Name = "lblMag";
             this.lblMag.Size = new System.Drawing.Size(39, 13);
             this.lblMag.TabIndex = 6;
-            this.lblMag.Text = "Magic:";
+            this.lblMag.Text = "Intelligence:";
             // 
             // lblAttack
             // 
@@ -2092,7 +2092,7 @@ namespace Intersect.Editor.Forms.Editors
             this.lblMagicResistIncrease.Name = "lblMagicResistIncrease";
             this.lblMagicResistIncrease.Size = new System.Drawing.Size(71, 13);
             this.lblMagicResistIncrease.TabIndex = 8;
-            this.lblMagicResistIncrease.Text = "Magic Resist:";
+            this.lblMagicResistIncrease.Text = "Vitality:";
             // 
             // lblArmorIncrease
             // 
@@ -2112,7 +2112,7 @@ namespace Intersect.Editor.Forms.Editors
             this.lblMagicIncrease.Name = "lblMagicIncrease";
             this.lblMagicIncrease.Size = new System.Drawing.Size(39, 13);
             this.lblMagicIncrease.TabIndex = 6;
-            this.lblMagicIncrease.Text = "Magic:";
+            this.lblMagicIncrease.Text = "Intelligence:";
             // 
             // btnCancel
             // 

@@ -16,11 +16,11 @@ public partial class EquipmentProperties
     }
 
     [JsonIgnore]
-    public ItemRange StatRange_AbilityPower
+    public ItemRange StatRange_Intelligence
     {
         get =>
-            StatRanges.TryGetValue(Stat.AbilityPower, out var range) ? range : StatRange_AbilityPower = new ItemRange();
-        set => StatRanges[Stat.AbilityPower] = value;
+            StatRanges.TryGetValue(Stat.Intelligence, out var range) ? range : StatRange_Intelligence = new ItemRange();
+        set => StatRanges[Stat.Intelligence] = value;
     }
 
     [JsonIgnore]
@@ -31,11 +31,11 @@ public partial class EquipmentProperties
     }
 
     [JsonIgnore]
-    public ItemRange StatRange_MagicResist
+    public ItemRange StatRange_Vitality
     {
         get =>
-            StatRanges.TryGetValue(Stat.MagicResist, out var range) ? range : StatRange_MagicResist = new ItemRange();
-        set => StatRanges[Stat.MagicResist] = value;
+            StatRanges.TryGetValue(Stat.Vitality, out var range) ? range : StatRange_Vitality = new ItemRange();
+        set => StatRanges[Stat.Vitality] = value;
     }
 
     [JsonIgnore]

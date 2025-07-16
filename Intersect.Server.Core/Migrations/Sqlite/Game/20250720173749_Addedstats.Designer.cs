@@ -3,6 +3,7 @@ using System;
 using Intersect.Server.Database.GameData;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Intersect.Server.Migrations.Sqlite.Game
 {
     [DbContext(typeof(SqliteGameContext))]
-    partial class SqliteGameContextModelSnapshot : ModelSnapshot
+    [Migration("20250720173749_Addedstats")]
+    partial class Addedstats
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.11");
@@ -1387,64 +1390,7 @@ namespace Intersect.Server.Migrations.Sqlite.Game
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("Intersect.GameObjects.Ranges.ItemRange", "StatRange_Agility", b1 =>
-                        {
-                            b1.Property<Guid>("EquipmentPropertiesDescriptorId")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<int>("HighRange")
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<int>("LowRange")
-                                .HasColumnType("INTEGER");
-
-                            b1.HasKey("EquipmentPropertiesDescriptorId");
-
-                            b1.ToTable("Items_EquipmentProperties");
-
-                            b1.WithOwner()
-                                .HasForeignKey("EquipmentPropertiesDescriptorId");
-                        });
-
                     b.OwnsOne("Intersect.GameObjects.Ranges.ItemRange", "StatRange_Attack", b1 =>
-                        {
-                            b1.Property<Guid>("EquipmentPropertiesDescriptorId")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<int>("HighRange")
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<int>("LowRange")
-                                .HasColumnType("INTEGER");
-
-                            b1.HasKey("EquipmentPropertiesDescriptorId");
-
-                            b1.ToTable("Items_EquipmentProperties");
-
-                            b1.WithOwner()
-                                .HasForeignKey("EquipmentPropertiesDescriptorId");
-                        });
-
-                    b.OwnsOne("Intersect.GameObjects.Ranges.ItemRange", "StatRange_Cures", b1 =>
-                        {
-                            b1.Property<Guid>("EquipmentPropertiesDescriptorId")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<int>("HighRange")
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<int>("LowRange")
-                                .HasColumnType("INTEGER");
-
-                            b1.HasKey("EquipmentPropertiesDescriptorId");
-
-                            b1.ToTable("Items_EquipmentProperties");
-
-                            b1.WithOwner()
-                                .HasForeignKey("EquipmentPropertiesDescriptorId");
-                        });
-
-                    b.OwnsOne("Intersect.GameObjects.Ranges.ItemRange", "StatRange_Damages", b1 =>
                         {
                             b1.Property<Guid>("EquipmentPropertiesDescriptorId")
                                 .HasColumnType("TEXT");
@@ -1541,13 +1487,7 @@ namespace Intersect.Server.Migrations.Sqlite.Game
 
                     b.Navigation("Descriptor");
 
-                    b.Navigation("StatRange_Agility");
-
                     b.Navigation("StatRange_Attack");
-
-                    b.Navigation("StatRange_Cures");
-
-                    b.Navigation("StatRange_Damages");
 
                     b.Navigation("StatRange_Defense");
 

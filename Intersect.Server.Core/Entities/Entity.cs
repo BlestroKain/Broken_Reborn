@@ -1395,7 +1395,7 @@ public abstract partial class Entity : IEntity
     {
         return (int)(Options.Instance.Combat.MaxAttackRate +
                       (Options.Instance.Combat.MinAttackRate - Options.Instance.Combat.MaxAttackRate) *
-                      (((float)Options.Instance.Player.MaxStat - Stat[(int)Enums.Stat.Speed].Value()) /
+                      (((float)Options.Instance.Player.MaxStat - Stat[(int)Enums.Stat.Agility].Value()) /
                        Options.Instance.Player.MaxStat));
     }
 

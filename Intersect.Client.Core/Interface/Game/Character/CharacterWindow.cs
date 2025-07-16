@@ -187,12 +187,12 @@ public partial class CharacterWindow
     //Update Button Event Handlers
     void _addMagicResistBtn_Clicked(Base sender, MouseButtonState arguments)
     {
-        PacketSender.SendUpgradeStat((int) Stat.MagicResist);
+        PacketSender.SendUpgradeStat((int) Stat.Vitality);
     }
 
     void _addAbilityPwrBtn_Clicked(Base sender, MouseButtonState arguments)
     {
-        PacketSender.SendUpgradeStat((int) Stat.AbilityPower);
+        PacketSender.SendUpgradeStat((int) Stat.Intelligence);
     }
 
     void _addSpeedBtn_Clicked(Base sender, MouseButtonState arguments)
@@ -333,8 +333,8 @@ public partial class CharacterWindow
 
         mAbilityPwrLabel.SetText(
             Strings.Character.StatLabelValue.ToString(
-                Strings.Combat.Stats[Stat.AbilityPower],
-                Globals.Me.Stat[(int)Stat.AbilityPower]
+                Strings.Combat.Stats[Stat.Intelligence],
+                Globals.Me.Stat[(int)Stat.Intelligence]
             )
         );
 
@@ -347,8 +347,8 @@ public partial class CharacterWindow
 
         mMagicRstLabel.SetText(
             Strings.Character.StatLabelValue.ToString(
-                Strings.Combat.Stats[Stat.MagicResist],
-                Globals.Me.Stat[(int)Stat.MagicResist]
+                Strings.Combat.Stats[Stat.Vitality],
+                Globals.Me.Stat[(int)Stat.Vitality]
             )
         );
 
@@ -361,7 +361,7 @@ public partial class CharacterWindow
 
         mPointsLabel.SetText(Strings.Character.Points.ToString(Globals.Me.StatPoints));
         mAddAbilityPwrBtn.IsHidden = Globals.Me.StatPoints == 0 ||
-                                     Globals.Me.Stat[(int) Stat.AbilityPower] == Options.Instance.Player.MaxStat;
+                                     Globals.Me.Stat[(int) Stat.Intelligence] == Options.Instance.Player.MaxStat;
 
         mAddAttackBtn.IsHidden =
             Globals.Me.StatPoints == 0 || Globals.Me.Stat[(int) Stat.Attack] == Options.Instance.Player.MaxStat;
@@ -370,7 +370,7 @@ public partial class CharacterWindow
                                   Globals.Me.Stat[(int) Stat.Defense] == Options.Instance.Player.MaxStat;
 
         mAddMagicResistBtn.IsHidden = Globals.Me.StatPoints == 0 ||
-                                      Globals.Me.Stat[(int) Stat.MagicResist] == Options.Instance.Player.MaxStat;
+                                      Globals.Me.Stat[(int) Stat.Vitality] == Options.Instance.Player.MaxStat;
 
         mAddSpeedBtn.IsHidden =
             Globals.Me.StatPoints == 0 || Globals.Me.Stat[(int) Stat.Speed] == Options.Instance.Player.MaxStat;

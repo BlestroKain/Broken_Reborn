@@ -2443,9 +2443,9 @@ Tick timer saved in server config.json.";
             {"fade", @"Screen Fade"},
             {"jobs",@"Jobs" },
             {"givejobexperience", @"Give Job Experience"},
-            {"openenchantwindow", @"Open Enchant Window"},
-{"openmagewindow", @"Open Mage Window"},
-{"openbrokewindow", @"Open Broke Items Window"},
+            {"openenchantment", @"Open Enchant Window"},
+{"openmage", @"Open Mage Window"},
+{"openbrokeitem", @"Open Broke Items Window"},
 {"Enchantment", @"Enchantment"},
 
         };

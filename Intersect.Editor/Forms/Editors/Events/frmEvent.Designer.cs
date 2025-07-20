@@ -988,11 +988,11 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode68.Text = "Give Job Experience";
             treeNode69.Name = "jobs";
             treeNode69.Text = "Jobs";
-            treeNode70.Name = "openenchantwindow";
+            treeNode70.Name = "openenchantment";
             treeNode70.Text = "Open Enchant Window";
-            treeNode71.Name = "openmagewindow";
+            treeNode71.Name = "openmage";
             treeNode71.Text = "Open Mage Window";
-            treeNode72.Name = "openbrokewindow";
+            treeNode72.Name = "openbrokeitem";
             treeNode72.Text = "Open Broke Items Window";
             treeNode73.Name = "Enchantment";
             treeNode73.Text = "Enchantment";

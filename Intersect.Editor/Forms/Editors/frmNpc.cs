@@ -308,6 +308,9 @@ public partial class FrmNpc : EditorForm
             nudDef.Value = mEditorItem.Stats[(int)Stat.Defense];
             nudMR.Value = mEditorItem.Stats[(int)Stat.Vitality];
             nudSpd.Value = mEditorItem.Stats[(int)Stat.Speed];
+            nudAgi.Value = mEditorItem.Stats[(int)Stat.Agility];
+            nudDmg.Value = mEditorItem.Stats[(int)Stat.Damages];
+            nudCur.Value = mEditorItem.Stats[(int)Stat.Cures];
             nudHp.Value = mEditorItem.MaxVitals[(int)Vital.Health];
             nudMana.Value = mEditorItem.MaxVitals[(int)Vital.Mana];
             nudExp.Value = mEditorItem.Experience;
@@ -1118,5 +1121,25 @@ public partial class FrmNpc : EditorForm
     private void nudTenacity_ValueChanged(object sender, EventArgs e)
     {
         mEditorItem.Tenacity = (double)nudTenacity.Value;
+    }
+
+    private void pnlContainer_Paint(object sender, PaintEventArgs e)
+    {
+
+    }
+
+    private void nudAgi_ValueChanged(object sender, EventArgs e)
+    {
+        mEditorItem.Stats[(int)Stat.Agility] = (int)nudAgi.Value;
+    }
+
+    private void nudDmg_ValueChanged(object sender, EventArgs e)
+    {
+        mEditorItem.Stats[(int)Stat.Damages] = (int)nudDmg.Value;
+    }
+
+    private void nudCur_ValueChanged(object sender, EventArgs e)
+    {
+        mEditorItem.Stats[(int)Stat.Cures] = (int)nudCur.Value;
     }
 }

@@ -3946,7 +3946,7 @@ Tick timer saved in server config.json.";
             {"Legendary", @"Legendary"},
         };
 
-        public static Dictionary<ItemType, List<string>> SubtypesDynamic = new();
+        internal static Dictionary<ItemType, List<string>> SubtypesDynamic = new();
 
         public static void LoadDynamicSubtypes()
         {

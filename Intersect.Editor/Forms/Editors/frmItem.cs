@@ -368,24 +368,34 @@ public partial class FrmItem : EditorForm
                 cmbRarity.SelectedIndex = 0;
             }
 
+            // Stats fijos
             nudStr.Value = mEditorItem.StatsGiven[0];
             nudMag.Value = mEditorItem.StatsGiven[1];
             nudDef.Value = mEditorItem.StatsGiven[2];
             nudMR.Value = mEditorItem.StatsGiven[3];
             nudSpd.Value = mEditorItem.StatsGiven[4];
+            nudAgi.Value = mEditorItem.StatsGiven[5];
+            nudDmg.Value = mEditorItem.StatsGiven[6];
+            nudCur.Value = mEditorItem.StatsGiven[7];
 
+            // Stats porcentuales
             nudStrPercentage.Value = mEditorItem.PercentageStatsGiven[0];
             nudMagPercentage.Value = mEditorItem.PercentageStatsGiven[1];
             nudDefPercentage.Value = mEditorItem.PercentageStatsGiven[2];
             nudMRPercentage.Value = mEditorItem.PercentageStatsGiven[3];
             nudSpdPercentage.Value = mEditorItem.PercentageStatsGiven[4];
+            nudAgiPercentage.Value = mEditorItem.PercentageStatsGiven[5];
+            nudDmgPercentage.Value = mEditorItem.PercentageStatsGiven[6];
+            nudCurPercentage.Value = mEditorItem.PercentageStatsGiven[7];
 
+            // Vitals
             nudHealthBonus.Value = mEditorItem.VitalsGiven[0];
             nudManaBonus.Value = mEditorItem.VitalsGiven[1];
             nudHPPercentage.Value = mEditorItem.PercentageVitalsGiven[0];
             nudMPPercentage.Value = mEditorItem.PercentageVitalsGiven[1];
             nudHPRegen.Value = mEditorItem.VitalsRegen[0];
             nudMpRegen.Value = mEditorItem.VitalsRegen[1];
+
 
             nudDamage.Value = mEditorItem.Damage;
             nudCritChance.Value = mEditorItem.CritChance;
@@ -618,7 +628,7 @@ public partial class FrmItem : EditorForm
             chkStackable.Enabled = false;
         }
         else if (selectedType == ItemType.Resource && selectedSubType == "Rune")
-         {
+        {
             grpEnchanting.Visible = true; // Mostrar grupo de runas y success rate
         }
 
@@ -1668,7 +1678,7 @@ public partial class FrmItem : EditorForm
     private void PopulateRuneCombos()
     {
         cmbRuneStat.Items.Clear();
-     
+
         foreach (var stat in Enum.GetValues<Stat>())
         {
             cmbRuneStat.Items.Add(stat.ToString());
@@ -1705,4 +1715,33 @@ public partial class FrmItem : EditorForm
         mEditorItem.AmountModifier = (int)nudRuneValue.Value;
     }
 
+    private void nudAgi_ValueChanged(object sender, EventArgs e)
+    {
+        mEditorItem.StatsGiven[5] = (int)nudAgi.Value;
+    }
+
+    private void nudDmg_ValueChanged(object sender, EventArgs e)
+    {
+        mEditorItem.StatsGiven[6] = (int)nudDmg.Value;
+    }
+
+    private void nudCur_ValueChanged(object sender, EventArgs e)
+    {
+        mEditorItem.StatsGiven[7] = (int)nudCur.Value;
+    }
+
+    private void nudAgiPercentage_ValueChanged(object sender, EventArgs e)
+    {
+        mEditorItem.PercentageStatsGiven[5] = (int)nudAgiPercentage.Value;
+    }
+
+    private void nudDmgPercentage_ValueChanged(object sender, EventArgs e)
+    {
+        mEditorItem.PercentageStatsGiven[6] = (int)nudDmgPercentage.Value;
+    }
+
+    private void nudCurPercentage_ValueChanged(object sender, EventArgs e)
+    {
+        mEditorItem.PercentageStatsGiven[7] = (int)nudCurPercentage.Value;
+    }
 }

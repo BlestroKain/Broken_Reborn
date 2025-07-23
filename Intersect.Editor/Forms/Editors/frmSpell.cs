@@ -356,17 +356,25 @@ public partial class FrmSpell : EditorForm
             nudHPDamage.Value = mEditorItem.Combat.VitalDiff[(int)Vital.Health];
             nudMPDamage.Value = mEditorItem.Combat.VitalDiff[(int)Vital.Mana];
 
+            // Valores planos
             nudStr.Value = mEditorItem.Combat.StatDiff[(int)Stat.Attack];
             nudDef.Value = mEditorItem.Combat.StatDiff[(int)Stat.Defense];
             nudSpd.Value = mEditorItem.Combat.StatDiff[(int)Stat.Speed];
             nudMag.Value = mEditorItem.Combat.StatDiff[(int)Stat.Intelligence];
             nudMR.Value = mEditorItem.Combat.StatDiff[(int)Stat.Vitality];
+            nudAgi.Value = mEditorItem.Combat.StatDiff[(int)Stat.Agility];
+            nudDmg.Value = mEditorItem.Combat.StatDiff[(int)Stat.Damages];
+            nudCur.Value = mEditorItem.Combat.StatDiff[(int)Stat.Cures];
 
+            // Porcentajes
             nudStrPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int)Stat.Attack];
             nudDefPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int)Stat.Defense];
             nudMagPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int)Stat.Intelligence];
             nudMRPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int)Stat.Vitality];
             nudSpdPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int)Stat.Speed];
+            nudAgiPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int)Stat.Agility];
+            nudDmgPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int)Stat.Damages];
+            nudCurPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int)Stat.Cures];
 
             chkFriendly.Checked = Convert.ToBoolean(mEditorItem.Combat.Friendly);
             cmbDamageType.SelectedIndex = mEditorItem.Combat.DamageType;
@@ -1099,5 +1107,35 @@ public partial class FrmSpell : EditorForm
     {
         Guid animationId = AnimationDescriptor.IdFromList(cmbTickAnimation.SelectedIndex - 1);
         mEditorItem.TickAnimation = AnimationDescriptor.Get(animationId);
+    }
+
+    private void nudAgi_ValueChanged(object sender, EventArgs e)
+    {
+        mEditorItem.Combat.StatDiff[(int)Stat.Agility] = (int)nudAgi.Value;
+    }
+
+    private void nudDmg_ValueChanged(object sender, EventArgs e)
+    {
+        mEditorItem.Combat.StatDiff[(int)Stat.Damages] = (int)nudDmg.Value;
+    }
+
+    private void nudCur_ValueChanged(object sender, EventArgs e)
+    {
+        mEditorItem.Combat.StatDiff[(int)Stat.Cures] = (int)nudCur.Value;
+    }
+
+    private void nudAgiPercentage_ValueChanged(object sender, EventArgs e)
+    {
+        mEditorItem.Combat.PercentageStatDiff[(int)Stat.Agility] = (int)nudAgiPercentage.Value;
+    }
+
+    private void nudDmgPercentage_ValueChanged(object sender, EventArgs e)
+    {
+        mEditorItem.Combat.PercentageStatDiff[(int)Stat.Damages] = (int)nudDmgPercentage.Value;
+    }
+
+    private void nudCurPercentage_ValueChanged(object sender, EventArgs e)
+    {
+        mEditorItem.Combat.PercentageStatDiff[(int)Stat.Cures] = (int)nudCurPercentage.Value;
     }
 }

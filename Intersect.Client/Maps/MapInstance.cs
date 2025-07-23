@@ -22,6 +22,8 @@ using Intersect.GameObjects;
 using Intersect.GameObjects.Maps;
 using Intersect.Network.Packets.Server;
 using Intersect.Utilities;
+using Intersect.Configuration;
+using ClientMathHelper = Intersect.Client.Utilities.MathHelper;
 
 using Newtonsoft.Json;
 using MapAttribute = Intersect.Enums.MapAttribute;
@@ -1255,13 +1257,26 @@ namespace Intersect.Client.Maps
         {
             for (var n = ActionMessages.Count - 1; n > -1; n--)
             {
+                float progress = ClientMathHelper.Clamp(
+                    (1000f - (ActionMessages[n].TransmissionTimer - Timing.Global.MillisecondsUtc)) / 1000f,
+                    0f,
+                    1f
+                );
+
+                float yOffset;
+                if (ClientConfiguration.Instance.SmoothActionMessages)
+                {
+                    yOffset = (float)ClientMathHelper.Lerp(0f, Options.TileHeight * 2f, progress);
+                }
+                else
+                {
+                    yOffset = Options.TileHeight * 2f * progress;
+                }
+
                 var y = (int)Math.Ceiling(
                     GetY() +
                     ActionMessages[n].Y * Options.TileHeight -
-                    Options.TileHeight *
-                    2 *
-                    (1000 - (ActionMessages[n].TransmissionTimer - Timing.Global.MillisecondsUtc)) /
-                    1000
+                    yOffset
                 );
 
                 var x = (int)Math.Ceiling(GetX() + ActionMessages[n].X * Options.TileWidth + ActionMessages[n].XOffset);

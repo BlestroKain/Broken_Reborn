@@ -87,6 +87,8 @@ namespace Intersect.Configuration
             "octave-beep-tapped.wav"
         };
 
+        public const bool DEFAULT_SMOOTH_ACTION_MESSAGES = true;
+
         #endregion
 
         #region Static Properties and Methods
@@ -114,6 +116,7 @@ namespace Intersect.Configuration
             TypewriterPauseCharacters = TypewriterPauseCharacters?.Distinct()?.ToList() ?? new List<char>();
             TypewriterSounds = new List<string>(TypewriterSounds?.Distinct() ?? new List<string>());
             UIFont = string.IsNullOrWhiteSpace(UIFont) ? DEFAULT_UI_FONT : UIFont.Trim();
+            SmoothActionMessages = SmoothActionMessages ? true : false;
         }
 
         #endregion
@@ -149,6 +152,11 @@ namespace Intersect.Configuration
         /// The font family to use on action messages
         /// </summary>
         public string ActionMsgFont { get; set; } = DEFAULT_FONT;
+
+        /// <summary>
+        /// Enables smooth animation for action messages instead of the legacy vertical movement.
+        /// </summary>
+        public bool SmoothActionMessages { get; set; } = DEFAULT_SMOOTH_ACTION_MESSAGES;
 
         /// <summary>
         /// The font family to use on unstyled windows such as the debug menu/admin window

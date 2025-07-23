@@ -50,6 +50,14 @@ public enum Control
 
     ToggleGui,
 
+    TargetParty1,
+    TargetParty2,
+    TargetParty3,
+    TargetParty4,
+    TargetParty5,
+    TargetParty6,
+    TargetParty7,
+
     TurnAround,
 
     ToggleZoomIn,

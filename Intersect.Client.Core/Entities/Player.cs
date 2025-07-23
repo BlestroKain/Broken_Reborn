@@ -1680,6 +1680,22 @@ public partial class Player : Entity, IPlayer
         return 9999;
     }
 
+    public void TargetPartyMember(int idx)
+    {
+        if (IsInParty() && idx < Party.Count)
+        {
+            if (Globals.Entities.TryGetValue(Party[idx].Id, out var partyMember) &&
+                GetDistanceTo(partyMember) <= Options.Instance.Combat.PartyTargetDistance)
+            {
+                TryTarget(partyMember);
+            }
+        }
+        else if (idx == 0)
+        {
+            TryTarget(this);
+        }
+    }
+
     public void AutoTarget()
     {
         //Check for taunt status if so don't allow to change target

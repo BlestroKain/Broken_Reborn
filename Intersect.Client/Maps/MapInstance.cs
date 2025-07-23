@@ -1255,34 +1255,24 @@ namespace Intersect.Client.Maps
         {
             for (var n = ActionMessages.Count - 1; n > -1; n--)
             {
-                var actionMessage = ActionMessages[n];
-
-                var timeRemaining = actionMessage.TransmissionTimer - Timing.Global.MillisecondsUtc;
-                var progress = Math.Max(0, 1 - timeRemaining / 1000f);
-
-                var height = Options.TileHeight * 2;
-                var yOffset = -height * (1 - (progress - 0.5f) * (progress - 0.5f) * 4);
-                var y = GetY() + actionMessage.Y * Options.TileHeight + yOffset;
-
-                var xOffset = actionMessage.XOffset * (1 - progress);
-                var x = GetX() + actionMessage.X * Options.TileWidth + xOffset;
-
-                var scale = 1 - progress * 0.5f;
-                var textWidth = Graphics.Renderer.MeasureText(actionMessage.Msg, Graphics.ActionMsgFont, scale).X;
-
-                Graphics.Renderer.DrawString(
-                    actionMessage.Msg,
-                    Graphics.ActionMsgFont,
-                    x - textWidth / 2f,
-                    y,
-                    scale,
-                    actionMessage.Color,
-                    true,
-                    null,
-                    new Color(0, 0, 0, 255)
+                var y = (int)Math.Ceiling(
+                    GetY() +
+                    ActionMessages[n].Y * Options.TileHeight -
+                    Options.TileHeight *
+                    2 *
+                    (1000 - (ActionMessages[n].TransmissionTimer - Timing.Global.MillisecondsUtc)) /
+                    1000
                 );
 
-                actionMessage.TryRemove();
+                var x = (int)Math.Ceiling(GetX() + ActionMessages[n].X * Options.TileWidth + ActionMessages[n].XOffset);
+                var textWidth = Graphics.Renderer.MeasureText(ActionMessages[n].Msg, Graphics.ActionMsgFont, 1).X;
+                Graphics.Renderer.DrawString(
+                    ActionMessages[n].Msg, Graphics.ActionMsgFont, x - textWidth / 2f, y, 1, ActionMessages[n].Color,
+                    true, null, new Color(40, 40, 40)
+                );
+
+                //Try to remove
+                ActionMessages[n].TryRemove();
             }
         }
 

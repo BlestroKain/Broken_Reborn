@@ -10,6 +10,11 @@ public partial class CombatOptions
 
     public int MaxDashSpeed { get; set; } = 200;
 
+    /// <summary>
+    /// Allowed distance to target party members when using quick target keys.
+    /// </summary>
+    public int PartyTargetDistance { get; set; } = 20;
+
     public int MinAttackRate { get; set; } = 500; //2 attacks per second
 
     //Combat

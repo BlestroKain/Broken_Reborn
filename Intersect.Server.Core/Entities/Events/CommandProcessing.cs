@@ -2280,5 +2280,24 @@ public static partial class CommandProcessing
     {
         player.OpenBrokeItem();
     }
-
+    private static void ProcessCommand(
+      OpenMailBoxCommand command,
+      Player player,
+      Event instance,
+      CommandInstance stackInfo,
+      Stack<CommandInstance> callStack
+  )
+    {
+        player.OpenMailBox();
+    }
+    private static void ProcessCommand(
+        SendMailBoxCommand command,
+        Player player,
+        Event instance,
+        CommandInstance stackInfo,
+        Stack<CommandInstance> callStack
+    )
+    {
+        player.SendMail();
+    }
 }

@@ -107,6 +107,9 @@ namespace Intersect.Editor.Forms.Editors.Events
             var treeNode71 = new TreeNode("Open Mage Window");
             var treeNode72 = new TreeNode("Open Broke Items Window");
             var treeNode73 = new TreeNode("Enchantment", new TreeNode[] { treeNode70, treeNode71, treeNode72 });
+            var treeNode74 = new TreeNode("Send Mail");
+            var treeNode75 = new TreeNode("Open Mail Box");
+            var treeNode76 = new TreeNode("Mail Box", new TreeNode[] { treeNode74, treeNode75 });
             lblName = new Label();
             txtEventname = new DarkTextBox();
             grpEntityOptions = new DarkGroupBox();
@@ -996,7 +999,13 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode72.Text = "Open Broke Items Window";
             treeNode73.Name = "Enchantment";
             treeNode73.Text = "Enchantment";
-            lstCommands.Nodes.AddRange(new TreeNode[] { treeNode5, treeNode13, treeNode33, treeNode43, treeNode52, treeNode56, treeNode58, treeNode62, treeNode67, treeNode69, treeNode73 });
+            treeNode74.Name = "sendmail";
+            treeNode74.Text = "Send Mail";
+            treeNode75.Name = "openmailbox";
+            treeNode75.Text = "Open Mail Box";
+            treeNode76.Name = "mailbox";
+            treeNode76.Text = "Mail Box";
+            lstCommands.Nodes.AddRange(new TreeNode[] { treeNode5, treeNode13, treeNode33, treeNode43, treeNode52, treeNode56, treeNode58, treeNode62, treeNode67, treeNode69, treeNode73, treeNode76 });
             lstCommands.Size = new Size(500, 536);
             lstCommands.TabIndex = 2;
             lstCommands.NodeMouseDoubleClick += lstCommands_NodeMouseDoubleClick;

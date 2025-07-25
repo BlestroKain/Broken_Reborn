@@ -189,4 +189,48 @@ internal sealed partial class PacketHandler
     {
         Interface.Interface.GameUi?.OpenBrokeItemWindow();
     }
+
+    // Mail
+    public void HandlePacket(IPacketSender packetSender, MailBoxsUpdatePacket packet)
+    {
+        Globals.Mails.Clear();
+        foreach (MailBoxUpdatePacket mail in packet.Mails)
+        {
+            var attachments = new List<MailAttachment>();
+            if (mail.Attachments != null)
+            {
+                foreach (var attachment in mail.Attachments)
+                {
+                    attachments.Add(new MailAttachment
+                    {
+                        ItemId = attachment.ItemId,
+                        Quantity = attachment.Quantity,
+                        Properties = attachment.Properties
+                    });
+                }
+            }
+            Globals.Mails.Add(new Mail(mail.MailID, mail.Name, mail.Message, mail.SenderName, attachments));
+        }
+    }
+
+    public void HandlePacket(IPacketSender packetSender, MailBoxPacket packet)
+    {
+        if (!packet.Close)
+        {
+            Interface.Interface.GameUi.CloseSendMailBox();
+            Interface.Interface.GameUi.CloseMailBox();
+        }
+        else
+        {
+            if (packet.Send)
+            {
+                Interface.Interface.GameUi.OpenSendMailBox();
+            }
+            else
+            {
+                Interface.Interface.GameUi.OpenMailBox();
+            }
+        }
+    }
+
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using Intersect.Client.Core;
 using Intersect.Client.Framework.File_Management;
+using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
 using Intersect.Client.General;
@@ -11,11 +12,10 @@ using Intersect.Client.Localization;
 using Intersect.Client.Networking;
 using Intersect.GameObjects;
 
-namespace Intersect.Client.Interface.Game.Mail
+namespace Intersect.Client.Interface.Game.Mail;
+
+public partial class MailBoxWindow : Window
 {
-    public class MailBoxWindow
-    {
-        private WindowControl mMailBoxWindow;
 
         private Label mMailLabel;
         private ListBox mMailListBox;
@@ -32,17 +32,17 @@ namespace Intersect.Client.Interface.Game.Mail
         private Button mSendMailButton;
         private Button mCloseButton;
 
-        public MailBoxWindow(Canvas gameCanvas)
+        public MailBoxWindow(Canvas gameCanvas) : base(gameCanvas, Strings.MailBox.title, false, nameof(MailBoxWindow))
         {
-            mMailBoxWindow = new WindowControl(gameCanvas, Strings.MailBox.title, false, "MailBoxWindow");
-            mMailBoxWindow.SetSize(700, 500);
-            Interface.InputBlockingElements.Add(mMailBoxWindow);
+            DisableResizing();
+            SetSize(700, 500);
+            Interface.InputBlockingComponents.Add(this);
 
             // 📩 Panel Izquierdo: Lista de Correos
-            mMailLabel = new Label(mMailBoxWindow, "Mail") { Text = Strings.MailBox.mails };
+            mMailLabel = new Label(this, "Mail") { Text = Strings.MailBox.mails };
             mMailLabel.SetBounds(20, 10, 200, 20);
 
-            mMailListBox = new ListBox(mMailBoxWindow, "MailListBox");
+            mMailListBox = new ListBox(this, "MailListBox");
             mMailListBox.SetBounds(20, 40, 250, 400);
             mMailListBox.EnableScroll(false, true);
             mMailListBox.RowSelected += Selected_MailListBox;
@@ -50,36 +50,41 @@ namespace Intersect.Client.Interface.Game.Mail
                 // Por la siguiente línea correcta
             mMailListBox.TextColor = Color.White;
             // 📨 Panel Derecho: Detalles del Correo
-            mSender = new Label(mMailBoxWindow, "Sender");
+            mSender = new Label(this, "Sender");
             mSender.SetBounds(300, 40, 350, 20);
             mSender.Hide();
 
-            mTitle = new Label(mMailBoxWindow, "Title");
+            mTitle = new Label(this, "Title");
             mTitle.SetBounds(300, 70, 350, 20);
             mTitle.Hide();
 
-            mMessage = new RichLabel(mMailBoxWindow, "Message");
+            mMessage = new RichLabel(this, "Message");
             mMessage.SetBounds(300, 100, 350, 150);
             mMessage.Hide();
 
             // 🎁 Adjuntos (Debajo del Mensaje)
-            mAttachmentLabel = new Label(mMailBoxWindow, "Attachments") { Text = "📦 Attachments" };
+            mAttachmentLabel = new Label(this, "Attachments") { Text = "📦 Attachments" };
             mAttachmentLabel.SetBounds(300, 270, 350, 20);
             mAttachmentLabel.Hide();
 
-            mAttachmentContainer = new ScrollControl(mMailBoxWindow, "AttachmentContainer");
+            mAttachmentContainer = new ScrollControl(this, "AttachmentContainer");
             mAttachmentContainer.SetBounds(300, 300, 250, 40);
             mAttachmentContainer.EnableScroll(false, true);
-            mMailBoxWindow.AddChild(mAttachmentContainer);
-            InitializeAttachmentSlots();
+            this.AddChild(mAttachmentContainer);
 
             // Botones de Acción
             InitButtons();
 
-            mMailBoxWindow.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
-            mMailBoxWindow.SetPosition(Graphics.Renderer.GetScreenWidth() / 2 - mMailBoxWindow.Width / 2,
-                                       Graphics.Renderer.GetScreenHeight() / 2 - mMailBoxWindow.Height / 2);
-            mMailBoxWindow.DisableResizing();
+            this.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+            this.SetPosition(Graphics.Renderer.GetScreenWidth() / 2 - this.Width / 2,
+                                       Graphics.Renderer.GetScreenHeight() / 2 - this.Height / 2);
+            this.DisableResizing();
+        }
+        protected override void EnsureInitialized()
+        {
+            LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+            InitializeAttachmentSlots();
+        }
         }
         private void InitializeAttachmentSlots()
         {
@@ -106,20 +111,20 @@ namespace Intersect.Client.Interface.Game.Mail
         private void InitButtons()
         {
             // 📤 Enviar Correo
-            mSendMailButton = new Button(mMailBoxWindow, "SendMailButton");
+            mSendMailButton = new Button(this, "SendMailButton");
             mSendMailButton.SetText("📤 Send Mail");
             mSendMailButton.SetBounds(20, 460, 120, 30);
             mSendMailButton.Clicked += SendMail_Clicked;
 
             // 🎁 Tomar Adjuntos
-            mTakeButton = new Button(mMailBoxWindow, "TakeButton");
+            mTakeButton = new Button(this, "TakeButton");
             mTakeButton.SetText(Strings.MailBox.take);
             mTakeButton.SetBounds(300, 460, 150, 30);
             mTakeButton.Clicked += Take_Clicked;
             mTakeButton.Hide();
 
             // ❌ Cerrar Ventana
-            mCloseButton = new Button(mMailBoxWindow, "CloseButton");
+            mCloseButton = new Button(this, "CloseButton");
             mCloseButton.SetText("❌ Close");
             mCloseButton.SetBounds(500, 460, 150, 30);
             mCloseButton.Clicked += CloseButton_Clicked;
@@ -127,7 +132,7 @@ namespace Intersect.Client.Interface.Game.Mail
 
         private void SendMail_Clicked(Base sender, ClickedEventArgs arguments)
         {
-            if (mMailBoxWindow.Parent is Canvas parentCanvas)
+            if (this.Parent is Canvas parentCanvas)
             {
                 var sendMailWindow = new SendMailBoxWindow(parentCanvas);
                 sendMailWindow.Show();
@@ -184,7 +189,7 @@ namespace Intersect.Client.Interface.Game.Mail
       
         void CloseButton_Clicked(Base sender, ClickedEventArgs e)
         {
-            mMailBoxWindow.Close();
+            base.Close();
             PacketSender.SendCloseMail();
         }
 
@@ -245,22 +250,22 @@ namespace Intersect.Client.Interface.Game.Mail
 
         public void Close()
         {
-            mMailBoxWindow.Close();
+            base.Close();
         }
 
         public bool IsVisible()
         {
-            return !mMailBoxWindow.IsHidden;
+            return !this.IsHidden;
         }
 
         public void Hide()
         {
-            mMailBoxWindow.IsHidden = true;
+            this.IsHidden = true;
         }
 
         public void Show()
         {
-            mMailBoxWindow.Show();
+            base.Show();
         }
     }
 }

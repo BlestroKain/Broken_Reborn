@@ -1687,4 +1687,13 @@ public static partial class CommandPrinter
     {
         return Strings.EventCommandList.openbrokeitem;
     }
+
+    private static string GetCommandText(OpenMailBoxCommand command, MapInstance map)
+    {
+        return Strings.EventCommandList.openmailbox;
+    }
+    private static string GetCommandText(SendMailBoxCommand command, MapInstance map)
+    {
+        return Strings.EventCommandList.sendmail;
+    }
 }

@@ -307,6 +307,47 @@ public static partial class Strings
         nameof(SerializeDictionary),
         BindingFlags.NonPublic | BindingFlags.Static
     ) ?? throw new InvalidOperationException();
+
+    public partial struct MailBox
+    {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString title = @"Mail Box";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString sendtitle = @"Send Mail";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString send = @"Send";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString close = @"Close";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString itemnone = @"None";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString mailto = @"To";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString mailtitle = @"Title";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString mailmsg = @"Message";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString mailitem = @"Item";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString mailquantity = @"Quantity";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString mails = @"Mails";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString sender = @"Sender";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString take = @"Take Mail (Delete)";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString additem = @"Add Item";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString attachments = @"Attachments";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString selectQuantity=@"Select Quantity";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString enterQuantity= @"Enter Quantity";
+    }
+
+
     public partial struct Breaking
     {
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

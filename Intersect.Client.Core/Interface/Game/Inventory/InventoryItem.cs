@@ -11,7 +11,9 @@ using Intersect.Client.General;
 using Intersect.Client.Interface.Game.Bag;
 using Intersect.Client.Interface.Game.Bank;
 using Intersect.Client.Interface.Game.Hotbar;
+using Intersect.Client.Interface.Game.Mail;
 using Intersect.Client.Interface.Game.Shop;
+using Intersect.Client.Items;
 using Intersect.Client.Localization;
 using Intersect.Client.Networking;
 using Intersect.Configuration;
@@ -45,8 +47,7 @@ public partial class InventoryItem : SlotItem
         Icon.HoverLeave += Icon_HoverLeave;
         Icon.Clicked += Icon_Clicked;
         Icon.DoubleClicked += Icon_DoubleClicked;
-
-        _equipImageBackground = new ImagePanel(this, "EquippedIcon")
+   _equipImageBackground = new ImagePanel(this, "EquippedIcon")
         {
             Texture = Graphics.Renderer.WhitePixel,
         };
@@ -99,6 +100,7 @@ public partial class InventoryItem : SlotItem
             player.InventoryUpdated += PlayerOnInventoryUpdated;
         }
     }
+
 
     #region Context Menu
 
@@ -403,6 +405,7 @@ public partial class InventoryItem : SlotItem
             return false;
         }
 
+        // Si arrastramos fuera del UI y no estamos ocupados → Drop en el mapa
         if (!Interface.DoesMouseHitInterface() && !player.IsBusy)
         {
             PacketSender.SendDropItem(SlotIndex, inventorySlot.Quantity);
@@ -411,7 +414,7 @@ public partial class InventoryItem : SlotItem
 
         var targetNode = Interface.FindComponentUnderCursor();
 
-        // Find the first parent acceptable in that tree that can accept the package
+        // Buscar un contenedor válido en la jerarquía
         while (targetNode != default)
         {
             switch (targetNode)
@@ -445,6 +448,37 @@ public partial class InventoryItem : SlotItem
                 case ShopWindow:
                     player.TrySellItem(SlotIndex);
                     return true;
+                case MailItem mailSlot:
+                    if (mailSlot.IsEmpty)
+                    {
+                        if (!ItemDescriptor.TryGet(inventorySlot.ItemId, out var descriptor))
+                        {
+                            return false;
+                        }
+
+                        if (!descriptor.IsStackable || inventorySlot.Quantity == 1)
+                        {
+                            // Adjuntar directamente
+                            mailSlot.FinalizeAttachment(new Item
+                            {
+                                ItemId = inventorySlot.ItemId,
+                                Quantity = 1,
+                                ItemProperties = inventorySlot.ItemProperties
+                            }, SlotIndex);
+                        }
+                        else
+                        {
+                            // Abrir input para seleccionar cantidad
+                            mailSlot.RequestQuantitySelection((Item)inventorySlot, SlotIndex);
+                        }
+
+                        return true;
+                    }
+                    else
+                    {
+                        PacketSender.SendChatMsg("⚠️ This slot already has an attachment.", 4);
+                    }
+                    return false;
 
                 default:
                     targetNode = targetNode.Parent;
@@ -452,11 +486,13 @@ public partial class InventoryItem : SlotItem
             }
         }
 
-        // If we've reached the top of the tree, we can't drop here, so cancel drop
+        // Si no encontramos un contenedor válido
         return false;
     }
 
     #endregion
+
+
 
     private void PlayerOnInventoryUpdated(Player player, int slotIndex)
     {

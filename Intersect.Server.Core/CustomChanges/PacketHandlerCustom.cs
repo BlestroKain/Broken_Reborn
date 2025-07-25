@@ -33,6 +33,7 @@ using PartyInvitePacket = Intersect.Network.Packets.Client.PartyInvitePacket;
 using PingPacket = Intersect.Network.Packets.Client.PingPacket;
 using TradeRequestPacket = Intersect.Network.Packets.Client.TradeRequestPacket;
 using Serilog;
+using Microsoft.EntityFrameworkCore;
 
 namespace Intersect.Server.Networking;
 
@@ -257,4 +258,215 @@ internal sealed partial class PacketHandler
         ItemBreakHelper.InitializeRunes();
         player.BreakItem(packet.ItemSlot);
     }
+    public void HandlePacket(Client client, MailBoxSendPacket packet)
+    {
+        var sender = client?.Entity;
+        if (sender == null)
+            return;
+
+        using (var context = DbInterface.CreatePlayerContext(readOnly: false))
+        {
+            // Buscar destinatario e incluir sus correos
+            var recipient = context.Players.Include(p => p.MailBoxs)
+                .SingleOrDefault(p => p.Name == packet.To);
+
+            if (recipient == null)
+            {
+                PacketSender.SendChatMsg(sender, $"{Strings.Mails.playernotfound} ({packet.To})", ChatMessageType.Error, CustomColors.Alerts.Info);
+                sender.CloseMailBox();
+                return;
+            }
+
+            // ✅ Bloquear envío al mismo personaje
+            if (sender.Id == recipient.Id)
+            {
+                PacketSender.SendChatMsg(sender, "⚠️ No puedes enviarte un correo a ti mismo.", ChatMessageType.Error, CustomColors.Alerts.Info);
+                sender.CloseMailBox();
+                return;
+            }
+
+            // ✅ Bloquear envío a otros personajes de la misma cuenta
+            if (sender.UserId == recipient.UserId)
+            {
+                PacketSender.SendChatMsg(sender, "⚠️ No puedes enviar correo a personajes de tu misma cuenta.", ChatMessageType.Error, CustomColors.Alerts.Info);
+                sender.CloseMailBox();
+                return;
+            }
+
+            // ✅ Manejo de adjuntos con snapshot para rollback
+            var attachments = new List<MailAttachment>();
+            var removedItems = new List<(Guid ItemId, int Quantity, ItemProperties Properties)>();
+
+            foreach (var attachment in packet.Attachments)
+            {
+                if (sender.TryTakeItem(attachment.ItemId, attachment.Quantity))
+                {
+                    removedItems.Add((attachment.ItemId, attachment.Quantity, attachment.Properties));
+
+                    attachments.Add(new MailAttachment
+                    {
+                        ItemId = attachment.ItemId,
+                        Quantity = attachment.Quantity,
+                        Properties = attachment.Properties
+                    });
+                }
+                else
+                {
+                    // Si falla la extracción, devolver los que ya quitamos
+                    foreach (var item in removedItems)
+                    {
+                        sender.TryGiveItem(item.ItemId, item.Quantity, item.Properties);
+                    }
+
+                    PacketSender.SendChatMsg(sender, Strings.Mails.invaliditem, ChatMessageType.Error, CustomColors.Alerts.Info);
+                    sender.CloseMailBox();
+                    return;
+                }
+            }
+
+            // ✅ Adjuntar entidades para evitar conflictos
+            context.Attach(recipient).State = EntityState.Unchanged;
+            context.Attach(sender).State = EntityState.Unchanged;
+
+            // Crear mail
+            var mail = new MailBox(sender, recipient, packet.Title, packet.Message, attachments);
+            recipient.MailBoxs.Add(mail);
+            context.Entry(mail).State = EntityState.Added;
+
+            // ✅ Guardar con reintentos y rollback si falla
+            var success = false;
+            int retries = 3;
+
+            while (retries > 0 && !success)
+            {
+                try
+                {
+                    context.SaveChanges();
+                    success = true;
+                }
+                catch (DbUpdateException ex)
+                {
+                    Log.Error($"Error de concurrencia al guardar el correo. Intentos restantes: {retries - 1}", ex);
+                    retries--;
+                }
+            }
+
+            // ✅ Si falla, devolver ítems al inventario
+            if (!success)
+            {
+                foreach (var item in removedItems)
+                {
+                    sender.TryGiveItem(item.ItemId, item.Quantity, item.Properties);
+                }
+
+                PacketSender.SendChatMsg(sender, "⚠️ Error al enviar el correo. Los ítems fueron devueltos.", ChatMessageType.Error, CustomColors.Alerts.Info);
+                sender.CloseMailBox();
+                return;
+            }
+
+            // ✅ Notificar destinatario online
+            var onlineRecipient = Player.FindOnline(packet.To);
+            if (onlineRecipient != null)
+            {
+                onlineRecipient.MailBoxs.Add(mail);
+                PacketSender.SendChatMsg(onlineRecipient, Strings.Mails.newmail, ChatMessageType.Trading, CustomColors.Alerts.Accepted);
+                PacketSender.SendOpenMailBox(onlineRecipient);
+            }
+        }
+
+        // ✅ Confirmación al remitente
+        PacketSender.SendChatMsg(sender, "Correo enviado con éxito.", ChatMessageType.Trading, CustomColors.Alerts.Accepted);
+        sender.CloseMailBox();
+    }
+
+    public void HandlePacket(Client client, TakeMailPacket packet)
+    {
+        var player = client?.Entity;
+        if (player == null)
+        {
+            return;
+        }
+
+        var mail = player.MailBoxs.FirstOrDefault(m => m.Id == packet.MailID);
+        if (mail == null)
+        {
+            PacketSender.SendChatMsg(player, Strings.Mails.mailnotfound, ChatMessageType.Error, CustomColors.Alerts.Declined);
+            return;
+        }
+
+        if (mail.Attachments == null || mail.Attachments.Count == 0)
+        {
+            PacketSender.SendChatMsg(player, "⚠️ Este correo no contiene ítems.", ChatMessageType.Error, CustomColors.Alerts.Info);
+            return;
+        }
+
+        var deliveredItems = new List<MailAttachment>();
+        var pendingItems = new List<MailAttachment>();
+
+        // ✅ Procesar adjuntos de forma segura
+        foreach (var attachment in mail.Attachments)
+        {
+            var item = new Item(attachment.ItemId, attachment.Quantity)
+            {
+                Properties = attachment.Properties
+            };
+
+            // Validar espacio para este ítem
+            if (player.CanGiveItem(item, out _))
+            {
+                if (player.TryGiveItem(item, ItemHandling.Normal))
+                {
+                    deliveredItems.Add(attachment);
+                }
+                else
+                {
+                    pendingItems.Add(attachment);
+                }
+            }
+            else
+            {
+                pendingItems.Add(attachment);
+            }
+        }
+
+        // ✅ Actualización en base de datos
+        using (var context = DbInterface.CreatePlayerContext(readOnly: false))
+        {
+            var dbMail = context.Player_MailBox.FirstOrDefault(m => m.Id == mail.Id);
+            if (dbMail != null)
+            {
+                if (pendingItems.Any())
+                {
+                    // Guardar solo los ítems que no se pudieron entregar
+                    dbMail.Attachments = pendingItems;
+                    context.Update(dbMail);
+                }
+                else
+                {
+                    // Eliminar el correo si ya no quedan adjuntos
+                    context.Player_MailBox.Remove(dbMail);
+                }
+                context.SaveChanges();
+            }
+        }
+
+        // ✅ Actualizar en memoria
+        if (pendingItems.Any())
+        {
+            mail.Attachments = pendingItems;
+            PacketSender.SendChatMsg(player, "⚠️ No todos los ítems se entregaron. Verifica tu inventario y vuelve a intentarlo.", ChatMessageType.Notice, CustomColors.Alerts.Info);
+        }
+        else
+        {
+            player.MailBoxs.Remove(mail);
+            PacketSender.SendChatMsg(player, "✅ Todos los ítems del correo fueron entregados.", ChatMessageType.Trading, CustomColors.Alerts.Accepted);
+        }
+
+        // ✅ Actualización visual
+        PacketSender.SendInventory(player);
+        PacketSender.SendOpenMailBox(player);
+    }
+
+
+
 }

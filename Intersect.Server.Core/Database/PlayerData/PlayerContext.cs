@@ -48,6 +48,7 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
     public DbSet<GuildVariable> Guild_Variables { get; set; }
 
     public DbSet<UserVariable> User_Variables { get; set; }
+    public DbSet<MailBox> Player_MailBox { get; set; }
 
     internal async ValueTask Commit(
         bool commit = false,
@@ -119,6 +120,18 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
 
         modelBuilder.Entity<User>().HasMany(b => b.Variables).WithOne(p => p.User);
         modelBuilder.Entity<UserVariable>().HasIndex(p => new { p.VariableId, p.UserId }).IsUnique();
+        modelBuilder.Entity<Player>()
+               .HasMany(p => p.MailBoxs)
+               .WithOne(m => m.Player)
+               .HasForeignKey(m => m.PlayerId)
+               .OnDelete(DeleteBehavior.Cascade);
+
+        // Relación Player → MailBox (mails enviados)
+        modelBuilder.Entity<MailBox>()
+            .HasOne(m => m.SenderPlayer)
+            .WithMany() // no necesitamos colección inversa aquí
+            .HasForeignKey(m => m.SenderId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 
     public void Seed()

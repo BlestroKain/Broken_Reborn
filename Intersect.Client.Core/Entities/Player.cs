@@ -75,14 +75,44 @@ public partial class Player : Entity, IPlayer
     public event InventoryUpdatedEventHandler? InventoryUpdated;
 
     public void UpdateInventory(
-        int slotIndex,
-        Guid descriptorId,
-        int quantity,
-        Guid? bagId,
-        ItemProperties itemProperties
-    )
+      int slotIndex,
+      Guid descriptorId,
+      int quantity,
+      Guid? bagId,
+      ItemProperties itemProperties
+  )
     {
-        Inventory[slotIndex].Load(id: descriptorId, quantity: quantity, bagId: bagId, itemProperties: itemProperties);
+        // Validación básica
+        if (Inventory == null || slotIndex < 0 || slotIndex >= Inventory.Length)
+        {
+            return;
+        }
+
+        // Si la cantidad es 0 o el descriptor es inválido, limpiamos el slot
+        if (quantity <= 0 || !ItemDescriptor.TryGet(descriptorId, out _))
+        {
+            Inventory[slotIndex] = null;
+            InventoryUpdated?.Invoke(this, slotIndex);
+            return;
+        }
+
+        // Si el slot no está instanciado, lo creamos
+        if (Inventory[slotIndex] == null)
+        {
+            Inventory[slotIndex] = new Item
+            {
+                ItemId = descriptorId,
+                Quantity = quantity,
+                ItemProperties = itemProperties,
+                BagId = bagId
+            };
+        }
+        else
+        {
+            // Si ya existe, solo actualizamos su contenido
+            Inventory[slotIndex].Load(descriptorId, quantity, bagId, itemProperties);
+        }
+
         InventoryUpdated?.Invoke(this, slotIndex);
     }
 

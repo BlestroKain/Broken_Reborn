@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Intersect.Client.Core;
 using Intersect.Client.Framework.File_Management;
+using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
 using Intersect.Client.General;
@@ -15,11 +16,10 @@ using Intersect.GameObjects;
 using Intersect.Network.Packets.Server;
 using Newtonsoft.Json.Linq;
 
-namespace Intersect.Client.Interface.Game.Mail
+namespace Intersect.Client.Interface.Game.Mail;
+
+public partial class SendMailBoxWindow : Window
 {
-    public class SendMailBoxWindow
-    {
-        private WindowControl mSendMailBoxWindow;
 
         private Label mTo;
         private TextBox mToTextbox;
@@ -60,75 +60,78 @@ namespace Intersect.Client.Interface.Game.Mail
         public int X { get;  set; }
         public int Y { get;  set; }
 
-        public SendMailBoxWindow(Canvas gameCanvas)
+        public SendMailBoxWindow(Canvas gameCanvas) : base(gameCanvas, Strings.MailBox.sendtitle, false, nameof(SendMailBoxWindow))
         {
-            mSendMailBoxWindow = new WindowControl(gameCanvas, Strings.MailBox.sendtitle, false, "SendMailBoxWindow");
-            Interface.InputBlockingElements.Add(mSendMailBoxWindow);
+            DisableResizing();
+            Interface.InputBlockingComponents.Add(this);
 
             // Sección Izquierda: Información del Correo
-            mTo = new Label(mSendMailBoxWindow, "To") { Text = Strings.MailBox.mailto };
+            mTo = new Label(this, "To") { Text = Strings.MailBox.mailto };
             mTo.SetBounds(20, 20, 100, 20);
 
-            mToTextbox = new TextBox(mSendMailBoxWindow, "ToTextbox");
+            mToTextbox = new TextBox(this, "ToTextbox");
             mToTextbox.SetBounds(130, 20, 200, 25);
             Interface.FocusElements.Add(mToTextbox);
 
-            mTitle = new Label(mSendMailBoxWindow, "Title") { Text = Strings.MailBox.mailtitle };
+            mTitle = new Label(this, "Title") { Text = Strings.MailBox.mailtitle };
             mTitle.SetBounds(20, 60, 100, 20);
 
-            mTitleTextbox = new TextBox(mSendMailBoxWindow, "TitleTextbox");
+            mTitleTextbox = new TextBox(this, "TitleTextbox");
             mTitleTextbox.SetBounds(130, 60, 200, 25);
             mTitleTextbox.SetMaxLength(50);
 
-            mMessage = new Label(mSendMailBoxWindow, "Message") { Text = Strings.MailBox.mailmsg };
+            mMessage = new Label(this, "Message") { Text = Strings.MailBox.mailmsg };
             mMessage.SetBounds(20, 100, 100, 20);
 
-            mMsgTextbox = new TextBox(mSendMailBoxWindow, "MsgTextbox");
+            mMsgTextbox = new TextBox(this, "MsgTextbox");
             mMsgTextbox.SetBounds(130, 100, 200, 80);
             mMsgTextbox.SetMaxLength(255);
       
 
-            mAttachmentLabel = new Label(mSendMailBoxWindow, "Attachments") { Text = "📦 Attachments" };
+            mAttachmentLabel = new Label(this, "Attachments") { Text = "📦 Attachments" };
             mAttachmentLabel.SetBounds(20, 200, 100, 20);
 
-            mAttachmentContainer = new ScrollControl(mSendMailBoxWindow, "AttachmentContainer");
+            mAttachmentContainer = new ScrollControl(this, "AttachmentContainer");
             mAttachmentContainer.SetBounds(20, 220, 360, 60);
             mAttachmentContainer.EnableScroll(false, true);
- 
-            InitializeAttachmentSlots();
 
             // Sección Derecha: Inventario
-            mInventoryLabel = new Label(mSendMailBoxWindow, "Inventory") { Text = "🏷 Inventory" };
+            mInventoryLabel = new Label(this, "Inventory") { Text = "🏷 Inventory" };
             mInventoryLabel.SetBounds(400, 20, 100, 20);
-            mItemContainer = new ScrollControl(mSendMailBoxWindow, "ItemContainer");
+            mItemContainer = new ScrollControl(this, "ItemContainer");
             mItemContainer.SetBounds(400, 40, 300, 240);
             mItemContainer.EnableScroll(false, true);
             Interface.FocusElements.Add(mItemContainer);
-            mSendMailBoxWindow.AddChild(mItemContainer); 
-            mQuantityLabel = new Label(mSendMailBoxWindow, "QuantityLabel") { Text = "Quantity" };
+            this.AddChild(mItemContainer); 
+            mQuantityLabel = new Label(this, "QuantityLabel") { Text = "Quantity" };
             mQuantityLabel.SetBounds(400, 290, 100, 20);
 
-            mQuantityTextBox = new TextBoxNumeric(mSendMailBoxWindow, "QuantityTextBox");
+            mQuantityTextBox = new TextBoxNumeric(this, "QuantityTextBox");
             mQuantityTextBox.SetBounds(500, 290, 100, 25);
 
-            mAddItemButton = new Button(mSendMailBoxWindow, "AddItemButton");
+            mAddItemButton = new Button(this, "AddItemButton");
             mAddItemButton.SetText("➕ Add Item");
             mAddItemButton.SetBounds(400, 320, 200, 30);
             mAddItemButton.Clicked += AddItemButton_Clicked;
 
-            mSendButton = new Button(mSendMailBoxWindow, "SendButton");
+            mSendButton = new Button(this, "SendButton");
             mSendButton.SetText("📤 Send");
             mSendButton.SetBounds(150, 300, 100, 30);
             mSendButton.Clicked += SendButton_Clicked;
 
-            mCloseButton = new Button(mSendMailBoxWindow, "CloseButton");
+            mCloseButton = new Button(this, "CloseButton");
             mCloseButton.SetText("❌ Close");
             mCloseButton.SetBounds(260, 300, 100, 30);
             mCloseButton.Clicked += CloseButton_Clicked;
-            mSendMailBoxWindow.SetBounds(100, 100, 720, 360);
-            mSendMailBoxWindow.DisableResizing();
-            mSendMailBoxWindow.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+            this.SetBounds(100, 100, 720, 360);
+            this.DisableResizing();
+            this.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
           
+        }
+        protected override void EnsureInitialized()
+        {
+            LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+            InitializeAttachmentSlots();
         }
         public void LoadInventoryItems()
         {
@@ -171,7 +174,7 @@ namespace Intersect.Client.Interface.Game.Mail
                 LoadInventoryItems();
             }
 
-            if (mSendMailBoxWindow.IsHidden)
+            if (this.IsHidden)
             {
                 return;
             }
@@ -373,9 +376,7 @@ namespace Intersect.Client.Interface.Game.Mail
 
             for (int i = 0; i < 5; i++) // Número máximo de slots  
             {
-                var mailSlot = new MailItem(this, i, mAttachmentContainer);
-                mailSlot.SlotPanel.RightClicked += (sender, args) => RemoveAttachment(mailSlot); // Agregar eliminación con clic derecho  
-                mAttachmentSlots.Add(mailSlot);
+                var mailSlot = new MailItem(this, i, mAttachmentContainer);                mAttachmentSlots.Add(mailSlot);
 
                 var xPadding = 5;
                 var yPadding = 5;
@@ -490,7 +491,7 @@ namespace Intersect.Client.Interface.Game.Mail
             PacketSender.SendCloseMail();
             Close();
         }
-        private void RemoveAttachment(MailItem mailSlot)
+        public void RemoveAttachment(MailItem mailSlot)
         {
             if (mailSlot == null || mailSlot.CurrentSlot == null)
             {
@@ -608,18 +609,18 @@ namespace Intersect.Client.Interface.Game.Mail
                 RestoreItemsToInventory();
             }
 
-            mSendMailBoxWindow.Close();
+            base.Close();
         }
 
 
         public bool IsVisible()
         {
-           return !mSendMailBoxWindow.IsHidden;
+           return !this.IsHidden;
         }
 
         public void Show()
         {
-            mSendMailBoxWindow.IsHidden = false;
+            this.IsHidden = false;
             Update();
         }
     }

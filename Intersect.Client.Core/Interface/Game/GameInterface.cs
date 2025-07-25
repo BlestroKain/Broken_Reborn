@@ -723,7 +723,6 @@ public partial class GameInterface : MutableInterface
         }
 
         mSendMailBoxWindow.Show();
-        mSendMailBoxWindow.InitializeAttachmentSlots();
         mSendMailBoxWindow.Update();
 
     }

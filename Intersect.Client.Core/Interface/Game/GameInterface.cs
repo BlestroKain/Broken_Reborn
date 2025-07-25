@@ -12,6 +12,7 @@ using Intersect.Client.Interface.Game.EntityPanel;
 using Intersect.Client.Interface.Game.Guilds;
 using Intersect.Client.Interface.Game.Hotbar;
 using Intersect.Client.Interface.Game.Inventory;
+using Intersect.Client.Interface.Game.Mail;
 using Intersect.Client.Interface.Game.Shop;
 using Intersect.Client.Interface.Game.Trades;
 using Intersect.Client.Interface.Menu;
@@ -127,7 +128,8 @@ public partial class GameInterface : MutableInterface
     private EscapeMenuWindow? _escapeMenu;
     private SimplifiedEscapeMenu? _simplifiedEscapeMenu;
     private TargetContextMenu? _targetContextMenu;
-
+    private SendMailBoxWindow mSendMailBoxWindow;
+    private MailBoxWindow mMailBoxWindow;
     public EscapeMenuWindow EscapeMenu => _escapeMenu ??= new EscapeMenuWindow(GameCanvas, GetOrCreateSettingsWindow)
     {
         IsHidden = true,
@@ -710,6 +712,43 @@ public partial class GameInterface : MutableInterface
         CloseShop();
         CloseTrading();
         GameCanvas.Dispose();
+    }
+
+    // Mail Box
+    public void OpenSendMailBox()
+    {
+        if (mSendMailBoxWindow == null)
+        {
+            mSendMailBoxWindow = new SendMailBoxWindow(GameCanvas);
+        }
+
+        mSendMailBoxWindow.Show();
+        mSendMailBoxWindow.InitializeAttachmentSlots();
+        mSendMailBoxWindow.Update();
+
+    }
+
+    public void OpenMailBox()
+    {
+        if (mMailBoxWindow == null)
+        {
+            mMailBoxWindow = new MailBoxWindow(GameCanvas);
+        }
+
+        mMailBoxWindow.Show();
+        mMailBoxWindow.UpdateMail();
+    }
+
+    public void CloseSendMailBox()
+    {
+        // Ocultar la ventana de envío de correos
+        mSendMailBoxWindow?.Close();
+    }
+
+    public void CloseMailBox()
+    {
+        // Ocultar la ventana de bandeja de entrada
+        mMailBoxWindow?.Hide();
     }
 
 }

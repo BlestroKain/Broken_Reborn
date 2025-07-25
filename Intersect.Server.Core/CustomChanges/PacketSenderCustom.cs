@@ -153,4 +153,40 @@ public static partial class PacketSender
         // Abre la ventana para vender ítems
         player.SendPacket(new BrokeItemWindowPacket());
     }
+
+    public static void SendOpenMailBox(Player player)
+    {
+        var mails = new List<MailBoxUpdatePacket>();
+        foreach (var mail in player.MailBoxs)
+        {
+            var attachments = mail.Attachments.Select(a => new MailAttachmentPacket
+            {
+                ItemId = a.ItemId,
+                Quantity = a.Quantity,
+                Properties = a.Properties
+            }).ToList();
+
+            mails.Add(new MailBoxUpdatePacket(mail.Id, mail.Title, mail.Message, mail.Player?.Name ?? "Desconocido", attachments));
+        }
+
+        player.SendPacket(new MailBoxsUpdatePacket(mails.ToArray()));
+        player.SendPacket(new MailBoxPacket(true, false));
+    }
+
+    public static void SendCloseMailBox(Player player)
+    {
+        // Enviar paquete para cerrar la bandeja de entrada
+        player.SendPacket(new MailBoxPacket(false, false));
+    }
+
+    public static void SendOpenSendMail(Player player)
+    {
+        // Enviar inventario del jugador al cliente
+        SendInventory(player);
+
+        // Enviar paquete para abrir la ventana de envío de correos
+
+        player.SendPacket(new MailBoxPacket(true, true));
+    }
+
 }

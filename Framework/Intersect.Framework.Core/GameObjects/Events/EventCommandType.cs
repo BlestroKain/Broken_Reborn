@@ -140,4 +140,6 @@ public enum EventCommandType
     OpenEnchantment = 201,
     OpenMage = 202,
     OpenBrokeItem = 203,
+    OpenMailBox = 204,
+    SendMail = 205,
 }

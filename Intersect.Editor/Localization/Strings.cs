@@ -2341,6 +2341,10 @@ Tick timer saved in server config.json.";
         public static LocalizedString openmage = @"Open Mage Window";
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString openbrokeitem = @"Open Broke Items Window";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString sendmail = @"Send Mail";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString openmailbox = @"Open Mail Box";
     }
 
     public partial struct EventChangePlayerColor
@@ -2447,6 +2451,9 @@ Tick timer saved in server config.json.";
 {"openmage", @"Open Mage Window"},
 {"openbrokeitem", @"Open Broke Items Window"},
 {"Enchantment", @"Enchantment"},
+ {"mailbox", @"Mail Box" },
+                {"sendmail", @"Send Mail"},
+                {"openmailbox", @"Open Mail Box"},
 
         };
 

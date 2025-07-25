@@ -89,7 +89,7 @@ public static partial class PacketSender
         client.TimedBufferPacketsRemaining = 5;
         client.Send(new JoinGamePacket());
         SendGameData(client);
-
+     
         if (!client.IsEditor)
         {
             var player = client.Entity;
@@ -114,7 +114,7 @@ public static partial class PacketSender
 
             //Search for login activated events and run them
             player.StartCommonEventsWithTrigger(CommonEventTrigger.Login);
-
+            NotifyPlayerOnLogin(player);
             // Send our friend list over so the UI can adjust accordingly without having to open it client-side first.
             PacketSender.SendFriends(player);
 
@@ -136,6 +136,18 @@ public static partial class PacketSender
         }
     }
 
+    public static void NotifyPlayerOnLogin(Player player)
+    {
+        // Cargar correos pendientes desde la base de datos
+        MailBox.GetMails(DbInterface.CreatePlayerContext(), player);
+
+        // Verificar si hay correos con adjuntos pendientes
+        if (player.MailBoxs.Any(mail => mail.Attachments != null && mail.Attachments.Count > 0))
+        {
+          SendChatMsg(player, "Tienes nuevos correos en tu bandeja de entrada.", ChatMessageType.Notice, CustomColors.Alerts.Info);
+          SendOpenMailBox(player);
+        }
+    }
     //MapAreaPacket
     public static void SendAreaPacket(Player player)
     {

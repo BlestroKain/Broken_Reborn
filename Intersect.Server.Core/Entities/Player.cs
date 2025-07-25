@@ -3026,6 +3026,28 @@ public partial class Player : Entity
         var bankInterface = new BankInterface<BankSlot>(this, Bank);
         return bankOverflow && bankInterface.TryDepositItem(item: item, sendUpdate: sendUpdate, giveItem: true);
     }
+    /// <summary>
+    /// Attempts to give the player an item with custom properties. Returns whether or not it succeeds.
+    /// </summary>
+    /// <param name="itemId">The Id for the item to be handed out to the player.</param>
+    /// <param name="quantity">The quantity of items to be handed out to the player.</param>
+    /// <param name="properties">The custom properties for this item.</param>
+    /// <param name="handler">The way to handle handing out this item.</param>
+    /// <param name="bankOverflow">Allow overflow into bank if inventory is full.</param>
+    /// <param name="slot">The inventory slot to put this item into.</param>
+    /// <param name="sendUpdate">Should we send an inventory update when done changing items.</param>
+    /// <returns>Whether the player received the item or not.</returns>
+    public bool TryGiveItem(Guid itemId, int quantity, ItemProperties properties, ItemHandling handler = ItemHandling.Normal, bool bankOverflow = false, int slot = -1, bool sendUpdate = true)
+    {
+        var item = new Item
+        {
+            ItemId = itemId,
+            Quantity = quantity,
+            Properties = properties ?? new ItemProperties()
+        };
+
+        return TryGiveItem(item, handler, bankOverflow, slot, sendUpdate);
+    }
 
     /// <summary>
     /// Creates an item source for the player entity.

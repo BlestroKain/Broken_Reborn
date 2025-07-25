@@ -11,6 +11,7 @@ using Intersect.Framework.Core.GameObjects.Guild;
 using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Models;
 using Intersect.Network.Packets.Client;
+using Intersect.Network.Packets.Server;
 using AdminAction = Intersect.Admin.Actions.AdminAction;
 
 namespace Intersect.Client.Networking;
@@ -84,5 +85,6 @@ public static partial class PacketSender
         // Enviar paquete para tomar un correo
         Network.SendPacket(new TakeMailPacket(mailID));
     }
+
 
 }

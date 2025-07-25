@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Server.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -13,26 +12,31 @@ namespace Intersect.Server.Database.PlayerData.Players
     {
         public MailBox() { }
 
-        public MailBox(Guid sender, Player to, string title, string msg, List<MailAttachment> attachments)
+        public MailBox(Player sender, Player receiver, string title, string message, List<MailAttachment> attachments)
         {
-            Sender = sender;
-            Player = to;
+            SenderPlayer = sender;
+            Player = receiver;
             Title = title;
-            Message = msg;
+            Message = message;
             Attachments = attachments ?? new List<MailAttachment>();
         }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity), JsonIgnore]
-        public Guid Id { get; private set; }
+        public Guid Id { get; set; }
 
+        // ✅ Jugador destinatario
         [JsonIgnore]
-        public Guid PlayerId { get; private set; }
+        public Guid PlayerId { get; set; }
 
-        [JsonIgnore]
         [ForeignKey(nameof(PlayerId))]
-        public virtual Player Player { get; private set; }
+        public virtual Player Player { get; set; }
 
-        public Guid Sender { get; set; }
+        // ✅ Jugador remitente (relación completa)
+        [JsonIgnore]
+        public Guid SenderId { get; set; }
+
+        [ForeignKey(nameof(SenderId))]
+        public virtual Player SenderPlayer { get; set; }
 
         public string Title { get; set; } = string.Empty;
 
@@ -40,9 +44,7 @@ namespace Intersect.Server.Database.PlayerData.Players
 
         public DateTime SentAt { get; set; } = DateTime.UtcNow;
 
-
-
-
+        // ✅ Adjuntos serializados
         [Column("Attachments")]
         public string AttachmentsJson
         {
@@ -51,7 +53,7 @@ namespace Intersect.Server.Database.PlayerData.Players
         }
 
         [NotMapped]
-        public List<MailAttachment> Attachments { get; set; } = new List<MailAttachment>();
+        public List<MailAttachment> Attachments { get; set; } = new();
 
         public void AddAttachment(Item item)
         {
@@ -63,30 +65,34 @@ namespace Intersect.Server.Database.PlayerData.Players
             });
         }
 
-        public List<MailAttachment> GetAttachments()
+        public List<MailAttachment> GetAttachments() => Attachments;
+    
+    public static void GetMails(PlayerContext context, Player player)
         {
-            return Attachments;
-        }
-
-        public static void GetMails(PlayerContext context, Player player)
-        {
+            // Cargamos los correos del jugador, incluyendo el remitente
             var mails = context.Player_MailBox
-                .Where(p => player.Id == p.Player.Id)
-                .Include(p => p.Sender)
+                .Where(m => m.PlayerId == player.Id)
+                .Include(m => m.SenderPlayer) // ✅ Relación cargada
                 .ToList();
 
-            if (mails != null)
+            if (mails == null || mails.Count == 0)
             {
-                player.MailBoxs = mails;
-                foreach (var mail in mails)
-                {
-                    mail.Attachments = JsonConvert.DeserializeObject<List<MailAttachment>>(mail.AttachmentsJson)
-                                        ?? new List<MailAttachment>();
-                }
-            }
-        }      
+                player.MailBoxs = new List<MailBox>();
+                return;
             }
 
+            // Restauramos la lista en el objeto Player
+            player.MailBoxs = mails;
+
+            // Reconstruimos los adjuntos (deserialización)
+            foreach (var mail in mails)
+            {
+                mail.Attachments = string.IsNullOrEmpty(mail.AttachmentsJson)
+                    ? new List<MailAttachment>()
+                    : JsonConvert.DeserializeObject<List<MailAttachment>>(mail.AttachmentsJson) ?? new List<MailAttachment>();
+            }
+        }
+    }
     public class MailAttachment
     {
         public Guid ItemId { get; set; }

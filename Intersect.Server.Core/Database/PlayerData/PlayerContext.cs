@@ -120,8 +120,18 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
 
         modelBuilder.Entity<User>().HasMany(b => b.Variables).WithOne(p => p.User);
         modelBuilder.Entity<UserVariable>().HasIndex(p => new { p.VariableId, p.UserId }).IsUnique();
-        modelBuilder.Entity<Player>().HasMany(b => b.MailBoxs).WithOne(p => p.Player).OnDelete(DeleteBehavior.Cascade);
-        modelBuilder.Entity<MailBox>().HasOne(b => b.Sender).WithMany().OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<Player>()
+               .HasMany(p => p.MailBoxs)
+               .WithOne(m => m.Player)
+               .HasForeignKey(m => m.PlayerId)
+               .OnDelete(DeleteBehavior.Cascade);
+
+        // Relación Player → MailBox (mails enviados)
+        modelBuilder.Entity<MailBox>()
+            .HasOne(m => m.SenderPlayer)
+            .WithMany() // no necesitamos colección inversa aquí
+            .HasForeignKey(m => m.SenderId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 
     public void Seed()

@@ -157,6 +157,7 @@ public static partial class PacketSender
     public static void SendOpenMailBox(Player player)
     {
         var mails = new List<MailBoxUpdatePacket>();
+
         foreach (var mail in player.MailBoxs)
         {
             var attachments = mail.Attachments.Select(a => new MailAttachmentPacket
@@ -166,12 +167,20 @@ public static partial class PacketSender
                 Properties = a.Properties
             }).ToList();
 
-            mails.Add(new MailBoxUpdatePacket(mail.Id, mail.Title, mail.Message, mail.Player?.Name ?? "Desconocido", attachments));
+            // ✅ Corregido: usar remitente
+            mails.Add(new MailBoxUpdatePacket(
+                mail.Id,
+                mail.Title,
+                mail.Message,
+                mail.SenderPlayer?.Name ?? "Desconocido",
+                attachments
+            ));
         }
 
         player.SendPacket(new MailBoxsUpdatePacket(mails.ToArray()));
         player.SendPacket(new MailBoxPacket(true, false));
     }
+
 
     public static void SendCloseMailBox(Player player)
     {

@@ -341,6 +341,10 @@ public static partial class Strings
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString attachments = @"Attachments";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString selectQuantity=@"Select Quantity";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString enterQuantity= @"Enter Quantity";
     }
 
 

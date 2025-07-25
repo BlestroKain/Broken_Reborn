@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using Intersect.Client.Core;
 using Intersect.Client.Framework.File_Management;
+using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
 using Intersect.Client.General;
@@ -11,11 +12,10 @@ using Intersect.Client.Localization;
 using Intersect.Client.Networking;
 using Intersect.GameObjects;
 
-namespace Intersect.Client.Interface.Game.Mail
+namespace Intersect.Client.Interface.Game.Mail;
+
+public partial class MailBoxWindow : Window
 {
-    public class MailBoxWindow
-    {
-        private WindowControl mMailBoxWindow;
 
         private Label mMailLabel;
         private ListBox mMailListBox;
@@ -32,109 +32,160 @@ namespace Intersect.Client.Interface.Game.Mail
         private Button mSendMailButton;
         private Button mCloseButton;
 
-        public MailBoxWindow(Canvas gameCanvas)
+        public MailBoxWindow(Canvas gameCanvas) : base(gameCanvas, Strings.MailBox.title, false, nameof(MailBoxWindow))
         {
-            mMailBoxWindow = new WindowControl(gameCanvas, Strings.MailBox.title, false, "MailBoxWindow");
-            mMailBoxWindow.SetSize(700, 500);
-            Interface.InputBlockingElements.Add(mMailBoxWindow);
+        IsResizable = false;
+        SetSize(700, 500);
 
-            // 📩 Panel Izquierdo: Lista de Correos
-            mMailLabel = new Label(mMailBoxWindow, "Mail") { Text = Strings.MailBox.mails };
-            mMailLabel.SetBounds(20, 10, 200, 20);
+        // Estilo común
+        const string defaultFont = "sourcesansproblack";
+        const int fontSize = 12;
+        var textColor = Color.White;
 
-            mMailListBox = new ListBox(mMailBoxWindow, "MailListBox");
-            mMailListBox.SetBounds(20, 40, 250, 400);
-            mMailListBox.EnableScroll(false, true);
-            mMailListBox.RowSelected += Selected_MailListBox;
-            mMailListBox.AllowMultiSelect = false;
-                // Por la siguiente línea correcta
-            mMailListBox.TextColor = Color.White;
-            // 📨 Panel Derecho: Detalles del Correo
-            mSender = new Label(mMailBoxWindow, "Sender");
-            mSender.SetBounds(300, 40, 350, 20);
-            mSender.Hide();
+        // 📩 Panel Izquierdo: Lista de Correos
+        mMailLabel = new Label(this, "Mail")
+        {
+            Text = Strings.MailBox.mails,
+            FontName = defaultFont,
+            FontSize = fontSize
+        };
+        mMailLabel.SetBounds(20, 10, 200, 20);
+        mMailLabel.SetTextColor(textColor, ComponentState.Normal);
 
-            mTitle = new Label(mMailBoxWindow, "Title");
-            mTitle.SetBounds(300, 70, 350, 20);
-            mTitle.Hide();
+        mMailListBox = new ListBox(this, "MailListBox")
+        {
+            FontName = defaultFont,
+            FontSize = fontSize,
+            TextColor = textColor
+        };
+        mMailListBox.SetBounds(20, 40, 250, 400);
+        mMailListBox.EnableScroll(false, true);
+        mMailListBox.RowSelected += Selected_MailListBox;
+        mMailListBox.AllowMultiSelect = false;
 
-            mMessage = new RichLabel(mMailBoxWindow, "Message");
-            mMessage.SetBounds(300, 100, 350, 150);
-            mMessage.Hide();
+        // 📨 Panel Derecho: Detalles del Correo
+        mSender = new Label(this, "Sender")
+        {
+            FontName = defaultFont,
+            FontSize = fontSize
+        };
+        mSender.SetBounds(300, 40, 350, 20);
+        mSender.SetTextColor(textColor, ComponentState.Normal);
+        mSender.Hide();
 
-            // 🎁 Adjuntos (Debajo del Mensaje)
-            mAttachmentLabel = new Label(mMailBoxWindow, "Attachments") { Text = "📦 Attachments" };
-            mAttachmentLabel.SetBounds(300, 270, 350, 20);
-            mAttachmentLabel.Hide();
+        mTitle = new Label(this, "Title")
+        {
+            FontName = defaultFont,
+            FontSize = fontSize
+        };
+        mTitle.SetBounds(300, 70, 350, 20);
+        mTitle.SetTextColor(textColor, ComponentState.Normal);
+        mTitle.Hide();
 
-            mAttachmentContainer = new ScrollControl(mMailBoxWindow, "AttachmentContainer");
-            mAttachmentContainer.SetBounds(300, 300, 250, 40);
-            mAttachmentContainer.EnableScroll(false, true);
-            mMailBoxWindow.AddChild(mAttachmentContainer);
+        mMessage = new RichLabel(this, "Message")
+        {
+            Font = GameContentManager.Current.GetFont(defaultFont),
+            FontSize = fontSize
+        };
+        mMessage.SetBounds(300, 100, 350, 150);
+        mMessage.Hide();
+
+        // 🎁 Adjuntos (Debajo del Mensaje)
+        mAttachmentLabel = new Label(this, "Attachments")
+        {
+            Text = "Attachments",
+            FontName = defaultFont,
+            FontSize = fontSize
+        };
+        mAttachmentLabel.SetBounds(300, 270, 350, 20);
+        mAttachmentLabel.SetTextColor(textColor, ComponentState.Normal);
+        mAttachmentLabel.Hide();
+
+        mAttachmentContainer = new ScrollControl(this, "AttachmentContainer");
+        mAttachmentContainer.SetBounds(300, 300, 250, 40);
+        mAttachmentContainer.EnableScroll(false, false);
+        this.AddChild(mAttachmentContainer);
+
+
+        // Botones de Acción
+        InitButtons();
+
+            this.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+            this.SetPosition(Graphics.Renderer.ScreenWidth / 2 - this.Width / 2,
+                                       Graphics.Renderer.ScreenHeight / 2 - this.Height / 2);
+       
+        }
+        protected override void EnsureInitialized()
+        {
+            LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
             InitializeAttachmentSlots();
-
-            // Botones de Acción
-            InitButtons();
-
-            mMailBoxWindow.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
-            mMailBoxWindow.SetPosition(Graphics.Renderer.GetScreenWidth() / 2 - mMailBoxWindow.Width / 2,
-                                       Graphics.Renderer.GetScreenHeight() / 2 - mMailBoxWindow.Height / 2);
-            mMailBoxWindow.DisableResizing();
         }
-        private void InitializeAttachmentSlots()
+
+    private void InitializeAttachmentSlots()
+    {
+        if (mAttachmentSlots == null)
         {
-            if (mAttachmentSlots == null)
-            {
-                mAttachmentSlots = new List<MailItem>();
-            }
-
-            for (int i = 0; i < 5; i++) // Máximo de 5 slots
-            {
-                var mailSlot = new MailItem(this, i, mAttachmentContainer);
-                mAttachmentSlots.Add(mailSlot);
-
-                var xPadding = 3;
-                var yPadding = 3;
-
-                mailSlot.SlotPanel.SetPosition(
-                    i % (mAttachmentContainer.Width / (mailSlot.SlotPanel.Width + xPadding)) * (mailSlot.SlotPanel.Width + xPadding) + xPadding,
-                    i / (mAttachmentContainer.Width / (mailSlot.SlotPanel.Width + xPadding)) * (mailSlot.SlotPanel.Height + yPadding) + yPadding
-                );
-            }
+            mAttachmentSlots = new List<MailItem>();
         }
 
-        private void InitButtons()
+        // Limpiar slots anteriores
+        foreach (var slot in mAttachmentSlots)
+        {
+            slot.Dispose();
+        }
+        mAttachmentSlots.Clear();
+
+        for (int i = 0; i < 5; i++) // Máximo de 5 slots
+        {
+            var mailSlot = new MailItem(this, mAttachmentContainer, i);
+            mAttachmentSlots.Add(mailSlot);
+
+            int slotSize = mailSlot.Width;
+            int padding = 5;
+
+            mailSlot.SetPosition(
+                i * (slotSize + padding),
+                0
+            );
+
+            mailSlot.Hide(); // Oculto por defecto
+        }
+
+    }
+
+
+    private void InitButtons()
         {
             // 📤 Enviar Correo
-            mSendMailButton = new Button(mMailBoxWindow, "SendMailButton");
+            mSendMailButton = new Button(this, "SendMailButton");
             mSendMailButton.SetText("📤 Send Mail");
             mSendMailButton.SetBounds(20, 460, 120, 30);
             mSendMailButton.Clicked += SendMail_Clicked;
 
             // 🎁 Tomar Adjuntos
-            mTakeButton = new Button(mMailBoxWindow, "TakeButton");
+            mTakeButton = new Button(this, "TakeButton");
             mTakeButton.SetText(Strings.MailBox.take);
             mTakeButton.SetBounds(300, 460, 150, 30);
             mTakeButton.Clicked += Take_Clicked;
             mTakeButton.Hide();
 
             // ❌ Cerrar Ventana
-            mCloseButton = new Button(mMailBoxWindow, "CloseButton");
+            mCloseButton = new Button(this, "CloseButton");
             mCloseButton.SetText("❌ Close");
             mCloseButton.SetBounds(500, 460, 150, 30);
             mCloseButton.Clicked += CloseButton_Clicked;
         }
 
-        private void SendMail_Clicked(Base sender, ClickedEventArgs arguments)
-        {
-            if (mMailBoxWindow.Parent is Canvas parentCanvas)
+        private void SendMail_Clicked(Base sender, MouseButtonState arguments)
+    {
+            if (this.Parent is Canvas parentCanvas)
             {
                 var sendMailWindow = new SendMailBoxWindow(parentCanvas);
                 sendMailWindow.Show();
             }
         }
 
-        private void Take_Clicked(Base sender, ClickedEventArgs e)
+        private void Take_Clicked(Base sender, MouseButtonState arguments)
         {
             if (mMailListBox.SelectedRow?.UserData is Client.Mail mail)
             {
@@ -142,49 +193,50 @@ namespace Intersect.Client.Interface.Game.Mail
             }
         }
 
-        private void Selected_MailListBox(Base sender, ItemSelectedEventArgs e)
+    private void Selected_MailListBox(Base sender, ItemSelectedEventArgs e)
+    {
+        if (mMailListBox.SelectedRow?.UserData is Client.Mail mail)
         {
-            if (mMailListBox.SelectedRow?.UserData is Client.Mail mail)
+            string senderName = !string.IsNullOrWhiteSpace(mail.SenderName) ? mail.SenderName : "Unknown Sender";
+            mSender.Text = $"{Strings.MailBox.sender}: {senderName}";
+            mTitle.Text = $"{Strings.MailBox.mailtitle}: {mail.Name}";
+            mMessage.ClearText();
+            mMessage.AddText(mail.Message, Color.White);
+
+            // Actualizar slots
+            for (int i = 0; i < mAttachmentSlots.Count; i++)
             {
-                string senderName = !string.IsNullOrWhiteSpace(mail.SenderName) ? mail.SenderName : "Unknown Sender";
-                mSender.Text = $"{Strings.MailBox.sender}: {senderName}";
-
-                mTitle.Text = $"{Strings.MailBox.mailtitle}: {mail.Name}";
-                mMessage.ClearText();
-                mMessage.AddText(mail.Message, Color.White);
-
-                for (int i = 0; i < mAttachmentSlots.Count; i++)
+                if (i < mail.Attachments.Count)
                 {
-                    if (i < mail.Attachments.Count)
-                    {
-                        var attachment = mail.Attachments[i];
-                        var item = new Item();
+                    var attachment = mail.Attachments[i];
+                    var item = new Item();
+                    item.Load(attachment.ItemId, attachment.Quantity, null, attachment.Properties);
 
-                        // Update the following line in the Selected_MailListBox method:  
-                        item.Load(attachment.ItemId, attachment.Quantity, null, attachment.Properties);
-                   
-                        mAttachmentSlots[i].SetItem(item);
-                        mAttachmentSlots[i].SlotPanel.Show();
-                    }
-                    else
-                    {
-                        mAttachmentSlots[i].ClearItem();
-                        mAttachmentSlots[i].SlotPanel.Hide();
-                    }
+                    mAttachmentSlots[i].SetItem(item);
+                    mAttachmentSlots[i].Show();
+                    mAttachmentSlots[i].Update();
+                }
+                else
+                {
+                    mAttachmentSlots[i].ClearItem();
+                    mAttachmentSlots[i].Hide();
                 }
 
-                mSender.Show();
-                mTitle.Show();
-                mMessage.Show();
-                mAttachmentLabel.Show();
-                mTakeButton.Show();
             }
+
+            mSender.Show();
+            mTitle.Show();
+            mMessage.Show();
+            mAttachmentLabel.Show();
+            mTakeButton.Show();
         }
-       
-      
-        void CloseButton_Clicked(Base sender, ClickedEventArgs e)
-        {
-            mMailBoxWindow.Close();
+    }
+
+
+
+    void CloseButton_Clicked(Base sender, MouseButtonState arguments)
+    {
+            base.Close();
             PacketSender.SendCloseMail();
         }
 
@@ -204,7 +256,7 @@ namespace Intersect.Client.Interface.Game.Mail
             foreach (var slot in mAttachmentSlots)
             {
                 slot.ClearItem();
-                slot.SlotPanel.IsHidden = true;
+                slot.IsHidden = true;
             }
 
             // 🔍 Validar y actualizar correos
@@ -245,22 +297,22 @@ namespace Intersect.Client.Interface.Game.Mail
 
         public void Close()
         {
-            mMailBoxWindow.Close();
+            base.Close();
         }
 
         public bool IsVisible()
         {
-            return !mMailBoxWindow.IsHidden;
+            return !this.IsHidden;
         }
 
         public void Hide()
         {
-            mMailBoxWindow.IsHidden = true;
+            this.IsHidden = true;
         }
 
         public void Show()
         {
-            mMailBoxWindow.Show();
+            base.Show();
         }
     }
-}
+

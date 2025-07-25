@@ -272,6 +272,6 @@ namespace Intersect.Server.Entities
             InMailBox = true;
             PacketSender.SendOpenSendMail(this);
         }
-
+       
     }
 }

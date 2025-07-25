@@ -170,10 +170,7 @@ public partial class GameInterface : MutableInterface
 
         mQuestOfferWindow = new QuestOfferWindow(GameCanvas);
         mMapItemWindow = new MapItemWindow(GameCanvas);
-        //  mCreateGuildWindow = new GuildCreationWindow(GameCanvas);
-        mEnchantItemWindow = new EnchantItemWindow(GameCanvas);
-        mRuneItemWindow = new RuneEnchantWindow(GameCanvas);
-        mBreakItemWindow = new BreakItemWindow(GameCanvas);
+
     }
     public void OpenEnchantWindow()
     {
@@ -427,6 +424,7 @@ public partial class GameInterface : MutableInterface
         mBreakItemWindow?.Update();
         mEnchantItemWindow?.Update();
         mRuneItemWindow?.Update();
+        mMailBoxWindow?.UpdateMail();
         var questDescriptorId = Globals.QuestOffers.FirstOrDefault();
         if (questDescriptorId == default)
         {
@@ -723,8 +721,7 @@ public partial class GameInterface : MutableInterface
         }
 
         mSendMailBoxWindow.Show();
-        mSendMailBoxWindow.InitializeAttachmentSlots();
-        mSendMailBoxWindow.Update();
+       // mSendMailBoxWindow.Update();
 
     }
 

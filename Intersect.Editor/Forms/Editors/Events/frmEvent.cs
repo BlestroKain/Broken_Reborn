@@ -769,6 +769,13 @@ public partial class FrmEvent : Form
             case EventCommandType.OpenBrokeItem:
                 tmpCommand = new OpenBrokeItemWindowCommand();
                 break;
+            case EventCommandType.SendMail:
+                tmpCommand = new SendMailBoxCommand();
+
+                break;
+            case EventCommandType.OpenMailBox:
+                tmpCommand = new OpenMailBoxCommand();
+                break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
@@ -1439,6 +1446,10 @@ public partial class FrmEvent : Form
             case EventCommandType.OpenMage:
                 break;
             case EventCommandType.OpenBrokeItem:
+                break;
+            case EventCommandType.SendMail:
+                break;
+            case EventCommandType.OpenMailBox:
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

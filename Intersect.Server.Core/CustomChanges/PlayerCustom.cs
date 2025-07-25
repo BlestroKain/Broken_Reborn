@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Server.Database;
+using Intersect.Server.Database.PlayerData.Players;
 using Intersect.Server.Networking;
 using Serilog;
 namespace Intersect.Server.Entities
@@ -247,5 +250,28 @@ namespace Intersect.Server.Entities
         {
             PacketSender.SendOpenBrokeItemWindow(this);
         }
+        [NotMapped] public bool InMailBox;
+        [JsonIgnore]
+        public virtual List<MailBox> MailBoxs { get; set; } = new List<MailBox>();
+
+        public void OpenMailBox()
+        {
+            InMailBox = true;
+            PacketSender.SendOpenMailBox(this);
+        }
+        public void CloseMailBox()
+        {
+            if (InMailBox)
+            {
+                InMailBox = false;
+                PacketSender.SendCloseMailBox(this);
+            }
+        }
+        public void SendMail()
+        {
+            InMailBox = true;
+            PacketSender.SendOpenSendMail(this);
+        }
+
     }
 }

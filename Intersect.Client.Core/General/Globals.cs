@@ -141,7 +141,8 @@ public static partial class Globals
             EmitLifecycleChangingState();
         }
     }
-
+    // Mail
+    public static List<Mail> Mails = new List<Mail>();
     public static bool InShop => GameShop != null;
 
     public static bool CanCloseInventory => !(InBag || InBank || InCraft || InShop || InTrade);

@@ -228,6 +228,14 @@ public partial record Options
 
     #endregion Configuration Properties
 
+    #region Player Stat Scaling Helpers
+
+    public static int VitalityHealthmultiplier => Instance.Player.VitalityHealthmultiplier;
+
+    public static int IntelligenceManaMultiplier => Instance.Player.IntelligenceManaMultiplier;
+
+    #endregion
+
     public void FixAnimatedSprites()
     {
         for (var i = 0; i < AnimatedSprites.Count; i++)

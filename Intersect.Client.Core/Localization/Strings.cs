@@ -1877,6 +1877,9 @@ If you are sure you want to hand over your guild enter '\c{{#ff8080}}{02}\c{{}}'
         public static LocalizedString AttackSpeed = @"Attack Speed:";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString AttackSpeedComparison = @"Attack Speed: {00} ({01})";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString BagSlots = @"Bag Slots:";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

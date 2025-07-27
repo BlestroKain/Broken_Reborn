@@ -29,6 +29,9 @@ namespace Intersect.Client.Interface.Game.Mail
 
         // ✅ Estado
         private readonly List<MailAttachmentPacket> _attachments = new();
+        // keep track of which slot each attachment came from so we can
+        // correctly remove duplicates
+        private readonly Dictionary<MailItem, MailAttachmentPacket> _mailItemAttachments = new();
 
         public SendMailBoxWindow(Canvas gameCanvas)
             : base(gameCanvas, Strings.MailBox.sendtitle, false, nameof(SendMailBoxWindow))
@@ -188,14 +191,17 @@ namespace Intersect.Client.Interface.Game.Mail
             Close();
         }
 
-        public void AddAttachment(Guid itemId, int quantity, ItemProperties properties)
+        public void AddAttachment(MailItem slot, Guid itemId, int quantity, ItemProperties properties)
         {
-            _attachments.Add(new MailAttachmentPacket
+            var attachment = new MailAttachmentPacket
             {
                 ItemId = itemId,
                 Quantity = quantity,
                 Properties = properties
-            });
+            };
+
+            _attachments.Add(attachment);
+            _mailItemAttachments[slot] = attachment;
         }
 
         public void RemoveAttachment(MailItem mailSlot)
@@ -203,9 +209,22 @@ namespace Intersect.Client.Interface.Game.Mail
             if (mailSlot.CurrentSlot == null)
                 return;
 
-            var attachment = _attachments.Find(a => a.ItemId == mailSlot.CurrentSlot.ItemId);
-            if (attachment != null)
+            if (_mailItemAttachments.TryGetValue(mailSlot, out var attachment))
+            {
                 _attachments.Remove(attachment);
+                _mailItemAttachments.Remove(mailSlot);
+            }
+            else
+            {
+                // Fallback in case mapping is lost
+                var att = _attachments.Find(a =>
+                    a.ItemId == mailSlot.CurrentSlot.ItemId &&
+                    a.Quantity == mailSlot.CurrentSlot.Quantity);
+                if (att != null)
+                {
+                    _attachments.Remove(att);
+                }
+            }
 
             mailSlot.ClearItem();
         }
@@ -213,8 +232,9 @@ namespace Intersect.Client.Interface.Game.Mail
 
         public void Close()
         {
-        
+
             _attachments.Clear();
+            _mailItemAttachments.Clear();
             base.Close();
             Instance = null;
         }

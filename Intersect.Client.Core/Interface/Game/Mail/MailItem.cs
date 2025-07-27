@@ -30,6 +30,7 @@ public partial class MailItem : SlotItem
 
     // Slot actual (ítem adjunto)
     public Item? CurrentSlot { get; private set; }
+    public int InventoryIndex { get; private set; } = -1;
     public bool IsEmpty => CurrentSlot == null;
 
     public MailItem(SendMailBoxWindow sendWindow, Base parent, int index)
@@ -76,6 +77,7 @@ public partial class MailItem : SlotItem
     public void ClearItem()
     {
         CurrentSlot = null;
+        InventoryIndex = -1;
         _reset();
     }
 
@@ -210,6 +212,7 @@ public partial class MailItem : SlotItem
 public void FinalizeAttachment(Item item, int inventoryIndex)
 {
     SetItem(item);
+    InventoryIndex = inventoryIndex;
 
     SendMailBoxWindow.Instance.AddAttachment(item.ItemId, item.Quantity, item.ItemProperties);
 
@@ -220,7 +223,8 @@ public void FinalizeAttachment(Item item, int inventoryIndex)
     {
         Globals.Me.Inventory[inventoryIndex] = null;
     }
- 
+
+    Globals.Me.InventoryUpdated?.Invoke(Globals.Me, inventoryIndex);
 }
 
     #endregion

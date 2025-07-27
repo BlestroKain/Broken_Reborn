@@ -10,6 +10,7 @@ using Intersect.Client.Interface.Game.Mail;
 using Intersect.Client.Localization;
 using Intersect.Client.Networking;
 using Intersect.GameObjects;
+using Intersect.Client.Items;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Network.Packets.Server;
 
@@ -203,9 +204,14 @@ namespace Intersect.Client.Interface.Game.Mail
             if (mailSlot.CurrentSlot == null)
                 return;
 
-            var attachment = _attachments.Find(a => a.ItemId == mailSlot.CurrentSlot.ItemId);
+            var attachment = _attachments.Find(a =>
+                a.ItemId == mailSlot.CurrentSlot.ItemId &&
+                a.Quantity == mailSlot.CurrentSlot.Quantity &&
+                a.Properties == mailSlot.CurrentSlot.ItemProperties);
             if (attachment != null)
                 _attachments.Remove(attachment);
+
+            ReturnItemToInventory(mailSlot);
 
             mailSlot.ClearItem();
         }
@@ -213,10 +219,71 @@ namespace Intersect.Client.Interface.Game.Mail
 
         public void Close()
         {
-        
+
+            foreach (var slot in _attachmentSlots)
+            {
+                if (!slot.IsEmpty)
+                {
+                    RemoveAttachment(slot);
+                }
+            }
+
             _attachments.Clear();
             base.Close();
             Instance = null;
+        }
+
+        private static void ReturnItemToInventory(MailItem mailSlot)
+        {
+            if (Globals.Me == null || mailSlot.CurrentSlot == null)
+            {
+                return;
+            }
+
+            var item = mailSlot.CurrentSlot;
+            var slots = Globals.Me.Inventory;
+            var index = mailSlot.InventoryIndex;
+            if (index < 0 || index >= slots.Length)
+            {
+                index = Array.FindIndex(slots, s => s == null);
+            }
+
+            if (index < 0)
+            {
+                return;
+            }
+
+            if (slots[index] == null)
+            {
+                slots[index] = new Item
+                {
+                    ItemId = item.ItemId,
+                    Quantity = item.Quantity,
+                    ItemProperties = item.ItemProperties
+                };
+            }
+            else if (slots[index]!.ItemId == item.ItemId && slots[index]!.ItemProperties == item.ItemProperties)
+            {
+                slots[index]!.Quantity += item.Quantity;
+            }
+            else
+            {
+                var freeIndex = Array.FindIndex(slots, s => s == null);
+                if (freeIndex < 0)
+                {
+                    return;
+                }
+
+                slots[freeIndex] = new Item
+                {
+                    ItemId = item.ItemId,
+                    Quantity = item.Quantity,
+                    ItemProperties = item.ItemProperties
+                };
+                index = freeIndex;
+            }
+
+            Globals.Me.InventoryUpdated?.Invoke(Globals.Me, index);
         }
 
     }

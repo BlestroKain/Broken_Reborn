@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.GenericClasses;
+using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
 using Intersect.Client.Framework.Gwen.Input;
@@ -14,11 +15,11 @@ namespace Intersect.Client.Interface.Game.Character;
 
 public partial class EquipmentItem
 {
-    public ImagePanel ContentPanel;
+    public List<ImagePanel> ContentPanels = new();
 
     private WindowControl mCharacterWindow;
 
-    private Guid mCurrentItemId;
+    private List<Guid> mCurrentItemIds = new();
 
     private ItemProperties mItemProperties = null;
 
@@ -36,14 +37,38 @@ public partial class EquipmentItem
 
     public void Setup()
     {
+        if (mYindex < 0 || mYindex >= Options.Instance.Equipment.EquipmentSlots.Count)
+        {
+            Debug.WriteLine($"⚠️ Setup(): índice inválido {mYindex}. EquipmentSlots.Count = {Options.Instance.Equipment.EquipmentSlots.Count}");
+            return;
+        }
+
         Pnl.HoverEnter += pnl_HoverEnter;
         Pnl.HoverLeave += pnl_HoverLeave;
         Pnl.Clicked += pnl_RightClicked;
 
-        ContentPanel = new ImagePanel(Pnl, "EquipmentIcon");
-        ContentPanel.MouseInputEnabled = false;
-        Pnl.SetToolTipText(Options.Instance.Equipment.Slots[mYindex]);
+        var max = Options.Instance.Equipment.EquipmentSlots[mYindex].MaxItems;
+
+        for (var i = 0; i < max; i++)
+        {
+            var panel = new ImagePanel(Pnl, "EquipmentIcon");
+            panel.MouseInputEnabled = false;
+            panel.Margin = new Margin(i * 20, 0, 0, 0);
+            ContentPanels.Add(panel);
+        }
+
+        // Validar que el nombre exista antes de mostrarlo como tooltip
+        var slotName = Options.Instance.Equipment.Slots.ElementAtOrDefault(mYindex);
+        if (!string.IsNullOrWhiteSpace(slotName))
+        {
+            Pnl.SetToolTipText(slotName);
+        }
+        else
+        {
+            Pnl.SetToolTipText($"Slot {mYindex}");
+        }
     }
+
 
     void pnl_RightClicked(Base sender, MouseButtonState arguments)
     {
@@ -57,10 +82,14 @@ public partial class EquipmentItem
             var window = Interface.GameUi.GameMenu.GetInventoryWindow();
             if (window != null)
             {
-                var invSlot = Globals.Me.MyEquipment[mYindex];
-                if (invSlot >= 0 && invSlot < Options.Instance.Player.MaxInventory)
+                // Obtenemos la lista del slot del equipo
+                if (Globals.Me.MyEquipment.TryGetValue(mYindex, out var equippedList) && equippedList.Count > 0)
                 {
-                    window.OpenContextMenu(invSlot);
+                    var invSlot = equippedList[0]; // Tomamos el primer ítem equipado
+                    if (invSlot >= 0 && invSlot < Options.Instance.Player.MaxInventory)
+                    {
+                        window.OpenContextMenu(invSlot);
+                    }
                 }
             }
         }
@@ -68,8 +97,8 @@ public partial class EquipmentItem
         {
             PacketSender.SendUnequipItem(mYindex);
         }
-
     }
+
 
     void pnl_HoverLeave(Base sender, EventArgs arguments)
     {
@@ -88,7 +117,7 @@ public partial class EquipmentItem
             return;
         }
 
-        var item = ItemDescriptor.Get(mCurrentItemId);
+        var item = mCurrentItemIds.Count > 0 ? ItemDescriptor.Get(mCurrentItemIds[0]) : null;
         if (item == null)
         {
             return;
@@ -110,33 +139,29 @@ public partial class EquipmentItem
         return rect;
     }
 
-    public void Update(Guid currentItemId, ItemProperties itemProperties)
+    public void Update(List<Guid> itemIds, List<ItemProperties> properties)
     {
-        if (!ItemDescriptor.TryGet(currentItemId, out var item))
+        mCurrentItemIds = itemIds;
+        mItemProperties = properties.FirstOrDefault(); // ✅ Aquí se guarda la propiedad real
+
+        for (var i = 0; i < ContentPanels.Count; i++)
         {
-            ContentPanel.Hide();
-            _loadedTexture = default;
-            return;
+            if (i >= itemIds.Count || !ItemDescriptor.TryGet(itemIds[i], out var item))
+            {
+                ContentPanels[i].Hide();
+                continue;
+            }
+
+            if (GameContentManager.Current.GetTexture(Framework.Content.TextureType.Item, item.Icon) is not { } itemTexture)
+            {
+                ContentPanels[i].Hide();
+                continue;
+            }
+
+            ContentPanels[i].Show();
+            ContentPanels[i].Texture = itemTexture;
+            ContentPanels[i].RenderColor = item.Color;
         }
-
-        if (currentItemId == mCurrentItemId && ContentPanel.Texture?.Name == _loadedTexture)
-        {
-            return;
-        }
-
-        mCurrentItemId = currentItemId;
-        mItemProperties = itemProperties;
-
-        if (GameContentManager.Current.GetTexture(Framework.Content.TextureType.Item, item.Icon) is not { } itemTexture)
-        {
-            ContentPanel.Hide();
-            _loadedTexture = default;
-            return;
-        }
-
-        ContentPanel.Show();
-        ContentPanel.Texture = itemTexture;
-        ContentPanel.RenderColor = item.Color;
-        _loadedTexture = ContentPanel.Texture?.Name;
     }
+
 }

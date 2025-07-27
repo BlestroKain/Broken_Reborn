@@ -163,7 +163,8 @@ public partial class EnchantInventoryItem : SlotItem
             return;
         }
 
-        var equipped = Globals.Me.MyEquipment.Any(s => s == SlotIndex);
+        // Corregido: verificar si el SlotIndex está en alguna de las listas de MyEquipment
+        var equipped = Globals.Me.MyEquipment.Values.Any(list => list.Contains(SlotIndex));
         var isDragging = Icon.IsDragging;
 
         _quantityLabel.IsVisibleInParent = !isDragging && descriptor.IsStackable && inventorySlot.Quantity > 1;
@@ -206,8 +207,8 @@ public partial class EnchantInventoryItem : SlotItem
                 Icon.IsVisibleInParent = false;
             }
         }
-
     }
+
 
     private void _reset()
     {

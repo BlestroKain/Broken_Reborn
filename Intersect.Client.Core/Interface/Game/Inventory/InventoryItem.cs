@@ -142,9 +142,16 @@ public partial class InventoryItem : SlotItem
 
             case ItemType.Equipment:
                 contextMenu.AddChild(_useItemMenuItem);
-                var equipItemLabel = Globals.Me.MyEquipment.Contains(SlotIndex) ? Strings.ItemContextMenu.Unequip : Strings.ItemContextMenu.Equip;
+
+                var isEquipped = Globals.Me.MyEquipment.Any(pair => pair.Value.Contains(SlotIndex));
+
+                var equipItemLabel = isEquipped
+                    ? Strings.ItemContextMenu.Unequip
+                    : Strings.ItemContextMenu.Equip;
+
                 _useItemMenuItem.Text = equipItemLabel.ToString(descriptor.Name);
                 break;
+
         }
 
         // Set up the correct contextual additional action.
@@ -533,7 +540,8 @@ public partial class InventoryItem : SlotItem
             return;
         }
 
-        var equipped = Globals.Me.MyEquipment.Any(s => s == SlotIndex);
+        var equipped = Globals.Me.MyEquipment.Any(pair => pair.Value.Contains(SlotIndex));
+
         var isDragging = Icon.IsDragging;
         _equipImageBackground.IsVisibleInParent = !isDragging && equipped;
         _equipLabel.IsVisibleInParent = !isDragging && equipped;

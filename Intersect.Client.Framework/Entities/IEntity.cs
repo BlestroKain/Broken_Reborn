@@ -45,7 +45,9 @@ public interface IEntity : IDisposable
     IReadOnlyDictionary<Vital, long> Vitals { get; }
     IReadOnlyDictionary<Vital, long> MaxVitals { get; }
     IReadOnlyList<IItem> Items { get; }
-    IReadOnlyList<int> EquipmentSlots { get; }
+    IReadOnlyDictionary<int, List<int>> EquipmentSlots { get; }
+
+
     IReadOnlyList<Guid> Spells { get; }
     IReadOnlyList<IStatus> Status { get; }
     NpcAggression Aggression { get; }

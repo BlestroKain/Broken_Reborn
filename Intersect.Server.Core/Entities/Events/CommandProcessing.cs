@@ -604,12 +604,12 @@ public static partial class CommandProcessing
 
     //Equip Items Command
     private static void ProcessCommand(
-        EquipItemCommand command,
-        Player player,
-        Event instance,
-        CommandInstance stackInfo,
-        Stack<CommandInstance> callStack
-    )
+     EquipItemCommand command,
+     Player player,
+     Event instance,
+     CommandInstance stackInfo,
+     Stack<CommandInstance> callStack
+ )
     {
         var itm = ItemDescriptor.Get(command.ItemId);
 
@@ -617,19 +617,26 @@ public static partial class CommandProcessing
         {
             if (command.IsItem && itm != default)
             {
+                // Desequipa por ID del ítem
                 player.UnequipItem(command.ItemId);
             }
-            else if(!command.IsItem && command.Slot > -1 && player.TryGetEquippedItem(command.Slot, out var equippedItem))
+            else if (!command.IsItem && command.Slot > -1 && player.TryGetEquippedItem(command.Slot, out var equippedItems))
             {
-                 player.UnequipItem(equippedItem.ItemId);
+                // Buscar el ítem específico en el slot
+                var targetItem = equippedItems.FirstOrDefault(i => i.ItemId == command.ItemId);
+                if (targetItem != null)
+                {
+                    player.UnequipItem(targetItem.ItemId);
+                }
             }
         }
         else
         {
             if (itm == null) return;
-            player.EquipItem(ItemDescriptor.Get(command.ItemId), updateCooldown: command.TriggerCooldown);
+            player.EquipItem(itm, updateCooldown: command.TriggerCooldown);
         }
     }
+
 
     //Change Sprite Command
     private static void ProcessCommand(

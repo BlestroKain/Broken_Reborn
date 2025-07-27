@@ -40,6 +40,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Stat = Intersect.Enums.Stat;
 using Intersect.Framework.Core.GameObjects.Guild;
+using System.Linq;
 
 namespace Intersect.Server.Entities;
 
@@ -87,12 +88,38 @@ public partial class Player : Entity
     [Column("Equipment"), JsonIgnore]
     public string EquipmentJson
     {
-        get => DatabaseUtils.SaveIntArray(Equipment, Options.Instance.Equipment.Slots.Count);
-        set => Equipment = DatabaseUtils.LoadIntArray(value, Options.Instance.Equipment.Slots.Count);
+        get => JsonConvert.SerializeObject(Equipment);
+        set
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                Equipment = new Dictionary<int, List<int>>();
+            }
+            else if (value.TrimStart().StartsWith("["))
+            {
+                // Caso en que se guarda como una lista de listas
+                try
+                {
+                    var list = JsonConvert.DeserializeObject<List<List<int>>>(value);
+                    Equipment = list
+                        .Select((items, index) => new { index, items })
+                        .ToDictionary(x => x.index, x => x.items ?? new List<int>());
+                }
+                catch
+                {
+                    Equipment = new();
+                }
+            }
+            else
+            {
+                // Caso normal esperado (diccionario)
+                Equipment = JsonConvert.DeserializeObject<Dictionary<int, List<int>>>(value) ?? new();
+            }
+        }
     }
 
     [NotMapped, JsonProperty("EquipmentSlots")]
-    public int[] Equipment { get; set; } = new int[Options.Instance.Equipment.Slots.Count];
+    public Dictionary<int, List<int>> Equipment { get; set; } = new();
 
     [NotMapped]
     public virtual ImmutableArray<Bag> Bags =>
@@ -111,18 +138,19 @@ public partial class Player : Entity
         get
         {
             var equippedItems = new List<Item>();
-            for (var i = 0; i < Options.Instance.Equipment.Slots.Count; i++)
+
+            foreach (var slot in Options.Instance.Equipment.Slots.Select((_, index) => index))
             {
-                if (!TryGetEquippedItem(i, out var item))
+                if (TryGetEquippedItem(slot, out var items))
                 {
-                    continue;
+                    equippedItems.AddRange(items);
                 }
-                equippedItems.Add(item);
             }
 
             return equippedItems;
         }
     }
+
 
     public DateTime? LastOnline { get; set; }
 
@@ -1788,7 +1816,11 @@ public partial class Player : Entity
             return;
         }
 
-        var weapon = TryGetEquippedItem(Options.Instance.Equipment.WeaponSlot, out var item) ? item.Descriptor : null;
+        List<Item> items;
+        var weapon = TryGetEquippedItem(Options.Instance.Equipment.WeaponSlot, out items)
+            ? items.FirstOrDefault()?.Descriptor
+            : null;
+
 
         //If Entity is resource, check for the correct tool and make sure its not a spell cast.
         if (target is Resource resource)
@@ -1956,7 +1988,10 @@ public partial class Player : Entity
             attackTime = cls.AttackSpeedValue;
         }
 
-        var weapon = TryGetEquippedItem(Options.Instance.Equipment.WeaponSlot, out var item) ? item.Descriptor : null;
+        List<Item> items;
+        var weapon = TryGetEquippedItem(Options.Instance.Equipment.WeaponSlot, out items)
+            ? items.FirstOrDefault()?.Descriptor
+            : null;
 
         if (weapon != null)
         {
@@ -3359,11 +3394,12 @@ public partial class Player : Entity
             return false;
         }
 
-        if (Equipment?.Any(equipmentSlotIndex => equipmentSlotIndex == slotIndex) ?? false)
+        if (Equipment != null && Equipment.Values.Any(slotList => slotList.Contains(slotIndex)))
         {
             PacketSender.SendChatMsg(this, Strings.Items.Equipped, ChatMessageType.Inventory, CustomColors.Items.Bound);
             return false;
         }
+
 
         var itemDescriptor = itemInSlot.Descriptor;
         if (itemDescriptor == null)
@@ -3979,13 +4015,14 @@ public partial class Player : Entity
 
     public override int GetWeaponDamage()
     {
-        if (!TryGetEquippedItem(Options.Instance.Equipment.WeaponSlot, out var item))
+        if (!TryGetEquippedItem(Options.Instance.Equipment.WeaponSlot, out var items) || items.Count == 0)
         {
             return 0;
         }
 
-        return item.Descriptor.Damage;
+         return items.FirstOrDefault()?.Descriptor?.Damage ?? 0;
     }
+
 
     /// <summary>
     /// Gets the percentage value of a bonus effect as granted by the currently equipped gear.
@@ -5953,9 +5990,11 @@ public partial class Player : Entity
     public bool TryGetEquipmentSlot(int equipmentSlot, out int inventorySlot)
     {
         inventorySlot = -1;
-        if (equipmentSlot > -1 && equipmentSlot < Equipment.Length)
+
+        if (Equipment.TryGetValue(equipmentSlot, out var slotList) && slotList.Count > 0)
         {
-            inventorySlot = Equipment.ElementAtOrDefault(equipmentSlot);
+            // Tomamos el primer ítem de la lista (puedes modificar la lógica si necesitas soportar múltiples)
+            inventorySlot = slotList[0];
         }
 
         return inventorySlot > -1;
@@ -5968,12 +6007,14 @@ public partial class Player : Entity
     /// <param name="inventorySlot">The inventory slot of the item</param>
     private void SetEquipmentSlot(int equipmentSlot, int inventorySlot)
     {
-        if (equipmentSlot < 0 || equipmentSlot > Equipment.Length)
+        if (!Equipment.ContainsKey(equipmentSlot))
         {
-            return;
+            Equipment[equipmentSlot] = new List<int>();
         }
 
-        Equipment[equipmentSlot] = inventorySlot;
+        // Aquí decides si reemplazas el primero o permites múltiples ítems
+        Equipment[equipmentSlot].Clear(); // Si solo quieres uno por slot
+        Equipment[equipmentSlot].Add(inventorySlot);
     }
 
     /// <summary>
@@ -5982,22 +6023,25 @@ public partial class Player : Entity
     /// <param name="equipmentSlot">The slot in <see cref="Equipment"/> that we're checking for</param>
     /// <param name="equippedItem">The equipped <see cref="Item"/>, if found</param>
     /// <returns></returns>
-    public bool TryGetEquippedItem(int equipmentSlot, out Item equippedItem)
+    public bool TryGetEquippedItem(int equipmentSlot, out List<Item> equippedItems)
     {
-        equippedItem = null;
-        if (equipmentSlot < -1 || equipmentSlot > Equipment.Length)
+        equippedItems = new List<Item>();
+
+        if (!Equipment.TryGetValue(equipmentSlot, out var slots) || slots.Count == 0)
         {
             return false;
         }
 
-        var itm = Items.ElementAtOrDefault(Equipment[equipmentSlot]);
-        if (itm?.Descriptor == null)
+        foreach (var slot in slots)
         {
-            return false;
+            var itm = Items.ElementAtOrDefault(slot);
+            if (itm?.Descriptor != null)
+            {
+                equippedItems.Add(itm);
+            }
         }
 
-        equippedItem = itm;
-        return true;
+        return equippedItems.Count > 0;
     }
 
     /// <summary>
@@ -6006,16 +6050,15 @@ public partial class Player : Entity
     /// <param name="slot">The iventory slot of the item</param>
     /// <param name="equippedSlot">The equipment slot found, if any</param>
     /// <returns></returns>
-    public bool SlotIsEquipped(int slot, out int equippedSlot)
+    public bool SlotIsEquipped(int inventorySlot, out int equippedSlot)
     {
-        equippedSlot = 0;
-        foreach (var equipmentSlot in Equipment)
+        foreach (var kvp in Equipment)
         {
-            if (equipmentSlot == slot)
+            if (kvp.Value.Contains(inventorySlot))
             {
+                equippedSlot = kvp.Key; // Devolver el slot de equipamiento (ej: casco, arma)
                 return true;
             }
-            equippedSlot++;
         }
 
         equippedSlot = -1;
@@ -6030,7 +6073,7 @@ public partial class Player : Entity
             return;
         }
 
-        // Find the appropriate slot if not passed in
+        // Buscar slot en inventario si no se pasó
         if (slot == -1)
         {
             for (var i = 0; i < Options.Instance.Player.MaxInventory; i++)
@@ -6043,71 +6086,128 @@ public partial class Player : Entity
             }
         }
 
-        if (slot != -1)
+        if (slot == -1)
         {
-            if (itemDescriptor.EquipmentSlot == Options.Instance.Equipment.WeaponSlot)
-            {
-                //If we are equipping a 2hand weapon, remove the shield
-                if (itemDescriptor.TwoHanded)
-                {
-                    UnequipItem(Options.Instance.Equipment.ShieldSlot, false);
-                }
-            }
-            else if (itemDescriptor.EquipmentSlot == Options.Instance.Equipment.ShieldSlot)
-            {
-                // If we are equipping a shield, remove any 2-handed weapon
-                if (TryGetEquippedItem(Options.Instance.Equipment.WeaponSlot, out Item weapon) && weapon.Descriptor.TwoHanded)
-                {
-                    UnequipItem(Options.Instance.Equipment.WeaponSlot, false);
-                }
-            }
+            return; // No se encontró el ítem en inventario
+        }
 
-            SetEquipmentSlot(itemDescriptor.EquipmentSlot, slot);
-
-            if (updateCooldown)
+        // ✅ VALIDACIÓN: Evitar equipar duplicados
+        foreach (var kvp in Equipment)
+        {
+            foreach (var invSlot in kvp.Value)
             {
-                UpdateCooldown(itemDescriptor);
+                if (invSlot >= 0 && invSlot < Options.Instance.Player.MaxInventory)
+                {
+                    var equippedItem = Items[invSlot];
+                    if (equippedItem?.ItemId == itemDescriptor.Id)
+                    {
+                        PacketSender.SendChatMsg(this, $"Ya tienes equipado {itemDescriptor.Name}.", ChatMessageType.Error);
+                        return; // Bloquea el equipamiento
+                    }
+                }
             }
         }
 
-        EnqueueStartCommonEvent(itemDescriptor.GetEventTrigger(ItemEventTrigger.OnEquip));
+        // ✅ Validación adicional: Armas 2 manos vs escudos
+        if (itemDescriptor.EquipmentSlot == Options.Instance.Equipment.WeaponSlot)
+        {
+            if (itemDescriptor.TwoHanded)
+            {
+                UnequipItem(Options.Instance.Equipment.ShieldSlot, false);
+            }
+        }
+        else if (itemDescriptor.EquipmentSlot == Options.Instance.Equipment.ShieldSlot)
+        {
+            if (TryGetEquippedItem(Options.Instance.Equipment.WeaponSlot, out var weapons) &&
+                weapons.Any(w => w.Descriptor?.TwoHanded == true))
+            {
+                UnequipItem(Options.Instance.Equipment.WeaponSlot, false);
+            }
+        }
 
+        // ✅ Equipar el ítem
+        AddEquipmentSlot(itemDescriptor.EquipmentSlot, slot);
+
+        if (updateCooldown)
+        {
+            UpdateCooldown(itemDescriptor);
+        }
+
+        EnqueueStartCommonEvent(itemDescriptor.GetEventTrigger(ItemEventTrigger.OnEquip));
         ProcessEquipmentUpdated(true);
     }
+    private void AddEquipmentSlot(int equipmentSlot, int inventorySlot)
+    {
+        if (!Equipment.ContainsKey(equipmentSlot))
+        {
+            Equipment[equipmentSlot] = new List<int>();
+        }
+
+        // Buscar máximo permitido para este slot
+        var maxAllowed = Options.Instance.Equipment.EquipmentSlots[equipmentSlot].MaxItems;
+
+        // Validación: Si ya está lleno, cancelamos
+        if (Equipment[equipmentSlot].Count >= maxAllowed)
+        {
+            PacketSender.SendChatMsg(this, $"No puedes equipar más en el slot {Options.Instance.Equipment.Slots[equipmentSlot]}.", ChatMessageType.Error);
+            return;
+        }
+
+        // Agregar el nuevo ítem
+        Equipment[equipmentSlot].Add(inventorySlot);
+    }
+
 
     public void UnequipItem(Guid itemId, bool sendUpdate = true)
     {
         var updated = false;
-        for (int i = 0; i < Options.Instance.Equipment.Slots.Count; i++)
+
+        foreach (var kvp in Equipment)
         {
-            var itemSlot = Equipment[i];
-            if (Items.ElementAtOrDefault(itemSlot)?.ItemId == itemId)
+            var slotIndex = kvp.Key;
+            var itemsInSlot = kvp.Value;
+
+            // Buscar si este slot contiene el itemId
+            for (int i = 0; i < itemsInSlot.Count; i++)
             {
-                UnequipItem(i, false);
-                updated = true;
+                var inventoryIndex = itemsInSlot[i];
+                if (inventoryIndex >= 0 && inventoryIndex < Items.Count && Items[inventoryIndex].ItemId == itemId)
+                {
+                    itemsInSlot.RemoveAt(i); // Quitamos solo este ítem
+                    updated = true;
+                    break; // Salimos del bucle porque ya encontramos el ítem
+                }
+            }
+
+            if (updated)
+            {
+                break; // Salimos del foreach porque ya se hizo el cambio
             }
         }
-        if (!updated)
-        {
-            return;
-        }
 
-        ProcessEquipmentUpdated(sendUpdate);
+        if (updated)
+        {
+            ProcessEquipmentUpdated(sendUpdate);
+        }
     }
+
 
     public void UnequipItem(int equipmentSlot, bool sendUpdate = true)
     {
-        if (equipmentSlot < 0 || equipmentSlot > Equipment.Length)
+        if (!Equipment.ContainsKey(equipmentSlot))
         {
             return;
         }
 
-        if (TryGetEquippedItem(equipmentSlot, out var prevEquipped))
+        if (TryGetEquippedItem(equipmentSlot, out var items))
         {
-            EnqueueStartCommonEvent(prevEquipped.Descriptor?.GetEventTrigger(ItemEventTrigger.OnUnequip));
+            foreach (var item in items)
+            {
+                EnqueueStartCommonEvent(item.Descriptor?.GetEventTrigger(ItemEventTrigger.OnUnequip));
+            }
         }
 
-        Equipment[equipmentSlot] = -1;
+        Equipment.Remove(equipmentSlot);
         ProcessEquipmentUpdated(sendUpdate);
     }
 
@@ -6142,44 +6242,59 @@ public partial class Player : Entity
 
         for (var slot = 0; slot < Options.Instance.Equipment.Slots.Count; slot++)
         {
-            if (!TryGetEquippedItem(slot, out var equippedItem) || equippedItem == null || equippedItem.Descriptor == null)
+            if (!TryGetEquippedItem(slot, out var equippedItems) || equippedItems.Count == 0)
             {
                 continue;
             }
 
-            var onHit = equippedItem.Descriptor.GetEventTrigger(ItemEventTrigger.OnHit);
-            var onDamaged = equippedItem.Descriptor.GetEventTrigger(ItemEventTrigger.OnDamageReceived);
-
-            // We have special logic for handling weapons, so the player can't hot-swap their weapon and get a different on-hit event to proc
-            // As a result, don't cache them, instead use property "LastAttackingWeapon"
-            if (onHit != null && slot != Options.Instance.Equipment.WeaponSlot)
+            foreach (var equippedItem in equippedItems)
             {
-                CachedEquipmentOnHitTriggers.Add(onHit);
-            }
+                if (equippedItem?.Descriptor == null)
+                {
+                    continue;
+                }
 
-            if (onDamaged != null)
-            {
-                CachedEquipmentOnDamageTriggers.Add(onDamaged);
+                var onHit = equippedItem.Descriptor.GetEventTrigger(ItemEventTrigger.OnHit);
+                var onDamaged = equippedItem.Descriptor.GetEventTrigger(ItemEventTrigger.OnDamageReceived);
+
+                // Evitar lógica para armas (weapon slot)
+                if (onHit != null && slot != Options.Instance.Equipment.WeaponSlot)
+                {
+                    CachedEquipmentOnHitTriggers.Add(onHit);
+                }
+
+                if (onDamaged != null)
+                {
+                    CachedEquipmentOnDamageTriggers.Add(onDamaged);
+                }
             }
         }
     }
 
     public void EquipmentProcessItemSwap(int item1, int item2)
     {
-        for (var i = 0; i < Options.Instance.Equipment.Slots.Count; i++)
+        foreach (var key in Equipment.Keys.ToList())
         {
-            if (Equipment[i] == item1)
+            var slotList = Equipment[key];
+
+            for (int i = 0; i < slotList.Count; i++)
             {
-                Equipment[i] = item2;
+                if (slotList[i] == item1)
+                {
+                    slotList[i] = item2;
+                }
+                else if (slotList[i] == item2)
+                {
+                    slotList[i] = item1;
+                }
             }
-            else if (Equipment[i] == item2)
-            {
-                Equipment[i] = item1;
-            }
+
+            Equipment[key] = slotList;
         }
 
         ProcessEquipmentUpdated(true, true);
     }
+
 
     public void EquipmentProcessItemLoss(int slot)
     {

@@ -747,6 +747,8 @@ public partial class EntityBox
     {
         var faceTex = Globals.ContentManager.GetTexture(Framework.Content.TextureType.Face, MyEntity.Face);
         var entityTex = MyEntity.Texture;
+
+        // Caso 1: Tiene cara (Face)
         if (faceTex != null && faceTex != EntityFace.Texture)
         {
             EntityFace.Texture = faceTex;
@@ -756,76 +758,81 @@ public partial class EntityBox
             Align.Center(EntityFace);
             mCurrentSprite = MyEntity.Face;
             EntityFace.IsHidden = false;
+
             var i = 0;
             for (var z = 0; z < Options.Instance.Equipment.Paperdoll.Directions[1].Count; z++)
             {
                 if (Options.Instance.Equipment.Paperdoll.Directions[1][z] != "Player")
                 {
-                    if (PaperdollPanels == null)
-                    {
-                        ApplicationContext.Context.Value?.Logger.LogWarning($@"{nameof(PaperdollPanels)} is null.");
-                    }
-                    else if (PaperdollPanels[i] == null)
-                    {
-                        ApplicationContext.Context.Value?.Logger.LogWarning($@"{nameof(PaperdollPanels)}[{i}] is null.");
-                    }
-
                     PaperdollPanels?[i]?.Hide();
                     i++;
                 }
             }
         }
-        else if (entityTex != null && faceTex == null || faceTex != null && faceTex != EntityFace.Texture)
+        // Caso 2: Tiene sprite (entidad)
+        else if ((entityTex != null && faceTex == null) || (faceTex != null && faceTex != EntityFace.Texture))
         {
             if (entityTex != EntityFace.Texture)
             {
                 EntityFace.Texture = entityTex;
                 EntityFace.RenderColor = MyEntity.Color ?? new Color(255, 255, 255, 255);
-                EntityFace.SetTextureRect(0, 0, entityTex.Width / Options.Instance.Sprites.NormalFrames, entityTex.Height / Options.Instance.Sprites.Directions);
+                EntityFace.SetTextureRect(0, 0, entityTex.Width / Options.Instance.Sprites.NormalFrames,
+                    entityTex.Height / Options.Instance.Sprites.Directions);
                 EntityFace.SizeToContents();
                 Align.Center(EntityFace);
                 mCurrentSprite = MyEntity.Sprite;
                 EntityFace.IsHidden = false;
             }
 
-            var equipment = (MyEntity as Entity)?.Equipment ?? [];
+            // Preparar equipo
+            var equipment = (MyEntity as Entity)?.Equipment ?? new Dictionary<int, List<Guid>>();
+
+            // Si es el jugador local, sincronizamos desde MyEquipment
             if (MyEntity is Player player && player == Globals.Me)
             {
-                for (var i = 0; i < player.MyEquipment.Length; i++)
+                foreach (var kvp in player.MyEquipment)
                 {
-                    var eqp = player.MyEquipment[i];
-                    if (eqp > -1 && eqp < Options.Instance.Player.MaxInventory)
+                    var slotIndex = kvp.Key;
+                    var slotItems = kvp.Value;
+
+                    if (!equipment.ContainsKey(slotIndex))
                     {
-                        equipment[i] = player.Inventory[eqp].ItemId;
+                        equipment[slotIndex] = new List<Guid>();
                     }
-                    else
+
+                    equipment[slotIndex].Clear();
+
+                    foreach (var invIndex in slotItems)
                     {
-                        equipment[i] = Guid.Empty;
+                        if (invIndex >= 0 && invIndex < Options.Instance.Player.MaxInventory)
+                        {
+                            equipment[slotIndex].Add(player.Inventory[invIndex].ItemId);
+                        }
                     }
                 }
             }
 
+            // Dibujar paperdolls
             var n = 0;
             for (var z = 0; z < Options.Instance.Equipment.Paperdoll.Directions[1].Count; z++)
             {
                 var paperdollPanel = PaperdollPanels[n];
                 var paperdoll = string.Empty;
-                if (Options.Instance.Equipment.Slots.IndexOf(Options.Instance.Equipment.Paperdoll.Directions[1][z]) > -1 &&
-                    equipment.Length == Options.Instance.Equipment.Slots.Count)
+
+                var slotIndex = Options.Instance.Equipment.Slots.IndexOf(Options.Instance.Equipment.Paperdoll.Directions[1][z]);
+                if (slotIndex >= 0 && equipment.TryGetValue(slotIndex, out var guidList) && guidList.Count > 0)
                 {
-                    if (equipment[Options.Instance.Equipment.Slots.IndexOf(Options.Instance.Equipment.Paperdoll.Directions[1][z])] != Guid.Empty)
+                    var itemId = guidList[0]; // Solo usamos el primer ítem para el render
+                    if (ItemDescriptor.TryGet(itemId, out var itemDescriptor))
                     {
-                        var itemId = equipment[Options.Instance.Equipment.Slots.IndexOf(Options.Instance.Equipment.Paperdoll.Directions[1][z])];
-                        if (ItemDescriptor.TryGet(itemId, out var itemDescriptor))
-                        {
-                            paperdoll = MyEntity.Gender == 0
-                                ? itemDescriptor.MalePaperdoll : itemDescriptor.FemalePaperdoll;
-                            paperdollPanel.RenderColor = itemDescriptor.Color;
-                        }
+                        paperdoll = MyEntity.Gender == 0
+                            ? itemDescriptor.MalePaperdoll
+                            : itemDescriptor.FemalePaperdoll;
+                        paperdollPanel.RenderColor = itemDescriptor.Color;
                     }
                 }
 
-                //Check for Player layer
+                // Si es la capa "Player", saltamos renderizado especial
                 if (Options.Instance.Equipment.Paperdoll.Directions[1][z] == "Player")
                 {
                     continue;
@@ -839,43 +846,36 @@ public partial class EntityBox
                 }
                 else if (!string.IsNullOrWhiteSpace(paperdoll) && paperdoll != PaperdollTextures[n])
                 {
-                    var paperdollTex = Globals.ContentManager.GetTexture(
-                        Framework.Content.TextureType.Paperdoll, paperdoll
-                    );
+                    var paperdollTex = Globals.ContentManager.GetTexture(Framework.Content.TextureType.Paperdoll, paperdoll);
 
                     paperdollPanel.Texture = paperdollTex;
                     if (paperdollTex != null)
                     {
-                        paperdollPanel
-                            .SetTextureRect(
-                                0, 0, paperdollPanel.Texture.Width / Options.Instance.Sprites.NormalFrames,
-                                paperdollPanel.Texture.Height / Options.Instance.Sprites.Directions
-                            );
+                        paperdollPanel.SetTextureRect(0, 0,
+                            paperdollPanel.Texture.Width / Options.Instance.Sprites.NormalFrames,
+                            paperdollPanel.Texture.Height / Options.Instance.Sprites.Directions);
 
-                        paperdollPanel
-                            .SetSize(
-                                paperdollPanel.Texture.Width / Options.Instance.Sprites.NormalFrames,
-                                paperdollPanel.Texture.Height / Options.Instance.Sprites.Directions
-                            );
+                        paperdollPanel.SetSize(
+                            paperdollPanel.Texture.Width / Options.Instance.Sprites.NormalFrames,
+                            paperdollPanel.Texture.Height / Options.Instance.Sprites.Directions);
 
-                        paperdollPanel
-                            .SetPosition(
-                                (EntityFaceContainer.Width - paperdollPanel.Width) / 2,
-                                (EntityFaceContainer.Height - paperdollPanel.Height) / 2
-                            );
+                        paperdollPanel.SetPosition(
+                            (EntityFaceContainer.Width - paperdollPanel.Width) / 2,
+                            (EntityFaceContainer.Height - paperdollPanel.Height) / 2
+                        );
                     }
 
                     paperdollPanel.Show();
                     PaperdollTextures[n] = paperdoll;
                 }
 
-                //Check for Player layer
                 if (Options.Instance.Equipment.Paperdoll.Directions[1][z] != "Player")
                 {
                     n++;
                 }
             }
         }
+        // Caso 3: Ocultar todo
         else if (MyEntity.Sprite != mCurrentSprite && MyEntity.Face != mCurrentSprite)
         {
             EntityFace.IsHidden = true;

@@ -70,11 +70,11 @@ public partial class Entity : IEntity
 
     public float elapsedtime { get; set; } //to be removed
 
-    private Guid[] _equipment = new Guid[Options.Instance.Equipment.Slots.Count];
+    private Dictionary<int, List<Guid>> _equipment = new();
 
     public bool HasAnimations => _animations.Count > 0;
 
-    public Guid[] Equipment
+    public Dictionary<int, List<Guid>> Equipment
     {
         get => _equipment;
         set
@@ -92,9 +92,9 @@ public partial class Entity : IEntity
         }
     }
 
-    IReadOnlyList<int> IEntity.EquipmentSlots => [..MyEquipment];
+    IReadOnlyDictionary<int, List<int>> IEntity.EquipmentSlots => MyEquipment;
 
-    public Animation?[] EquipmentAnimations { get; set; } = new Animation[Options.Instance.Equipment.Slots.Count];
+    public Dictionary<int, List<Animation?>> EquipmentAnimations { get; set; } = new();
 
     //Extras
     public string Face { get; set; } = string.Empty;
@@ -157,7 +157,7 @@ public partial class Entity : IEntity
 
     private long mWalkTimer;
 
-    public int[] MyEquipment { get; set; } = new int[Options.Instance.Equipment.Slots.Count];
+    public Dictionary<int, List<int>> MyEquipment { get; set; } = new();
 
     public string Name { get; set; } = string.Empty;
 
@@ -303,8 +303,9 @@ public partial class Entity : IEntity
 
             for (var i = 0; i < Options.Instance.Equipment.Slots.Count; i++)
             {
-                Equipment[i] = Guid.Empty;
-                MyEquipment[i] = -1;
+                Equipment[i] = [];
+                MyEquipment[i] = [];
+                EquipmentAnimations[i] = [];
             }
         }
 
@@ -817,17 +818,19 @@ public partial class Entity : IEntity
         }
 
         //Check to see if we should start or stop equipment animations
-        if (Equipment.Length == Options.Instance.Equipment.Slots.Count)
+        if (Equipment.Count == Options.Instance.Equipment.Slots.Count)
         {
             for (var z = 0; z < Options.Instance.Equipment.Slots.Count; z++)
             {
-                var equipmentAnimation = EquipmentAnimations[z];
-                if (Equipment[z] != Guid.Empty && (this != Globals.Me || MyEquipment[z] < Options.Instance.Player.MaxInventory))
-                {
-                    var itemId = (this == Globals.Me && MyEquipment[z] > -1)
-                        ? Inventory[MyEquipment[z]].ItemId
-                        : Equipment[z];
+                var animList = EquipmentAnimations.GetValueOrDefault(z);
+                var items = this == Globals.Me
+                    ? MyEquipment.GetValueOrDefault(z).Where(i => i >= 0 && i < Options.Instance.Player.MaxInventory).Select(i => Inventory[i].ItemId).ToList()
+                    : Equipment.GetValueOrDefault(z);
 
+                for (var i = 0; i < items.Count; i++)
+                {
+                    var equipmentAnimation = i < animList.Count ? animList[i] : null;
+                    var itemId = items[i];
                     if (ItemDescriptor.TryGet(itemId, out var itemDescriptor) && itemDescriptor.EquipmentAnimation is { } animationDescriptor)
                     {
                         if (equipmentAnimation == null || equipmentAnimation.Descriptor != animationDescriptor || equipmentAnimation.IsDisposed)
@@ -838,21 +841,38 @@ public partial class Entity : IEntity
                             }
 
                             var newAnimation = new Animation(animationDescriptor, true, true, -1, this);
-                            EquipmentAnimations[z] = newAnimation;
+                            if (i < animList.Count)
+                            {
+                                animList[i] = newAnimation;
+                            }
+                            else
+                            {
+                                animList.Add(newAnimation);
+                            }
                             _animations.Add(newAnimation);
                         }
                     }
                     else if (equipmentAnimation != null)
                     {
                         TryRemoveAnimation(equipmentAnimation, dispose: true);
-                        EquipmentAnimations[z] = null;
+                        if (i < animList.Count)
+                        {
+                            animList[i] = null;
+                        }
                     }
                 }
-                else if (equipmentAnimation != null)
+
+                while (animList.Count > items.Count)
                 {
-                    TryRemoveAnimation(equipmentAnimation, dispose: true);
-                    EquipmentAnimations[z] = null;
+                    var oldAnim = animList[^1];
+                    if (oldAnim != null)
+                    {
+                        TryRemoveAnimation(oldAnim, dispose: true);
+                    }
+                    animList.RemoveAt(animList.Count - 1);
                 }
+
+                EquipmentAnimations[z] = animList;
             }
         }
 
@@ -1308,32 +1328,23 @@ public partial class Entity : IEntity
             else if (equipSlot > -1)
             {
                 //Don't render the paperdolls if they have transformed.
-                if (sprite == Sprite && Equipment.Length == Options.Instance.Equipment.Slots.Count)
+                if (sprite == Sprite && Equipment.Count == Options.Instance.Equipment.Slots.Count)
                 {
-                    if (Equipment[equipSlot] != Guid.Empty && this != Globals.Me ||
-                        MyEquipment[equipSlot] < Options.Instance.Player.MaxInventory)
+                    var equipList = this == Globals.Me
+                        ? MyEquipment.GetValueOrDefault(equipSlot).Where(i => i >= 0 && i < Options.Instance.Player.MaxInventory).Select(i => Inventory[i].ItemId).ToList()
+                        : Equipment.GetValueOrDefault(equipSlot);
+                    if (equipList.Count > 0)
                     {
-                        var itemId = Guid.Empty;
-                        if (this == Globals.Me)
+                        foreach (var itemId in equipList)
                         {
-                            var slot = MyEquipment[equipSlot];
-                            if (slot > -1)
+                            var item = ItemDescriptor.Get(itemId);
+                            if (ItemDescriptor.TryGet(itemId, out var itemDescriptor))
                             {
-                                itemId = Inventory[slot].ItemId;
+                                var itemPaperdoll = Gender == 0
+                                    ? itemDescriptor.MalePaperdoll
+                                    : itemDescriptor.FemalePaperdoll;
+                                DrawEquipment(itemPaperdoll, item.Color * renderColor);
                             }
-                        }
-                        else
-                        {
-                            itemId = Equipment[equipSlot];
-                        }
-
-                        var item = ItemDescriptor.Get(itemId);
-                        if (ItemDescriptor.TryGet(itemId, out var itemDescriptor))
-                        {
-                            var itemPaperdoll = Gender == 0
-                                ? itemDescriptor.MalePaperdoll
-                                : itemDescriptor.FemalePaperdoll;
-                            DrawEquipment(itemPaperdoll, item.Color * renderColor);
                         }
                     }
                 }
@@ -2121,15 +2132,17 @@ public partial class Entity : IEntity
                 SpriteAnimation = SpriteAnimations.Attack;
             }
 
-            if (Options.Instance.Equipment.WeaponSlot > -1 && Options.Instance.Equipment.WeaponSlot < Equipment.Length)
+            if (Options.Instance.Equipment.WeaponSlot > -1 && Options.Instance.Equipment.WeaponSlot < Equipment.Count)
             {
-                if (Equipment[Options.Instance.Equipment.WeaponSlot] != Guid.Empty && this != Globals.Me ||
-                    MyEquipment[Options.Instance.Equipment.WeaponSlot] < Options.Instance.Player.MaxInventory)
+                var equipList = Equipment.GetValueOrDefault(Options.Instance.Equipment.WeaponSlot);
+                var myList = MyEquipment.GetValueOrDefault(Options.Instance.Equipment.WeaponSlot);
+                if ((equipList.Count > 0 && this != Globals.Me) || (myList.Count > 0 && myList[0] < Options.Instance.Player.MaxInventory))
                 {
                     var itemId = Guid.Empty;
                     if (this == Globals.Me)
                     {
-                        var slot = MyEquipment[Options.Instance.Equipment.WeaponSlot];
+                        var invList = MyEquipment.GetValueOrDefault(Options.Instance.Equipment.WeaponSlot);
+                        var slot = invList.FirstOrDefault(-1);
                         if (slot > -1)
                         {
                             itemId = Inventory[slot].ItemId;
@@ -2137,7 +2150,11 @@ public partial class Entity : IEntity
                     }
                     else
                     {
-                        itemId = Equipment[Options.Instance.Equipment.WeaponSlot];
+                        var equipList = Equipment.GetValueOrDefault(Options.Instance.Equipment.WeaponSlot);
+                        if (equipList.Count > 0)
+                        {
+                            itemId = equipList[0];
+                        }
                     }
 
                     var item = ItemDescriptor.Get(itemId);
@@ -2248,7 +2265,7 @@ public partial class Entity : IEntity
     {
         SpriteAnimations spriteAnimationOveride = spriteAnimation;
         var textureOverride = string.Empty;
-        var weaponId = Equipment[Options.Instance.Equipment.WeaponSlot];
+        var weaponId = Equipment.GetValueOrDefault(Options.Instance.Equipment.WeaponSlot).FirstOrDefault();
 
         switch (spriteAnimation)
         {
@@ -2267,7 +2284,7 @@ public partial class Entity : IEntity
                 break;
 
             case SpriteAnimations.Shoot:
-                if (Equipment.Length <= Options.Instance.Equipment.WeaponSlot)
+                if (Equipment.Count <= Options.Instance.Equipment.WeaponSlot)
                 {
                     break;
                 }
@@ -2298,7 +2315,7 @@ public partial class Entity : IEntity
                 break;
 
             case SpriteAnimations.Weapon:
-                if (Equipment.Length <= Options.Instance.Equipment.WeaponSlot)
+                if (Equipment.Count <= Options.Instance.Equipment.WeaponSlot)
                 {
                     break;
                 }

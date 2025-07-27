@@ -627,9 +627,9 @@ public partial class Player : Entity, IPlayer
 
     public bool IsEquipped(int slot)
     {
-        for (var i = 0; i < Options.Instance.Equipment.Slots.Count; i++)
+        foreach (var list in MyEquipment.Values)
         {
-            if (MyEquipment[i] == slot)
+            if (list.Contains(slot))
             {
                 return true;
             }
@@ -1988,7 +1988,7 @@ public partial class Player : Entity, IPlayer
     public bool TryBlock()
     {
         var shieldIndex = Options.Instance.Equipment.ShieldSlot;
-        var myShieldIndex = MyEquipment[shieldIndex];
+        var myShieldIndex = MyEquipment.GetValueOrDefault(shieldIndex).FirstOrDefault(-1);
 
         // Return false if character is attacking, or blocking or if they don't have a shield equipped.
         if (IsAttacking || IsBlocking || shieldIndex < 0 || myShieldIndex < 0)
@@ -2435,19 +2435,25 @@ public partial class Player : Entity, IPlayer
         if (this == Globals.Me)
         {
             if (Options.Instance.Equipment.WeaponSlot > -1 &&
-                Options.Instance.Equipment.WeaponSlot < Equipment.Length &&
-                MyEquipment[Options.Instance.Equipment.WeaponSlot] >= 0)
+                Options.Instance.Equipment.WeaponSlot < Equipment.Count)
             {
-                weapon = ItemDescriptor.Get(Inventory[MyEquipment[Options.Instance.Equipment.WeaponSlot]].ItemId);
+                var invList = MyEquipment.GetValueOrDefault(Options.Instance.Equipment.WeaponSlot);
+                if (invList.Count > 0)
+                {
+                    weapon = ItemDescriptor.Get(Inventory[invList[0]].ItemId);
+                }
             }
         }
         else
         {
             if (Options.Instance.Equipment.WeaponSlot > -1 &&
-                Options.Instance.Equipment.WeaponSlot < Equipment.Length &&
-                Equipment[Options.Instance.Equipment.WeaponSlot] != Guid.Empty)
+                Options.Instance.Equipment.WeaponSlot < Equipment.Count)
             {
-                weapon = ItemDescriptor.Get(Equipment[Options.Instance.Equipment.WeaponSlot]);
+                var equipList = Equipment.GetValueOrDefault(Options.Instance.Equipment.WeaponSlot);
+                if (equipList.Count > 0)
+                {
+                    weapon = ItemDescriptor.Get(equipList[0]);
+                }
             }
         }
 

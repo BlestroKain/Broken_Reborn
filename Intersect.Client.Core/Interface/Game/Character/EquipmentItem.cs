@@ -14,11 +14,11 @@ namespace Intersect.Client.Interface.Game.Character;
 
 public partial class EquipmentItem
 {
-    public ImagePanel ContentPanel;
+    public List<ImagePanel> ContentPanels = new();
 
     private WindowControl mCharacterWindow;
 
-    private Guid mCurrentItemId;
+    private List<Guid> mCurrentItemIds = new();
 
     private ItemProperties mItemProperties = null;
 
@@ -40,8 +40,14 @@ public partial class EquipmentItem
         Pnl.HoverLeave += pnl_HoverLeave;
         Pnl.Clicked += pnl_RightClicked;
 
-        ContentPanel = new ImagePanel(Pnl, "EquipmentIcon");
-        ContentPanel.MouseInputEnabled = false;
+        var max = Options.Instance.Equipment.EquipmentSlots[mYindex].MaxItems;
+        for (var i = 0; i < max; i++)
+        {
+            var panel = new ImagePanel(Pnl, "EquipmentIcon");
+            panel.MouseInputEnabled = false;
+            panel.Margin = new Margin(i * 20, 0, 0, 0);
+            ContentPanels.Add(panel);
+        }
         Pnl.SetToolTipText(Options.Instance.Equipment.Slots[mYindex]);
     }
 
@@ -88,7 +94,7 @@ public partial class EquipmentItem
             return;
         }
 
-        var item = ItemDescriptor.Get(mCurrentItemId);
+        var item = mCurrentItemIds.Count > 0 ? ItemDescriptor.Get(mCurrentItemIds[0]) : null;
         if (item == null)
         {
             return;
@@ -110,33 +116,26 @@ public partial class EquipmentItem
         return rect;
     }
 
-    public void Update(Guid currentItemId, ItemProperties itemProperties)
+    public void Update(List<Guid> itemIds, List<ItemProperties> properties)
     {
-        if (!ItemDescriptor.TryGet(currentItemId, out var item))
+        mCurrentItemIds = itemIds;
+        for (var i = 0; i < ContentPanels.Count; i++)
         {
-            ContentPanel.Hide();
-            _loadedTexture = default;
-            return;
+            if (i >= itemIds.Count || !ItemDescriptor.TryGet(itemIds[i], out var item))
+            {
+                ContentPanels[i].Hide();
+                continue;
+            }
+
+            if (GameContentManager.Current.GetTexture(Framework.Content.TextureType.Item, item.Icon) is not { } itemTexture)
+            {
+                ContentPanels[i].Hide();
+                continue;
+            }
+
+            ContentPanels[i].Show();
+            ContentPanels[i].Texture = itemTexture;
+            ContentPanels[i].RenderColor = item.Color;
         }
-
-        if (currentItemId == mCurrentItemId && ContentPanel.Texture?.Name == _loadedTexture)
-        {
-            return;
-        }
-
-        mCurrentItemId = currentItemId;
-        mItemProperties = itemProperties;
-
-        if (GameContentManager.Current.GetTexture(Framework.Content.TextureType.Item, item.Icon) is not { } itemTexture)
-        {
-            ContentPanel.Hide();
-            _loadedTexture = default;
-            return;
-        }
-
-        ContentPanel.Show();
-        ContentPanel.Texture = itemTexture;
-        ContentPanel.RenderColor = item.Color;
-        _loadedTexture = ContentPanel.Texture?.Name;
     }
 }

@@ -387,25 +387,31 @@ public partial class CharacterWindow
 
         for (var i = 0; i < Options.Instance.Equipment.Slots.Count; i++)
         {
-            var invSlot = player.MyEquipment[i];
-            if (invSlot < 0 || invSlot >= Options.Instance.Player.MaxInventory)
+            var slots = player.MyEquipment.GetValueOrDefault(i);
+            var itemIds = new List<Guid>();
+            var props = new List<ItemProperties>();
+            foreach (var slot in slots)
             {
-                Items[i].Update(Guid.Empty, mItemProperties);
-                continue;
+                if (slot < 0 || slot >= Options.Instance.Player.MaxInventory)
+                {
+                    continue;
+                }
+
+                var item = player.Inventory[slot];
+                if (item.ItemId == Guid.Empty)
+                {
+                    continue;
+                }
+
+                itemIds.Add(item.ItemId);
+                props.Add(item.ItemProperties);
+                if (updateExtraBuffs)
+                {
+                    UpdateExtraBuffs(item.ItemId);
+                }
             }
 
-            var item = player.Inventory[invSlot];
-            if (item.ItemId == Guid.Empty)
-            {
-                Items[i].Update(Guid.Empty, mItemProperties);
-                continue;
-            }
-
-            Items[i].Update(item.ItemId, item.ItemProperties);
-            if (updateExtraBuffs)
-            {
-                UpdateExtraBuffs(item.ItemId);
-            }
+            Items[i].Update(itemIds, props);
         }
     }
 

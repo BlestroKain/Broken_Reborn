@@ -627,9 +627,9 @@ public partial class Player : Entity, IPlayer
 
     public bool IsEquipped(int slot)
     {
-        for (var i = 0; i < Options.Instance.Equipment.Slots.Count; i++)
+        foreach (var list in MyEquipment.Values)
         {
-            if (MyEquipment[i] == slot)
+            if (list.Contains(slot))
             {
                 return true;
             }
@@ -1988,7 +1988,7 @@ public partial class Player : Entity, IPlayer
     public bool TryBlock()
     {
         var shieldIndex = Options.Instance.Equipment.ShieldSlot;
-        var myShieldIndex = MyEquipment[shieldIndex];
+        var myShieldIndex = MyEquipment.GetValueOrDefault(shieldIndex).FirstOrDefault(-1);
 
         // Return false if character is attacking, or blocking or if they don't have a shield equipped.
         if (IsAttacking || IsBlocking || shieldIndex < 0 || myShieldIndex < 0)
@@ -2427,29 +2427,32 @@ public partial class Player : Entity, IPlayer
         var attackTime = base.CalculateAttackTime();
 
         var cls = ClassDescriptor.Get(Class);
-        if (cls != null && cls.AttackSpeedModifier == 1) //Static
+        if (cls != null && cls.AttackSpeedModifier == 1) // Static
         {
             attackTime = cls.AttackSpeedValue;
         }
 
+        var weaponSlotId = Options.Instance.Equipment.Slots.IndexOf("Weapon");
+
         if (this == Globals.Me)
         {
-            if (Options.Instance.Equipment.WeaponSlot > -1 &&
-                Options.Instance.Equipment.WeaponSlot < Equipment.Length &&
-                MyEquipment[Options.Instance.Equipment.WeaponSlot] >= 0)
+            if (MyEquipment.TryGetValue(weaponSlotId, out var weaponSlots) && weaponSlots.Count > 0)
             {
-                weapon = ItemDescriptor.Get(Inventory[MyEquipment[Options.Instance.Equipment.WeaponSlot]].ItemId);
+                var invItem = Inventory.ElementAtOrDefault(weaponSlots[0]);
+                if (invItem != null)
+                {
+                    weapon = ItemDescriptor.Get(invItem.ItemId);
+                }
             }
         }
         else
         {
-            if (Options.Instance.Equipment.WeaponSlot > -1 &&
-                Options.Instance.Equipment.WeaponSlot < Equipment.Length &&
-                Equipment[Options.Instance.Equipment.WeaponSlot] != Guid.Empty)
+            if (Equipment.TryGetValue(weaponSlotId, out var weaponItems) && weaponItems.Count > 0)
             {
-                weapon = ItemDescriptor.Get(Equipment[Options.Instance.Equipment.WeaponSlot]);
+                weapon = ItemDescriptor.Get(weaponItems[0]);
             }
         }
+
 
         if (weapon != null)
         {
@@ -2457,7 +2460,7 @@ public partial class Player : Entity, IPlayer
             {
                 attackTime = weapon.AttackSpeedValue;
             }
-            else if (weapon.AttackSpeedModifier == 2) //Percentage
+            else if (weapon.AttackSpeedModifier == 2) // Percentage
             {
                 attackTime = (int)(attackTime * (100f / weapon.AttackSpeedValue));
             }
@@ -2465,6 +2468,7 @@ public partial class Player : Entity, IPlayer
 
         return attackTime;
     }
+
 
     /// <summary>
     /// Calculate the attack time for the player as if they have a specified agility stat.

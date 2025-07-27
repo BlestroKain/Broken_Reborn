@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Intersect.Server.Entities;
 
 public partial class Player
-{
+{   
     public bool TryLoadAvatarName([NotNullWhen(true)] out string? avatarName, out bool isFace)
     {
         if (!string.IsNullOrWhiteSpace(Face))

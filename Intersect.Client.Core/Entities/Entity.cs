@@ -70,11 +70,11 @@ public partial class Entity : IEntity
 
     public float elapsedtime { get; set; } //to be removed
 
-    private Guid[] _equipment = new Guid[Options.Instance.Equipment.Slots.Count];
+    private Dictionary<int, List<Guid>> _equipment = new();
 
     public bool HasAnimations => _animations.Count > 0;
 
-    public Guid[] Equipment
+    public Dictionary<int, List<Guid>> Equipment
     {
         get => _equipment;
         set
@@ -92,9 +92,10 @@ public partial class Entity : IEntity
         }
     }
 
-    IReadOnlyList<int> IEntity.EquipmentSlots => [..MyEquipment];
+    IReadOnlyDictionary<int, List<int>> IEntity.EquipmentSlots => MyEquipment;
 
-    public Animation?[] EquipmentAnimations { get; set; } = new Animation[Options.Instance.Equipment.Slots.Count];
+
+    public Dictionary<int, List<Animation?>> EquipmentAnimations { get; set; } = new();
 
     //Extras
     public string Face { get; set; } = string.Empty;
@@ -157,7 +158,7 @@ public partial class Entity : IEntity
 
     private long mWalkTimer;
 
-    public int[] MyEquipment { get; set; } = new int[Options.Instance.Equipment.Slots.Count];
+    public Dictionary<int, List<int>> MyEquipment { get; set; } = new();
 
     public string Name { get; set; } = string.Empty;
 
@@ -303,8 +304,9 @@ public partial class Entity : IEntity
 
             for (var i = 0; i < Options.Instance.Equipment.Slots.Count; i++)
             {
-                Equipment[i] = Guid.Empty;
-                MyEquipment[i] = -1;
+                Equipment[i] = [];
+                MyEquipment[i] = [];
+                EquipmentAnimations[i] = [];
             }
         }
 
@@ -444,14 +446,14 @@ public partial class Entity : IEntity
                         break;
                     }
                 }
-
-                foreach (var equipAnim in EquipmentAnimations)
+                foreach (var equipAnimList in EquipmentAnimations.Values)
                 {
-                    if (equipAnim == anim && anim != null)
+                    if (equipAnimList.Contains(anim))
                     {
                         _ = animsToClear.Remove(anim);
                     }
                 }
+
             }
         }
 
@@ -817,16 +819,40 @@ public partial class Entity : IEntity
         }
 
         //Check to see if we should start or stop equipment animations
-        if (Equipment.Length == Options.Instance.Equipment.Slots.Count)
+        if (Equipment.Count == Options.Instance.Equipment.Slots.Count)
         {
             for (var z = 0; z < Options.Instance.Equipment.Slots.Count; z++)
             {
-                var equipmentAnimation = EquipmentAnimations[z];
-                if (Equipment[z] != Guid.Empty && (this != Globals.Me || MyEquipment[z] < Options.Instance.Player.MaxInventory))
+                // Aseguramos que la lista de animaciones exista
+                if (!EquipmentAnimations.TryGetValue(z, out var animList))
                 {
-                    var itemId = (this == Globals.Me && MyEquipment[z] > -1)
-                        ? Inventory[MyEquipment[z]].ItemId
-                        : Equipment[z];
+                    animList = new List<Animation>();
+                    EquipmentAnimations[z] = animList;
+                }
+
+                // Obtenemos la lista de ítems equipados de forma segura
+                List<Guid> items;
+                if (this == Globals.Me)
+                {
+                    items = MyEquipment.TryGetValue(z, out var invList)
+                        ? invList
+                            .Where(i => i >= 0 && i < Options.Instance.Player.MaxInventory)
+                            .Select(i => Inventory[i].ItemId)
+                            .ToList()
+                        : new List<Guid>();
+                }
+                else
+                {
+                    items = Equipment.TryGetValue(z, out var equipList)
+                        ? equipList
+                        : new List<Guid>();
+                }
+
+                // Aplicar las animaciones por ítem
+                for (var i = 0; i < items.Count; i++)
+                {
+                    var itemId = items[i];
+                    var equipmentAnimation = i < animList.Count ? animList[i] : null;
 
                     if (ItemDescriptor.TryGet(itemId, out var itemDescriptor) && itemDescriptor.EquipmentAnimation is { } animationDescriptor)
                     {
@@ -838,21 +864,41 @@ public partial class Entity : IEntity
                             }
 
                             var newAnimation = new Animation(animationDescriptor, true, true, -1, this);
-                            EquipmentAnimations[z] = newAnimation;
+                            if (i < animList.Count)
+                            {
+                                animList[i] = newAnimation;
+                            }
+                            else
+                            {
+                                animList.Add(newAnimation);
+                            }
+
                             _animations.Add(newAnimation);
                         }
                     }
                     else if (equipmentAnimation != null)
                     {
                         TryRemoveAnimation(equipmentAnimation, dispose: true);
-                        EquipmentAnimations[z] = null;
+                        if (i < animList.Count)
+                        {
+                            animList[i] = null;
+                        }
                     }
                 }
-                else if (equipmentAnimation != null)
+
+                // Eliminar animaciones sobrantes
+                while (animList.Count > items.Count)
                 {
-                    TryRemoveAnimation(equipmentAnimation, dispose: true);
-                    EquipmentAnimations[z] = null;
+                    var oldAnim = animList[^1];
+                    if (oldAnim != null)
+                    {
+                        TryRemoveAnimation(oldAnim, dispose: true);
+                    }
+
+                    animList.RemoveAt(animList.Count - 1);
                 }
+
+                EquipmentAnimations[z] = animList;
             }
         }
 
@@ -1307,36 +1353,44 @@ public partial class Entity : IEntity
             }
             else if (equipSlot > -1)
             {
-                //Don't render the paperdolls if they have transformed.
-                if (sprite == Sprite && Equipment.Length == Options.Instance.Equipment.Slots.Count)
+                if (sprite == Sprite && Equipment.Count == Options.Instance.Equipment.Slots.Count)
                 {
-                    if (Equipment[equipSlot] != Guid.Empty && this != Globals.Me ||
-                        MyEquipment[equipSlot] < Options.Instance.Player.MaxInventory)
-                    {
-                        var itemId = Guid.Empty;
-                        if (this == Globals.Me)
-                        {
-                            var slot = MyEquipment[equipSlot];
-                            if (slot > -1)
-                            {
-                                itemId = Inventory[slot].ItemId;
-                            }
-                        }
-                        else
-                        {
-                            itemId = Equipment[equipSlot];
-                        }
+                    List<Guid> equipList = new();
 
-                        var item = ItemDescriptor.Get(itemId);
-                        if (ItemDescriptor.TryGet(itemId, out var itemDescriptor))
+                    if (this == Globals.Me)
+                    {
+                        if (MyEquipment.TryGetValue(equipSlot, out var equippedIndexes) && equippedIndexes != null)
                         {
-                            var itemPaperdoll = Gender == 0
-                                ? itemDescriptor.MalePaperdoll
-                                : itemDescriptor.FemalePaperdoll;
-                            DrawEquipment(itemPaperdoll, item.Color * renderColor);
+                            equipList = equippedIndexes
+                                .Where(i => i >= 0 && i < Options.Instance.Player.MaxInventory)
+                                .Select(i => Inventory[i].ItemId)
+                                .ToList();
+                        }
+                    }
+                    else
+                    {
+                        if (Equipment.TryGetValue(equipSlot, out var equippedItems) && equippedItems != null)
+                        {
+                            equipList = equippedItems;
+                        }
+                    }
+
+                    if (equipList.Count > 0)
+                    {
+                        foreach (var itemId in equipList)
+                        {
+                            if (ItemDescriptor.TryGet(itemId, out var itemDescriptor))
+                            {
+                                var itemPaperdoll = Gender == 0
+                                    ? itemDescriptor.MalePaperdoll
+                                    : itemDescriptor.FemalePaperdoll;
+
+                                DrawEquipment(itemPaperdoll, itemDescriptor.Color * renderColor);
+                            }
                         }
                     }
                 }
+
             }
         }
     }
@@ -1457,76 +1511,51 @@ public partial class Entity : IEntity
     /// </summary>
     public virtual void DrawEquipment(string filename, Color renderColor)
     {
-        // Get the current map.
+        if (string.IsNullOrWhiteSpace(filename)) return;
+
         var map = Maps.MapInstance.Get(MapId);
+        if (map == null || map.HideEquipment) return;
 
-        // If the map is null or hideEquipment is true: do nothing.
-        if (map == null || map.HideEquipment)
-        {
-            return;
-        }
-
-        // Paperdoll textures and Frames.
         IGameTexture? paperdollTex = null;
         var spriteFrames = SpriteFrames;
-
-        // Extract filename without it's extension.
         var filenameNoExt = Path.GetFileNameWithoutExtension(filename);
 
-        // Equipment's custom paperdoll texture.
-        if (SpriteAnimation is SpriteAnimations.Attack or
-            SpriteAnimations.Cast or SpriteAnimations.Weapon or SpriteAnimations.Shoot)
+        if (SpriteAnimation is SpriteAnimations.Attack or SpriteAnimations.Cast or SpriteAnimations.Weapon or SpriteAnimations.Shoot)
         {
-            // Extract animation name from the AnimatedTextures list.
-            var animationName = Path.GetFileNameWithoutExtension(AnimatedTextures[SpriteAnimation].Name);
-
-            // Extract the substring after the separator.
-            var separatorIndex = animationName.IndexOf('_') + 1;
-            var customAnimationName = animationName[separatorIndex..];
-
-            // Try to get custom paperdoll texture.
-            var customPaperdollTex =
-                Globals.ContentManager.GetTexture(TextureType.Paperdoll,
-                    $"{filenameNoExt}_{customAnimationName}.png");
-
-            // If custom paperdoll texture exists, use it.
-            if (customPaperdollTex != null)
+            if (AnimatedTextures.TryGetValue(SpriteAnimation, out var animTex))
             {
-                paperdollTex = customPaperdollTex;
+                var animationName = Path.GetFileNameWithoutExtension(animTex.Name);
+                var separatorIndex = animationName.IndexOf('_') + 1;
+                var customAnimationName = animationName[separatorIndex..];
+                var customPaperdollTex = Globals.ContentManager.GetTexture(TextureType.Paperdoll, $"{filenameNoExt}_{customAnimationName}.png");
+
+                if (customPaperdollTex != null)
+                {
+                    paperdollTex = customPaperdollTex;
+                }
             }
         }
 
-        // If there's no custom paperdoll: use the paperdoll texture based on the SpriteAnimation.
         if (paperdollTex == null && !string.IsNullOrEmpty($"{SpriteAnimation}"))
         {
-            paperdollTex = Globals.ContentManager.GetTexture(TextureType.Paperdoll,
-                $"{filenameNoExt}_{SpriteAnimation}.png");
+            paperdollTex = Globals.ContentManager.GetTexture(TextureType.Paperdoll, $"{filenameNoExt}_{SpriteAnimation}.png");
         }
 
-        // If the paperdoll texture is still null: try to get the default texture.
         if (paperdollTex == null)
         {
             paperdollTex = Globals.ContentManager.GetTexture(TextureType.Paperdoll, filename);
             spriteFrames = Options.Instance.Sprites.NormalFrames;
         }
 
-        // If the paperdoll texture is null at this point: do nothing.
-        if (paperdollTex == null)
-        {
-            return;
-        }
+        if (paperdollTex == null || spriteFrames <= 0) return;
 
-        // Calculate: direction, frame width and frame height.
         var spriteRow = PickSpriteRow(DirectionFacing);
         var frameWidth = paperdollTex.Width / spriteFrames;
         var frameHeight = paperdollTex.Height / Options.Instance.Sprites.Directions;
 
-        // Calculate: source and destination rectangles.
         var frame = SpriteFrame;
         if (SpriteAnimation == SpriteAnimations.Normal)
-        {
             frame = NormalSpriteAnimationFrame;
-        }
 
         var srcRectangle = new FloatRect(frame * frameWidth, spriteRow * frameHeight, frameWidth, frameHeight);
         var destRectangle = new FloatRect(
@@ -1536,9 +1565,9 @@ public partial class Entity : IEntity
             srcRectangle.Height
         );
 
-        // Draw the paperdoll texture using: source and destination rectangles along with the render color.
         Graphics.DrawGameTexture(paperdollTex, srcRectangle, destRectangle, renderColor);
     }
+
 
     protected virtual void CalculateOrigin()
     {
@@ -2082,7 +2111,7 @@ public partial class Entity : IEntity
 
     private void UpdateSpriteAnimation()
     {
-        //Exit if textures haven't been loaded yet
+        // Exit if textures haven't been loaded yet
         if (AnimatedTextures.Count == 0)
         {
             return;
@@ -2107,53 +2136,56 @@ public partial class Entity : IEntity
 
         if (IsAttacking && isNotBlockingAndCasting)
         {
-            // Normal sprite-sheets has their own handler for attacking frames.
+            // Normal sprite-sheets have their own handler for attacking frames.
             if (AnimatedTextures.TryGetValue(SpriteAnimations.Normal, out _))
             {
                 return;
             }
 
             var timeInAttack = CalculateAttackTime() - (AttackTimer - timingMilliseconds);
-            LastActionTime = Timing.Global.Milliseconds;
+            LastActionTime = timingMilliseconds;
 
             if (AnimatedTextures.TryGetValue(SpriteAnimations.Attack, out _))
             {
                 SpriteAnimation = SpriteAnimations.Attack;
             }
 
-            if (Options.Instance.Equipment.WeaponSlot > -1 && Options.Instance.Equipment.WeaponSlot < Equipment.Length)
+            var weaponSlot = Options.Instance.Equipment.WeaponSlot;
+            if (weaponSlot > -1)
             {
-                if (Equipment[Options.Instance.Equipment.WeaponSlot] != Guid.Empty && this != Globals.Me ||
-                    MyEquipment[Options.Instance.Equipment.WeaponSlot] < Options.Instance.Player.MaxInventory)
+                var itemId = Guid.Empty;
+
+                if (this == Globals.Me)
                 {
-                    var itemId = Guid.Empty;
-                    if (this == Globals.Me)
+                    if (MyEquipment.TryGetValue(weaponSlot, out var myList) &&
+                        myList.Count > 0 &&
+                        myList[0] >= 0 &&
+                        myList[0] < Inventory.Length)
                     {
-                        var slot = MyEquipment[Options.Instance.Equipment.WeaponSlot];
-                        if (slot > -1)
-                        {
-                            itemId = Inventory[slot].ItemId;
-                        }
+                        itemId = Inventory[myList[0]].ItemId;
                     }
-                    else
+                }
+                else
+                {
+                    if (Equipment.TryGetValue(weaponSlot, out var equipList) && equipList.Count > 0)
                     {
-                        itemId = Equipment[Options.Instance.Equipment.WeaponSlot];
+                        itemId = equipList[0];
+                    }
+                }
+
+                var item = ItemDescriptor.Get(itemId);
+                if (item != null)
+                {
+                    if (AnimatedTextures.TryGetValue(SpriteAnimations.Weapon, out _))
+                    {
+                        SpriteAnimation = SpriteAnimations.Weapon;
                     }
 
-                    var item = ItemDescriptor.Get(itemId);
-                    if (item != null)
+                    if (AnimatedTextures.TryGetValue(SpriteAnimations.Shoot, out _) &&
+                        item.ProjectileId != Guid.Empty &&
+                        string.IsNullOrWhiteSpace(item.WeaponSpriteOverride))
                     {
-                        if (AnimatedTextures.TryGetValue(SpriteAnimations.Weapon, out _))
-                        {
-                            SpriteAnimation = SpriteAnimations.Weapon;
-                        }
-
-                        if (AnimatedTextures.TryGetValue(SpriteAnimations.Shoot, out _) &&
-                            item.ProjectileId != Guid.Empty &&
-                            item.WeaponSpriteOverride == null)
-                        {
-                            SpriteAnimation = SpriteAnimations.Shoot;
-                        }
+                        SpriteAnimation = SpriteAnimations.Shoot;
                     }
                 }
             }
@@ -2164,6 +2196,7 @@ public partial class Entity : IEntity
                 case SpriteAnimations.Idle:
                 case SpriteAnimations.Normal:
                     break;
+
                 case SpriteAnimations.Attack:
                 case SpriteAnimations.Shoot:
                 case SpriteAnimations.Weapon:
@@ -2181,7 +2214,6 @@ public partial class Entity : IEntity
                 var duration = spell.CastDuration;
                 var timeInCast = duration - (CastTime - timingMilliseconds);
 
-                // Normal sprite-sheets has their own handler for attacking frames.
                 if (AnimatedTextures.TryGetValue(SpriteAnimations.Cast, out _))
                 {
                     SpriteAnimation = SpriteAnimations.Cast;
@@ -2189,7 +2221,7 @@ public partial class Entity : IEntity
 
                 if (spell.SpellType == SpellType.CombatSpell &&
                     spell.Combat.TargetType == SpellTargetType.Projectile &&
-                    spell.CastSpriteOverride == null)
+                    string.IsNullOrWhiteSpace(spell.CastSpriteOverride))
                 {
                     if (AnimatedTextures.TryGetValue(SpriteAnimations.Shoot, out _))
                     {
@@ -2222,6 +2254,7 @@ public partial class Entity : IEntity
         }
     }
 
+
     public void ResetSpriteFrame()
     {
         SpriteFrame = 0;
@@ -2248,14 +2281,14 @@ public partial class Entity : IEntity
     {
         SpriteAnimations spriteAnimationOveride = spriteAnimation;
         var textureOverride = string.Empty;
-        var weaponId = Equipment[Options.Instance.Equipment.WeaponSlot];
+
+        var weaponList = Equipment.GetValueOrDefault(Options.Instance.Equipment.WeaponSlot);
+        var weaponId = weaponList != null && weaponList.Count > 0 ? weaponList[0] : Guid.Empty;
 
         switch (spriteAnimation)
         {
-            // No override for these animations.
             case SpriteAnimations.Normal:
             case SpriteAnimations.Idle:
-
                 break;
 
             case SpriteAnimations.Attack:
@@ -2263,16 +2296,10 @@ public partial class Entity : IEntity
                 {
                     textureOverride = classDescriptor.AttackSpriteOverride;
                 }
-
                 break;
 
             case SpriteAnimations.Shoot:
-                if (Equipment.Length <= Options.Instance.Equipment.WeaponSlot)
-                {
-                    break;
-                }
-
-                if (ItemDescriptor.TryGet(weaponId, out var shootItemDescriptor))
+                if (weaponId != Guid.Empty && ItemDescriptor.TryGet(weaponId, out var shootItemDescriptor))
                 {
                     textureOverride = shootItemDescriptor.WeaponSpriteOverride;
                 }
@@ -2281,7 +2308,6 @@ public partial class Entity : IEntity
                 {
                     spriteAnimationOveride = SpriteAnimations.Shoot;
                 }
-
                 break;
 
             case SpriteAnimations.Cast:
@@ -2294,16 +2320,10 @@ public partial class Entity : IEntity
                 {
                     spriteAnimationOveride = SpriteAnimations.Cast;
                 }
-
                 break;
 
             case SpriteAnimations.Weapon:
-                if (Equipment.Length <= Options.Instance.Equipment.WeaponSlot)
-                {
-                    break;
-                }
-
-                if (ItemDescriptor.TryGet(weaponId, out var weaponItemDescriptor))
+                if (weaponId != Guid.Empty && ItemDescriptor.TryGet(weaponId, out var weaponItemDescriptor))
                 {
                     textureOverride = weaponItemDescriptor.WeaponSpriteOverride;
                 }
@@ -2312,7 +2332,6 @@ public partial class Entity : IEntity
                 {
                     spriteAnimationOveride = SpriteAnimations.Weapon;
                 }
-
                 break;
 
             default:
@@ -2327,6 +2346,13 @@ public partial class Entity : IEntity
 
     protected virtual bool TryGetAnimationTexture(string textureName, SpriteAnimations spriteAnimation, string textureOverride, out IGameTexture texture)
     {
+        texture = null;
+
+        if (string.IsNullOrWhiteSpace(textureName))
+        {
+            return false;
+        }
+
         var baseFilename = Path.GetFileNameWithoutExtension(textureName);
         var extension = Path.GetExtension(textureName);
         var animationTextureName = $"{baseFilename}_{spriteAnimation.ToString()?.ToLowerInvariant() ?? string.Empty}";

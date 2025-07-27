@@ -11,6 +11,7 @@ using Intersect.Client.Items;
 using Intersect.Client.Localization;
 using Intersect.Client.Networking;
 using Intersect.GameObjects;
+using Intersect.Core;
 
 namespace Intersect.Client.Interface.Game.Mail;
 
@@ -245,7 +246,8 @@ public partial class MailBoxWindow : Window
             // 🔍 Validar inicialización
             if (mMailListBox == null || mAttachmentSlots == null)
             {
-                Console.WriteLine("⚠️ Componentes de MailBoxWindow no están inicializados.");
+                ApplicationContext.CurrentContext.Logger.LogWarning(
+                    "MailBoxWindow components are not initialized.");
                 return;
             }
 
@@ -274,12 +276,17 @@ public partial class MailBoxWindow : Window
             {
                 if (mail == null)
                 {
-                    Console.WriteLine("⚠️ Se encontró un correo nulo en Globals.Mails.");
+                    ApplicationContext.CurrentContext.Logger.LogWarning(
+                        "Found null mail entry while updating mailbox.");
                     continue;
                 }
 
                 // 📩 Verificar datos antes de agregar a la lista
-                Console.WriteLine($"📩 Mail recibido - ID: {mail.MailID}, Remitente: {mail.SenderName}, Título: {mail.Name}");
+                ApplicationContext.CurrentContext.Logger.LogDebug(
+                    "Mail received - ID: {MailId}, Sender: {SenderName}, Title: {MailTitle}",
+                    mail.MailID,
+                    mail.SenderName,
+                    mail.Name);
 
                 string senderName = !string.IsNullOrWhiteSpace(mail.SenderName) ? mail.SenderName : "Unknown Sender";
                 string mailTitle = !string.IsNullOrWhiteSpace(mail.Name) ? mail.Name.Trim() : "No Subject";

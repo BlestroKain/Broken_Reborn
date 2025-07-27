@@ -1218,8 +1218,8 @@ public partial class Player : Entity
     {
         return vital switch
         {
-            Vital.Health => GetStatValue(Stat.Vitality) * Options.VitalityHealthmultiplier,
-            Vital.Mana => GetStatValue(Stat.Intelligence) * Options.IntelligenceManaMultiplier,
+            Vital.Health => GetStatValue(Enums.Stat.Vitality) * Options.VitalityHealthmultiplier,
+            Vital.Mana => GetStatValue(Enums.Stat.Intelligence) * Options.IntelligenceManaMultiplier,
             _ => 0,
         };
     }

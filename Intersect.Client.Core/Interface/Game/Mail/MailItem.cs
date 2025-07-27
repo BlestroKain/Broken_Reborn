@@ -211,7 +211,7 @@ public void FinalizeAttachment(Item item, int inventoryIndex)
 {
     SetItem(item);
 
-    SendMailBoxWindow.Instance.AddAttachment(item.ItemId, item.Quantity, item.ItemProperties);
+    SendMailBoxWindow.Instance.AddAttachment(this, item.ItemId, item.Quantity, item.ItemProperties);
 
     // Ajustar inventario
     var inventorySlot = Globals.Me.Inventory[inventoryIndex];

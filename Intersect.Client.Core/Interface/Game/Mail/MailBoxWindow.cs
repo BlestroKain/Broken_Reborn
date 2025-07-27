@@ -12,6 +12,7 @@ using Intersect.Client.Localization;
 using Intersect.Client.Networking;
 using Intersect.GameObjects;
 using Intersect.Core;
+using Microsoft.Extensions.Logging;
 
 namespace Intersect.Client.Interface.Game.Mail;
 

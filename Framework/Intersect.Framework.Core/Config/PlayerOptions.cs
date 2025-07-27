@@ -88,6 +88,16 @@ public partial class PlayerOptions
     public int MaxStat { get; set; } = 255;
 
     /// <summary>
+    /// Health gained per point of <see cref="Stat.Vitality"/>.
+    /// </summary>
+    public int VitalityHealthmultiplier { get; set; } = 3;
+
+    /// <summary>
+    /// Mana gained per point of <see cref="Stat.Intelligence"/>.
+    /// </summary>
+    public int IntelligenceManaMultiplier { get; set; } = 3;
+
+    /// <summary>
     /// How long a player must wait before sending a trade/party/friend.
     /// </summary>
     public int RequestTimeout { get; set; } = 300000;

@@ -1209,6 +1209,21 @@ public partial class Player : Entity
         }
     }
 
+    public int GetStatValue(Stat stat)
+    {
+        return BaseStats[(int)stat] + StatPointAllocations[(int)stat];
+    }
+
+    private long CalculateVitalStatBonus(Vital vital)
+    {
+        return vital switch
+        {
+            Vital.Health => GetStatValue(Stat.Vitality) * Options.VitalityHealthmultiplier,
+            Vital.Mana => GetStatValue(Stat.Intelligence) * Options.IntelligenceManaMultiplier,
+            _ => 0,
+        };
+    }
+
     public override long GetMaxVital(int vital)
     {
         var classDescriptor = ClassDescriptor.Get(this.ClassId);
@@ -1246,6 +1261,8 @@ public partial class Player : Entity
         {
             classVital = Math.Max(classVital, 0);
         }
+
+        classVital += CalculateVitalStatBonus((Vital)vital);
 
         return classVital;
     }

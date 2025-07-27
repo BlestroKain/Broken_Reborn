@@ -1303,90 +1303,61 @@ internal sealed partial class PacketHandler
 
         //Fire projectile instead if weapon has it
 
-        if (player.TryGetEquippedItem(Options.Instance.Equipment.WeaponSlot, out var equippedWeapon))
+        if (player.TryGetEquippedItem(Options.Instance.Equipment.WeaponSlot, out var equippedWeapon) && equippedWeapon.Any())
         {
-            var weaponItem = equippedWeapon.Descriptor;
+            var weaponItem = equippedWeapon.FirstOrDefault()?.Descriptor;
 
-            //Check for animation
-            var attackAnim = weaponItem.AttackAnimation;
-
-            if (attackAnim != null && attackingTile.TryFix())
+            if (weaponItem != null)
             {
-                PacketSender.SendAnimationToProximity(
-                    attackAnim.Id, -1, player.Id, attackingTile.GetMapId(), attackingTile.GetX(),
-                    attackingTile.GetY(), player.Dir, player.MapInstanceId
-                );
-            }
+                // Check for animation
+                var attackAnim = weaponItem.AttackAnimation;
 
-            var projectileBase = ProjectileDescriptor.Get(weaponItem?.ProjectileId ?? Guid.Empty);
-
-            if (projectileBase != null)
-            {
-                if (projectileBase.AmmoItemId != Guid.Empty)
+                if (attackAnim != null && attackingTile.TryFix())
                 {
-                    var itemSlot = player.FindInventoryItemSlot(
-                        projectileBase.AmmoItemId, projectileBase.AmmoRequired
+                    PacketSender.SendAnimationToProximity(
+                        attackAnim.Id, -1, player.Id, attackingTile.GetMapId(), attackingTile.GetX(),
+                        attackingTile.GetY(), player.Dir, player.MapInstanceId
                     );
+                }
 
-                    if (itemSlot == null)
+                var projectileBase = ProjectileDescriptor.Get(weaponItem.ProjectileId);
+
+                if (projectileBase != null)
+                {
+                    if (projectileBase.AmmoItemId != Guid.Empty)
                     {
-                        PacketSender.SendChatMsg(
-                            player,
-                            Strings.Items.NotEnough.ToString(ItemDescriptor.GetName(projectileBase.AmmoItemId)),
-                            ChatMessageType.Inventory,
-                            CustomColors.Combat.NoAmmo
+                        var itemSlot = player.FindInventoryItemSlot(projectileBase.AmmoItemId, projectileBase.AmmoRequired);
+
+                        if (itemSlot == null)
+                        {
+                            PacketSender.SendChatMsg(
+                                player,
+                                Strings.Items.NotEnough.ToString(ItemDescriptor.GetName(projectileBase.AmmoItemId)),
+                                ChatMessageType.Inventory,
+                                CustomColors.Combat.NoAmmo
+                            );
+                            return;
+                        }
+
+                        if (!player.TryTakeItem(projectileBase.AmmoItemId, projectileBase.AmmoRequired))
+                        {
+                            // Opcional: log diagnóstico
+                        }
+                    }
+
+                    if (MapController.TryGetInstanceFromMap(player.MapId, player.MapInstanceId, out var mapInstance))
+                    {
+                        mapInstance.SpawnMapProjectile(
+                            player, projectileBase, null, weaponItem, player.MapId,
+                            (byte)player.X, (byte)player.Y, (byte)player.Z, player.Dir, null
                         );
 
-                        return;
+                        player.AttackTimer = Timing.Global.Milliseconds + latencyAdjustmentMs + player.CalculateAttackTime();
                     }
-#if INTERSECT_DIAGNOSTIC
-                            PacketSender.SendPlayerMsg(client,
-                                Strings.Get("items", "notenough", $"REGISTERED_AMMO ({projectileBase.Ammo}:'{ItemBase.GetName(projectileBase.Ammo)}':{projectileBase.AmmoRequired})"),
-                                ChatMessageType.Inventory, CustomColors.NoAmmo);
-#endif
-                    if (!player.TryTakeItem(projectileBase.AmmoItemId, projectileBase.AmmoRequired))
-                    {
-#if INTERSECT_DIAGNOSTIC
-                                PacketSender.SendPlayerMsg(client,
-                                    Strings.Get("items", "notenough", "FAILED_TO_DEDUCT_AMMO"),
-                                    CustomColors.NoAmmo);
-                                PacketSender.SendPlayerMsg(client,
-                                    Strings.Get("items", "notenough", $"FAILED_TO_DEDUCT_AMMO {client.Entity.CountItems(projectileBase.Ammo)}"),
-                                    ChatMessageType.Inventory, CustomColors.NoAmmo);
-#endif
-                    }
-                }
-#if INTERSECT_DIAGNOSTIC
-                        else
-                        {
-                            PacketSender.SendPlayerMsg(client,
-                                Strings.Get("items", "notenough", "NO_REGISTERED_AMMO"),
-                                ChatMessageType.Inventory, CustomColors.NoAmmo);
-                        }
-#endif
-                if (MapController.TryGetInstanceFromMap(player.MapId, player.MapInstanceId, out var mapInstance))
-                {
-                    mapInstance
-                        .SpawnMapProjectile(
-                            player, projectileBase, null, weaponItem, player.MapId,
-                            (byte)player.X, (byte)player.Y, (byte)player.Z, player.Dir, null);
 
-                    player.AttackTimer = Timing.Global.Milliseconds +
-                                         latencyAdjustmentMs +
-                                         player.CalculateAttackTime();
+                    return;
                 }
-
-                return;
             }
-#if INTERSECT_DIAGNOSTIC
-                    else
-                    {
-                        PacketSender.SendPlayerMsg(client,
-                            Strings.Get("items", "notenough", "NONPROJECTILE"),
-                            ChatMessageType.Inventory, CustomColors.NoAmmo);
-                        return;
-                    }
-#endif
         }
         else
         {
@@ -1606,8 +1577,9 @@ internal sealed partial class PacketHandler
         newChar.ValidateLists();
         for (var i = 0; i < Options.Instance.Equipment.Slots.Count; i++)
         {
-            newChar.Equipment[i] = -1;
+            newChar.Equipment[i] = new List<int> { -1 };
         }
+
 
         newChar.Name = packet.Name;
         newChar.ClassId = packet.ClassId;

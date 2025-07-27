@@ -1272,32 +1272,45 @@ public static partial class PacketSender
     }
 
     //EquipmentPacket
-    public static EquipmentPacket GenerateEquipmentPacket(Player forPlayer, Player en)
+   public static EquipmentPacket GenerateEquipmentPacket(Player forPlayer, Player en)
+{
+    if (forPlayer != null && forPlayer == en)
     {
-        if (forPlayer != null && forPlayer == en)
-        {
-            return new EquipmentPacket(en.Id, en.Equipment, null);
-        }
-        else
-        {
-            var equipment = new Guid[Options.Instance.Equipment.Slots.Count];
+        // Si es el mismo jugador, enviamos los slots de inventario (MyEquipment)
+        return new EquipmentPacket(en.Id, en.Equipment, null);
+    }
+    else
+    {
+        // Si es otro jugador, enviamos los GUIDs de ítems
+        var equipmentDict = new Dictionary<int, List<Guid>>();
 
-            for (var i = 0; i < Options.Instance.Equipment.Slots.Count; i++)
+        for (var i = 0; i < Options.Instance.Equipment.Slots.Count; i++)
+        {
+            var guidList = new List<Guid>();
+            var myEquipList = en.Equipment.GetValueOrDefault(i);
+
+            if (myEquipList != null)
             {
-                if (en.Equipment[i] == -1 || en.Items[en.Equipment[i]].ItemId == Guid.Empty)
+                foreach (var invIndex in myEquipList)
                 {
-                    equipment[i] = Guid.Empty;
+                    if (invIndex >= 0 && invIndex < en.Items.Count)
+                    {
+                        var itemId = en.Items[invIndex].ItemId;
+                        if (itemId != Guid.Empty)
+                        {
+                            guidList.Add(itemId);
+                        }
+                    }
                 }
-                else
-                {
-                    equipment[i] = en.Items[en.Equipment[i]].ItemId;
-                }
-
             }
 
-            return new EquipmentPacket(en.Id, null, equipment);
+            equipmentDict[i] = guidList;
         }
+
+        return new EquipmentPacket(en.Id, null, equipmentDict);
     }
+}
+
 
     //EquipmentPacket
     public static void SendPlayerEquipmentTo(Player forPlayer, Player en)
@@ -1391,36 +1404,40 @@ public static partial class PacketSender
 
         foreach (var character in clientCharacters.OrderByDescending(p => p.LastOnline))
         {
-            var equipmentArray = character.Equipment;
+            var equipmentArray = character.Equipment; // Ahora es Dictionary<int, List<int>>
             var equipment = new EquipmentFragment[equipmentSlotsOptions.Count + 1];
 
-            // Draw the equipment/paperdolls
+            // Iterar la capa principal del paperdoll
             var paperdollOrderOptionLayer1 = paperdollOrderOptions[1];
             for (var z = 0; z < paperdollOrderOptionLayer1.Count; z++)
             {
-                var indexOfPaperdoll = equipmentSlotsOptions.IndexOf(Options.Instance.Equipment.Paperdoll.Directions[1][z]);
+                var paperdollName = paperdollOrderOptionLayer1[z];
+                var indexOfPaperdoll = equipmentSlotsOptions.IndexOf(paperdollName);
+
                 if (indexOfPaperdoll < 0)
                 {
                     const string equipmentFragmentNamePlayer = "Player";
-                    if (Options.Instance.Equipment.Paperdoll.Directions[1][z] == equipmentFragmentNamePlayer)
+                    if (paperdollName == equipmentFragmentNamePlayer)
                     {
                         equipment[z] = new EquipmentFragment { Name = equipmentFragmentNamePlayer };
                     }
-
                     continue;
                 }
 
-                var inventoryIndexOfEquip = equipmentArray[indexOfPaperdoll];
-                if (inventoryIndexOfEquip <= -1 || inventoryIndexOfEquip >= Options.Instance.Player.MaxInventory)
+                // Obtener lista de ítems en ese slot
+                if (!equipmentArray.TryGetValue(indexOfPaperdoll, out var inventoryIndices) || inventoryIndices.Count == 0)
                 {
                     continue;
                 }
 
-                var paperdollOrder = paperdollOrderOptionLayer1[z];
-                var equipmentSlot = equipmentSlotsOptions.IndexOf(paperdollOrder);
-                var itemIndex = equipmentArray[equipmentSlot];
+                // Procesar solo el primer ítem para compatibilidad visual rápida
+                var inventoryIndexOfEquip = inventoryIndices[0];
+                if (inventoryIndexOfEquip < 0 || inventoryIndexOfEquip >= Options.Instance.Player.MaxInventory)
+                {
+                    continue;
+                }
 
-                var itemId = character.Items[itemIndex].ItemId;
+                var itemId = character.Items[inventoryIndexOfEquip].ItemId;
 
                 if (!ItemDescriptor.TryGet(itemId, out var itemDescriptor))
                 {

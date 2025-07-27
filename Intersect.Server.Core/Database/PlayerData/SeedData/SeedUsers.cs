@@ -112,7 +112,7 @@ public partial class SeedUsers : SeedData<User>
 
                 for (var i = 0; i < Options.Instance.Equipment.Slots.Count; i++)
                 {
-                    player.Equipment[i] = -1;
+                    player.Equipment[i] = new List<int> { -1 };
                 }
 
                 player.SetVital(Vital.Health, 10);

@@ -328,22 +328,13 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
             return 0;
         }
 
-        var newValue = _itemDescriptor.StatsGiven[index];
-        if (_itemProperties?.StatModifiers != null)
-        {
-            newValue += _itemProperties.StatModifiers[index];
-        }
-
+        var newValue = _itemDescriptor.StatsGiven[index] + (_itemProperties?.StatModifiers?[index] ?? 0);
         var slot = _itemDescriptor.EquipmentSlot;
-        if (slot >= 0 && Globals.Me.MyEquipment[slot] != -1)
-        {
-            var equipped = Globals.Me.Inventory[Globals.Me.MyEquipment[slot]];
-            var oldValue = equipped.Descriptor.StatsGiven[index];
-            if (equipped.ItemProperties?.StatModifiers != null)
-            {
-                oldValue += equipped.ItemProperties.StatModifiers[index];
-            }
 
+        if (slot >= 0 && Globals.Me.MyEquipment.TryGetValue(slot, out var equippedSlots) && equippedSlots.Count > 0)
+        {
+            var equipped = Globals.Me.Inventory[equippedSlots[0]];
+            var oldValue = equipped.Descriptor.StatsGiven[index] + (equipped.ItemProperties?.StatModifiers?[index] ?? 0);
             return newValue - oldValue;
         }
 
@@ -354,9 +345,10 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
     {
         var newValue = _itemDescriptor.VitalsGiven[index] + (_itemProperties?.VitalModifiers[index] ?? 0);
         var slot = _itemDescriptor.EquipmentSlot;
-        if (slot >= 0 && Globals.Me.MyEquipment[slot] != -1)
+
+        if (slot >= 0 && Globals.Me.MyEquipment.TryGetValue(slot, out var equippedSlots) && equippedSlots.Count > 0)
         {
-            var equipped = Globals.Me.Inventory[Globals.Me.MyEquipment[slot]];
+            var equipped = Globals.Me.Inventory[equippedSlots[0]];
             var oldValue = equipped.Descriptor.VitalsGiven[index] + (equipped.ItemProperties?.VitalModifiers[index] ?? 0);
             return (int)(newValue - oldValue);
         }
@@ -368,9 +360,10 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
     {
         var newValue = _itemDescriptor.VitalsRegen[index];
         var slot = _itemDescriptor.EquipmentSlot;
-        if (slot >= 0 && Globals.Me.MyEquipment[slot] != -1)
+
+        if (slot >= 0 && Globals.Me.MyEquipment.TryGetValue(slot, out var equippedSlots) && equippedSlots.Count > 0)
         {
-            var equipped = Globals.Me.Inventory[Globals.Me.MyEquipment[slot]];
+            var equipped = Globals.Me.Inventory[equippedSlots[0]];
             var oldValue = equipped.Descriptor.VitalsRegen[index];
             return (int)(newValue - oldValue);
         }
@@ -382,9 +375,10 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
     {
         var newValue = _itemDescriptor.Damage;
         var slot = _itemDescriptor.EquipmentSlot;
-        if (slot >= 0 && Globals.Me.MyEquipment[slot] != -1)
+
+        if (slot >= 0 && Globals.Me.MyEquipment.TryGetValue(slot, out var equippedSlots) && equippedSlots.Count > 0)
         {
-            var equipped = Globals.Me.Inventory[Globals.Me.MyEquipment[slot]];
+            var equipped = Globals.Me.Inventory[equippedSlots[0]];
             var oldValue = equipped.Descriptor.Damage;
             return newValue - oldValue;
         }
@@ -396,9 +390,10 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
     {
         var newValue = _itemDescriptor.AttackSpeedValue;
         var slot = _itemDescriptor.EquipmentSlot;
-        if (slot >= 0 && Globals.Me.MyEquipment[slot] != -1)
+
+        if (slot >= 0 && Globals.Me.MyEquipment.TryGetValue(slot, out var equippedSlots) && equippedSlots.Count > 0)
         {
-            var equipped = Globals.Me.Inventory[Globals.Me.MyEquipment[slot]];
+            var equipped = Globals.Me.Inventory[equippedSlots[0]];
             var oldValue = equipped.Descriptor.AttackSpeedValue;
             return newValue - oldValue;
         }
@@ -447,20 +442,17 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
             return;
         }
 
-        // Add a divider.
         AddDivider();
-
-        // Add a row component.
         var rows = AddRowContainer();
 
-        // Is this a weapon?
+        // ====== Weapon Info ======
         if (_itemDescriptor.EquipmentSlot == Options.Instance.Equipment.WeaponSlot)
         {
-            // Base Damage:
+            // Base Damage
             var dmgDiff = GetDamageDifference();
             AddRowWithDifference(rows, Strings.ItemDescription.BaseDamage, _itemDescriptor.Damage.ToString(), dmgDiff);
 
-            // Damage Type:
+            // Damage Type
             Strings.ItemDescription.DamageTypes.TryGetValue(_itemDescriptor.DamageType, out var damageType);
             rows.AddKeyValueRow(Strings.ItemDescription.BaseDamageType, damageType);
 
@@ -479,27 +471,27 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
             }
 
             // Attack Speed
-            // Are we supposed to change our attack time based on a modifier?
             if (_itemDescriptor.AttackSpeedModifier == 0)
             {
-                // No modifier, assuming base attack rate? We have to calculate the agility stat manually here though..!
+                // Calculate real attack speed considering current equipment
                 var agility = player.Stat[(int)Stat.Agility];
 
-                // Remove currently equipped weapon stats.. We want to create a fair display!
-                var weaponSlot = player.MyEquipment[Options.Instance.Equipment.WeaponSlot];
-                if (weaponSlot != -1)
+                if (Globals.Me.MyEquipment.TryGetValue(Options.Instance.Equipment.WeaponSlot, out var equippedSlots) && equippedSlots.Count > 0)
                 {
-                    var randomStats = player.Inventory[weaponSlot].ItemProperties.StatModifiers;
-                    var weapon = ItemDescriptor.Get(player.Inventory[weaponSlot].ItemId);
-                    if (weapon != null && randomStats != null)
+                    var firstWeaponSlot = equippedSlots[0];
+                    if (firstWeaponSlot >= 0 && firstWeaponSlot < Options.Instance.Player.MaxInventory)
                     {
-                        agility = (int)Math.Round(agility / ((100 + weapon.PercentageStatsGiven[(int)Stat.Agility]) / 100f));
-                        agility -= weapon.StatsGiven[(int)Stat.Agility];
-                        agility -= randomStats[(int)Stat.Agility];
+                        var equippedWeapon = player.Inventory[firstWeaponSlot];
+                        var randomStats = equippedWeapon.ItemProperties?.StatModifiers;
+                        if (randomStats != null)
+                        {
+                            agility = (int)Math.Round(agility / ((100 + equippedWeapon.Descriptor.PercentageStatsGiven[(int)Stat.Agility]) / 100f));
+                            agility -= equippedWeapon.Descriptor.StatsGiven[(int)Stat.Agility];
+                            agility -= randomStats[(int)Stat.Agility];
+                        }
                     }
                 }
 
-                // Add current item's agility stats!
                 if (_itemProperties?.StatModifiers != default)
                 {
                     agility += _itemDescriptor.StatsGiven[(int)Stat.Agility];
@@ -507,47 +499,31 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
                     agility += (int)Math.Floor(agility * (_itemDescriptor.PercentageStatsGiven[(int)Stat.Agility] / 100f));
                 }
 
-                // Display the actual agility this weapon would have based off of our calculated agility stat.
                 rows.AddKeyValueRow(Strings.ItemDescription.AttackSpeed, TimeSpan.FromMilliseconds(player.CalculateAttackTime(agility)).WithSuffix());
             }
             else if (_itemDescriptor.AttackSpeedModifier == 1)
             {
-                // Static attack speed.
                 var diff = GetAttackSpeedDifference();
-                AddRowWithDifference(
-                    rows,
-                    Strings.ItemDescription.AttackSpeed,
-                    TimeSpan.FromMilliseconds(_itemDescriptor.AttackSpeedValue).WithSuffix(),
-                    diff
-                );
+                AddRowWithDifference(rows, Strings.ItemDescription.AttackSpeed, TimeSpan.FromMilliseconds(_itemDescriptor.AttackSpeedValue).WithSuffix(), diff);
             }
             else if (_itemDescriptor.AttackSpeedModifier == 2)
             {
-                // Percentage based.
                 rows.AddKeyValueRow(Strings.ItemDescription.AttackSpeed, Strings.ItemDescription.Percentage.ToString(_itemDescriptor.AttackSpeedValue));
             }
         }
 
-        //Blocking options
+        // ====== Shield Info ======
         if (_itemDescriptor.EquipmentSlot == Options.Instance.Equipment.ShieldSlot)
         {
             if (_itemDescriptor.BlockChance > 0)
-            {
                 rows.AddKeyValueRow(Strings.ItemDescription.BlockChance, Strings.ItemDescription.Percentage.ToString(_itemDescriptor.BlockChance));
-            }
-
             if (_itemDescriptor.BlockAmount > 0)
-            {
                 rows.AddKeyValueRow(Strings.ItemDescription.BlockAmount, Strings.ItemDescription.Percentage.ToString(_itemDescriptor.BlockAmount));
-            }
-
             if (_itemDescriptor.BlockAbsorption > 0)
-            {
                 rows.AddKeyValueRow(Strings.ItemDescription.BlockAbsorption, Strings.ItemDescription.Percentage.ToString(_itemDescriptor.BlockAbsorption));
-            }
         }
 
-        // Vitals
+        // ====== Vitals ======
         for (var i = 0; i < Enum.GetValues<Vital>().Length; i++)
         {
             var baseValue = _itemDescriptor.VitalsGiven[i];
@@ -560,13 +536,7 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
             var diff = GetVitalDifference(i);
             if (totalFlat != 0 && percentValue != 0)
             {
-                AddRowWithDifferenceAndPercent(
-                    rows,
-                    label,
-                    totalFlat.ToString(),
-                    diff,
-                    percentValue
-                );
+                AddRowWithDifferenceAndPercent(rows, label, totalFlat.ToString(), diff, percentValue);
             }
             else if (totalFlat != 0)
             {
@@ -578,52 +548,36 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
             }
         }
 
-
-        // Vitals Regen
+        // ====== Vitals Regen ======
         for (var i = 0; i < Enum.GetValues<Vital>().Length; i++)
         {
             if (_itemDescriptor.VitalsRegen[i] != 0)
             {
                 var diff = GetVitalRegenDifference(i);
-                AddRowWithDifference(
-                    rows,
-                    Strings.ItemDescription.VitalsRegen[i],
-                    Strings.ItemDescription.Percentage.ToString(_itemDescriptor.VitalsRegen[i]),
-                    diff
-                );
+                AddRowWithDifference(rows, Strings.ItemDescription.VitalsRegen[i], Strings.ItemDescription.Percentage.ToString(_itemDescriptor.VitalsRegen[i]), diff);
             }
         }
 
-        // Stats
+        // ====== Stats ======
         var statModifiers = _itemProperties?.StatModifiers;
         for (var statIndex = 0; statIndex < Enum.GetValues<Stat>().Length; statIndex++)
         {
-            var stat = (Stat)statIndex;
-            // Do we have item properties, if so this is a finished item. Otherwise does this item not have growing stats?
             var statLabel = Strings.ItemDescription.StatCounts[statIndex];
             ItemRange? rangeForStat = default;
             var percentageGivenForStat = _itemDescriptor.PercentageStatsGiven[statIndex];
-            if (statModifiers != default || !_itemDescriptor.TryGetRangeFor(stat, out rangeForStat) || rangeForStat.LowRange == rangeForStat.HighRange)
+
+            if (statModifiers != default || !_itemDescriptor.TryGetRangeFor((Stat)statIndex, out rangeForStat) || rangeForStat.LowRange == rangeForStat.HighRange)
             {
                 var flatValueGivenForStat = _itemDescriptor.StatsGiven[statIndex];
                 if (statModifiers != default)
-                {
                     flatValueGivenForStat += statModifiers[statIndex];
-                }
 
-                // If the range is something like 1 to 1 then it should just be added into the flat stat
                 flatValueGivenForStat += rangeForStat?.LowRange ?? 0;
 
                 var diff = GetStatDifference(statIndex);
                 if (flatValueGivenForStat != 0 && percentageGivenForStat != 0)
                 {
-                    AddRowWithDifferenceAndPercent(
-                        rows,
-                        statLabel,
-                        flatValueGivenForStat.ToString(),
-                        diff,
-                        percentageGivenForStat
-                    );
+                    AddRowWithDifferenceAndPercent(rows, statLabel, flatValueGivenForStat.ToString(), diff, percentageGivenForStat);
                 }
                 else if (flatValueGivenForStat != 0)
                 {
@@ -631,37 +585,25 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
                 }
                 else if (percentageGivenForStat != 0)
                 {
-                    rows.AddKeyValueRow(
-                        statLabel,
-                        Strings.ItemDescription.Percentage.ToString(percentageGivenForStat),
-                        CustomColors.ItemDesc.Muted,
-                        CustomColors.ItemDesc.Muted
-                    );
+                    rows.AddKeyValueRow(statLabel, Strings.ItemDescription.Percentage.ToString(percentageGivenForStat), CustomColors.ItemDesc.Muted, CustomColors.ItemDesc.Muted);
                 }
             }
-            // We do not have item properties and have growing stats! So don't display a finished stat but a range instead.
-            else if (_itemDescriptor.TryGetRangeFor(stat, out var range))
+            else if (_itemDescriptor.TryGetRangeFor((Stat)statIndex, out var range))
             {
-                var statGiven = _itemDescriptor.StatsGiven[statIndex];
-                var percentageStatGiven = percentageGivenForStat;
-                var statLow = statGiven + range.LowRange;
-                var statHigh = statGiven + range.HighRange;
+                var statLow = _itemDescriptor.StatsGiven[statIndex] + range.LowRange;
+                var statHigh = _itemDescriptor.StatsGiven[statIndex] + range.HighRange;
 
                 var statMessage = Strings.ItemDescription.StatGrowthRange.ToString(statLow, statHigh);
-
-                if (percentageStatGiven != 0)
+                if (percentageGivenForStat != 0)
                 {
-                    statMessage = Strings.ItemDescription.RegularAndPercentage.ToString(
-                        statMessage,
-                        percentageStatGiven
-                    );
+                    statMessage = Strings.ItemDescription.RegularAndPercentage.ToString(statMessage, percentageGivenForStat);
                 }
 
                 rows.AddKeyValueRow(statLabel, statMessage);
             }
         }
 
-        // Bonus Effect
+        // ====== Bonus Effects ======
         foreach (var effect in _itemDescriptor.Effects)
         {
             if (effect.Type != ItemEffect.None && effect.Percentage != 0)
@@ -670,7 +612,6 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
             }
         }
 
-        // Resize the container.
         rows.SizeToChildren(true, true);
     }
 

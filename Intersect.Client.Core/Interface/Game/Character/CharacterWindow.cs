@@ -69,7 +69,18 @@ public partial class CharacterWindow:Window
     public int Y;
 
     //Extra Buffs
-    Button _detailsButton;
+    Label mHpRegen;
+    Label mManaRegen;
+    Label mLifeSteal;
+    Label mAttackSpeed;
+    Label mExtraExp;
+    Label mLuck;
+    Label mTenacity;
+    Label mCooldownReduction;
+    Label mManaSteal;
+    Label mSpeedBuff;
+    Label mDamageBuff;
+    Label mCureBuff;
     
     ClassDescriptor mPlayer;
 
@@ -221,14 +232,36 @@ public partial class CharacterWindow:Window
         mPointsLabel = new Label(this, "PointsLabel");
         mPointsLabel.SetPosition(statsX, statsY + statSpacing * 8);
 
-        // 📎 Botón de detalles
-        _detailsButton = new Button(this, nameof(_detailsButton))
-        {
-            Text = Strings.Character.ExtraBuffDetails,
-        };
-        _detailsButton.SetPosition(statsX, statsY + statSpacing * 9);
-        _detailsButton.HoverEnter += UpdateExtraBuffTooltip;
-        UpdateExtraBuffTooltip(null, null);
+        var extraBuffsLabel = new Label(this, "ExtraBuffsLabel");
+        extraBuffsLabel.SetText(Strings.Character.ExtraBuffs);
+        extraBuffsLabel.SetPosition(statsX, statsY + statSpacing * 9);
+
+        mHpRegen = new Label(this, "HpRegen");
+        mHpRegen.SetPosition(statsX, statsY + statSpacing * 10);
+        mManaRegen = new Label(this, "ManaRegen");
+        mManaRegen.SetPosition(statsX, statsY + statSpacing * 11);
+        mLifeSteal = new Label(this, "Lifesteal");
+        mLifeSteal.SetPosition(statsX, statsY + statSpacing * 12);
+        mAttackSpeed = new Label(this, "AttackSpeed");
+        mAttackSpeed.SetPosition(statsX, statsY + statSpacing * 13);
+        mSpeedBuff = new Label(this, "SpeedBuff");
+        mSpeedBuff.SetPosition(statsX, statsY + statSpacing * 14);
+        mDamageBuff = new Label(this, "DamageBuff");
+        mDamageBuff.SetPosition(statsX, statsY + statSpacing * 15);
+        mCureBuff = new Label(this, "CureBuff");
+        mCureBuff.SetPosition(statsX, statsY + statSpacing * 16);
+        mExtraExp = new Label(this, "ExtraExp");
+        mExtraExp.SetPosition(statsX, statsY + statSpacing * 17);
+        mLuck = new Label(this, "Luck");
+        mLuck.SetPosition(statsX, statsY + statSpacing * 18);
+        mTenacity = new Label(this, "Tenacity");
+        mTenacity.SetPosition(statsX, statsY + statSpacing * 19);
+        mCooldownReduction = new Label(this, "CooldownReduction");
+        mCooldownReduction.SetPosition(statsX, statsY + statSpacing * 20);
+        mManaSteal = new Label(this, "Manasteal");
+        mManaSteal.SetPosition(statsX, statsY + statSpacing * 21);
+
+        UpdateExtraBuffs();
 
        LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
     }
@@ -435,6 +468,7 @@ public partial class CharacterWindow:Window
         mAddAgilityBtn.IsHidden =
             Globals.Me.StatPoints == 0 || Globals.Me.Stat[(int) Stat.Agility] == Options.Instance.Player.MaxStat;
 
+        UpdateExtraBuffs();
         UpdateEquippedItems();
     }
 
@@ -482,6 +516,47 @@ public partial class CharacterWindow:Window
                 itemIndex++;
             }
         }
+    }
+
+    public void UpdateExtraBuffs()
+    {
+        mPlayer = ClassDescriptor.Get(Globals.Me?.Class ?? Guid.Empty);
+
+        if (mPlayer != null)
+        {
+            HpRegenAmount = mPlayer.VitalRegen[(int)Vital.Health];
+            mHpRegen.SetText(Strings.Character.HealthRegen.ToString(HpRegenAmount));
+            ManaRegenAmount = mPlayer.VitalRegen[(int)Vital.Mana];
+            mManaRegen.SetText(Strings.Character.ManaRegen.ToString(ManaRegenAmount));
+        }
+
+        CooldownAmount = 0;
+        LifeStealAmount = 0;
+        TenacityAmount = 0;
+        LuckAmount = 0;
+        ExtraExpAmount = 0;
+        ManaStealAmount = 0;
+
+        mLifeSteal.SetText(Strings.Character.Lifesteal.ToString(0));
+        mExtraExp.SetText(Strings.Character.ExtraExp.ToString(0));
+        mLuck.SetText(Strings.Character.Luck.ToString(0));
+        mTenacity.SetText(Strings.Character.Tenacity.ToString(0));
+        mCooldownReduction.SetText(Strings.Character.CooldownReduction.ToString(0));
+        mManaSteal.SetText(Strings.Character.Manasteal.ToString(0));
+        mAttackSpeed.SetText(Strings.Character.AttackSpeed.ToString(Globals.Me.CalculateAttackTime() / 1000f));
+
+        mSpeedBuff.SetText(Strings.Character.StatLabelValue.ToString(
+            Strings.Combat.Stats[Stat.Speed],
+            Globals.Me.Stat[(int)Stat.Speed]
+        ));
+        mDamageBuff.SetText(Strings.Character.StatLabelValue.ToString(
+            Strings.Combat.Stats[Stat.Damages],
+            Globals.Me.Stat[(int)Stat.Damages]
+        ));
+        mCureBuff.SetText(Strings.Character.StatLabelValue.ToString(
+            Strings.Combat.Stats[Stat.Cures],
+            Globals.Me.Stat[(int)Stat.Cures]
+        ));
     }
 
     /// <summary>
@@ -543,34 +618,6 @@ public partial class CharacterWindow:Window
         }
     }
 
-    private void UpdateExtraBuffTooltip(Base? sender, EventArgs? arguments)
-    {
-        //Reset all values
-        HpRegenAmount = mPlayer?.VitalRegen[(int)Vital.Health] ?? 0;
-        ManaRegenAmount = mPlayer?.VitalRegen[(int)Vital.Mana] ?? 0;
-        CooldownAmount = 0;
-        LifeStealAmount = 0;
-        TenacityAmount = 0;
-        LuckAmount = 0;
-        ExtraExpAmount = 0;
-        ManaStealAmount = 0;
-
-        // Update extra buffs from equipped items
-        UpdateEquippedItems(true);
-
-        // Update tooltip with the current extra buffs
-        var tooltip = new System.Text.StringBuilder();
-        tooltip.AppendLine(Strings.Character.HealthRegen.ToString(HpRegenAmount));
-        tooltip.AppendLine(Strings.Character.ManaRegen.ToString(ManaRegenAmount));
-        tooltip.AppendLine(Strings.Character.Lifesteal.ToString(LifeStealAmount));
-        tooltip.AppendLine(Strings.Character.AttackSpeed.ToString(Globals.Me?.CalculateAttackTime() / 1000f));
-        tooltip.AppendLine(Strings.Character.ExtraExp.ToString(ExtraExpAmount));
-        tooltip.AppendLine(Strings.Character.Luck.ToString(LuckAmount));
-        tooltip.AppendLine(Strings.Character.Tenacity.ToString(TenacityAmount));
-        tooltip.AppendLine(Strings.Character.CooldownReduction.ToString(CooldownAmount));
-        tooltip.AppendLine(Strings.Character.Manasteal.ToString(ManaStealAmount));
-        _detailsButton.SetToolTipText(tooltip.ToString());
-    }
 
     /// <summary>
     /// Show the window

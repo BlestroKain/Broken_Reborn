@@ -857,7 +857,7 @@ public static partial class Strings
         public static LocalizedString Equipment = @"Equipment:";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public static LocalizedString ExtraBuffDetails = @"Details";
+        public static LocalizedString ExtraBuffs = @"Extra Buffs";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString ExtraExp = @"Bonus EXP: {00}%";

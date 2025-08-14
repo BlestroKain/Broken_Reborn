@@ -104,6 +104,8 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
 
     protected void SetupDescriptionWindow()
     {
+        ClearComponents();
+
         if (_itemDescriptor == default)
         {
             return;
@@ -323,19 +325,35 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
 
     private int GetStatDifference(int index)
     {
-        if (_itemDescriptor == null)
-        {
+        if (_itemDescriptor == null || index >= _itemDescriptor.StatsGiven.Length)
             return 0;
+
+        var newValue = _itemDescriptor.StatsGiven[index];
+        if (_itemProperties?.StatModifiers?.Length > index)
+        {
+            newValue += _itemProperties.StatModifiers[index];
         }
 
-        var newValue = _itemDescriptor.StatsGiven[index] + (_itemProperties?.StatModifiers?[index] ?? 0);
         var slot = _itemDescriptor.EquipmentSlot;
-
-        if (slot >= 0 && Globals.Me.MyEquipment.TryGetValue(slot, out var equippedSlots) && equippedSlots.Count > 0)
+        if (slot >= 0 &&
+            Globals.Me.MyEquipment.TryGetValue(slot, out var equippedSlots) &&
+            equippedSlots.Count > 0)
         {
-            var equipped = Globals.Me.Inventory[equippedSlots[0]];
-            var oldValue = equipped.Descriptor.StatsGiven[index] + (equipped.ItemProperties?.StatModifiers?[index] ?? 0);
-            return newValue - oldValue;
+            var firstSlot = equippedSlots[0];
+            if (firstSlot >= 0 && firstSlot < Globals.Me.Inventory.Length)
+            {
+                var equipped = Globals.Me.Inventory[firstSlot];
+                if (equipped?.Descriptor != null && index < equipped.Descriptor.StatsGiven.Length)
+                {
+                    var oldValue = equipped.Descriptor.StatsGiven[index];
+                    if (equipped.ItemProperties?.StatModifiers?.Length > index)
+                    {
+                        oldValue += equipped.ItemProperties.StatModifiers[index];
+                    }
+
+                    return newValue - oldValue;
+                }
+            }
         }
 
         return newValue;
@@ -343,64 +361,107 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
 
     private int GetVitalDifference(int index)
     {
-        var newValue = _itemDescriptor.VitalsGiven[index] + (_itemProperties?.VitalModifiers[index] ?? 0);
-        var slot = _itemDescriptor.EquipmentSlot;
+        if (_itemDescriptor == null || index >= _itemDescriptor.VitalsGiven.Length)
+            return 0;
 
-        if (slot >= 0 && Globals.Me.MyEquipment.TryGetValue(slot, out var equippedSlots) && equippedSlots.Count > 0)
+        var baseValue = _itemDescriptor.VitalsGiven[index];
+        var bonusValue = _itemProperties?.VitalModifiers?.Length > index ? _itemProperties.VitalModifiers[index] : 0;
+        var newValue = baseValue + bonusValue;
+
+        var slot = _itemDescriptor.EquipmentSlot;
+        if (slot >= 0 &&
+            Globals.Me.MyEquipment.TryGetValue(slot, out var equippedSlots) &&
+            equippedSlots.Count > 0)
         {
-            var equipped = Globals.Me.Inventory[equippedSlots[0]];
-            var oldValue = equipped.Descriptor.VitalsGiven[index] + (equipped.ItemProperties?.VitalModifiers[index] ?? 0);
-            return (int)(newValue - oldValue);
+            var firstSlot = equippedSlots[0];
+            if (firstSlot >= 0 && firstSlot < Globals.Me.Inventory.Length)
+            {
+                var equipped = Globals.Me.Inventory[firstSlot];
+                if (equipped?.Descriptor != null && index < equipped.Descriptor.VitalsGiven.Length)
+                {
+                    var equippedBase = equipped.Descriptor.VitalsGiven[index];
+                    var equippedBonus = equipped.ItemProperties?.VitalModifiers?.Length > index ? equipped.ItemProperties.VitalModifiers[index] : 0;
+
+                    return (int)(newValue - (equippedBase + equippedBonus));
+                }
+            }
         }
 
         return (int)newValue;
     }
-
     private int GetVitalRegenDifference(int index)
     {
+        if (_itemDescriptor == null || index >= _itemDescriptor.VitalsRegen.Length)
+            return 0;
+
         var newValue = _itemDescriptor.VitalsRegen[index];
         var slot = _itemDescriptor.EquipmentSlot;
 
-        if (slot >= 0 && Globals.Me.MyEquipment.TryGetValue(slot, out var equippedSlots) && equippedSlots.Count > 0)
+        if (slot >= 0 &&
+            Globals.Me.MyEquipment.TryGetValue(slot, out var equippedSlots) &&
+            equippedSlots.Count > 0)
         {
-            var equipped = Globals.Me.Inventory[equippedSlots[0]];
-            var oldValue = equipped.Descriptor.VitalsRegen[index];
-            return (int)(newValue - oldValue);
+            var firstSlot = equippedSlots[0];
+            if (firstSlot >= 0 && firstSlot < Globals.Me.Inventory.Length)
+            {
+                var equipped = Globals.Me.Inventory[firstSlot];
+                if (equipped?.Descriptor != null && index < equipped.Descriptor.VitalsRegen.Length)
+                {
+                    var oldValue = equipped.Descriptor.VitalsRegen[index];
+                    return (int)(newValue - oldValue);
+                }
+            }
         }
 
         return (int)newValue;
     }
-
     private int GetDamageDifference()
     {
+        if (_itemDescriptor == null) return 0;
+
         var newValue = _itemDescriptor.Damage;
         var slot = _itemDescriptor.EquipmentSlot;
 
-        if (slot >= 0 && Globals.Me.MyEquipment.TryGetValue(slot, out var equippedSlots) && equippedSlots.Count > 0)
+        if (slot >= 0 &&
+            Globals.Me.MyEquipment.TryGetValue(slot, out var equippedSlots) &&
+            equippedSlots.Count > 0)
         {
-            var equipped = Globals.Me.Inventory[equippedSlots[0]];
-            var oldValue = equipped.Descriptor.Damage;
-            return newValue - oldValue;
+            var firstSlot = equippedSlots[0];
+            if (firstSlot >= 0 && firstSlot < Globals.Me.Inventory.Length)
+            {
+                var equipped = Globals.Me.Inventory[firstSlot];
+                var oldValue = equipped?.Descriptor?.Damage ?? 0;
+                return newValue - oldValue;
+            }
         }
 
         return newValue;
     }
-
     private int GetAttackSpeedDifference()
     {
+        if (_itemDescriptor == null) return 0;
+
         var newValue = _itemDescriptor.AttackSpeedValue;
         var slot = _itemDescriptor.EquipmentSlot;
 
-        if (slot >= 0 && Globals.Me.MyEquipment.TryGetValue(slot, out var equippedSlots) && equippedSlots.Count > 0)
+        if (slot >= 0 &&
+            Globals.Me.MyEquipment.TryGetValue(slot, out var equippedSlots) &&
+            equippedSlots.Count > 0)
         {
-            var equipped = Globals.Me.Inventory[equippedSlots[0]];
-            var oldValue = equipped.Descriptor.AttackSpeedValue;
-            return newValue - oldValue;
+            var firstSlot = equippedSlots[0];
+            if (firstSlot >= 0 && firstSlot < Globals.Me.Inventory.Length)
+            {
+                var equipped = Globals.Me.Inventory[firstSlot];
+                if (equipped?.Descriptor != null)
+                {
+                    var oldValue = equipped.Descriptor.AttackSpeedValue;
+                    return newValue - oldValue;
+                }
+            }
         }
 
         return newValue;
     }
-
     private void AddRowWithDifference(RowContainerComponent rows, string key, string value, int diff)
     {
         if (diff != 0)
@@ -414,7 +475,6 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
             rows.AddKeyValueRow(key, value, CustomColors.ItemDesc.Muted, CustomColors.ItemDesc.Muted);
         }
     }
-
     private void AddRowWithDifferenceAndPercent(RowContainerComponent rows, string key, string value, int diff, int percentDiff)
     {
         if (diff != 0 || percentDiff != 0)
@@ -524,11 +584,14 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
         }
 
         // ====== Vitals ======
-        for (var i = 0; i < Enum.GetValues<Vital>().Length; i++)
+        var vitalCount = Enum.GetValues<Vital>().Length;
+
+        for (var i = 0; i < vitalCount; i++)
         {
-            var baseValue = _itemDescriptor.VitalsGiven[i];
-            var percentValue = _itemDescriptor.PercentageVitalsGiven[i];
-            var enchantBonus = _itemProperties?.VitalModifiers[i] ?? 0;
+            var baseValue = i < _itemDescriptor.VitalsGiven.Length ? _itemDescriptor.VitalsGiven[i] : 0;
+            var percentValue = i < _itemDescriptor.PercentageVitalsGiven.Length ? _itemDescriptor.PercentageVitalsGiven[i] : 0;
+            var enchantBonus = _itemProperties?.VitalModifiers?.Length > i ? _itemProperties.VitalModifiers[i] : 0;
+
 
             var totalFlat = baseValue + enchantBonus;
             var label = Strings.ItemDescription.Vitals[i];
@@ -549,28 +612,28 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
         }
 
         // ====== Vitals Regen ======
-        for (var i = 0; i < Enum.GetValues<Vital>().Length; i++)
+        for (var i = 0; i < vitalCount; i++)
         {
-            if (_itemDescriptor.VitalsRegen[i] != 0)
+            if (_itemDescriptor.VitalsRegen.Length > i && _itemDescriptor.VitalsRegen[i] != 0)
             {
                 var diff = GetVitalRegenDifference(i);
                 AddRowWithDifference(rows, Strings.ItemDescription.VitalsRegen[i], Strings.ItemDescription.Percentage.ToString(_itemDescriptor.VitalsRegen[i]), diff);
             }
         }
 
+
         // ====== Stats ======
-        var statModifiers = _itemProperties?.StatModifiers;
         for (var statIndex = 0; statIndex < Enum.GetValues<Stat>().Length; statIndex++)
         {
             var statLabel = Strings.ItemDescription.StatCounts[statIndex];
             ItemRange? rangeForStat = default;
             var percentageGivenForStat = _itemDescriptor.PercentageStatsGiven[statIndex];
 
-            if (statModifiers != default || !_itemDescriptor.TryGetRangeFor((Stat)statIndex, out rangeForStat) || rangeForStat.LowRange == rangeForStat.HighRange)
+            if (_itemProperties.StatModifiers != default || !_itemDescriptor.TryGetRangeFor((Stat)statIndex, out rangeForStat) || rangeForStat.LowRange == rangeForStat.HighRange)
             {
                 var flatValueGivenForStat = _itemDescriptor.StatsGiven[statIndex];
-                if (statModifiers != default)
-                    flatValueGivenForStat += statModifiers[statIndex];
+                if (_itemProperties.StatModifiers != default)
+                    flatValueGivenForStat += _itemProperties.StatModifiers[statIndex];
 
                 flatValueGivenForStat += rangeForStat?.LowRange ?? 0;
 
@@ -600,21 +663,22 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
                 }
 
                 rows.AddKeyValueRow(statLabel, statMessage);
+
+
+                // ====== Bonus Effects ======
+                foreach (var effect in _itemDescriptor.Effects)
+                {
+                    if (effect.Type != ItemEffect.None && effect.Percentage != 0)
+                    {
+                        rows.AddKeyValueRow(Strings.ItemDescription.BonusEffects[(int)effect.Type], Strings.ItemDescription.Percentage.ToString(effect.Percentage));
+                    }
+                }
+
+                rows.SizeToChildren(true, true);
             }
         }
-
-        // ====== Bonus Effects ======
-        foreach (var effect in _itemDescriptor.Effects)
-        {
-            if (effect.Type != ItemEffect.None && effect.Percentage != 0)
-            {
-                rows.AddKeyValueRow(Strings.ItemDescription.BonusEffects[(int)effect.Type], Strings.ItemDescription.Percentage.ToString(effect.Percentage));
-            }
-        }
-
         rows.SizeToChildren(true, true);
     }
-
     protected void SetupConsumableInfo()
     {
         if (_itemDescriptor == default)

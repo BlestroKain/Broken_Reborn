@@ -415,23 +415,43 @@ public partial class Player : Entity, IPlayer
     //Item Processing
     public void SwapItems(int fromSlotIndex, int toSlotIndex)
     {
-        PacketSender.SendSwapInvItems(fromSlotIndex, toSlotIndex);
+        // Validaciones de índice
+        if (fromSlotIndex < 0 || fromSlotIndex >= Inventory.Length ||
+            toSlotIndex < 0 || toSlotIndex >= Inventory.Length)
+        {
+            return;
+        }
+
         var fromSlot = Inventory[fromSlotIndex];
         var toSlot = Inventory[toSlotIndex];
+       if (fromSlot == null && toSlot == null)
+        {
+            return;
+        }
+        PacketSender.SendSwapInvItems(fromSlotIndex, toSlotIndex);
+
+        if (fromSlot == null || toSlot == null)
+        {
+            Inventory[fromSlotIndex] = toSlot;
+            Inventory[toSlotIndex] = fromSlot;
+            return;
+        }
 
         if (
-            fromSlot.ItemId == toSlot.ItemId
-            && ItemDescriptor.TryGet(toSlot.ItemId, out var itemInSlot)
-            && itemInSlot.IsStackable
-            && fromSlot.Quantity < itemInSlot.MaxInventoryStack
-            && toSlot.Quantity < itemInSlot.MaxInventoryStack
+            fromSlot.ItemId == toSlot.ItemId &&
+            ItemDescriptor.TryGet(toSlot.ItemId, out var itemInSlot) &&
+            itemInSlot.IsStackable &&
+            fromSlot.Quantity < itemInSlot.MaxInventoryStack &&
+            toSlot.Quantity < itemInSlot.MaxInventoryStack
         )
         {
             var combinedQuantity = fromSlot.Quantity + toSlot.Quantity;
             var toQuantity = Math.Min(itemInSlot.MaxInventoryStack, combinedQuantity);
             var fromQuantity = combinedQuantity - toQuantity;
+
             toSlot.Quantity = toQuantity;
             fromSlot.Quantity = fromQuantity;
+
             if (fromQuantity < 1)
             {
                 Inventory[fromSlotIndex].ItemId = default;
@@ -443,6 +463,7 @@ public partial class Player : Entity, IPlayer
             Inventory[toSlotIndex] = fromSlot;
         }
     }
+
 
     public void TryDropItem(int inventorySlotIndex)
     {
@@ -490,7 +511,19 @@ public partial class Player : Entity, IPlayer
                 // Check if the item can be dropped in multiple quantities or if value is less than or equal to the quantity in the initial slot
                 if (!canDropMultiple || promptQuantity <= quantity)
                 {
-                    PacketSender.SendDropItem(slotIndex, !canDropMultiple ? 1 : promptQuantity);
+                    var dropAmount = !canDropMultiple ? 1 : promptQuantity;
+                    PacketSender.SendDropItem(slotIndex, dropAmount);
+
+                    var remaining = quantity - dropAmount;
+                    if (remaining > 0)
+                    {
+                        UpdateInventory(slotIndex, inventorySlot.ItemId, remaining, inventorySlot.BagId, inventorySlot.ItemProperties);
+                    }
+                    else
+                    {
+                        UpdateInventory(slotIndex, Guid.Empty, 0, null, null);
+                    }
+
                     return;
                 }
 
@@ -499,6 +532,7 @@ public partial class Player : Entity, IPlayer
 
                 // Send the drop item packet for the initial slot.
                 PacketSender.SendDropItem(slotIndex, quantity);
+                UpdateInventory(slotIndex, Guid.Empty, 0, null, null);
                 promptQuantity -= quantity;
                 _ = itemSlots.Remove(inventorySlot); // Remove the initial slot from the list of item slots
 
@@ -512,7 +546,19 @@ public partial class Player : Entity, IPlayer
                         break;
                     }
 
-                    PacketSender.SendDropItem(Inventory.IndexOf(slot), dropAmount);
+                    var slotIdx = Inventory.IndexOf(slot);
+                    PacketSender.SendDropItem(slotIdx, dropAmount);
+
+                    var remaining = slot.Quantity - dropAmount;
+                    if (remaining > 0)
+                    {
+                        UpdateInventory(slotIdx, slot.ItemId, remaining, slot.BagId, slot.ItemProperties);
+                    }
+                    else
+                    {
+                        UpdateInventory(slotIdx, Guid.Empty, 0, null, null);
+                    }
+
                     promptQuantity -= dropAmount;
                 }
             }

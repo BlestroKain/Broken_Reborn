@@ -2,9 +2,11 @@ using Intersect.Client.Core;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
+using Intersect.Client.Framework.Gwen.Control.EventArguments;
 using Intersect.Client.General;
 using Intersect.Client.Localization;
 using Intersect.Client.Utilities;
+using System.Linq;
 
 namespace Intersect.Client.Interface.Game.Inventory;
 
@@ -13,6 +15,10 @@ public partial class InventoryWindow : Window
     public List<SlotItem> Items { get; set; } = [];
     private readonly ScrollControl _slotContainer;
     private readonly ContextMenu _contextMenu;
+
+    private readonly TextBox _searchBox;
+    private readonly Button _sortButton;
+    private bool _sortAscending = true;
 
     public InventoryWindow(Canvas gameCanvas) : base(gameCanvas, Strings.Inventory.Title, false, nameof(InventoryWindow))
     {
@@ -39,12 +45,27 @@ public partial class InventoryWindow : Window
             ItemFont = GameContentManager.Current.GetFont(name: "sourcesansproblack"),
             ItemFontSize = 10,
         };
+
+        _searchBox = new TextBox(this, "SearchBox")
+        {
+            Margin = new Margin(4),
+            Width = 150,
+        };
+        _searchBox.TextChanged += (s, e) => ApplyFilters();
+
+        _sortButton = new Button(this, "SortButton")
+        {
+            Margin = new Margin(4),
+        };
+        _sortButton.SetText("Sort");
+        _sortButton.Clicked += SortButton_Clicked;
     }
 
     protected override void EnsureInitialized()
     {
         LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
         InitItemContainer();
+        ApplyFilters();
     }
 
     public void OpenContextMenu(int slot)
@@ -64,6 +85,8 @@ public partial class InventoryWindow : Window
             return;
         }
 
+        ApplyFilters();
+
         IsClosable = Globals.CanCloseInventory;
 
         if (Globals.Me?.Inventory == default)
@@ -76,6 +99,45 @@ public partial class InventoryWindow : Window
         {
             Items[slotIndex].Update();
         }
+    }
+
+    private void SortButton_Clicked(Base sender, ClickedEventArgs arguments)
+    {
+        _sortAscending = !_sortAscending;
+        ApplyFilters();
+    }
+
+    private void ApplyFilters()
+    {
+        if (Globals.Me?.Inventory == null)
+        {
+            return;
+        }
+
+        var ordered = _sortAscending
+            ? Items.OrderBy(i => GetItemName(i.SlotIndex)).ToList()
+            : Items.OrderByDescending(i => GetItemName(i.SlotIndex)).ToList();
+
+        Items = ordered;
+        PopulateSlotContainer.Populate(_slotContainer, Items);
+
+        foreach (var item in Items)
+        {
+            var name = GetItemName(item.SlotIndex);
+            item.IsHidden = !SearchHelper.Matches(_searchBox.Text, name);
+        }
+    }
+
+    private static string GetItemName(int slot)
+    {
+        var inventory = Globals.Me?.Inventory;
+        if (inventory == null || slot >= inventory.Length)
+        {
+            return string.Empty;
+        }
+
+        var item = inventory[slot];
+        return item?.Descriptor?.Name ?? string.Empty;
     }
 
     private void InitItemContainer()

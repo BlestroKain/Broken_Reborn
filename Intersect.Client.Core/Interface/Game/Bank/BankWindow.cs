@@ -2,9 +2,11 @@ using Intersect.Client.Core;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
+using Intersect.Client.Framework.Gwen.Control.EventArguments;
 using Intersect.Client.General;
 using Intersect.Client.Localization;
 using Intersect.Client.Utilities;
+using System.Linq;
 
 namespace Intersect.Client.Interface.Game.Bank;
 
@@ -13,6 +15,10 @@ public partial class BankWindow : Window
     public List<SlotItem> Items = [];
     private readonly ScrollControl _slotContainer;
     private readonly ContextMenu _contextMenu;
+
+    private readonly TextBox _searchBox;
+    private readonly Button _sortButton;
+    private bool _sortAscending = true;
 
     //Init
     public BankWindow(Canvas gameCanvas) : base(
@@ -55,12 +61,27 @@ public partial class BankWindow : Window
             ItemFont = GameContentManager.Current.GetFont(name: "sourcesansproblack"),
             ItemFontSize = 10,
         };
+
+        _searchBox = new TextBox(this, "SearchBox")
+        {
+            Margin = new Margin(4),
+            Width = 150,
+        };
+        _searchBox.TextChanged += (s, e) => ApplyFilters();
+
+        _sortButton = new Button(this, "SortButton")
+        {
+            Margin = new Margin(4),
+        };
+        _sortButton.SetText("Sort");
+        _sortButton.Clicked += SortButton_Clicked;
     }
 
     protected override void EnsureInitialized()
     {
         LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
         InitItemContainer();
+        ApplyFilters();
     }
 
     private void InitItemContainer()
@@ -79,6 +100,7 @@ public partial class BankWindow : Window
         {
             return;
         }
+        ApplyFilters();
 
         for (var i = 0; i < Items.Count; i++)
         {
@@ -86,6 +108,33 @@ public partial class BankWindow : Window
             {
                 bankItem.Update();
             }
+        }
+    }
+
+    private void SortButton_Clicked(Base sender, ClickedEventArgs arguments)
+    {
+        _sortAscending = !_sortAscending;
+        ApplyFilters();
+    }
+
+    private void ApplyFilters()
+    {
+        if (Globals.BankSlots is null)
+        {
+            return;
+        }
+
+        var ordered = _sortAscending
+            ? Items.OrderBy(i => Globals.BankSlots[i.SlotIndex]?.Descriptor?.Name ?? string.Empty).ToList()
+            : Items.OrderByDescending(i => Globals.BankSlots[i.SlotIndex]?.Descriptor?.Name ?? string.Empty).ToList();
+
+        Items = ordered;
+        PopulateSlotContainer.Populate(_slotContainer, Items);
+
+        foreach (var item in Items)
+        {
+            var name = Globals.BankSlots[item.SlotIndex]?.Descriptor?.Name;
+            item.IsHidden = !SearchHelper.Matches(_searchBox.Text, name);
         }
     }
 

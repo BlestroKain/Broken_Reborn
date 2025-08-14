@@ -341,6 +341,11 @@ public partial class GameInterface : MutableInterface
         return _bankWindow;
     }
 
+    public void RefreshBank()
+    {
+        _bankWindow?.Refresh();
+    }
+
     //Crafting
     public void NotifyOpenCraftingTable(bool journalMode)
     {

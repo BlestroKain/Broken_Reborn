@@ -6091,23 +6091,6 @@ public partial class Player : Entity
             return; // No se encontró el ítem en inventario
         }
 
-        // ✅ VALIDACIÓN: Evitar equipar duplicados
-        foreach (var kvp in Equipment)
-        {
-            foreach (var invSlot in kvp.Value)
-            {
-                if (invSlot >= 0 && invSlot < Options.Instance.Player.MaxInventory)
-                {
-                    var equippedItem = Items[invSlot];
-                    if (equippedItem?.ItemId == itemDescriptor.Id)
-                    {
-                        PacketSender.SendChatMsg(this, $"Ya tienes equipado {itemDescriptor.Name}.", ChatMessageType.Error);
-                        return; // Bloquea el equipamiento
-                    }
-                }
-            }
-        }
-
         // ✅ Validación adicional: Armas 2 manos vs escudos
         if (itemDescriptor.EquipmentSlot == Options.Instance.Equipment.WeaponSlot)
         {
@@ -6143,20 +6126,19 @@ public partial class Player : Entity
             Equipment[equipmentSlot] = new List<int>();
         }
 
-        // Buscar máximo permitido para este slot
-        var maxAllowed = Options.Instance.Equipment.EquipmentSlots[equipmentSlot].MaxItems;
+        var slotConfig = Options.Instance.Equipment.EquipmentSlots[equipmentSlot];
+        var maxAllowed = slotConfig.MaxItems;
 
-        // Validación: Si ya está lleno, cancelamos
+        // 🔍 Si está lleno, reemplazamos el primero (lógica de auto-reemplazo)
         if (Equipment[equipmentSlot].Count >= maxAllowed)
         {
-            PacketSender.SendChatMsg(this, $"No puedes equipar más en el slot {Options.Instance.Equipment.Slots[equipmentSlot]}.", ChatMessageType.Error);
-            return;
+            var toReplace = Equipment[equipmentSlot][0];
+            Equipment[equipmentSlot].RemoveAt(0); // Quitamos el primero
+                                                  // Opcional: podrías lanzar evento OnUnequip aquí
         }
 
-        // Agregar el nuevo ítem
         Equipment[equipmentSlot].Add(inventorySlot);
     }
-
 
     public void UnequipItem(Guid itemId, bool sendUpdate = true)
     {
@@ -6190,8 +6172,6 @@ public partial class Player : Entity
             ProcessEquipmentUpdated(sendUpdate);
         }
     }
-
-
     public void UnequipItem(int equipmentSlot, bool sendUpdate = true)
     {
         if (!Equipment.ContainsKey(equipmentSlot))

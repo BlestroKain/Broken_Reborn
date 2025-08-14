@@ -437,6 +437,15 @@ public partial class InventoryItem : SlotItem
         if (!Interface.DoesMouseHitInterface() && !player.IsBusy)
         {
             PacketSender.SendDropItem(SlotIndex, inventorySlot.Quantity);
+            Globals.Me?.UpdateInventory(
+      SlotIndex,
+      Guid.Empty,     // descriptorId vacío ⇒ borra el ítem
+      0,              // cantidad = 0 ⇒ borra el ítem
+      null,           // sin bolsa
+      null            // sin propiedades
+  );
+
+
             return true;
         }
 
@@ -460,8 +469,21 @@ public partial class InventoryItem : SlotItem
                     if (player.Inventory[SlotIndex] == null)
                         return false;
 
+                    // Validación de índice y existencia del slot
+                    if (SlotIndex < 0 || SlotIndex >= player.Inventory.Length ||
+                        inventoryItem.SlotIndex < 0 || inventoryItem.SlotIndex >= player.Inventory.Length)
+                    {
+                        return false;
+                    }
+
+                    if (player.Inventory[SlotIndex] == null || player.Inventory[inventoryItem.SlotIndex] == null)
+                    {
+                        return false;
+                    }
+
                     player.SwapItems(SlotIndex, inventoryItem.SlotIndex);
                     return true;
+
 
                 case BagItem bagItem:
                     player.TryStoreItemInBag(SlotIndex, bagItem.SlotIndex);

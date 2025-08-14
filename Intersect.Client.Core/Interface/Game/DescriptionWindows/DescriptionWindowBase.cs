@@ -14,6 +14,16 @@ public partial class DescriptionWindowBase : ComponentBase
     // Our internal list of components.
     private readonly List<ComponentBase> _components = [];
 
+    /// <summary>
+    /// Clears all child components and resets internal state so the window can be rebuilt.
+    /// </summary>
+    protected void ClearComponents()
+    {
+        ClearChildren(true);
+        _components.Clear();
+        _componentY = 0;
+    }
+
     public DescriptionWindowBase(Base parent, string name) : base(parent, name)
     {
         LoadJsonUi(Framework.File_Management.GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());

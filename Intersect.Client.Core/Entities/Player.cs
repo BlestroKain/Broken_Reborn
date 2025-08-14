@@ -511,7 +511,19 @@ public partial class Player : Entity, IPlayer
                 // Check if the item can be dropped in multiple quantities or if value is less than or equal to the quantity in the initial slot
                 if (!canDropMultiple || promptQuantity <= quantity)
                 {
-                    PacketSender.SendDropItem(slotIndex, !canDropMultiple ? 1 : promptQuantity);
+                    var dropAmount = !canDropMultiple ? 1 : promptQuantity;
+                    PacketSender.SendDropItem(slotIndex, dropAmount);
+
+                    var remaining = quantity - dropAmount;
+                    if (remaining > 0)
+                    {
+                        UpdateInventory(slotIndex, inventorySlot.ItemId, remaining, inventorySlot.BagId, inventorySlot.ItemProperties);
+                    }
+                    else
+                    {
+                        UpdateInventory(slotIndex, Guid.Empty, 0, null, null);
+                    }
+
                     return;
                 }
 
@@ -520,6 +532,7 @@ public partial class Player : Entity, IPlayer
 
                 // Send the drop item packet for the initial slot.
                 PacketSender.SendDropItem(slotIndex, quantity);
+                UpdateInventory(slotIndex, Guid.Empty, 0, null, null);
                 promptQuantity -= quantity;
                 _ = itemSlots.Remove(inventorySlot); // Remove the initial slot from the list of item slots
 
@@ -533,7 +546,19 @@ public partial class Player : Entity, IPlayer
                         break;
                     }
 
-                    PacketSender.SendDropItem(Inventory.IndexOf(slot), dropAmount);
+                    var slotIdx = Inventory.IndexOf(slot);
+                    PacketSender.SendDropItem(slotIdx, dropAmount);
+
+                    var remaining = slot.Quantity - dropAmount;
+                    if (remaining > 0)
+                    {
+                        UpdateInventory(slotIdx, slot.ItemId, remaining, slot.BagId, slot.ItemProperties);
+                    }
+                    else
+                    {
+                        UpdateInventory(slotIdx, Guid.Empty, 0, null, null);
+                    }
+
                     promptQuantity -= dropAmount;
                 }
             }

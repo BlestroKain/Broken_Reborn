@@ -39,6 +39,8 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
 
     protected void SetupDescriptionWindow()
     {
+        ClearComponents();
+
         if (_spellDescriptor == default)
         {
             return;

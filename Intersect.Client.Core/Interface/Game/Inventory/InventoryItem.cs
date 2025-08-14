@@ -428,9 +428,16 @@ public partial class InventoryItem : SlotItem
             {
                 case InventoryItem inventoryItem:
                     if (inventoryItem.SlotIndex == SlotIndex)
-                    {
                         return false;
-                    }
+
+                    // Validación de índices
+                    if (SlotIndex < 0 || SlotIndex >= player.Inventory.Length ||
+                        inventoryItem.SlotIndex < 0 || inventoryItem.SlotIndex >= player.Inventory.Length)
+                        return false;
+
+                    // Solo el origen debe existir; el destino puede estar vacío
+                    if (player.Inventory[SlotIndex] == null)
+                        return false;
 
                     player.SwapItems(SlotIndex, inventoryItem.SlotIndex);
                     return true;
@@ -515,11 +522,13 @@ public partial class InventoryItem : SlotItem
 
         if (Globals.Me.Inventory[SlotIndex] == default)
         {
+            _reset();
             return;
         }
 
         // empty texture to reload on update
         Icon.Texture = default;
+        Icon.TextureFilename = null;
     }
 
     public override void Update()
@@ -528,17 +537,19 @@ public partial class InventoryItem : SlotItem
         {
             return;
         }
-
-        if (Globals.Me.Inventory[SlotIndex] is not { } inventorySlot)
+    
+        if (!_filterMatch)
         {
+            _reset();   // vacío visualmente, pero el slot sigue presente y acepta drops
             return;
         }
-
-        if (!ItemDescriptor.TryGet(inventorySlot.ItemId, out var descriptor))
+        if (Globals.Me.Inventory[SlotIndex] is not { } inventorySlot ||
+        !ItemDescriptor.TryGet(inventorySlot.ItemId, out var descriptor))
         {
             _reset();
             return;
         }
+
 
         var equipped = Globals.Me.MyEquipment.Any(pair => pair.Value.Contains(SlotIndex));
 
@@ -592,9 +603,21 @@ public partial class InventoryItem : SlotItem
     {
         Icon.IsVisibleInParent = false;
         Icon.Texture = default;
+        Icon.TextureFilename = null;
         _equipImageBackground.IsVisibleInParent = false;
         _quantityLabel.IsVisibleInParent = false;
         _equipLabel.IsVisibleInParent = false;
         _cooldownLabel.IsVisibleInParent = false;
     }
+
+    // Campo nuevo:
+    private bool _filterMatch = true;
+
+    // Método nuevo (llámalo desde la ventana):
+    public void SetFilterMatch(bool match)
+    {
+        _filterMatch = match;
+    }
+
+
 }

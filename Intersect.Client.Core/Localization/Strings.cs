@@ -789,6 +789,15 @@ public static partial class Strings
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString WithdrawItemNoSpace = @"There is no space left in your inventory for that item!";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Sort = @"Sort";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString BankValue = @"Bank Value: {00}";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString BankValueFull = @"{00} Global Coins";
     }
 
     public partial struct BanMute

@@ -9,12 +9,13 @@ public partial class BankPacket : IntersectPacket
     public BankPacket()
     {
     }
-    public BankPacket(bool close, bool guild, int slots, BankUpdatePacket[] items)
+    public BankPacket(bool close, bool guild, int slots, BankUpdatePacket[] items, int bankValue)
     {
         Close = close;
         Guild = guild;
         Slots = slots;
         Items = items;
+        BankValue = bankValue;
     }
 
     [Key(0)]
@@ -28,5 +29,8 @@ public partial class BankPacket : IntersectPacket
 
     [Key(3)]
     public BankUpdatePacket[] Items { get; set; }
+
+    [Key(4)]
+    public int BankValue { get; set; }
 
 }

@@ -19,5 +19,6 @@ public interface IBankInterface : IDisposable
 
     bool TryDepositItem(Item item, bool sendUpdate = true, bool giveItem = false);
     bool TryWithdrawItem(Item slot, int bankSlotIndex, int quantityHint, int inventorySlotIndex = -1, bool takeItem = false);
-    void SwapBankItems(int slotFrom, int slotTo);
+    void SwapBankItems(int slotFrom, int slotTo, bool sendUpdate = true);
+    void SortBank();
 }

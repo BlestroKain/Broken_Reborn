@@ -5,6 +5,7 @@ namespace Intersect.Client.Utilities;
 
 public static class PopulateSlotContainer
 {
+    // PopulateSlotContainer.cs (solo reemplaza el método Populate)
     public static void Populate(ScrollControl slotContainer, List<SlotItem> items)
     {
         float containerInnerWidth = slotContainer.InnerPanel.InnerWidth;
@@ -12,6 +13,7 @@ public static class PopulateSlotContainer
         {
             var slot = items[slotIndex];
             var outerSize = slot.OuterBounds.Size;
+
             var itemsPerRow = (int)(containerInnerWidth / outerSize.X);
 
             var column = slotIndex % itemsPerRow;
@@ -23,4 +25,5 @@ public static class PopulateSlotContainer
             slot.SetPosition(xPosition, yPosition);
         }
     }
+
 }

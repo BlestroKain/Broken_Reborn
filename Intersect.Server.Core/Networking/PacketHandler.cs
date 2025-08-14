@@ -2031,6 +2031,17 @@ internal sealed partial class PacketHandler
         player?.BankInterface?.SwapBankItems(packet.Slot1, packet.Slot2);
     }
 
+    public void HandlePacket(Client client, BankSortPacket packet)
+    {
+        var player = client?.Entity;
+        if (player == null)
+        {
+            return;
+        }
+
+        player.BankInterface?.SortBank();
+    }
+
     //PartyInvitePacket
     public void HandlePacket(Client client, PartyInvitePacket packet)
     {

@@ -239,6 +239,8 @@ public partial class BankItem : SlotItem
 
     public override void Update()
     {
+    
+       
         if (Globals.Me == default)
         {
             return;
@@ -248,7 +250,14 @@ public partial class BankItem : SlotItem
         {
             return;
         }
-
+        // Si este slot NO coincide con la búsqueda, muéstralo vacío pero deja el slot
+        if (!_filterMatch)
+        {
+            _quantityLabel.IsVisibleInParent = false;
+            Icon.Texture = default;
+            Icon.IsVisibleInParent = false;
+            return;
+        }
         if (bankSlots[SlotIndex] is not { Descriptor: not null } or { Quantity: <= 0 })
         {
             _quantityLabel.IsVisibleInParent = false;
@@ -284,6 +293,23 @@ public partial class BankItem : SlotItem
                 Icon.Texture = default;
                 Icon.IsVisibleInParent = false;
             }
+        }
+    }
+    private bool _filterMatch = true;
+    public void SetFilterMatch(bool isMatch)
+    {
+        _filterMatch = isMatch;
+        // Actualizar aspecto inmediatamente
+        if (!_filterMatch)
+        {
+            // Simular slot vacío visualmente
+            _quantityLabel.IsVisibleInParent = false;
+            Icon.IsVisibleInParent = false;
+        }
+        else
+        {
+            // Se restablece en Update() según el estado real del slot
+            // (no hacemos nada aquí para evitar parpadeos)
         }
     }
 }

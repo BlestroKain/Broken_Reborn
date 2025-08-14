@@ -104,6 +104,8 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
 
     protected void SetupDescriptionWindow()
     {
+        ClearComponents();
+
         if (_itemDescriptor == default)
         {
             return;

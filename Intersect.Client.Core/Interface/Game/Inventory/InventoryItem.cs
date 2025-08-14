@@ -537,11 +537,13 @@ public partial class InventoryItem : SlotItem
 
         if (Globals.Me.Inventory[SlotIndex] == default)
         {
+            _reset();
             return;
         }
 
         // empty texture to reload on update
         Icon.Texture = default;
+        Icon.TextureFilename = null;
     }
 
     public override void Update()
@@ -553,6 +555,7 @@ public partial class InventoryItem : SlotItem
 
         if (Globals.Me.Inventory[SlotIndex] is not { } inventorySlot)
         {
+            _reset();
             return;
         }
 
@@ -614,6 +617,7 @@ public partial class InventoryItem : SlotItem
     {
         Icon.IsVisibleInParent = false;
         Icon.Texture = default;
+        Icon.TextureFilename = null;
         _equipImageBackground.IsVisibleInParent = false;
         _quantityLabel.IsVisibleInParent = false;
         _equipLabel.IsVisibleInParent = false;

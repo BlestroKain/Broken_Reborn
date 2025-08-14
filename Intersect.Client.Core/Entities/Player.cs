@@ -415,23 +415,43 @@ public partial class Player : Entity, IPlayer
     //Item Processing
     public void SwapItems(int fromSlotIndex, int toSlotIndex)
     {
-        PacketSender.SendSwapInvItems(fromSlotIndex, toSlotIndex);
+        // Validaciones de índice
+        if (fromSlotIndex < 0 || fromSlotIndex >= Inventory.Length ||
+            toSlotIndex < 0 || toSlotIndex >= Inventory.Length)
+        {
+            return;
+        }
+
         var fromSlot = Inventory[fromSlotIndex];
         var toSlot = Inventory[toSlotIndex];
+       if (fromSlot == null && toSlot == null)
+        {
+            return;
+        }
+        PacketSender.SendSwapInvItems(fromSlotIndex, toSlotIndex);
+
+        if (fromSlot == null || toSlot == null)
+        {
+            Inventory[fromSlotIndex] = toSlot;
+            Inventory[toSlotIndex] = fromSlot;
+            return;
+        }
 
         if (
-            fromSlot.ItemId == toSlot.ItemId
-            && ItemDescriptor.TryGet(toSlot.ItemId, out var itemInSlot)
-            && itemInSlot.IsStackable
-            && fromSlot.Quantity < itemInSlot.MaxInventoryStack
-            && toSlot.Quantity < itemInSlot.MaxInventoryStack
+            fromSlot.ItemId == toSlot.ItemId &&
+            ItemDescriptor.TryGet(toSlot.ItemId, out var itemInSlot) &&
+            itemInSlot.IsStackable &&
+            fromSlot.Quantity < itemInSlot.MaxInventoryStack &&
+            toSlot.Quantity < itemInSlot.MaxInventoryStack
         )
         {
             var combinedQuantity = fromSlot.Quantity + toSlot.Quantity;
             var toQuantity = Math.Min(itemInSlot.MaxInventoryStack, combinedQuantity);
             var fromQuantity = combinedQuantity - toQuantity;
+
             toSlot.Quantity = toQuantity;
             fromSlot.Quantity = fromQuantity;
+
             if (fromQuantity < 1)
             {
                 Inventory[fromSlotIndex].ItemId = default;
@@ -443,6 +463,7 @@ public partial class Player : Entity, IPlayer
             Inventory[toSlotIndex] = fromSlot;
         }
     }
+
 
     public void TryDropItem(int inventorySlotIndex)
     {

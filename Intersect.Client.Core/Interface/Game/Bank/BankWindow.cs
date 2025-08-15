@@ -4,6 +4,7 @@ using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
 using Intersect.Client.General;
+using Intersect.Client.Interface.Game.Inventory;
 using Intersect.Client.Localization;
 using Intersect.Client.Networking;
 using Intersect.Client.Utilities;
@@ -20,6 +21,10 @@ public partial class BankWindow : Window
     private readonly TextBox _searchBox;
     private readonly Button _sortButton;
     private readonly Label _valueLabel;
+    private SortCriterion _criterion = SortCriterion.TypeThenName;
+    private string? _lastQuery;
+    private bool _lastAsc;
+    private bool _sortAscending;
 
     //Init
     public BankWindow(Canvas gameCanvas) : base(
@@ -119,31 +124,40 @@ public partial class BankWindow : Window
         _valueLabel.SetText(Strings.Bank.BankValue.ToString(Strings.FormatQuantityAbbreviated(Globals.BankValue)));
     }
 
-    private void SortButton_Clicked(Base sender, ClickedEventArgs arguments)
+    private void SortButton_Clicked(Base sender, MouseButtonState arguments)
     {
         PacketSender.SendBankSortPacket();
     }
-
+    // InventoryWindow.cs
     private void ApplyFilters()
     {
         if (Globals.BankSlots is null)
-        {
             return;
-        }
 
-        var matches = Items
-            .Where(i => SearchHelper.Matches(_searchBox.Text, Globals.BankSlots[i.SlotIndex]?.Descriptor?.Name));
+        // 1) Calcular los que coinciden con la búsqueda
+        var matched = Items.Where(i =>
+            SearchHelper.Matches(_searchBox.Text, Globals.BankSlots[i.SlotIndex]?.Descriptor?.Name)
+        );
 
-        var visible = matches.ToList();
-        var visibleSet = visible.ToHashSet();
+        // 2) Reordenar: primero coincidentes, luego no-coincidentes
+        var matchedList = matched.ToList();
+        var matchedSet = matchedList.ToHashSet();
+        var nonMatched = Items.Where(i => !matchedSet.Contains(i));
 
-        foreach (var item in Items)
+        var arranged = matchedList.Concat(nonMatched).ToList();
+
+        // 3) "Vaciar" visualmente los que NO coinciden (sin ocultarlos)
+        foreach (var it in Items)
         {
-            item.IsHidden = !visibleSet.Contains(item);
+            if (it is BankItem b)
+                b.SetFilterMatch(matchedSet.Contains(it));
+            // Importante: NO tocar it.IsHidden
         }
 
-        PopulateSlotContainer.Populate(_slotContainer, visible);
+        // 4) Siempre poblar con TODA la lista para mantener el grid y permitir drop en cualquier slot
+        PopulateSlotContainer.Populate(_slotContainer, arranged);
     }
+
 
     public void Refresh() => ApplyFilters();
 

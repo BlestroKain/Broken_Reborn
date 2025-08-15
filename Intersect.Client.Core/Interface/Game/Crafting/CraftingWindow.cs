@@ -18,6 +18,7 @@ using Intersect.Utilities;
 using Microsoft.Extensions.Logging;
 using System.Linq;
 using Intersect.Client.Utilities;
+using Intersect.Client.Framework.Gwen;
 
 namespace Intersect.Client.Interface.Game.Crafting;
 
@@ -536,7 +537,7 @@ public partial class CraftingWindow : Window
         RefreshRecipeList();
     }
 
-    private void SortButton_Clicked(Base sender, ClickedEventArgs arguments)
+    private void SortButton_Clicked(Base sender, MouseButtonState arguments)
     {
         _sortAscending = !_sortAscending;
         RefreshRecipeList();
@@ -561,8 +562,14 @@ public partial class CraftingWindow : Window
         }
 
         descriptors = _sortAscending
-            ? descriptors.OrderBy(d => d!.Name)
-            : descriptors.OrderByDescending(d => d!.Name);
+
+            ? descriptors.OrderBy(d => ItemDescriptor.TryGet(d!.ItemId, out var itemDesc)
+                ? ItemSortHelper.GetSortKey(itemDesc)
+                : (int.MaxValue, int.MaxValue, string.Empty))
+            : descriptors.OrderByDescending(d => ItemDescriptor.TryGet(d!.ItemId, out var itemDesc)
+                ? ItemSortHelper.GetSortKey(itemDesc)
+                : (int.MaxValue, int.MaxValue, string.Empty));
+
 
         CraftingRecipeDescriptor? first = null;
 

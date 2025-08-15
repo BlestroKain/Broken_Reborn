@@ -692,23 +692,61 @@ public partial class BankInterface<TSlot> : IBankInterface where TSlot : Item, I
         SendOpenBank();
     }
 
-  private static int CompareBankItems(TSlot? currentItem, TSlot? comparedItem)
+    private static int CompareBankItems(TSlot? currentItem, TSlot? comparedItem)
     {
-        var a = currentItem?.ItemId == Guid.Empty ? null : ItemDescriptor.Get(currentItem.ItemId);
-        var b = comparedItem?.ItemId == Guid.Empty ? null : ItemDescriptor.Get(comparedItem.ItemId);
-
-        var result = ItemSortHelper.Compare(a, b);
-        if (result > 0)
+        if (currentItem == null || currentItem.ItemId == Guid.Empty)
         {
+            if (comparedItem == null || comparedItem.ItemId == Guid.Empty)
+            {
+                return 0;
+            }
+
             return -1;
         }
 
-        if (result < 0)
+        if (comparedItem == null || comparedItem.ItemId == Guid.Empty)
         {
             return 1;
         }
 
-        return 0;
+        if (!ItemDescriptor.TryGet(currentItem.ItemId, out var x))
+        {
+            return -1;
+        }
+
+        if (!ItemDescriptor.TryGet(comparedItem.ItemId, out var y))
+        {
+            return 1;
+        }
+
+        if (x.ItemType == y.ItemType)
+        {
+            return x.Name.CompareTo(y.Name) * -1;
+        }
+
+        switch (x.ItemType)
+        {
+            case ItemType.Currency:
+                return 1;
+            case ItemType.Equipment:
+                return y.ItemType == ItemType.Currency ? -1 : 1;
+            case ItemType.Bag:
+                return y.ItemType == ItemType.Currency || y.ItemType == ItemType.Equipment ? -1 : 1;
+            case ItemType.Event:
+                return y.ItemType == ItemType.Currency || y.ItemType == ItemType.Equipment || y.ItemType == ItemType.Bag
+                    ? -1
+                    : 1;
+            case ItemType.Spell:
+                return y.ItemType == ItemType.Currency || y.ItemType == ItemType.Equipment || y.ItemType == ItemType.Bag ||
+                       y.ItemType == ItemType.Event
+                    ? -1
+                    : 1;
+            case ItemType.None:
+                return y.ItemType != ItemType.Consumable ? -1 : 1;
+            case ItemType.Consumable:
+            default:
+                return -1;
+        }
     }
 
     public void UpdateBankValue()
@@ -726,7 +764,6 @@ public partial class BankInterface<TSlot> : IBankInterface where TSlot : Item, I
 
         _player?.SendPacket(new BankUpdateValuePacket(_bankValue));
     }
-
 
 
     public void Dispose()

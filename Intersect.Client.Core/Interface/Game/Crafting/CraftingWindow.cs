@@ -561,14 +561,8 @@ public partial class CraftingWindow : Window
         }
 
         descriptors = _sortAscending
-
-            ? descriptors.OrderBy(d => ItemDescriptor.TryGet(d!.ItemId, out var itemDesc)
-                ? ItemSortHelper.GetSortKey(itemDesc)
-                : (int.MaxValue, int.MaxValue, string.Empty))
-            : descriptors.OrderByDescending(d => ItemDescriptor.TryGet(d!.ItemId, out var itemDesc)
-                ? ItemSortHelper.GetSortKey(itemDesc)
-                : (int.MaxValue, int.MaxValue, string.Empty));
-
+            ? descriptors.OrderBy(d => d!.Name)
+            : descriptors.OrderByDescending(d => d!.Name);
 
         CraftingRecipeDescriptor? first = null;
 

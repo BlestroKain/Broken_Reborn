@@ -289,6 +289,11 @@ public static partial class PacketSender
         Network.SendPacket(new SwapBankItemsPacket(slot1, slot2));
     }
 
+    public static void SendBankSortPacket()
+    {
+        Network.SendPacket(new BankSortPacket());
+    }
+
     public static void SendCraftItem(Guid id, int count)
     {
         Network.SendPacket(new CraftItemPacket(id, count));

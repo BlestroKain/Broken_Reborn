@@ -5,6 +5,7 @@ using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
 using Intersect.Client.General;
 using Intersect.Client.Localization;
+using Intersect.Client.Networking;
 using Intersect.Client.Utilities;
 using System.Linq;
 
@@ -18,7 +19,7 @@ public partial class BankWindow : Window
 
     private readonly TextBox _searchBox;
     private readonly Button _sortButton;
-    private bool _sortAscending = true;
+    private readonly Label _valueLabel;
 
     //Init
     public BankWindow(Canvas gameCanvas) : base(
@@ -73,8 +74,13 @@ public partial class BankWindow : Window
         {
             Margin = new Margin(4),
         };
-        _sortButton.SetText("Sort");
+        _sortButton.SetText(Strings.Bank.Sort);
         _sortButton.Clicked += SortButton_Clicked;
+
+        _valueLabel = new Label(this, "ValueLabel")
+        {
+            Margin = new Margin(4),
+        };
     }
 
     protected override void EnsureInitialized()
@@ -109,12 +115,13 @@ public partial class BankWindow : Window
                 bankItem.Update();
             }
         }
+
+        _valueLabel.SetText(Strings.Bank.BankValue.ToString(Strings.FormatQuantityAbbreviated(Globals.BankValue)));
     }
 
     private void SortButton_Clicked(Base sender, ClickedEventArgs arguments)
     {
-        _sortAscending = !_sortAscending;
-        ApplyFilters();
+        PacketSender.SendBankSortPacket();
     }
 
     private void ApplyFilters()
@@ -124,19 +131,21 @@ public partial class BankWindow : Window
             return;
         }
 
-        var ordered = _sortAscending
-            ? Items.OrderBy(i => Globals.BankSlots[i.SlotIndex]?.Descriptor?.Name ?? string.Empty).ToList()
-            : Items.OrderByDescending(i => Globals.BankSlots[i.SlotIndex]?.Descriptor?.Name ?? string.Empty).ToList();
+        var matches = Items
+            .Where(i => SearchHelper.Matches(_searchBox.Text, Globals.BankSlots[i.SlotIndex]?.Descriptor?.Name));
 
-        Items = ordered;
-        PopulateSlotContainer.Populate(_slotContainer, Items);
+        var visible = matches.ToList();
+        var visibleSet = visible.ToHashSet();
 
         foreach (var item in Items)
         {
-            var name = Globals.BankSlots[item.SlotIndex]?.Descriptor?.Name;
-            item.IsHidden = !SearchHelper.Matches(_searchBox.Text, name);
+            item.IsHidden = !visibleSet.Contains(item);
         }
+
+        PopulateSlotContainer.Populate(_slotContainer, visible);
     }
+
+    public void Refresh() => ApplyFilters();
 
     public override void Hide()
     {

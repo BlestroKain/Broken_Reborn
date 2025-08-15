@@ -114,6 +114,7 @@ public static partial class Globals
     public static Item[]? BankSlots { get; set; }
     public static bool IsGuildBank { get; set; }
     public static int BankSlotCount { get; set; }
+    public static int BankValue { get; set; }
 
     public static bool ConnectionLost { get; set; }
 

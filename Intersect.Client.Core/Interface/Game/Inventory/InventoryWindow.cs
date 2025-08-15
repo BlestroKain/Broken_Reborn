@@ -114,18 +114,21 @@ public partial class InventoryWindow : Window
             return;
         }
 
-        var ordered = _sortAscending
-            ? Items.OrderBy(i => GetItemName(i.SlotIndex)).ToList()
-            : Items.OrderByDescending(i => GetItemName(i.SlotIndex)).ToList();
+        var query = Items.Where(i => SearchHelper.Matches(_searchBox.Text, GetItemName(i.SlotIndex)));
 
-        Items = ordered;
-        PopulateSlotContainer.Populate(_slotContainer, Items);
+        query = _sortAscending
+            ? query.OrderBy(i => GetItemName(i.SlotIndex))
+            : query.OrderByDescending(i => GetItemName(i.SlotIndex));
+
+        var visible = query.ToList();
+        var visibleSet = visible.ToHashSet();
 
         foreach (var item in Items)
         {
-            var name = GetItemName(item.SlotIndex);
-            item.IsHidden = !SearchHelper.Matches(_searchBox.Text, name);
+            item.IsHidden = !visibleSet.Contains(item);
         }
+
+        PopulateSlotContainer.Populate(_slotContainer, visible);
     }
 
     private static string GetItemName(int slot)

@@ -692,7 +692,7 @@ public partial class BankInterface<TSlot> : IBankInterface where TSlot : Item, I
         SendOpenBank();
     }
 
-    private static int CompareBankItems(TSlot? currentItem, TSlot? comparedItem)
+  private static int CompareBankItems(TSlot? currentItem, TSlot? comparedItem)
     {
         var a = currentItem?.ItemId == Guid.Empty ? null : ItemDescriptor.Get(currentItem.ItemId);
         var b = comparedItem?.ItemId == Guid.Empty ? null : ItemDescriptor.Get(comparedItem.ItemId);
@@ -726,6 +726,7 @@ public partial class BankInterface<TSlot> : IBankInterface where TSlot : Item, I
 
         _player?.SendPacket(new BankUpdateValuePacket(_bankValue));
     }
+
 
 
     public void Dispose()

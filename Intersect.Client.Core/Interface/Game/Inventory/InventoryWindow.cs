@@ -9,6 +9,7 @@ using Intersect.Client.Utilities;
 using System.Linq;
 using Intersect.Framework.Core.GameObjects.Items;
 
+
 namespace Intersect.Client.Interface.Game.Inventory;
 
 public partial class InventoryWindow : Window
@@ -120,6 +121,7 @@ public partial class InventoryWindow : Window
         query = _sortAscending
             ? query.OrderBy(i => GetSortKey(i.SlotIndex))
             : query.OrderByDescending(i => GetSortKey(i.SlotIndex));
+
 
         var visible = query.ToList();
         var visibleSet = visible.ToHashSet();

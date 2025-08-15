@@ -16,6 +16,8 @@ using Intersect.Framework.Reflection;
 using Intersect.GameObjects;
 using Intersect.Utilities;
 using Microsoft.Extensions.Logging;
+using System.Linq;
+using Intersect.Client.Utilities;
 
 namespace Intersect.Client.Interface.Game.Crafting;
 
@@ -47,6 +49,10 @@ public partial class CraftingWindow : Window
 
     //Objects
     private readonly ListBox mRecipes;
+
+    private readonly TextBox _searchBox;
+    private readonly Button _sortButton;
+    private bool _sortAscending = true;
 
     private readonly List<Label> mValues = [];
     private Guid _automaticCraftingDescriptorId;
@@ -99,6 +105,20 @@ public partial class CraftingWindow : Window
         {
             CellSpacing = default, InnerPanelPadding = default,
         };
+
+        _searchBox = new TextBox(this, "SearchBox")
+        {
+            Margin = new Margin(4),
+            Width = 150,
+        };
+        _searchBox.TextChanged += (s, e) => RefreshRecipeList();
+
+        _sortButton = new Button(this, "SortButton")
+        {
+            Margin = new Margin(4),
+        };
+        _sortButton.SetText("Sort");
+        _sortButton.Clicked += SortButton_Clicked;
 
         //Progress Bar
         mBarContainer = new ImagePanel(this, "ProgressBarContainer");
@@ -508,38 +528,59 @@ public partial class CraftingWindow : Window
     protected override void EnsureInitialized()
     {
         LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
-
-        if (Globals.ActiveCraftingTable.Crafts is not { Count: > 0 } craftRecipeDescriptorIds)
+        if (Globals.ActiveCraftingTable.Crafts is not { Count: > 0 })
         {
             return;
         }
 
-        CraftingRecipeDescriptor? craftRecipeDescriptorToLoad = null;
-        foreach (var craftRecipeDescriptorId in craftRecipeDescriptorIds)
+        RefreshRecipeList();
+    }
+
+    private void SortButton_Clicked(Base sender, ClickedEventArgs arguments)
+    {
+        _sortAscending = !_sortAscending;
+        RefreshRecipeList();
+    }
+
+    private void RefreshRecipeList()
+    {
+        if (Globals.ActiveCraftingTable.Crafts is not { Count: > 0 } craftIds)
         {
-            if (!CraftingRecipeDescriptor.TryGet(craftRecipeDescriptorId, out var craftRecipeDescriptor))
-            {
-                ApplicationContext.CurrentContext.Logger.LogWarning(
-                    "Failed to load craft recipe descriptor {CraftDescriptorId}",
-                    craftRecipeDescriptorId
-                );
-                continue;
-            }
-
-            var craftNumber = Math.Max(1, mRecipes.RowCount + 1);
-            var craftingRecipeRow = mRecipes.AddRow(
-                Strings.Crafting.RecipeListEntry.ToString(craftNumber, craftRecipeDescriptor.Name)
-            );
-            craftingRecipeRow.UserData = craftRecipeDescriptor;
-            craftingRecipeRow.DoubleClicked += CraftingRecipeRowOnClicked;
-            craftingRecipeRow.Clicked += CraftingRecipeRowOnClicked;
-
-            craftRecipeDescriptorToLoad ??= craftRecipeDescriptor;
+            return;
         }
 
-        if (craftRecipeDescriptorToLoad is not null)
+        mRecipes.Clear();
+
+        IEnumerable<CraftingRecipeDescriptor> descriptors = craftIds
+            .Select(id => CraftingRecipeDescriptor.TryGet(id, out var desc) ? desc : null)
+            .Where(d => d != null)!;
+
+        if (!string.IsNullOrWhiteSpace(_searchBox.Text))
         {
-            LoadCraftRecipe(craftRecipeDescriptorToLoad);
+            descriptors = descriptors.Where(d => SearchHelper.Matches(_searchBox.Text, d!.Name));
+        }
+
+        descriptors = _sortAscending
+            ? descriptors.OrderBy(d => d!.Name)
+            : descriptors.OrderByDescending(d => d!.Name);
+
+        CraftingRecipeDescriptor? first = null;
+
+        foreach (var descriptor in descriptors)
+        {
+            var craftNumber = Math.Max(1, mRecipes.RowCount + 1);
+            var row = mRecipes.AddRow(
+                Strings.Crafting.RecipeListEntry.ToString(craftNumber, descriptor!.Name)
+            );
+            row.UserData = descriptor;
+            row.DoubleClicked += CraftingRecipeRowOnClicked;
+            row.Clicked += CraftingRecipeRowOnClicked;
+            first ??= descriptor;
+        }
+
+        if (first != null)
+        {
+            LoadCraftRecipe(first);
         }
     }
 

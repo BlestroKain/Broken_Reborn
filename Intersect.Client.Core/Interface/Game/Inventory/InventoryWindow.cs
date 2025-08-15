@@ -7,6 +7,7 @@ using Intersect.Client.General;
 using Intersect.Client.Localization;
 using Intersect.Client.Utilities;
 using System.Linq;
+using Intersect.Framework.Core.GameObjects.Items;
 
 namespace Intersect.Client.Interface.Game.Inventory;
 
@@ -117,8 +118,8 @@ public partial class InventoryWindow : Window
         var query = Items.Where(i => SearchHelper.Matches(_searchBox.Text, GetItemName(i.SlotIndex)));
 
         query = _sortAscending
-            ? query.OrderBy(i => GetItemName(i.SlotIndex))
-            : query.OrderByDescending(i => GetItemName(i.SlotIndex));
+            ? query.OrderBy(i => GetSortKey(i.SlotIndex))
+            : query.OrderByDescending(i => GetSortKey(i.SlotIndex));
 
         var visible = query.ToList();
         var visibleSet = visible.ToHashSet();
@@ -141,6 +142,18 @@ public partial class InventoryWindow : Window
 
         var item = inventory[slot];
         return item?.Descriptor?.Name ?? string.Empty;
+    }
+
+    private static (int, int, string) GetSortKey(int slot)
+    {
+        var inventory = Globals.Me?.Inventory;
+        if (inventory == null || slot >= inventory.Length)
+        {
+            return (int.MaxValue, int.MaxValue, string.Empty);
+        }
+
+        var item = inventory[slot];
+        return ItemSortHelper.GetSortKey(item?.Descriptor);
     }
 
     private void InitItemContainer()

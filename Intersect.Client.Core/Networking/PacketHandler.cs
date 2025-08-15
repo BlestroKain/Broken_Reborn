@@ -1758,6 +1758,7 @@ internal sealed partial class PacketHandler
                 HandlePacket(itm);
             }
             Globals.BankSlotCount = packet.Slots;
+            Globals.BankValue = packet.BankValue;
             Interface.Interface.EnqueueInGame(gameInterface => gameInterface.NotifyOpenBank());
         }
         else
@@ -1779,6 +1780,13 @@ internal sealed partial class PacketHandler
         {
             Globals.BankSlots[slot] = null;
         }
+        Interface.Interface.EnqueueInGame(gameInterface => gameInterface.RefreshBank());
+    }
+
+    //BankUpdateValuePacket
+    public void HandlePacket(IPacketSender packetSender, BankUpdateValuePacket packet)
+    {
+        Globals.BankValue = packet.BankValue;
     }
 
     //GameObjectPacket

@@ -9,6 +9,7 @@ using Intersect.Client.Localization;
 using Intersect.Client.Networking;
 using Intersect.Client.Utilities;
 using System.Linq;
+using Intersect.Framework.Core.GameObjects.Items;
 
 namespace Intersect.Client.Interface.Game.Bank;
 
@@ -21,26 +22,30 @@ public partial class BankWindow : Window
     private readonly TextBox _searchBox;
     private readonly Button _sortButton;
     private readonly Label _valueLabel;
+    private readonly ComboBox _typeBox;
+    private readonly ComboBox _subtypeBox;
     private SortCriterion _criterion = SortCriterion.TypeThenName;
     private string? _lastQuery;
     private bool _lastAsc;
     private bool _sortAscending;
+    private ItemType? _selectedType;
+    private string? _selectedSubtype;
 
     //Init
     public BankWindow(Canvas gameCanvas) : base(
-        gameCanvas,
-        Globals.IsGuildBank
-            ? Strings.Guilds.Bank.ToString(Globals.Me?.Guild)
-            : Strings.Bank.Title.ToString(),
-        false,
-        nameof(BankWindow)
-    )
+     gameCanvas,
+     Globals.IsGuildBank
+         ? Strings.Guilds.Bank.ToString(Globals.Me?.Guild)
+         : Strings.Bank.Title.ToString(),
+     false,
+     nameof(BankWindow)
+ )
     {
         DisableResizing();
         Interface.InputBlockingComponents.Add(this);
 
         Alignment = [Alignments.Center];
-        MinimumSize = new Point(x: 436, y: 454);
+        MinimumSize = new Point(x: 500, y: 480);
         IsResizable = false;
         IsClosable = true;
 
@@ -53,8 +58,68 @@ public partial class BankWindow : Window
             Interface.GameUi.NotifyCloseBank();
         };
 
+        // 📦 Panel superior para filtros y controles
+        var topPanel = new ImagePanel(this, "TopControlsPanel");
+        topPanel.SetSize(480, 40);
+        topPanel.SetPosition(10, 10);
+
+        _searchBox = new TextBox(topPanel, "SearchBox");
+        _searchBox.SetSize(130, 24);
+        _searchBox.SetPosition(0, 8);
+        _searchBox.TextChanged += (s, e) => ApplyFilters();
+
+        _sortButton = new Button(topPanel, "SortButton");
+        _sortButton.SetSize(50, 24);
+        _sortButton.SetPosition(140, 8);
+        _sortButton.SetText("Sort");
+        _sortButton.Clicked += (_, _) =>
+        {
+            _sortAscending = !_sortAscending;
+            PacketSender.SendBankSortPacket(); // Evita reapertura
+        };
+
+        _typeBox = new ComboBox(topPanel, "TypeFilter");
+        _typeBox.SetSize(100, 24);
+        _typeBox.SetPosition(200, 8);
+        var allType = _typeBox.AddItem("All", userData: null);
+        allType.Selected += (_, _) =>
+        {
+            _selectedType = null;
+            UpdateSubtypeOptions();
+            ApplyFilters();
+        };
+        foreach (var type in Enum.GetValues<ItemType>())
+        {
+            if (type == ItemType.None) continue;
+            var item = _typeBox.AddItem(type.ToString(), userData: type);
+            item.Selected += (_, _) =>
+            {
+                _selectedType = (ItemType)item.UserData;
+                UpdateSubtypeOptions();
+                ApplyFilters();
+            };
+        }
+
+        _subtypeBox = new ComboBox(topPanel, "SubtypeFilter");
+        _subtypeBox.SetSize(100, 24);
+        _subtypeBox.SetPosition(310, 8);
+        var allSub = _subtypeBox.AddItem("All", userData: null);
+        allSub.Selected += (_, _) =>
+        {
+            _selectedSubtype = null;
+            ApplyFilters();
+        };
+
+        _valueLabel = new Label(topPanel, "ValueLabel");
+        _valueLabel.SetPosition(420, 11);
+        _valueLabel.SetText("Bank Value: 0");
+        _valueLabel.TextColor = Color.White;
+        _valueLabel.FontSize = 10;
+
+        // Contenedor para los slots
         _slotContainer = new ScrollControl(this, "ItemContainer")
         {
+            Margin = new Margin(10, 60, 10, 10),
             Dock = Pos.Fill,
             OverflowX = OverflowBehavior.Auto,
             OverflowY = OverflowBehavior.Scroll,
@@ -66,25 +131,6 @@ public partial class BankWindow : Window
             IconMarginDisabled = true,
             ItemFont = GameContentManager.Current.GetFont(name: "sourcesansproblack"),
             ItemFontSize = 10,
-        };
-
-        _searchBox = new TextBox(this, "SearchBox")
-        {
-            Margin = new Margin(4),
-            Width = 150,
-        };
-        _searchBox.TextChanged += (s, e) => ApplyFilters();
-
-        _sortButton = new Button(this, "SortButton")
-        {
-            Margin = new Margin(4),
-        };
-        _sortButton.SetText(Strings.Bank.Sort);
-        _sortButton.Clicked += SortButton_Clicked;
-
-        _valueLabel = new Label(this, "ValueLabel")
-        {
-            Margin = new Margin(4),
         };
     }
 
@@ -128,16 +174,63 @@ public partial class BankWindow : Window
     {
         PacketSender.SendBankSortPacket();
     }
+    private void UpdateSubtypeOptions()
+    {
+        _subtypeBox.ClearItems();
+        var all = _subtypeBox.AddItem("All", userData: null);
+        all.Selected += (_, _) =>
+        {
+            _selectedSubtype = null;
+            ApplyFilters();
+        };
+
+        if (_selectedType.HasValue &&
+            Options.Instance.Items.ItemSubtypes.TryGetValue(_selectedType.Value, out var subtypes))
+        {
+            foreach (var st in subtypes)
+            {
+                var local = st;
+                var item = _subtypeBox.AddItem(local, userData: local);
+                item.Selected += (_, _) =>
+                {
+                    _selectedSubtype = (string?)item.UserData;
+                    ApplyFilters();
+                };
+            }
+        }
+
+        _subtypeBox.SelectedItem = all;
+    }
+
     // InventoryWindow.cs
     private void ApplyFilters()
     {
         if (Globals.BankSlots is null)
             return;
 
-        // 1) Calcular los que coinciden con la búsqueda
+        // 1) Calcular los que coinciden con la búsqueda y filtros
         var matched = Items.Where(i =>
-            SearchHelper.Matches(_searchBox.Text, Globals.BankSlots[i.SlotIndex]?.Descriptor?.Name)
-        );
+        {
+            var slot = Globals.BankSlots[i.SlotIndex];
+            var descriptor = slot?.Descriptor;
+            if (descriptor == null)
+            {
+                return false;
+            }
+
+            if (_selectedType.HasValue && descriptor.ItemType != _selectedType)
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrEmpty(_selectedSubtype) &&
+                !descriptor.Subtype.Equals(_selectedSubtype, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            return SearchHelper.Matches(_searchBox.Text, descriptor.Name);
+        });
 
         // 2) Reordenar: primero coincidentes, luego no-coincidentes
         var matchedList = matched.ToList();

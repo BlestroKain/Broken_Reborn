@@ -6,6 +6,7 @@ using Intersect.Client.Framework.Gwen.Control.EventArguments;
 using Intersect.Client.General;
 using Intersect.Client.Localization;
 using Intersect.Client.Utilities;
+using Intersect.Framework.Core.GameObjects.Items;
 
 namespace Intersect.Client.Interface.Game.Inventory;
 
@@ -16,6 +17,11 @@ public partial class InventoryWindow : Window
     private readonly ContextMenu _contextMenu;
     private readonly TextBox _searchBox;
     private readonly Button _sortButton;
+    private readonly ComboBox _typeBox;
+    private readonly ComboBox _subtypeBox;
+
+    private ItemType? _selectedType;
+    private string? _selectedSubtype;
 
     private SortCriterion _criterion = SortCriterion.TypeThenName;
     private bool _sortAscending = true;
@@ -54,9 +60,53 @@ public partial class InventoryWindow : Window
         };
         _sortButton.SetText("Sort");
         _sortButton.Clicked += SortItems; // ✅ ahora ordena visualmente
-   
+
 
         _sortButton.SetPosition(170, 10); // A la derecha del textbox
+
+        _typeBox = new ComboBox(this, "TypeFilter")
+        {
+            Width = 150,
+            Height = 40,
+        };
+        _typeBox.SetPosition(10, 60);
+
+        var typeAll = _typeBox.AddItem("All", userData: null);
+        typeAll.Selected += (_, _) =>
+        {
+            _selectedType = null;
+            UpdateSubtypeOptions();
+            ApplyFilters();
+        };
+        foreach (var type in Enum.GetValues<ItemType>())
+        {
+            if (type == ItemType.None)
+            {
+                continue;
+            }
+
+            var item = _typeBox.AddItem(type.ToString(), userData: type);
+            item.Selected += (_, _) =>
+            {
+                _selectedType = (ItemType)item.UserData;
+                UpdateSubtypeOptions();
+                ApplyFilters();
+            };
+        }
+
+        _subtypeBox = new ComboBox(this, "SubtypeFilter")
+        {
+            Width = 150,
+            Height = 40,
+        };
+        _subtypeBox.SetPosition(170, 60);
+
+        var subtypeAll = _subtypeBox.AddItem("All", userData: null);
+        subtypeAll.Selected += (_, _) =>
+        {
+            _selectedSubtype = null;
+            ApplyFilters();
+        };
 
 
         _slotContainer = new ScrollControl(this, "ItemsContainer")
@@ -74,14 +124,61 @@ public partial class InventoryWindow : Window
             ItemFontSize = 10,
         };
     }
+
+    private void UpdateSubtypeOptions()
+    {
+        _subtypeBox.ClearItems();
+        var all = _subtypeBox.AddItem("All", userData: null);
+        all.Selected += (_, _) =>
+        {
+            _selectedSubtype = null;
+            ApplyFilters();
+        };
+
+        if (_selectedType.HasValue &&
+            Options.Instance.Items.ItemSubtypes.TryGetValue(_selectedType.Value, out var subtypes))
+        {
+            foreach (var st in subtypes)
+            {
+                var local = st; // avoid modified closure
+                var item = _subtypeBox.AddItem(local, userData: local);
+                item.Selected += (_, _) =>
+                {
+                    _selectedSubtype = (string?)item.UserData;
+                    ApplyFilters();
+                };
+            }
+        }
+
+        _subtypeBox.SelectedItem = all;
+    }
     private void ApplyFilters()
     {
         if (Globals.Me?.Inventory == null)
             return;
 
            var matched = Items.Where(i =>
-        SearchHelper.Matches(_searchBox.Text, Globals.Me.Inventory[i.SlotIndex]?.Descriptor?.Name)
-    );
+        {
+            var slot = Globals.Me.Inventory[i.SlotIndex];
+            var descriptor = slot?.Descriptor;
+            if (descriptor == null)
+            {
+                return false;
+            }
+
+            if (_selectedType.HasValue && descriptor.ItemType != _selectedType)
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrEmpty(_selectedSubtype) &&
+                !descriptor.Subtype.Equals(_selectedSubtype, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            return SearchHelper.Matches(_searchBox.Text, descriptor.Name);
+        });
 
         // 2) Reordenar: primero coincidentes, luego no-coincidentes
         var matchedList = matched.ToList();

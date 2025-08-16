@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Intersect.Core;
 using Intersect.Enums;
 using Intersect.Framework.Core;
@@ -18,6 +19,7 @@ using Intersect.GameObjects;
 using Intersect.Models;
 using Intersect.Network;
 using Intersect.Network.Packets.Server;
+using Intersect.Network.Packets;
 using Intersect.Server.Database;
 using Intersect.Server.Database.Logging.Entities;
 using Intersect.Server.Database.PlayerData.Players;
@@ -692,9 +694,9 @@ public static partial class PacketSender
     /// <param name="message">The message to send.</param>
     /// <param name="type">The type of message we are sending.</param>
     /// <param name="target">The sender of this message, should we decide to respond from the client.</param>
-    public static void SendChatMsg(Player player, string message, ChatMessageType type, string target = "")
+    public static void SendChatMsg(Player player, string message, ChatMessageType type, string target = "", List<ChatItem>? items = null)
     {
-        SendChatMsg(player, message, type, CustomColors.Chat.PlayerMsg, target);
+        SendChatMsg(player, message, type, CustomColors.Chat.PlayerMsg, target, items);
     }
 
     /// <summary>
@@ -705,14 +707,14 @@ public static partial class PacketSender
     /// <param name="type">The type of message we are sending.</param>
     /// <param name="color">The color assigned to this message.</param>
     /// <param name="target">The sender of this message, should we decide to respond from the client.</param>
-    public static void SendChatMsg(Player player, string message, ChatMessageType type, Color color, string target = "")
+    public static void SendChatMsg(Player player, string message, ChatMessageType type, Color color, string target = "", List<ChatItem>? items = null)
     {
         if (player == null)
         {
             return;
         }
 
-        player.SendPacket(new ChatMsgPacket(message, type, color, target), TransmissionMode.All);
+        player.SendPacket(new ChatMsgPacket(message, type, color, target, items), TransmissionMode.All);
     }
 
     //GameDataPacket
@@ -802,9 +804,9 @@ public static partial class PacketSender
     /// <param name="color">The color assigned to this message.</param>
     /// <param name="target">The sender of this message, should we decide to respond from the client.</param>
     /// <param name="type">The type of message we are sending.</param>
-    public static void SendGlobalMsg(string message, Color color, string target = "", ChatMessageType type = ChatMessageType.Global)
+    public static void SendGlobalMsg(string message, Color color, string target = "", ChatMessageType type = ChatMessageType.Global, List<ChatItem>? items = null)
     {
-        SendDataToAllPlayers(new ChatMsgPacket(message, type, color, target));
+        SendDataToAllPlayers(new ChatMsgPacket(message, type, color, target, items));
     }
 
     /// <summary>
@@ -829,9 +831,9 @@ public static partial class PacketSender
     /// <param name="color">The color assigned to this message.</param>
     /// <param name="target">The sender of this message, should we decide to respond from the client.</param>
     /// <returns></returns>
-    public static bool SendProximityMsg(string message, ChatMessageType type, Guid mapId, Color color, string target = "")
+    public static bool SendProximityMsg(string message, ChatMessageType type, Guid mapId, Color color, string target = "", List<ChatItem>? items = null)
     {
-        return SendDataAcrossMapInstancesInProximity(mapId, new ChatMsgPacket(message, type, color, target));
+        return SendDataAcrossMapInstancesInProximity(mapId, new ChatMsgPacket(message, type, color, target, items));
     }
 
     /// <summary>
@@ -844,9 +846,9 @@ public static partial class PacketSender
     /// <param name="color">The color assigned to this message.</param>
     /// <param name="target">The sender of this message, should we decide to respond from the client.</param>
     /// <returns></returns>
-    public static bool SendProximityMsgToLayer(string message, ChatMessageType type, Guid mapId, Guid mapInstanceId, Color color, string target = "")
+    public static bool SendProximityMsgToLayer(string message, ChatMessageType type, Guid mapId, Guid mapInstanceId, Color color, string target = "", List<ChatItem>? items = null)
     {
-        return SendDataToProximityOnMapInstance(mapId, mapInstanceId, new ChatMsgPacket(message, type, color, target));
+        return SendDataToProximityOnMapInstance(mapId, mapInstanceId, new ChatMsgPacket(message, type, color, target, items));
     }
 
     /// <summary>
@@ -855,7 +857,7 @@ public static partial class PacketSender
     /// <param name="message">The message to send.</param>
     /// <param name="color">The color assigned to this message.</param>
     /// <param name="target">The sender of this message, should we decide to respond from the client.</param>
-    public static void SendAdminMsg(string message, Color color, string target = "")
+    public static void SendAdminMsg(string message, Color color, string target = "", List<ChatItem>? items = null)
     {
         foreach (var player in Player.OnlinePlayers)
         {
@@ -863,7 +865,7 @@ public static partial class PacketSender
             {
                 if (player.Power != UserRights.None)
                 {
-                    SendChatMsg(player, message, ChatMessageType.Admin, color, target);
+                    SendChatMsg(player, message, ChatMessageType.Admin, color, target, items);
                 }
             }
         }
@@ -876,13 +878,13 @@ public static partial class PacketSender
     /// <param name="message">The message to send.</param>
     /// <param name="color">The color assigned to this message.</param>
     /// <param name="target">The sender of this message, should we decide to respond from the client.</param>
-    public static void SendPartyMsg(Player player, string message, Color color, string target = "")
+    public static void SendPartyMsg(Player player, string message, Color color, string target = "", List<ChatItem>? items = null)
     {
         foreach (var p in player.Party)
         {
             if (p != null)
             {
-                SendChatMsg(p, message, ChatMessageType.Party, color, target);
+                SendChatMsg(p, message, ChatMessageType.Party, color, target, items);
             }
         }
     }
@@ -2280,13 +2282,13 @@ public static partial class PacketSender
     }
 
     //GuildMsgPacket
-    public static void SendGuildMsg(Player player, string message, Color clr, string target = "")
+    public static void SendGuildMsg(Player player, string message, Color clr, string target = "", List<ChatItem>? items = null)
     {
         foreach (var p in player.Guild.FindOnlineMembers())
         {
             if (p != null)
             {
-                SendChatMsg(p, message, ChatMessageType.Guild, clr, target);
+                SendChatMsg(p, message, ChatMessageType.Guild, clr, target, items);
             }
         }
     }

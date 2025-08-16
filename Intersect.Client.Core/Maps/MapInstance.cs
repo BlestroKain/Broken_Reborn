@@ -98,6 +98,8 @@ public partial class MapInstance : MapDescriptor, IGameObject<Guid, MapInstance>
 
     IReadOnlyList<IMapItemInstance> IMapInstance.Items => MapItems.Values.SelectMany(x => x).ToList();
 
+    public Dictionary<Guid, MapTrapInstance> MapTraps { get; set; } = new();
+
     //Map Attributes
     private Dictionary<MapAttribute, Animation> mAttributeAnimInstances = new Dictionary<MapAttribute, Animation>();
     private Dictionary<MapAttribute, Entity> mAttributeCritterInstances = new Dictionary<MapAttribute, Entity>();
@@ -306,6 +308,26 @@ public partial class MapInstance : MapDescriptor, IGameObject<Guid, MapInstance>
         foreach (var (_, critter) in mAttributeCritterInstances)
         {
             critter.Update();
+        }
+
+        foreach (var trap in MapTraps.Values)
+        {
+            if (trap.TrapAnimation == null)
+            {
+                continue;
+            }
+
+            if (ZoneType != MapZone.Safe)
+            {
+                var isNpc = trap.Owner is not Player;
+                var ownerPlayer = trap.Owner as Player;
+                var inGuild = ownerPlayer?.Guild == Globals.Me.Guild;
+                var inParty = Globals.Me.Party.Any(member => member.Id == ownerPlayer?.Id);
+
+                trap.TrapAnimation.Hidden = !isNpc && !inGuild && !inParty;
+            }
+
+            trap.TrapAnimation.Update();
         }
 
         foreach (var localEntityToDispose in LocalEntitiesToDispose)
@@ -1718,12 +1740,64 @@ public partial class MapInstance : MapDescriptor, IGameObject<Guid, MapInstance>
             }
         }
 
+        DisposeTraps();
         HideActiveAnimations();
         ClearWeather();
         ClearMapAttributes();
         ClearAttributeSounds();
         DestroyVBOs();
         Delete();
+    }
+
+    public void AddTrap(Guid trapId, Guid animationId, Guid ownerId, byte x, byte y)
+    {
+        if (MapTraps.ContainsKey(trapId))
+        {
+            return;
+        }
+
+        if (!Globals.Entities.TryGetValue(ownerId, out var owner))
+        {
+            return;
+        }
+
+        var anim = AnimationDescriptor.Get(animationId);
+        if (anim == null)
+        {
+            return;
+        }
+
+        var trap = new MapTrapInstance();
+        trap.TrapAnimation = new Animation(anim, true);
+        trap.TrapAnimation.SetPosition(
+            GetX() + x * Options.Instance.Map.TileWidth + Options.Instance.Map.TileWidth / 2f,
+            GetY() + y * Options.Instance.Map.TileHeight + Options.Instance.Map.TileHeight / 2f,
+            x,
+            y,
+            Id,
+            Direction.Down
+        );
+        trap.Owner = owner;
+        MapTraps.Add(trapId, trap);
+    }
+
+    public void RemoveTrap(Guid trapId)
+    {
+        if (MapTraps.TryGetValue(trapId, out var trap))
+        {
+            trap.TrapAnimation.Dispose();
+            MapTraps.Remove(trapId);
+        }
+    }
+
+    public void DisposeTraps()
+    {
+        foreach (var trap in MapTraps.Values)
+        {
+            trap.TrapAnimation.Dispose();
+        }
+
+        MapTraps.Clear();
     }
 
     public static bool MapNotRequested(Guid mapId)

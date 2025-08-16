@@ -1897,6 +1897,7 @@ public partial class Player : Entity
 
         if (spell?.Combat?.TargetType == SpellTargetType.Self ||
             spell?.Combat?.TargetType == SpellTargetType.Projectile ||
+            spell?.Combat?.TargetType == SpellTargetType.Trap ||
             spell?.SpellType == SpellType.Dash
             )
         {

@@ -35,6 +35,7 @@ public partial class Status
         SpellEffect.OnHit,
         SpellEffect.Shield,
         SpellEffect.Transform,
+        SpellEffect.Vampirism,
     };
 
     public static List<SpellEffect> InterruptStatusses = new List<SpellEffect>()

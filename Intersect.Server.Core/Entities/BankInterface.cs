@@ -6,6 +6,7 @@ using Intersect.Server.Database.PlayerData.Players;
 using Intersect.Server.Localization;
 using Intersect.Server.Networking;
 using System.Diagnostics;
+using System;
 using Intersect.Collections.Slotting;
 using Intersect.Core;
 using Intersect.Framework.Core.GameObjects.Items;
@@ -23,18 +24,22 @@ public partial class BankInterface<TSlot> : IBankInterface where TSlot : Item, I
 
     private readonly object _lock;
 
+    private int _bankValue;
+
     public BankInterface(Player player, SlotList<TSlot> bank, Guild? guild = default)
     {
         _player = player;
         _bank = bank;
         _guild = guild;
         _lock = guild?.Lock ?? new object();
+        _bankValue = 0;
     }
 
     public void SendOpenBank()
     {
         var slotUpdatePackets = new List<BankUpdatePacket>();
 
+        _bankValue = 0;
         for (var slot = 0; slot < _bank.Capacity; slot++)
         {
             var slotItem = slot < _bank.Count ? _bank[slot] : default;
@@ -47,6 +52,12 @@ public partial class BankInterface<TSlot> : IBankInterface where TSlot : Item, I
                     slotItem?.Properties
                 )
             );
+
+            if (slotItem != null && slotItem.ItemId != Guid.Empty &&
+                ItemDescriptor.TryGet(slotItem.ItemId, out var desc))
+            {
+                _bankValue += desc.Price * slotItem.Quantity;
+            }
         }
 
         _player?.SendPacket(
@@ -54,7 +65,8 @@ public partial class BankInterface<TSlot> : IBankInterface where TSlot : Item, I
                 false,
                 _guild != null,
                 _bank.Capacity,
-                slotUpdatePackets.ToArray()
+                slotUpdatePackets.ToArray(),
+                _bankValue
             )
         );
     }
@@ -81,11 +93,13 @@ public partial class BankInterface<TSlot> : IBankInterface where TSlot : Item, I
         {
             _player?.SendPacket(new BankUpdatePacket(slot, Guid.Empty, 0, null, null));
         }
+
+        UpdateBankValue();
     }
 
     public void SendCloseBank()
     {
-        _player?.SendPacket(new BankPacket(true, false, -1, null));
+        _player?.SendPacket(new BankPacket(true, false, -1, null, -1));
     }
 
     public bool TryDepositItem(Item? slot, int inventorySlotIndex, int quantityHint, int bankSlotIndex = -1, bool sendUpdate = true, bool giveItem = false)
@@ -546,7 +560,7 @@ public partial class BankInterface<TSlot> : IBankInterface where TSlot : Item, I
         }
     }
 
-    public void SwapBankItems(int slotFrom, int slotTo)
+    public void SwapBankItems(int slotFrom, int slotTo, bool sendUpdate = true)
     {
         var bank = _bank;
         if (bank == null)
@@ -650,9 +664,69 @@ public partial class BankInterface<TSlot> : IBankInterface where TSlot : Item, I
             }
         }
 
-        SendBankUpdate(slotFrom);
-        SendBankUpdate(slotTo);
+        if (sendUpdate)
+        {
+            SendBankUpdate(slotFrom);
+            SendBankUpdate(slotTo);
+        }
     }
+
+    public void SortBank()
+    {
+        lock (_lock)
+        {
+            for (var slot = 0; slot < _bank.Capacity - 1; slot++)
+            {
+                for (var compareSlot = 0; compareSlot < _bank.Capacity - slot - 1; compareSlot++)
+                {
+                    var current = compareSlot < _bank.Count ? _bank[compareSlot] : default;
+                    var next = compareSlot + 1 < _bank.Count ? _bank[compareSlot + 1] : default;
+                    if (CompareBankItems(current, next) == -1)
+                    {
+                        SwapBankItems(compareSlot, compareSlot + 1, false);
+                    }
+                }
+            }
+        }
+
+        SendOpenBank();
+    }
+
+  private static int CompareBankItems(TSlot? currentItem, TSlot? comparedItem)
+    {
+        var a = currentItem?.ItemId == Guid.Empty ? null : ItemDescriptor.Get(currentItem.ItemId);
+        var b = comparedItem?.ItemId == Guid.Empty ? null : ItemDescriptor.Get(comparedItem.ItemId);
+
+        var result = ItemSortHelper.Compare(a, b);
+        if (result > 0)
+        {
+            return -1;
+        }
+
+        if (result < 0)
+        {
+            return 1;
+        }
+
+        return 0;
+    }
+
+    public void UpdateBankValue()
+    {
+        _bankValue = 0;
+        for (var slot = 0; slot < _bank.Capacity; slot++)
+        {
+            var slotItem = slot < _bank.Count ? _bank[slot] : default;
+            if (slotItem != null && slotItem.ItemId != Guid.Empty &&
+                ItemDescriptor.TryGet(slotItem.ItemId, out var desc))
+            {
+                _bankValue += desc.Price * slotItem.Quantity;
+            }
+        }
+
+        _player?.SendPacket(new BankUpdateValuePacket(_bankValue));
+    }
+
 
 
     public void Dispose()

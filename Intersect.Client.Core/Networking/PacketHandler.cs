@@ -613,7 +613,7 @@ internal sealed partial class PacketHandler
         ChatboxMsg.AddMessage(
             new ChatboxMsg(
                 packet.Message ?? "", new Color(packet.Color.A, packet.Color.R, packet.Color.G, packet.Color.B), packet.Type,
-                packet.Target
+                packet.Target, packet.Items
             )
         );
     }
@@ -1793,6 +1793,7 @@ internal sealed partial class PacketHandler
                 HandlePacket(itm);
             }
             Globals.BankSlotCount = packet.Slots;
+            Globals.BankValue = packet.BankValue;
             Interface.Interface.EnqueueInGame(gameInterface => gameInterface.NotifyOpenBank());
         }
         else
@@ -1814,6 +1815,13 @@ internal sealed partial class PacketHandler
         {
             Globals.BankSlots[slot] = null;
         }
+        Interface.Interface.EnqueueInGame(gameInterface => gameInterface.RefreshBank());
+    }
+
+    //BankUpdateValuePacket
+    public void HandlePacket(IPacketSender packetSender, BankUpdateValuePacket packet)
+    {
+        Globals.BankValue = packet.BankValue;
     }
 
     //GameObjectPacket

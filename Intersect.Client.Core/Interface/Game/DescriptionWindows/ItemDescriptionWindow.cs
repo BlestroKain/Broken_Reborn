@@ -629,11 +629,11 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
             ItemRange? rangeForStat = default;
             var percentageGivenForStat = _itemDescriptor.PercentageStatsGiven[statIndex];
 
-            if (statModifiers != default || !_itemDescriptor.TryGetRangeFor((Stat)statIndex, out rangeForStat) || rangeForStat.LowRange == rangeForStat.HighRange)
+            if (_itemProperties.StatModifiers != default || !_itemDescriptor.TryGetRangeFor((Stat)statIndex, out rangeForStat) || rangeForStat.LowRange == rangeForStat.HighRange)
             {
                 var flatValueGivenForStat = _itemDescriptor.StatsGiven[statIndex];
-                if (statModifiers != default)
-                    flatValueGivenForStat += statModifiers[statIndex];
+                if (_itemProperties.StatModifiers != default)
+                    flatValueGivenForStat += _itemProperties.StatModifiers[statIndex];
 
                 flatValueGivenForStat += rangeForStat?.LowRange ?? 0;
 
@@ -677,6 +677,7 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
                 rows.SizeToChildren(true, true);
             }
         }
+        rows.SizeToChildren(true, true);
     }
     protected void SetupConsumableInfo()
     {

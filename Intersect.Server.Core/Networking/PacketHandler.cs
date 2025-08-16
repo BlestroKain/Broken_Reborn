@@ -951,7 +951,7 @@ internal sealed partial class PacketHandler
 
             PacketSender.SendProximityMsgToLayer(
                 Strings.Chat.Local.ToString(player.Name, msg), ChatMessageType.Local, player.MapId, player.MapInstanceId, chatColor,
-                player.Name
+                player.Name, packet.Items
             );
             PacketSender.SendChatBubble(player.Id, player.MapInstanceId, (int)EntityType.GlobalEntity, msg, player.MapId);
             ChatHistory.LogMessage(player, msg.Trim(), ChatMessageType.Local, Guid.Empty);
@@ -973,7 +973,7 @@ internal sealed partial class PacketHandler
                 chatColor = CustomColors.Chat.ModGlobalChat;
             }
 
-            PacketSender.SendGlobalMsg(Strings.Chat.Global.ToString(player.Name, msg), chatColor, player.Name);
+            PacketSender.SendGlobalMsg(Strings.Chat.Global.ToString(player.Name, msg), chatColor, player.Name, items: packet.Items);
             ChatHistory.LogMessage(player, msg.Trim(), ChatMessageType.Global, Guid.Empty);
         }
         else if (cmd == Strings.Chat.PartyCommand)
@@ -986,7 +986,7 @@ internal sealed partial class PacketHandler
             if (player.InParty(player))
             {
                 PacketSender.SendPartyMsg(
-                    player, Strings.Chat.Party.ToString(player.Name, msg), CustomColors.Chat.PartyChat, player.Name
+                    player, Strings.Chat.Party.ToString(player.Name, msg), CustomColors.Chat.PartyChat, player.Name, packet.Items
                 );
                 ChatHistory.LogMessage(player, msg.Trim(), ChatMessageType.Party, Guid.Empty);
             }
@@ -1005,7 +1005,7 @@ internal sealed partial class PacketHandler
             if (client?.Power.IsModerator ?? false)
             {
                 PacketSender.SendAdminMsg(
-                    Strings.Chat.Admin.ToString(player.Name, msg), CustomColors.Chat.AdminChat, player.Name
+                    Strings.Chat.Admin.ToString(player.Name, msg), CustomColors.Chat.AdminChat, player.Name, packet.Items
                 );
                 ChatHistory.LogMessage(player, msg.Trim(), ChatMessageType.Admin, Guid.Empty);
             }
@@ -1025,7 +1025,7 @@ internal sealed partial class PacketHandler
 
             //Normalize Rank
             var rank = Options.Instance.Guild.Ranks[Math.Max(0, Math.Min(player.GuildRank, Options.Instance.Guild.Ranks.Length - 1))].Title;
-            PacketSender.SendGuildMsg(player, Strings.Guilds.GuildChat.ToString(rank, player.Name, msg), CustomColors.Chat.GuildChat);
+            PacketSender.SendGuildMsg(player, Strings.Guilds.GuildChat.ToString(rank, player.Name, msg), CustomColors.Chat.GuildChat, items: packet.Items);
             ChatHistory.LogMessage(player, msg.Trim(), ChatMessageType.Guild, player.Guild.Id);
 
         }
@@ -1078,12 +1078,12 @@ internal sealed partial class PacketHandler
             {
                 PacketSender.SendChatMsg(
                     player, Strings.Chat.PrivateTo.ToString(target.Name, msg), ChatMessageType.PM, CustomColors.Chat.PrivateChatTo,
-                    player.Name
+                    player.Name, packet.Items
                 );
 
                 PacketSender.SendChatMsg(
                     target, Strings.Chat.PrivateFrom.ToString(player.Name, msg), ChatMessageType.PM,
-                    CustomColors.Chat.PrivateChatFrom, player.Name
+                    CustomColors.Chat.PrivateChatFrom, player.Name, packet.Items
                 );
 
                 target.ChatTarget = player;
@@ -1106,12 +1106,12 @@ internal sealed partial class PacketHandler
             {
                 PacketSender.SendChatMsg(
                     player, Strings.Chat.PrivateTo.ToString(player.ChatTarget.Name, msg), ChatMessageType.PM, CustomColors.Chat.PrivateChatTo,
-                    player.Name
+                    player.Name, packet.Items
                 );
 
                 PacketSender.SendChatMsg(
                     player.ChatTarget, Strings.Chat.PrivateFrom.ToString(player.Name, msg), ChatMessageType.PM,
-                    CustomColors.Chat.PrivateChatFrom, player.Name
+                    CustomColors.Chat.PrivateChatFrom, player.Name, packet.Items
                 );
 
                 player.ChatTarget.ChatTarget = player;
@@ -2029,6 +2029,17 @@ internal sealed partial class PacketHandler
         }
 
         player?.BankInterface?.SwapBankItems(packet.Slot1, packet.Slot2);
+    }
+
+    public void HandlePacket(Client client, BankSortPacket packet)
+    {
+        var player = client?.Entity;
+        if (player == null)
+        {
+            return;
+        }
+
+        player.BankInterface?.SortBank();
     }
 
     //PartyInvitePacket

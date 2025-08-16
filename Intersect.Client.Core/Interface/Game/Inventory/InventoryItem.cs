@@ -36,6 +36,7 @@ public partial class InventoryItem : SlotItem
     private readonly MenuItem _useItemMenuItem;
     private readonly MenuItem _actionItemMenuItem;
     private readonly MenuItem _dropItemMenuItem;
+    private readonly MenuItem _showItemMenuItem;
 
     public InventoryItem(InventoryWindow inventoryWindow, Base parent, int index, ContextMenu contextMenu)
         : base(parent, nameof(InventoryItem), index, contextMenu)
@@ -93,6 +94,8 @@ public partial class InventoryItem : SlotItem
         _dropItemMenuItem.Clicked += _dropItemContextItem_Clicked;
         _actionItemMenuItem = contextMenu.AddItem(Strings.ItemContextMenu.Bank);
         _actionItemMenuItem.Clicked += _actionItemContextItem_Clicked;
+        _showItemMenuItem = contextMenu.AddItem(Strings.ItemContextMenu.Show);
+        _showItemMenuItem.Clicked += _showItemContextItem_Clicked;
         contextMenu.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
 
         if (Globals.Me is { } player)
@@ -183,6 +186,9 @@ public partial class InventoryItem : SlotItem
             _dropItemMenuItem.SetText(Strings.ItemContextMenu.Drop.ToString(descriptor.Name));
         }
 
+        contextMenu.AddChild(_showItemMenuItem);
+        _showItemMenuItem.SetText(Strings.ItemContextMenu.Show.ToString(descriptor.Name));
+
         base.OnContextMenuOpening(contextMenu);
     }
 
@@ -209,6 +215,21 @@ public partial class InventoryItem : SlotItem
         {
             Globals.Me?.TryOfferItemToTrade(SlotIndex);
         }
+    }
+
+    private void _showItemContextItem_Clicked(Base sender, MouseButtonState arguments)
+    {
+        if (Globals.Me?.Inventory[SlotIndex] is not { } slot)
+        {
+            return;
+        }
+
+        if (!ItemDescriptor.TryGet(slot.ItemId, out var descriptor))
+        {
+            return;
+        }
+
+        Interface.GameUi.AppendChatboxItem(descriptor, slot.ItemProperties ?? new ItemProperties());
     }
 
     private void _dropItemContextItem_Clicked(Base sender, MouseButtonState arguments)
@@ -437,6 +458,25 @@ public partial class InventoryItem : SlotItem
             {
                 case InventoryItem inventoryItem:
                     if (inventoryItem.SlotIndex == SlotIndex)
+                        return false;
+
+                    // Validación de índices
+                    if (SlotIndex < 0 || SlotIndex >= player.Inventory.Length ||
+                        inventoryItem.SlotIndex < 0 || inventoryItem.SlotIndex >= player.Inventory.Length)
+                        return false;
+
+                    // Solo el origen debe existir; el destino puede estar vacío
+                    if (player.Inventory[SlotIndex] == null)
+                        return false;
+
+                    // Validación de índice y existencia del slot
+                    if (SlotIndex < 0 || SlotIndex >= player.Inventory.Length ||
+                        inventoryItem.SlotIndex < 0 || inventoryItem.SlotIndex >= player.Inventory.Length)
+                    {
+                        return false;
+                    }
+
+                    if (player.Inventory[SlotIndex] == null || player.Inventory[inventoryItem.SlotIndex] == null)
                     {
                         return false;
                     }
@@ -552,18 +592,19 @@ public partial class InventoryItem : SlotItem
         {
             return;
         }
-
-        if (Globals.Me.Inventory[SlotIndex] is not { } inventorySlot)
+    
+        if (!_filterMatch)
+        {
+            _reset();
+            return;
+        }
+        if (Globals.Me.Inventory[SlotIndex] is not { } inventorySlot ||
+        !ItemDescriptor.TryGet(inventorySlot.ItemId, out var descriptor))
         {
             _reset();
             return;
         }
 
-        if (!ItemDescriptor.TryGet(inventorySlot.ItemId, out var descriptor))
-        {
-            _reset();
-            return;
-        }
 
         var equipped = Globals.Me.MyEquipment.Any(pair => pair.Value.Contains(SlotIndex));
 
@@ -623,4 +664,15 @@ public partial class InventoryItem : SlotItem
         _equipLabel.IsVisibleInParent = false;
         _cooldownLabel.IsVisibleInParent = false;
     }
+
+    // Campo nuevo:
+    private bool _filterMatch = true;
+
+    // Método nuevo (llámalo desde la ventana):
+    public void SetFilterMatch(bool match)
+    {
+        _filterMatch = match;
+    }
+
+
 }

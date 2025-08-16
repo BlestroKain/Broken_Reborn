@@ -272,6 +272,8 @@ public partial class Entity : IEntity
         set => Position = Position with { Z = value };
     }
 
+    public bool HasPermissionToTrade { get; }
+
     public float OffsetX { get; set; }
     // {
     //     get => (Position.X % 1) * TileWidth;

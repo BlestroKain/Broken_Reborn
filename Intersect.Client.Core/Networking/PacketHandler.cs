@@ -613,7 +613,7 @@ internal sealed partial class PacketHandler
         ChatboxMsg.AddMessage(
             new ChatboxMsg(
                 packet.Message ?? "", new Color(packet.Color.A, packet.Color.R, packet.Color.G, packet.Color.B), packet.Type,
-                packet.Target
+                packet.Target, packet.Items
             )
         );
     }

@@ -10,6 +10,8 @@ using Intersect.Framework;
 using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Models;
 using Intersect.Network.Packets.Client;
+using System.Collections.Generic;
+using Intersect.Network.Packets;
 using AdminAction = Intersect.Admin.Actions.AdminAction;
 
 namespace Intersect.Client.Networking;
@@ -109,9 +111,9 @@ public static partial class PacketSender
         Network.SendPacket(new MovePacket(Globals.Me.MapId, Globals.Me.X, Globals.Me.Y, Globals.Me.DirectionFacing));
     }
 
-    public static void SendChatMsg(string msg, byte channel)
+    public static void SendChatMsg(string msg, byte channel, List<ChatItem>? items = null)
     {
-        Network.SendPacket(new ChatMsgPacket(msg, channel));
+        Network.SendPacket(new ChatMsgPacket(msg, channel, items));
     }
 
     public static void SendAttack(Guid targetId)

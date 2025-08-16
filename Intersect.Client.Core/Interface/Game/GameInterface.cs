@@ -22,6 +22,7 @@ using Intersect.Core;
 using Intersect.Enums;
 using Intersect.GameObjects;
 using Microsoft.Extensions.Logging;
+using Intersect.Framework.Core.GameObjects.Items;
 
 namespace Intersect.Client.Interface.Game;
 
@@ -208,6 +209,18 @@ public partial class GameInterface : MutableInterface
     {
         mChatBox.SetChatboxText(msg);
     }
+
+    public void AppendChatboxText(string text)
+    {
+        mChatBox.AppendText(text);
+    }
+
+    public void AppendChatboxItem(ItemDescriptor descriptor, ItemProperties properties)
+    {
+        mChatBox.AppendItem(descriptor, properties);
+    }
+
+    public string ChatboxText => mChatBox.ChatboxText;
 
     //Friends Window
     public void NotifyUpdateFriendsList()

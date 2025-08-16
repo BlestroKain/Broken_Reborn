@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using Intersect.Client.Core;
 using Intersect.Client.Core.Controls;
 using Intersect.Client.Framework.File_Management;
@@ -15,9 +19,11 @@ using Intersect.Configuration;
 using Intersect.Core;
 using Intersect.Enums;
 using Intersect.Framework.Core;
+using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Localization;
 using Intersect.Utilities;
 using Microsoft.Extensions.Logging;
+using Intersect.Network.Packets;
 
 namespace Intersect.Client.Interface.Game.Chat;
 
@@ -64,6 +70,10 @@ public partial class Chatbox
     private int mMessageIndex;
 
     private bool mReceivedMessage;
+
+    private List<(string Name, ChatItem Item)> _pendingItemLinks = new List<(string Name, ChatItem Item)>();
+
+    private static readonly Dictionary<string, ChatItem> sLinkedItems = new Dictionary<string, ChatItem>();
 
     /// <summary>
     /// Defines which chat tab we are currently looking at.
@@ -379,6 +389,7 @@ public partial class Chatbox
         for (var i = mMessageIndex; i < messages.Count; i++)
         {
             var msg = messages[i];
+            RegisterItemLinks(msg.Items);
             string[] lines = [msg.Message];/*Text.WrapText(
                 msg.Message,
                 mChatboxMessages.Width - vScrollBar.Width - 8,
@@ -447,6 +458,45 @@ public partial class Chatbox
         Update();
     }
 
+    public string ChatboxText => mChatboxInput.Text;
+
+    public void AppendText(string text)
+    {
+        var current = mChatboxInput.Text;
+        if (string.Equals(current, GetDefaultInputText(), StringComparison.Ordinal))
+        {
+            current = string.Empty;
+        }
+
+        SetChatboxText(current + text);
+    }
+
+    public void AppendItem(ItemDescriptor descriptor, ItemProperties properties)
+    {
+        AppendText($"[{descriptor.Name}]");
+        var item = new ChatItem(descriptor.Id, new ItemProperties(properties));
+        _pendingItemLinks.Add((descriptor.Name, item));
+        sLinkedItems[descriptor.Name] = item;
+    }
+
+    public void RegisterItemLinks(IEnumerable<ChatItem>? items)
+    {
+        if (items == null)
+        {
+            return;
+        }
+
+        foreach (var item in items)
+        {
+            if (!ItemDescriptor.TryGet(item.ItemId, out var descriptor))
+            {
+                continue;
+            }
+
+            sLinkedItems[descriptor.Name] = item;
+        }
+    }
+
     public void SetChatboxText(string msg)
     {
         mChatboxInput.Text = msg;
@@ -458,6 +508,11 @@ public partial class Chatbox
     private void ChatboxRow_Clicked(Base sender, MouseButtonState arguments)
     {
         if (sender is not ListBoxRow row)
+        {
+            return;
+        }
+
+        if (arguments.MouseButton == MouseButton.Left && TryShowItemFromRow(row))
         {
             return;
         }
@@ -488,13 +543,40 @@ public partial class Chatbox
                 break;
         }
 
-        if (!string.IsNullOrWhiteSpace(target))
+        if (!string.IsNullOrWhiteSpace(target) && mGameUi.IsAdminWindowOpen)
         {
-            if (mGameUi.IsAdminWindowOpen)
+            mGameUi.AdminWindowSelectName(target);
+        }
+    }
+
+    private static bool TryShowItemFromRow(ListBoxRow row)
+    {
+        var match = Regex.Match(row.Text ?? string.Empty, "\\[(.+?)\\]");
+        if (!match.Success)
+        {
+            return false;
+        }
+
+        var itemName = match.Groups[1].Value;
+        if (sLinkedItems.TryGetValue(itemName, out var linkedItem))
+        {
+            if (ItemDescriptor.TryGet(linkedItem.ItemId, out var linkedDescriptor))
             {
-                mGameUi.AdminWindowSelectName(target);
+                Interface.GameUi.ItemDescriptionWindow?.Show(linkedDescriptor, 1, linkedItem.Properties);
+                return true;
             }
         }
+
+        var descriptor = ItemDescriptor.Lookup.Values
+            .OfType<ItemDescriptor>()
+            .FirstOrDefault(d => string.Equals(d.Name, itemName, StringComparison.OrdinalIgnoreCase));
+        if (descriptor == null)
+        {
+            return false;
+        }
+
+        Interface.GameUi.ItemDescriptionWindow?.Show(descriptor, 1);
+        return true;
     }
 
     //Extra Methods
@@ -614,10 +696,12 @@ public partial class Chatbox
 
         mLastChatTime = Timing.Global.MillisecondsUtc + Options.Instance.Chat.MinIntervalBetweenChats;
 
+        var itemsToSend = _pendingItemLinks.Select(l => l.Item).ToList();
         PacketSender.SendChatMsg(
-            msg, byte.Parse(mChannelCombobox.SelectedItem.UserData.ToString())
+            msg, byte.Parse(mChannelCombobox.SelectedItem.UserData.ToString()), itemsToSend
         );
 
+        _pendingItemLinks.Clear();
         mChatboxInput.Text = GetDefaultInputText();
     }
 

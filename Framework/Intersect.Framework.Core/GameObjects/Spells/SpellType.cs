@@ -11,4 +11,6 @@ public enum SpellType
     Dash = 3,
 
     Event = 4,
+
+    SummonNpc = 5,
 }

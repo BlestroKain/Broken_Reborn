@@ -10,6 +10,7 @@ using Intersect.Framework.Core.GameObjects.Animations;
 using Intersect.Framework.Core.GameObjects.Events;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Maps.MapList;
+using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.GameObjects;
 using Intersect.Utilities;
 using Graphics = System.Drawing.Graphics;
@@ -105,6 +106,8 @@ public partial class FrmSpell : EditorForm
         cmbEvent.Items.Clear();
         cmbEvent.Items.Add(Strings.General.None);
         cmbEvent.Items.AddRange(EventDescriptor.Names);
+        cmbNpc.Items.Clear();
+        cmbNpc.Items.AddRange(NPCDescriptor.Names);
         cmbTickAnimation.Items.Clear();
         cmbTickAnimation.Items.Add(Strings.General.None);
         cmbTickAnimation.Items.AddRange(AnimationDescriptor.Names);
@@ -268,6 +271,8 @@ public partial class FrmSpell : EditorForm
         btnVisualMapSelector.Text = Strings.Warping.visual;
 
         grpEvent.Text = Strings.SpellEditor.Event;
+        grpSummon.Text = Strings.SpellEditor.summonnpc;
+        lblNpc.Text = Strings.SpellEditor.npc;
 
         //Searching/Sorting
         btnAlphabetical.ToolTipText = Strings.SpellEditor.sortalphabetically;
@@ -341,6 +346,7 @@ public partial class FrmSpell : EditorForm
         grpWarp.Hide();
         grpDash.Hide();
         grpEvent.Hide();
+        grpSummon.Hide();
         cmbTargetType.Enabled = true;
 
         // Reset our combat data location, since event type spells can move it.
@@ -417,6 +423,11 @@ public partial class FrmSpell : EditorForm
             chkIgnoreActiveResources.Checked = mEditorItem.Dash.IgnoreActiveResources;
             chkIgnoreInactiveResources.Checked = mEditorItem.Dash.IgnoreInactiveResources;
             chkIgnoreZDimensionBlocks.Checked = mEditorItem.Dash.IgnoreZDimensionAttributes;
+        }
+        else if (cmbType.SelectedIndex == (int)SpellType.SummonNpc)
+        {
+            grpSummon.Show();
+            cmbNpc.SelectedIndex = NPCDescriptor.ListIndex(mEditorItem.SummonNpcId);
         }
 
         if (cmbType.SelectedIndex == (int)SpellType.Event)
@@ -762,6 +773,11 @@ public partial class FrmSpell : EditorForm
     private void cmbEvent_SelectedIndexChanged(object sender, EventArgs e)
     {
         mEditorItem.EventId = EventDescriptor.IdFromList(cmbEvent.SelectedIndex - 1);
+    }
+
+    private void cmbNpc_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        mEditorItem.SummonNpcId = NPCDescriptor.IdFromList(cmbNpc.SelectedIndex);
     }
 
     private void btnVisualMapSelector_Click(object sender, EventArgs e)

@@ -72,6 +72,17 @@ public partial class SpellDescriptor : DatabaseObject<SpellDescriptor>, IFoldera
         set => TickAnimationId = value?.Id ?? Guid.Empty;
     }
 
+    [Column("TrapAnimation")]
+    public Guid TrapAnimationId { get; set; }
+
+    [NotMapped]
+    [JsonIgnore]
+    public AnimationDescriptor TrapAnimation
+    {
+        get => AnimationDescriptor.Get(TrapAnimationId);
+        set => TrapAnimationId = value?.Id ?? Guid.Empty;
+    }
+
     //Spell Times
     public int CastDuration { get; set; }
 

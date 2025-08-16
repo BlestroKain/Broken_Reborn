@@ -1612,15 +1612,14 @@ public partial class Entity : IEntity
     }
 
     public void DrawLabels(
-        string label,
-        int position,
-        Color labelColor,
-        Color textColor,
-        Color? borderColor = null,
-        Color? backgroundColor = null
-    )
+    string label,
+    int position,
+    Color labelColor,
+    Color textColor,
+    Color? borderColor = null,
+    Color? backgroundColor = null
+)
     {
-        // Are we supposed to hide this Label?
         if (!ShouldDrawName || string.IsNullOrWhiteSpace(label) || Graphics.Renderer == default)
         {
             return;
@@ -1632,21 +1631,19 @@ public partial class Entity : IEntity
             return;
         }
 
-        if (borderColor == null)
-        {
-            borderColor = Color.Transparent;
-        }
-
-        if (backgroundColor == null)
-        {
-            backgroundColor = Color.Transparent;
-        }
-
-        //If we have a non-transparent label color then use it, otherwise use the players name color
-        if (labelColor != null && labelColor.A != 0)
+        // Si labelColor no es transparente, úsalo como color de texto
+        if (labelColor.A != 0)
         {
             textColor = labelColor;
         }
+
+        // Si no hay borde o es transparente, elige negro/blanco según contraste
+        if (borderColor is not { A: > 0 })
+        {
+            borderColor = textColor == Color.Black ? Color.White : Color.Black;
+        }
+
+        backgroundColor ??= Color.Transparent;
 
         var textSize = Graphics.Renderer.MeasureText(label, Graphics.EntityNameFont, Graphics.EntityNameFontSize, 1);
 
@@ -1663,6 +1660,9 @@ public partial class Entity : IEntity
             );
         }
 
+        // En este punto borderColor no es null
+        var bc = borderColor!;
+
         Graphics.Renderer.DrawString(
             label,
             Graphics.EntityNameFont,
@@ -1673,19 +1673,40 @@ public partial class Entity : IEntity
             Color.FromArgb(textColor.ToArgb()),
             true,
             null,
-            Color.FromArgb(borderColor.ToArgb())
+            Color.FromArgb(bc.ToArgb())
         );
     }
 
+
+    private Color? cachedNameColor = null;
+    private int lastPlayerLevel = -1;
+
     public virtual void DrawName(Color? textColor, Color? borderColor = null, Color? backgroundColor = null)
     {
-        // Are we really supposed to draw this name?
         if (!ShouldDrawName || Graphics.Renderer == default)
         {
             return;
         }
 
-        //Check for npc colors
+        var player = Globals.Me;
+        if (player == null)
+        {
+            return;
+        }
+
+        if (cachedNameColor == null || lastPlayerLevel != player.Level)
+        {
+            var levelDifference = Level - player.Level;
+            lastPlayerLevel = player.Level;
+
+            if (levelDifference >= 10) cachedNameColor = Color.Black;
+            else if (levelDifference >= 5) cachedNameColor = Color.Red;
+            else if (levelDifference >= -2) cachedNameColor = Color.White;
+            else cachedNameColor = Color.Green;
+        }
+
+        textColor ??= cachedNameColor;
+
         if (textColor == null)
         {
             var color = Aggression switch
@@ -1705,15 +1726,14 @@ public partial class Entity : IEntity
             }
         }
 
-        if (borderColor == null)
+        if (borderColor is not { A: > 0 })
         {
-            borderColor = Color.Transparent;
+            // si textColor aún fuera null, usa negro por defecto para la comparación
+            var tc = textColor ?? Color.White;
+            borderColor = tc == Color.Black ? Color.White : Color.Black;
         }
 
-        if (backgroundColor == null)
-        {
-            backgroundColor = Color.Transparent;
-        }
+        backgroundColor ??= Color.Transparent;
 
         var name = Name;
         if ((this is Player && Options.Instance.Player.ShowLevelByName) ||
@@ -1737,6 +1757,9 @@ public partial class Entity : IEntity
             );
         }
 
+        var bc = borderColor!;
+        var tc2 = textColor ?? Color.White;
+
         Graphics.Renderer.DrawString(
             name,
             Graphics.EntityNameFont,
@@ -1744,12 +1767,13 @@ public partial class Entity : IEntity
             x - (int)Math.Ceiling(textSize.X / 2f),
             (int)y,
             1,
-            textColor,
+            tc2,
             true,
             null,
-            Color.FromArgb(borderColor.ToArgb())
+            Color.FromArgb(bc.ToArgb())
         );
     }
+
 
     public float GetLabelLocation(LabelType type)
     {

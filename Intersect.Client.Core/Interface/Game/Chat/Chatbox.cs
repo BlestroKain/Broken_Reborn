@@ -512,7 +512,7 @@ public partial class Chatbox
             return;
         }
 
-        if (arguments.MouseButton == MouseButton.Left && TryShowItemFromRow(row))
+        if (arguments.MouseButton == MouseButton.Left && TryShowItemFromRow(row, arguments))
         {
             return;
         }
@@ -549,34 +549,58 @@ public partial class Chatbox
         }
     }
 
-    private static bool TryShowItemFromRow(ListBoxRow row)
+    private static bool TryShowItemFromRow(ListBoxRow row, MouseButtonState arguments)
     {
-        var match = Regex.Match(row.Text ?? string.Empty, "\\[(.+?)\\]");
-        if (!match.Success)
+        if (row.GetCellContents(0) is not Label label)
         {
             return false;
         }
 
-        var itemName = match.Groups[1].Value;
-        if (sLinkedItems.TryGetValue(itemName, out var linkedItem))
+        var text = row.Text ?? string.Empty;
+        var matches = Regex.Matches(text, "\\[(.+?)\\]");
+        if (matches.Count == 0)
         {
-            if (ItemDescriptor.TryGet(linkedItem.ItemId, out var linkedDescriptor))
+            return false;
+        }
+
+        // Convert click position to label local coordinates
+        var canvasPoint = row.ToCanvas(arguments.X, arguments.Y);
+        var local = label.CanvasPosToLocal(canvasPoint);
+
+        foreach (Match match in matches)
+        {
+            var substring = text[..match.Index];
+            var substringSize = label.Skin.Renderer.MeasureText(label.Font, label.FontSize, substring);
+            var matchSize = label.Skin.Renderer.MeasureText(label.Font, label.FontSize, match.Value);
+
+            if (local.X < substringSize.X || local.X > substringSize.X + matchSize.X)
             {
-                Interface.GameUi.ItemDescriptionWindow?.Show(linkedDescriptor, 1, linkedItem.Properties);
-                return true;
+                continue;
             }
+
+            var itemName = match.Groups[1].Value;
+            if (sLinkedItems.TryGetValue(itemName, out var linkedItem))
+            {
+                if (ItemDescriptor.TryGet(linkedItem.ItemId, out var linkedDescriptor))
+                {
+                    Interface.GameUi.ItemDescriptionWindow?.Show(linkedDescriptor, 1, linkedItem.Properties);
+                    return true;
+                }
+            }
+
+            var descriptor = ItemDescriptor.Lookup.Values
+                .OfType<ItemDescriptor>()
+                .FirstOrDefault(d => string.Equals(d.Name, itemName, StringComparison.OrdinalIgnoreCase));
+            if (descriptor == null)
+            {
+                return false;
+            }
+
+            Interface.GameUi.ItemDescriptionWindow?.Show(descriptor, 1);
+            return true;
         }
 
-        var descriptor = ItemDescriptor.Lookup.Values
-            .OfType<ItemDescriptor>()
-            .FirstOrDefault(d => string.Equals(d.Name, itemName, StringComparison.OrdinalIgnoreCase));
-        if (descriptor == null)
-        {
-            return false;
-        }
-
-        Interface.GameUi.ItemDescriptionWindow?.Show(descriptor, 1);
-        return true;
+        return false;
     }
 
     //Extra Methods

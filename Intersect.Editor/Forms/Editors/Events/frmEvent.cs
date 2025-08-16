@@ -813,9 +813,26 @@ public partial class FrmEvent : Form
     public FrmEvent(MapDescriptor currentMap)
     {
         InitializeComponent();
+        SetNodeTags(lstCommands.Nodes);
         Icon = Program.Icon;
 
         mCurrentMap = currentMap;
+    }
+
+    private static void SetNodeTags(TreeNodeCollection nodes)
+    {
+        foreach (TreeNode node in nodes)
+        {
+            if (Enum.TryParse<EventCommandType>(node.Name, true, out var type))
+            {
+                node.Tag = (int)type;
+            }
+
+            if (node.Nodes.Count > 0)
+            {
+                SetNodeTags(node.Nodes);
+            }
+        }
     }
 
     private Size _defaultFormSize;

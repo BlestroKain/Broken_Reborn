@@ -1325,6 +1325,41 @@ internal sealed partial class PacketHandler
         }
     }
 
+    //MapTrapsPacket
+    public void HandlePacket(IPacketSender packetSender, MapTrapsPacket packet)
+    {
+        var map = MapInstance.Get(packet.MapId);
+        if (map == null)
+        {
+            return;
+        }
+
+        map.DisposeTraps();
+        foreach (var trap in packet.Traps)
+        {
+            map.AddTrap(trap.TrapId, trap.AnimationId, trap.OwnerId, trap.X, trap.Y);
+        }
+    }
+
+    //MapTrapPacket
+    public void HandlePacket(IPacketSender packetSender, MapTrapPacket packet)
+    {
+        var map = MapInstance.Get(packet.MapId);
+        if (map == null)
+        {
+            return;
+        }
+
+        if (packet.Remove)
+        {
+            map.RemoveTrap(packet.TrapId);
+        }
+        else
+        {
+            map.AddTrap(packet.TrapId, packet.AnimationId, packet.OwnerId, packet.X, packet.Y);
+        }
+    }
+
     //InventoryPacket
     public void HandlePacket(IPacketSender packetSender, InventoryPacket packet)
     {

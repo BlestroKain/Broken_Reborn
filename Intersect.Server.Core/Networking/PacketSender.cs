@@ -29,6 +29,7 @@ using Intersect.Server.Entities.Events;
 using Intersect.Server.General;
 using Intersect.Server.Localization;
 using Intersect.Server.Maps;
+using Intersect.Server.Classes.Maps;
 using Intersect.Utilities;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -240,7 +241,7 @@ public static partial class PacketSender
     }
 
     //MapPacket
-    public static (MapPacket, MapEntitiesPacket?, MapItemsPacket?) GenerateMapPackets(Client client, Guid mapId)
+    public static (MapPacket, MapEntitiesPacket?, MapItemsPacket?, MapTrapsPacket?) GenerateMapPackets(Client client, Guid mapId)
     {
         if (client == null)
         {
@@ -253,12 +254,13 @@ public static partial class PacketSender
 
         if (client.IsEditor)
         {
-            return (mapPacket, default, default);
+            return (mapPacket, default, default, default);
         }
 
         var mapEntitiesPacket = GenerateMapEntitiesPacket(mapId, client.Entity);
         var mapItemsPacket = GenerateMapItemsPacket(client.Entity, mapId);
-        return (mapPacket, mapEntitiesPacket, mapItemsPacket);
+        var mapTrapsPacket = GenerateMapTrapsPacket(client.Entity, mapId);
+        return (mapPacket, mapEntitiesPacket, mapItemsPacket, mapTrapsPacket);
     }
 
     //MapPacket
@@ -307,7 +309,7 @@ public static partial class PacketSender
 
         if (client.IsEditor)
         {
-            var (mapPacket, _, _) = GenerateMapPackets(client, mapId);
+            var (mapPacket, _, _, _) = GenerateMapPackets(client, mapId);
             if (allEditors)
             {
                 SendDataToEditors(mapPacket);
@@ -319,7 +321,7 @@ public static partial class PacketSender
         }
         else
         {
-            var (mapPacket, mapEntitiesPacket, mapItemsPacket) = GenerateMapPackets(client, mapId);
+            var (mapPacket, mapEntitiesPacket, mapItemsPacket, mapTrapsPacket) = GenerateMapPackets(client, mapId);
             var mapIsCached = false;
             if (!string.IsNullOrWhiteSpace(checksum))
             {
@@ -333,6 +335,7 @@ public static partial class PacketSender
 
             client.Send(mapEntitiesPacket);
             client.Send(mapItemsPacket);
+            client.Send(mapTrapsPacket);
 
             var entity = client.Entity;
             if (entity != null)
@@ -1130,6 +1133,21 @@ public static partial class PacketSender
         return new MapItemsPacket(mapId, items.ToArray());
     }
 
+    //MapTrapsPacket
+    public static MapTrapsPacket GenerateMapTrapsPacket(Player player, Guid mapId)
+    {
+        var traps = new List<MapTrapPacket>();
+        if (MapController.TryGetInstanceFromMap(mapId, player.MapInstanceId, out var mapInstance))
+        {
+            foreach (var trap in mapInstance.MapTraps.Values)
+            {
+                traps.Add(new MapTrapPacket(mapId, trap.Id, trap.ParentSpell.TrapAnimationId, trap.Owner.Id, trap.X, trap.Y, false));
+            }
+        }
+
+        return new MapTrapsPacket(mapId, traps.ToArray());
+    }
+
     //MapItemsPacket
     public static void SendMapItems(Player player, Guid mapId)
     {
@@ -1197,6 +1215,37 @@ public static partial class PacketSender
                 SendDataToProximityOnMapInstance(mapId, mapInstanceId, new MapItemUpdatePacket(mapId, itemRef.TileIndex, itemRef.UniqueId, itemRef.ItemId, itemRef.BagId, itemRef.Quantity, itemRef.Properties));
             }
         }
+    }
+
+    //MapTrapsPacket
+    public static void SendMapTraps(Player player, Guid mapId)
+    {
+        player.SendPacket(GenerateMapTrapsPacket(player, mapId));
+    }
+
+    //MapTrapsPacket
+    public static void SendMapTrapsToProximity(Guid mapId, MapInstance mapInstance)
+    {
+        foreach (var player in mapInstance.GetPlayers(true))
+        {
+            player.SendPacket(GenerateMapTrapsPacket(player, mapId));
+        }
+    }
+
+    //MapTrapPacket
+    public static void SendMapTrapUpdate(Guid mapId, Guid mapInstanceId, MapTrapInstance trap, bool removing)
+    {
+        var packet = new MapTrapPacket(
+            mapId,
+            trap.Id,
+            trap.ParentSpell.TrapAnimationId,
+            trap.Owner.Id,
+            trap.X,
+            trap.Y,
+            removing
+        );
+
+        SendDataToProximityOnMapInstance(mapId, mapInstanceId, packet);
     }
 
 

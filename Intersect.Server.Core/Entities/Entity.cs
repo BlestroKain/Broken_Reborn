@@ -2260,10 +2260,17 @@ public abstract partial class Entity : IEntity
 
         var thisPlayer = this as Player;
 
+        var hasVampirism = CachedStatuses.Any(status => status.Type == SpellEffect.Vampirism);
+
         //Check for lifesteal/manasteal
-        if (this is Player && !(enemy is Resource))
+        if (thisPlayer != null && enemy is not Resource)
         {
-            var lifestealRate = thisPlayer.GetEquipmentBonusEffect(ItemEffect.Lifesteal) / 100f;
+            var lifestealRate = Math.Max(0f, thisPlayer.GetEquipmentBonusEffect(ItemEffect.Lifesteal) / 100f);
+            if (hasVampirism)
+            {
+                lifestealRate += 0.10f;
+            }
+
             var idealHealthRecovered = lifestealRate * baseDamage;
             var actualHealthRecovered = Math.Min(enemyVitals[(int)Vital.Health], idealHealthRecovered);
 
@@ -2272,23 +2279,28 @@ public abstract partial class Entity : IEntity
                 // Don't send any +0 msg's.
                 AddVital(Vital.Health, (int)actualHealthRecovered);
                 PacketSender.SendActionMsg(
-                    this,
+                    thisPlayer,
                     Strings.Combat.AddSymbol + (int)actualHealthRecovered,
                     CustomColors.Combat.Heal
                 );
             }
 
-            var manastealRate = (thisPlayer.GetEquipmentBonusEffect(ItemEffect.Manasteal) / 100f);
+            var manastealRate = Math.Max(0f, thisPlayer.GetEquipmentBonusEffect(ItemEffect.Manasteal) / 100f);
+            if (hasVampirism)
+            {
+                manastealRate += 0.10f;
+            }
+
             var idealManaRecovered = manastealRate * baseDamage;
-            var actualManaRecovered = Math.Min(enemyVitals[(int)Vital.Mana], idealManaRecovered);
+            var actualManaRecovered = Math.Min(enemy.GetVital(Vital.Mana), idealManaRecovered);
 
             if (actualManaRecovered > 0)
             {
-                // Don't send any +0 msg's.
-                AddVital(Vital.Mana, (int)actualManaRecovered);
+                // Recover mana for the attacker and subtract it from the opponent.
+                thisPlayer.AddVital(Vital.Mana, (int)actualManaRecovered);
                 enemy.SubVital(Vital.Mana, (int)actualManaRecovered);
                 PacketSender.SendActionMsg(
-                    this,
+                    thisPlayer,
                     Strings.Combat.AddSymbol + (int)actualManaRecovered,
                     CustomColors.Combat.AddMana
                 );
@@ -2301,7 +2313,7 @@ public abstract partial class Entity : IEntity
                 enemy.SubVital(Vital.Health, (int)remainingManaRecovery);
                 PacketSender.SendActionMsg(
                     enemy,
-                    Strings.Combat.RemoveSymbol + remainingManaRecovery,
+                    Strings.Combat.RemoveSymbol + (int)remainingManaRecovery,
                     CustomColors.Combat.TrueDamage
                 );
             }

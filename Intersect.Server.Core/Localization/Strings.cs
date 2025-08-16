@@ -288,6 +288,9 @@ public static partial class Strings
         public readonly LocalizedString LevelUp = @"LEVEL UP!";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString Vampirism = @"VAMPIRISM!";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public readonly LocalizedString LowHealth = @"Not enough health.";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -334,6 +337,8 @@ public static partial class Strings
             {10, @"SLEEP!"},
             {11, @"ON HIT!"},
             {12, @"TAUNT!"},
+            {13, @"KNOCKBACK!"},
+            {14, @"VAMPIRISM!"},
             }
         );
 

@@ -2685,6 +2685,31 @@ public abstract partial class Entity : IEntity
                     );
 
                     break;
+                case SpellType.SummonNpc:
+                    if (spellBase.SummonNpcId != Guid.Empty)
+                    {
+                        if (MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var mapInstance))
+                        {
+                            var summonX = X + 1;
+                            var summonY = Y;
+                            var direction = Dir;
+
+                            var summonedNpc = mapInstance.SpawnNpc((byte)summonX, (byte)summonY, direction, spellBase.SummonNpcId, true);
+                            if (summonedNpc != null)
+                            {
+                                if (this is Player player)
+                                {
+                                    player.SpawnedNpcs.Add(summonedNpc);
+                                }
+                                else if (this is Npc npcCaster)
+                                {
+                                    // Optional: track NPC summons here.
+                                }
+                            }
+                        }
+                    }
+
+                    break;
                 default:
                     break;
             }

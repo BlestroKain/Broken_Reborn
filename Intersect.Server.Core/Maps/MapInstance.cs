@@ -1060,16 +1060,23 @@ public partial class MapInstance : IMapInstance
         var trap = new MapTrapInstance(owner, parentSpell, mMapController.Id, MapInstanceId, x, y, z);
         MapTraps.TryAdd(trap.Id, trap);
         MapTrapsCached = MapTraps.Values.ToArray();
+        PacketSender.SendMapTrapUpdate(mMapController.Id, MapInstanceId, trap, false);
     }
 
     public void DespawnTraps()
     {
+        foreach (var trap in MapTraps.Values)
+        {
+            PacketSender.SendMapTrapUpdate(mMapController.Id, MapInstanceId, trap, true);
+        }
+
         MapTraps.Clear();
         MapTrapsCached = new MapTrapInstance[0];
     }
 
     public void RemoveTrap(MapTrapInstance trap)
     {
+        PacketSender.SendMapTrapUpdate(mMapController.Id, MapInstanceId, trap, true);
         MapTraps.TryRemove(trap.Id, out MapTrapInstance removed);
         MapTrapsCached = MapTraps.Values.ToArray();
     }

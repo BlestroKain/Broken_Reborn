@@ -225,6 +225,8 @@ public static partial class CustomColors
         public Color Status = new Color(255, 255, 255, 0);
 
         public Color TrueDamage = new Color(255, 255, 255, 255);
+
+        public Color Vampirism = new Color(255, 255, 255, 255);
         public Color JobLevelUp = Color.Cyan;
     }
 

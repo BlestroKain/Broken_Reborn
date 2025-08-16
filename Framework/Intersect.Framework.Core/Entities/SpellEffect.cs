@@ -29,4 +29,6 @@ public enum SpellEffect
     Taunt = 12,
 
     Knockback = 13,
+
+    Vampirism = 14,
 }

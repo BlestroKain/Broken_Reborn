@@ -18,6 +18,7 @@ public partial class ShopItem : SlotItem
     private readonly int _mySlot;
     private readonly ShopWindow _shopWindow;
     private readonly MenuItem _buyMenuItem;
+    private readonly MenuItem _showItemMenuItem;
 
     public ShopItem(ShopWindow shopWindow, Base parent, int index, ContextMenu contextMenu)
         : base(parent, nameof(ShopItem), index, contextMenu)
@@ -36,6 +37,8 @@ public partial class ShopItem : SlotItem
         contextMenu.ClearChildren();
         _buyMenuItem = contextMenu.AddItem(Strings.ShopContextMenu.Buy);
         _buyMenuItem.Clicked += _buyMenuItem_Clicked;
+        _showItemMenuItem = contextMenu.AddItem(Strings.ItemContextMenu.Show);
+        _showItemMenuItem.Clicked += _showItemMenuItem_Clicked;
         contextMenu.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
 
         LoadItem();
@@ -111,6 +114,26 @@ public partial class ShopItem : SlotItem
         Globals.Me?.TryBuyItem(_mySlot);
     }
 
+    private void _showItemMenuItem_Clicked(Base sender, Framework.Gwen.Control.EventArguments.MouseButtonState arguments)
+    {
+        if (Globals.GameShop is not { SellingItems.Count: > 0 } gameShop)
+        {
+            return;
+        }
+
+        if (!ItemDescriptor.TryGet(gameShop.SellingItems[_mySlot].ItemId, out var item))
+        {
+            return;
+        }
+
+        var itemProperties = new ItemProperties
+        {
+            StatModifiers = item.StatsGiven,
+        };
+
+        Interface.GameUi.AppendChatboxItem(item, itemProperties);
+    }
+
     protected override void OnContextMenuOpening(ContextMenu contextMenu)
     {
         if (Globals.GameShop is not { SellingItems.Count: > 0 } gameShop)
@@ -126,6 +149,8 @@ public partial class ShopItem : SlotItem
         contextMenu.ClearChildren();
         contextMenu.AddChild(_buyMenuItem);
         _buyMenuItem.SetText(Strings.ShopContextMenu.Buy.ToString(item.Name));
+        contextMenu.AddChild(_showItemMenuItem);
+        _showItemMenuItem.SetText(Strings.ItemContextMenu.Show.ToString(item.Name));
         base.OnContextMenuOpening(contextMenu);
     }
 

@@ -1,7 +1,8 @@
-﻿using Intersect.Enums;
+using System.Collections.Generic;
+using Intersect.Enums;
+using Intersect.Network.Packets;
 
 namespace Intersect.Client.Interface.Game.Chat;
-
 
 public partial class ChatboxMsg
 {
@@ -33,6 +34,8 @@ public partial class ChatboxMsg
 
     private ChatMessageType mType;
 
+    private List<ChatItem> _items = new List<ChatItem>();
+
     /// <summary>
     /// Creates a new instance of the <see cref="ChatboxMsg"/> class.
     /// </summary>
@@ -40,12 +43,16 @@ public partial class ChatboxMsg
     /// <param name="clr">The color of the message.</param>
     /// <param name="type">The type of the message.</param>
     /// <param name="target">The target of the message.</param>
-    public ChatboxMsg(string msg, Color clr, ChatMessageType type, string target = "")
+    public ChatboxMsg(string msg, Color clr, ChatMessageType type, string target = "", IList<ChatItem>? items = null)
     {
         mMsg = msg;
         mMsgColor = clr;
         mTarget = target;
         mType = type;
+        if (items != null)
+        {
+            _items.AddRange(items);
+        }
     }
 
     /// <summary>
@@ -65,6 +72,8 @@ public partial class ChatboxMsg
     /// The type of this message.
     /// </summary>
     public ChatMessageType Type => mType;
+
+    public IReadOnlyList<ChatItem> Items => _items;
 
     /// <summary>
     /// Adds a new chat message to the stored list.

@@ -159,6 +159,9 @@ namespace Intersect.Editor.Forms.Editors
             lblManaDamage = new Label();
             grpEvent = new DarkGroupBox();
             cmbEvent = new DarkComboBox();
+            grpSummon = new DarkGroupBox();
+            lblNpc = new Label();
+            cmbNpc = new DarkComboBox();
             grpDash = new DarkGroupBox();
             grpDashCollisions = new DarkGroupBox();
             chkIgnoreInactiveResources = new DarkCheckBox();
@@ -238,6 +241,7 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)nudMPDamage).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudHPDamage).BeginInit();
             grpEvent.SuspendLayout();
+            grpSummon.SuspendLayout();
             grpDash.SuspendLayout();
             grpDashCollisions.SuspendLayout();
             grpWarp.SuspendLayout();
@@ -256,6 +260,7 @@ namespace Intersect.Editor.Forms.Editors
             pnlContainer.Controls.Add(grpTargetInfo);
             pnlContainer.Controls.Add(grpCombat);
             pnlContainer.Controls.Add(grpEvent);
+            pnlContainer.Controls.Add(grpSummon);
             pnlContainer.Controls.Add(grpDash);
             pnlContainer.Controls.Add(grpWarp);
             pnlContainer.Location = new System.Drawing.Point(244, 39);
@@ -2013,9 +2018,58 @@ namespace Intersect.Editor.Forms.Editors
             cmbEvent.Text = null;
             cmbEvent.TextPadding = new Padding(2);
             cmbEvent.SelectedIndexChanged += cmbEvent_SelectedIndexChanged;
-            // 
+            //
+            // grpSummon
+            //
+            grpSummon.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
+            grpSummon.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+            grpSummon.Controls.Add(cmbNpc);
+            grpSummon.Controls.Add(lblNpc);
+            grpSummon.ForeColor = System.Drawing.Color.Gainsboro;
+            grpSummon.Location = new System.Drawing.Point(603, 6);
+            grpSummon.Margin = new Padding(4, 3, 4, 3);
+            grpSummon.Name = "grpSummon";
+            grpSummon.Padding = new Padding(4, 3, 4, 3);
+            grpSummon.Size = new Size(288, 55);
+            grpSummon.TabIndex = 41;
+            grpSummon.TabStop = false;
+            grpSummon.Text = "Summon NPC";
+            grpSummon.Visible = false;
+            //
+            // lblNpc
+            //
+            lblNpc.AutoSize = true;
+            lblNpc.Location = new System.Drawing.Point(7, 25);
+            lblNpc.Margin = new Padding(4, 0, 4, 0);
+            lblNpc.Name = "lblNpc";
+            lblNpc.Size = new Size(35, 15);
+            lblNpc.TabIndex = 0;
+            lblNpc.Text = "NPC:";
+            //
+            // cmbNpc
+            //
+            cmbNpc.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            cmbNpc.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+            cmbNpc.BorderStyle = ButtonBorderStyle.Solid;
+            cmbNpc.ButtonColor = System.Drawing.Color.FromArgb(43, 43, 43);
+            cmbNpc.DrawDropdownHoverOutline = false;
+            cmbNpc.DrawFocusRectangle = false;
+            cmbNpc.DrawMode = DrawMode.OwnerDrawFixed;
+            cmbNpc.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbNpc.FlatStyle = FlatStyle.Flat;
+            cmbNpc.ForeColor = System.Drawing.Color.Gainsboro;
+            cmbNpc.FormattingEnabled = true;
+            cmbNpc.Location = new System.Drawing.Point(49, 22);
+            cmbNpc.Margin = new Padding(4, 3, 4, 3);
+            cmbNpc.Name = "cmbNpc";
+            cmbNpc.Size = new Size(222, 24);
+            cmbNpc.TabIndex = 1;
+            cmbNpc.Text = null;
+            cmbNpc.TextPadding = new Padding(2);
+            cmbNpc.SelectedIndexChanged += cmbNpc_SelectedIndexChanged;
+            //
             // grpDash
-            // 
+            //
             grpDash.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
             grpDash.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
             grpDash.Controls.Add(grpDashCollisions);
@@ -2529,6 +2583,8 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)nudMPDamage).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudHPDamage).EndInit();
             grpEvent.ResumeLayout(false);
+            grpSummon.ResumeLayout(false);
+            grpSummon.PerformLayout();
             grpDash.ResumeLayout(false);
             grpDash.PerformLayout();
             grpDashCollisions.ResumeLayout(false);
@@ -2582,6 +2638,9 @@ namespace Intersect.Editor.Forms.Editors
         private DarkCheckBox chkIgnoreMapBlocks;
         private DarkCheckBox chkIgnoreActiveResources;
         private DarkGroupBox grpEvent;
+        private DarkGroupBox grpSummon;
+        private System.Windows.Forms.Label lblNpc;
+        private DarkComboBox cmbNpc;
         private System.Windows.Forms.Panel pnlContainer;
         private DarkButton btnSave;
         private DarkButton btnCancel;

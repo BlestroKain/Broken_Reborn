@@ -175,4 +175,6 @@ public partial class SpellDescriptor : DatabaseObject<SpellDescriptor>, IFoldera
             .Select(i => (SpellDescriptor)i.Value)
             .ToArray();
     }
+
+    public Guid SummonNpcId { get; set; } = Guid.Empty;
 }

@@ -13,6 +13,8 @@ public enum ChatboxTab
 
     Guild,
 
+    Trade,
+
     Global,
 
     System,

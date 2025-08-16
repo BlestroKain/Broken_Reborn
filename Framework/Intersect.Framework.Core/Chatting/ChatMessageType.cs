@@ -13,6 +13,8 @@ public enum ChatMessageType
 
     Global,
 
+    Trade,
+
     PM,
 
     Admin,

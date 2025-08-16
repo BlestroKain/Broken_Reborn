@@ -5352,6 +5352,10 @@ Tick timer saved in server config.json.";
 
         public static LocalizedString dashrange = @"Dash Range (tiles): {00}";
 
+        public static LocalizedString summonnpc = @"Summon NPC";
+
+        public static LocalizedString npc = @"NPC:";
+
         public static LocalizedString defense = @"Defense:";
 
         public static LocalizedString delete = @"Delete Spell";
@@ -5495,6 +5499,7 @@ Tick timer saved in server config.json.";
             {2, @"Warp to Target"},
             {3, @"Dash"},
             {4, @"Event"},
+            {5, @"Summon NPC"},
         };
 
         public static LocalizedString undo = @"Undo Changes";

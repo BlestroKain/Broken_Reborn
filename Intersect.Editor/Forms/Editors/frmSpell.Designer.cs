@@ -49,6 +49,8 @@ namespace Intersect.Editor.Forms.Editors
             lblCastAnimation = new Label();
             cmbSprite = new DarkComboBox();
             lblIcon = new Label();
+            cmbTrapAnimation = new DarkComboBox();
+            lblTrapAnimation = new Label();
             lblType = new Label();
             cmbType = new DarkComboBox();
             lblName = new Label();
@@ -282,6 +284,8 @@ namespace Intersect.Editor.Forms.Editors
             grpGeneral.Controls.Add(lblCastAnimation);
             grpGeneral.Controls.Add(cmbSprite);
             grpGeneral.Controls.Add(lblIcon);
+            grpGeneral.Controls.Add(cmbTrapAnimation);
+            grpGeneral.Controls.Add(lblTrapAnimation);
             grpGeneral.Controls.Add(lblType);
             grpGeneral.Controls.Add(cmbType);
             grpGeneral.Controls.Add(lblName);
@@ -291,7 +295,7 @@ namespace Intersect.Editor.Forms.Editors
             grpGeneral.Margin = new Padding(4, 3, 4, 3);
             grpGeneral.Name = "grpGeneral";
             grpGeneral.Padding = new Padding(4, 3, 4, 3);
-            grpGeneral.Size = new Size(315, 448);
+            grpGeneral.Size = new Size(315, 490);
             grpGeneral.TabIndex = 17;
             grpGeneral.TabStop = false;
             grpGeneral.Text = "General";
@@ -513,6 +517,36 @@ namespace Intersect.Editor.Forms.Editors
             lblIcon.Size = new Size(33, 15);
             lblIcon.TabIndex = 6;
             lblIcon.Text = "Icon:";
+            // 
+            // cmbTrapAnimation
+            // 
+            cmbTrapAnimation.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            cmbTrapAnimation.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+            cmbTrapAnimation.BorderStyle = ButtonBorderStyle.Solid;
+            cmbTrapAnimation.ButtonColor = System.Drawing.Color.FromArgb(43, 43, 43);
+            cmbTrapAnimation.DrawDropdownHoverOutline = false;
+            cmbTrapAnimation.DrawFocusRectangle = false;
+            cmbTrapAnimation.DrawMode = DrawMode.OwnerDrawFixed;
+            cmbTrapAnimation.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbTrapAnimation.FlatStyle = FlatStyle.Flat;
+            cmbTrapAnimation.ForeColor = System.Drawing.Color.Gainsboro;
+            cmbTrapAnimation.FormattingEnabled = true;
+            cmbTrapAnimation.Location = new System.Drawing.Point(113, 445);
+            cmbTrapAnimation.Name = "cmbTrapAnimation";
+            cmbTrapAnimation.Size = new Size(188, 24);
+            cmbTrapAnimation.TabIndex = 61;
+            cmbTrapAnimation.Text = null;
+            cmbTrapAnimation.TextPadding = new Padding(2);
+            cmbTrapAnimation.SelectedIndexChanged += cmbTrapAnimation_SelectedIndexChanged;
+            // 
+            // lblTrapAnimation
+            // 
+            lblTrapAnimation.AutoSize = true;
+            lblTrapAnimation.Location = new System.Drawing.Point(7, 448);
+            lblTrapAnimation.Name = "lblTrapAnimation";
+            lblTrapAnimation.Size = new Size(91, 15);
+            lblTrapAnimation.TabIndex = 62;
+            lblTrapAnimation.Text = "Trap Animation:";
             // 
             // lblType
             // 
@@ -763,7 +797,7 @@ namespace Intersect.Editor.Forms.Editors
             grpRequirements.Controls.Add(txtCannotCast);
             grpRequirements.Controls.Add(btnDynamicRequirements);
             grpRequirements.ForeColor = System.Drawing.Color.Gainsboro;
-            grpRequirements.Location = new System.Drawing.Point(9, 466);
+            grpRequirements.Location = new System.Drawing.Point(9, 502);
             grpRequirements.Margin = new Padding(4, 3, 4, 3);
             grpRequirements.Name = "grpRequirements";
             grpRequirements.Padding = new Padding(4, 3, 4, 3);
@@ -2673,5 +2707,7 @@ namespace Intersect.Editor.Forms.Editors
         private Label Curlabel;
         private Label dmgLabel;
         private Label label11;
+        private DarkComboBox cmbTrapAnimation;
+        private System.Windows.Forms.Label lblTrapAnimation;
     }
 }

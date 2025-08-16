@@ -108,7 +108,9 @@ public partial class FrmSpell : EditorForm
         cmbTickAnimation.Items.Clear();
         cmbTickAnimation.Items.Add(Strings.General.None);
         cmbTickAnimation.Items.AddRange(AnimationDescriptor.Names);
-
+        cmbTrapAnimation.Items.Clear();
+        cmbTrapAnimation.Items.Add(Strings.General.None);
+        cmbTrapAnimation.Items.AddRange(AnimationDescriptor.Names);
         cmbSprite.Items.Clear();
         cmbSprite.Items.Add(Strings.General.None);
         var spellNames = GameContentManager.GetSmartSortedTextureNames(GameContentManager.TextureType.Spell);
@@ -301,7 +303,7 @@ public partial class FrmSpell : EditorForm
             );
 
             chkBound.Checked = mEditorItem.Bound;
-
+            cmbTrapAnimation.SelectedIndex = AnimationDescriptor.ListIndex(mEditorItem.TrapAnimationId) + 1;
             cmbSprite.SelectedIndex = cmbSprite.FindString(TextUtils.NullToNone(mEditorItem.Icon));
             picSpell.BackgroundImage?.Dispose();
             picSpell.BackgroundImage = null;
@@ -444,7 +446,8 @@ public partial class FrmSpell : EditorForm
         cmbProjectile.Hide();
         lblDuration.Hide();
         nudDuration.Hide();
-
+        lblTrapAnimation.Hide();
+        cmbTrapAnimation.Hide();
         if (cmbTargetType.SelectedIndex == (int)SpellTargetType.Single)
         {
             lblCastRange.Show();
@@ -492,6 +495,9 @@ public partial class FrmSpell : EditorForm
             lblDuration.Show();
             nudDuration.Show();
             nudDuration.Value = mEditorItem.Combat.TrapDuration;
+            lblTrapAnimation.Show();
+            cmbTrapAnimation.Show();
+            cmbTrapAnimation.SelectedIndex = AnimationDescriptor.ListIndex(mEditorItem.TrapAnimationId) + 1;
         }
     }
 
@@ -501,6 +507,11 @@ public partial class FrmSpell : EditorForm
         lstGameObjects.UpdateText(txtName.Text);
     }
 
+    private void cmbTrapAnimation_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        Guid animationId = AnimationDescriptor.IdFromList(cmbTrapAnimation.SelectedIndex - 1);
+        mEditorItem.TrapAnimation = AnimationDescriptor.Get(animationId);
+    }
     private void cmbType_SelectedIndexChanged(object sender, EventArgs e)
     {
         if (cmbType.SelectedIndex != (int)mEditorItem.SpellType)

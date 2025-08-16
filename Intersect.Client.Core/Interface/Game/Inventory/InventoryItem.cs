@@ -481,6 +481,18 @@ public partial class InventoryItem : SlotItem
                         return false;
                     }
 
+                    // Validación de índice y existencia del slot
+                    if (SlotIndex < 0 || SlotIndex >= player.Inventory.Length ||
+                        inventoryItem.SlotIndex < 0 || inventoryItem.SlotIndex >= player.Inventory.Length)
+                    {
+                        return false;
+                    }
+
+                    if (player.Inventory[SlotIndex] == null || player.Inventory[inventoryItem.SlotIndex] == null)
+                    {
+                        return false;
+                    }
+
                     player.SwapItems(SlotIndex, inventoryItem.SlotIndex);
                     return true;
 
@@ -583,7 +595,7 @@ public partial class InventoryItem : SlotItem
     
         if (!_filterMatch)
         {
-            _reset();   // vacío visualmente, pero el slot sigue presente y acepta drops
+            _reset();
             return;
         }
         if (Globals.Me.Inventory[SlotIndex] is not { } inventorySlot ||

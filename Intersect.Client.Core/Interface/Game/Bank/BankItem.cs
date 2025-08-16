@@ -26,6 +26,7 @@ public partial class BankItem : SlotItem
 
     // Context Menu Handling
     private MenuItem _withdrawContextItem;
+    private MenuItem _showItemContextItem;
 
     public BankItem(BankWindow bankWindow, Base parent, int index, ContextMenu contextMenu) :
         base(parent, nameof(BankItem), index, contextMenu)
@@ -52,6 +53,8 @@ public partial class BankItem : SlotItem
         contextMenu.ClearChildren();
         _withdrawContextItem = contextMenu.AddItem(Strings.BankContextMenu.Withdraw);
         _withdrawContextItem.Clicked += _withdrawMenuItem_Clicked;
+        _showItemContextItem = contextMenu.AddItem(Strings.ItemContextMenu.Show);
+        _showItemContextItem.Clicked += _showItemContextItem_Clicked;
         contextMenu.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
     }
 
@@ -73,6 +76,8 @@ public partial class BankItem : SlotItem
         contextMenu.ClearChildren();
         contextMenu.AddChild(_withdrawContextItem);
         _withdrawContextItem.SetText(Strings.BankContextMenu.Withdraw.ToString(item.Name));
+        contextMenu.AddChild(_showItemContextItem);
+        _showItemContextItem.SetText(Strings.ItemContextMenu.Show.ToString(item.Name));
 
         base.OnContextMenuOpening(contextMenu);
     }
@@ -80,6 +85,22 @@ public partial class BankItem : SlotItem
     private void _withdrawMenuItem_Clicked(Base sender, MouseButtonState arguments)
     {
         Globals.Me?.TryRetrieveItemFromBank(SlotIndex);
+    }
+
+    private void _showItemContextItem_Clicked(Base sender, MouseButtonState arguments)
+    {
+        if (Globals.BankSlots is not { Length: > 0 } bankSlots)
+        {
+            return;
+        }
+
+        var slot = bankSlots[SlotIndex];
+        if (!ItemDescriptor.TryGet(slot.ItemId, out var item))
+        {
+            return;
+        }
+
+        Interface.GameUi.AppendChatboxItem(item, slot.ItemProperties ?? new ItemProperties());
     }
 
     #endregion

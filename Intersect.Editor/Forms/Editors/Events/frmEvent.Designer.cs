@@ -903,17 +903,17 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode24.Text = "Change Gender";
             treeNode25.Name = "setaccess";
             treeNode25.Text = "Set Access";
-            treeNode26.Name = "changeclass";
+            treeNode26.Name = "setclass";
             treeNode26.Text = "Change Class";
             treeNode27.Name = "equipitem";
             treeNode27.Text = "Equip/Unequip Item";
             treeNode28.Name = "changenamecolor";
             treeNode28.Text = "Change Name Color";
-            treeNode29.Name = "changeplayerlabel";
+            treeNode29.Name = "playerlabel";
             treeNode29.Text = "Change Player Label";
             treeNode30.Name = "changename";
             treeNode30.Text = "Change Player Name";
-            treeNode31.Name = "resetstatallocations";
+            treeNode31.Name = "resetstatpointallocations";
             treeNode31.Text = "Reset Stat Point Allocations";
             treeNode32.Name = "castspellon";
             treeNode32.Text = "Cast Spell On";
@@ -923,7 +923,7 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode34.Text = "Warp Player";
             treeNode35.Name = "setmoveroute";
             treeNode35.Text = "Set Move Route";
-            treeNode36.Name = "waitmoveroute";
+            treeNode36.Name = "waitforroutecompletion";
             treeNode36.Text = "Wait for Route Completion";
             treeNode37.Name = "holdplayer";
             treeNode37.Text = "Hold Player";
@@ -931,7 +931,7 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode38.Text = "Release Player";
             treeNode39.Name = "spawnnpc";
             treeNode39.Text = "Spawn NPC";
-            treeNode40.Name = "despawnnpcs";
+            treeNode40.Name = "despawnnpc";
             treeNode40.Text = "Despawn NPC";
             treeNode41.Name = "hideplayer";
             treeNode41.Text = "Hide Player";
@@ -973,7 +973,7 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode59.Text = "Open Bank";
             treeNode60.Name = "openshop";
             treeNode60.Text = "Open Shop";
-            treeNode61.Name = "opencraftingstation";
+            treeNode61.Name = "opencraftingtable";
             treeNode61.Text = "Open Crafting Station";
             treeNode62.Name = "shopandbank";
             treeNode62.Text = "Shop and Bank";

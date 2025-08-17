@@ -1,4 +1,5 @@
 using Intersect.Client.Framework.Gwen.Control;
+using Intersect.Client.Localization;
 
 namespace Intersect.Client.Interface.Game.Bestiary;
 
@@ -11,20 +12,20 @@ public partial class BestiaryStatsComponent : ImagePanel
     {
         _label = new Label(this)
         {
-            Text = "Locked"
+            Text = Strings.Bestiary.Locked
         };
     }
 
     public void Unlock()
     {
         _unlocked = true;
-        _label.Text = "Unlocked";
+        _label.Text = Strings.Bestiary.Unlocked;
     }
 
     public void Lock()
     {
         _unlocked = false;
-        _label.Text = "Locked";
+        _label.Text = Strings.Bestiary.Locked;
     }
 
     public void CorrectWidth()

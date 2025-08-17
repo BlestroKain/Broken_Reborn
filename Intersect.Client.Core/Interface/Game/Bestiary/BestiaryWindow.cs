@@ -3,6 +3,7 @@ using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Interface.Game.DescriptionWindows;
+using Intersect.Client.Localization;
 
 namespace Intersect.Client.Interface.Game.Bestiary;
 
@@ -13,7 +14,7 @@ public partial class BestiaryWindow : Window
     private BestiaryLootComponent? _loot;
     private BestiarySpellCombatComponent? _spellCombat;
 
-    public BestiaryWindow(Canvas gameCanvas) : base(gameCanvas, "Bestiary", false, nameof(BestiaryWindow))
+    public BestiaryWindow(Canvas gameCanvas) : base(gameCanvas, Strings.Bestiary.Title, false, nameof(BestiaryWindow))
     {
         Alignment = [Alignments.Center];
         MinimumSize = new Point(x: 400, y: 300);

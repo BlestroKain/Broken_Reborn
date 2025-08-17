@@ -217,6 +217,12 @@ packages/
 
 /assets/**
 !/assets/*.*
+!/assets/graphics/**
+!/assets/graphics/
+!/assets/graphics/gui/
+!/assets/graphics/gui/bestiary/
+!/assets/graphics/gui/bestiary/*
+!/assets/graphics/gui/bestiary/*.png
 
 .local/
 

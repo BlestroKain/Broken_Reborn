@@ -2,7 +2,27 @@
   "profiles": {
     "Intersect.Server.Core": {
       "commandName": "Project",
-      "workingDirectory": "C:\\Users\\jlroo\\Desktop\\Broken Bridge Online 2025 8.0\\Client and Editor"
+      "workingDirectory": "C:\\Users\\jlroo\\Desktop\\Broken Bridge Online 2025 8.0\\Client and Editor",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development",
+        "LD_LIBRARY_PATH": "."
+      }
+    },
+    "Staging": {
+      "commandName": "Project",
+      "workingDirectory": "$(ProjectDir)../assets/staging/server",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Staging",
+        "LD_LIBRARY_PATH": "."
+      }
+    },
+    "Production": {
+      "commandName": "Project",
+      "workingDirectory": "$(ProjectDir)../assets/production/server",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Production",
+        "LD_LIBRARY_PATH": "."
+      }
     }
   }
 }

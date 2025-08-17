@@ -1990,7 +1990,7 @@ Tick timer saved in server config.json.";
 
         public static LocalizedString deletedevent = @"Deleted Event!";
 
-        public static LocalizedString despawnnpcs = @"Despawn NPCs";
+        public static LocalizedString despawnnpc = @"Despawn NPC";
 
         public static LocalizedString dividevariable = @"Divide {00}";
 
@@ -2140,7 +2140,7 @@ Tick timer saved in server config.json.";
 
         public static LocalizedString openbank = @"Open Bank";
 
-        public static LocalizedString opencrafting = @"Open Crafting Table [{00}]";
+        public static LocalizedString opencraftingtable = @"Open Crafting Table [{00}]";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString OpenCraftingJournal = @"Open Crafting Journal [{00}]";
@@ -2204,7 +2204,7 @@ Tick timer saved in server config.json.";
 
         public static LocalizedString removenamecolor = @"Remove Player Name Color";
 
-        public static LocalizedString changeplayerlabel = @"Change Player Label to {00}";
+        public static LocalizedString playerlabel = @"Change Player Label to {00}";
 
         public static LocalizedString setgender = @"Set Player Gender to {00}";
 
@@ -2378,7 +2378,7 @@ Tick timer saved in server config.json.";
         public static Dictionary<string, LocalizedString> commands = new Dictionary<string, LocalizedString>()
         {
             {"addchatboxtext", @"Add Chatbox Text"},
-            {"changeclass", @"Change Class"},
+            {"setclass", @"Change Class"},
             {"changeface", @"Change Face"},
             {"changegender", @"Change Gender"},
             {"changeitems", @"Change Items"},
@@ -2387,7 +2387,7 @@ Tick timer saved in server config.json.";
             {"changesprite", @"Change Sprite"},
             {"completequesttask", @"Complete Quest Task"},
             {"conditionalbranch", @"Conditional Branch"},
-            {"despawnnpcs", @"Despawn NPC"},
+            {"despawnnpc", @"Despawn NPC"},
             {"dialogue", @"Dialogue"},
             {"endquest", @"End Quest"},
             {"etc", @"Etc"},
@@ -2402,7 +2402,7 @@ Tick timer saved in server config.json.";
             {"logicflow", @"Logic Flow"},
             {"movement", @"Movement"},
             {"openbank", @"Open Bank"},
-            {"opencraftingstation", @"Open Crafting Station"},
+            {"opencraftingtable", @"Open Crafting Station"},
             {"openshop", @"Open Shop"},
             {"playanimation", @"Play Animation"},
             {"playbgm", @"Play BGM"},
@@ -2415,7 +2415,6 @@ Tick timer saved in server config.json.";
             {"setaccess", @"Set Access"},
             {"setmoveroute", @"Set Move Route"},
             {"setselfswitch", @"Set Self Switch"},
-            {"setswitch", @"Set Switch"},
             {"setvariable", @"Set Variable"},
             {"shopandbank", @"Shop and Bank"},
             {"showoptions", @"Show Options"},
@@ -2427,14 +2426,14 @@ Tick timer saved in server config.json.";
             {"startquest", @"Start Quest"},
             {"stopsounds", @"Stop Sounds"},
             {"wait", @"Wait..."},
-            {"waitmoveroute", @"Wait for Route Completion"},
+            {"waitforroutecompletion", @"Wait for Route Completion"},
             {"warpplayer", @"Warp Player"},
             {"hideplayer", @"Hide Player"},
             {"showplayer", @"Show Player"},
             {"equipitem", @"Equip/Unequip Item"},
             {"changenamecolor", @"Change Name Color"},
             {"inputvariable", @"Input Variable"},
-            {"changeplayerlabel", @"Change Player Label"},
+            {"playerlabel", @"Change Player Label"},
             {"changeplayercolor", @"Change Player Color" },
             {"changename", @"Change Player Name" },
             {"guilds", @"Guilds"},
@@ -2442,19 +2441,18 @@ Tick timer saved in server config.json.";
             {"disbandguild", "Disband Guild" },
             {"openguildbank", @"Open Guild Bank"},
             {"setguildbankslots", @"Set Guild Bank Slots Count"},
-            {"resetstatallocations", @"Reset Stat Point Allocations"},
+            {"resetstatpointallocations", @"Reset Stat Point Allocations"},
             {"castspellon", @"Cast Spell On"},
             {"fade", @"Screen Fade"},
             {"jobs",@"Jobs" },
             {"givejobexperience", @"Give Job Experience"},
             {"openenchantment", @"Open Enchant Window"},
-{"openmage", @"Open Mage Window"},
-{"openbrokeitem", @"Open Broke Items Window"},
-{"Enchantment", @"Enchantment"},
- {"mailbox", @"Mail Box" },
-                {"sendmail", @"Send Mail"},
-                {"openmailbox", @"Open Mail Box"},
-
+            {"openmage", @"Open Mage Window"},
+            {"openbrokeitem", @"Open Broke Items Window"},
+            {"Enchantment", @"Enchantment"},
+            {"mailbox", @"Mail Box"},
+            {"sendmail", @"Send Mail"},
+            {"openmailbox", @"Open Mail Box"},
         };
 
     }

@@ -3,29 +3,27 @@
     "Development": {
       "commandName": "Project",
       "commandLineArgs": "--migrate-automatically",
+      "workingDirectory": "C:\\Users\\jlroo\\Desktop\\Broken Bridge Online 2025 8.0\\Server",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development",
         "LD_LIBRARY_PATH": "."
-      },
-      "workingDirectory": "$(ProjectDir)../assets/development/server"
+      }
     },
     "Staging": {
       "commandName": "Project",
-      "commandLineArgs": "",
+      "workingDirectory": "$(ProjectDir)../assets/staging/server",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Staging",
         "LD_LIBRARY_PATH": "."
-      },
-      "workingDirectory": "$(ProjectDir)../assets/staging/server"
+      }
     },
     "Production": {
       "commandName": "Project",
-      "commandLineArgs": "",
+      "workingDirectory": "$(ProjectDir)../assets/production/server",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Production",
         "LD_LIBRARY_PATH": "."
-      },
-      "workingDirectory": "$(ProjectDir)../assets/production/server"
+      }
     }
   }
 }

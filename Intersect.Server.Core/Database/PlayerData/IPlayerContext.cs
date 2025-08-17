@@ -31,6 +31,8 @@ public interface IPlayerContext : IDbContext
 
     DbSet<PlayerVariable> Player_Variables { get; set; }
 
+    DbSet<BestiaryUnlockInstance> Player_BestiaryUnlocks { get; set; }
+
     DbSet<Bag> Bags { get; set; }
 
     DbSet<BagSlot> Bag_Items { get; set; }

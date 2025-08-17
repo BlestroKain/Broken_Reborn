@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Text;
 using Intersect.Enums;
 using Intersect.Framework.Core;
@@ -8,6 +10,7 @@ using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.GameObjects.Variables;
+using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.GameObjects;
 using Intersect.Server.Core.MapInstancing;
 using Intersect.Server.Database;
@@ -602,9 +605,54 @@ public static partial class CommandProcessing
         callStack.Push(tmpStack);
     }
 
+    //Change Bestiary Command
+    private static void ProcessCommand(
+        ChangeBestiaryCommand command,
+        Player player,
+        Event instance,
+        CommandInstance stackInfo,
+        Stack<CommandInstance> callStack
+    )
+    {
+        var unlock = player.BestiaryUnlocks.FirstOrDefault(
+            b => b.NpcId == command.NpcId && b.UnlockType == command.UnlockType
+        );
+
+        if (unlock == null)
+        {
+            if (!command.Add)
+            {
+                return;
+            }
+
+            unlock = new BestiaryUnlockInstance
+            {
+                NpcId = command.NpcId,
+                UnlockType = command.UnlockType,
+                Value = 0,
+            };
+            player.BestiaryUnlocks.Add(unlock);
+        }
+
+        var previous = unlock.Value;
+        if (command.Add)
+        {
+            unlock.Value += command.Amount;
+        }
+        else
+        {
+            unlock.Value = Math.Max(0, unlock.Value - command.Amount);
+        }
+
+        if (previous != unlock.Value)
+        {
+            PacketSender.SendUnlockedBestiaryEntries(player);
+        }
+    }
+
     //Equip Items Command
     private static void ProcessCommand(
-     EquipItemCommand command,
+        EquipItemCommand command,
      Player player,
      Event instance,
      CommandInstance stackInfo,

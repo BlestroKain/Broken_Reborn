@@ -320,6 +320,10 @@ public static partial class Input
                             _ = (Interface.Interface.GameUi.GameMenu?.ToggleFriendsWindow());
                             break;
 
+                        case Control.OpenBestiary:
+                            Interface.Interface.GameUi.ToggleBestiaryWindow();
+                            break;
+
                         case Control.OpenSettings:
                             Interface.Interface.GameUi.EscapeMenu?.OpenSettingsWindow();
                             break;

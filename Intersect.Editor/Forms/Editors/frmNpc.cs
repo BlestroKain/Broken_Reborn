@@ -1,5 +1,8 @@
 using System.ComponentModel;
+using System.Drawing;
 using System.Drawing.Imaging;
+using System.Windows.Forms;
+using DarkUI.Controls;
 using DarkUI.Forms;
 using Intersect.Editor.Content;
 using Intersect.Editor.Core;
@@ -31,6 +34,9 @@ public partial class FrmNpc : EditorForm
 
     private BindingList<NotifiableDrop> _dropList = [];
 
+    private BindingList<NotifiableBestiaryUnlock> _bestiaryUnlocks = [];
+
+
     public FrmNpc()
     {
         ApplyHooks();
@@ -39,8 +45,11 @@ public partial class FrmNpc : EditorForm
         _btnSave = btnSave;
         _btnCancel = btnCancel;
 
+    
+
         lstGameObjects.Init(UpdateToolStripItems, AssignEditorItem, toolStripItemNew_Click, toolStripItemCopy_Click, toolStripItemUndo_Click, toolStripItemPaste_Click, toolStripItemDelete_Click);
     }
+
     private void AssignEditorItem(Guid id)
     {
         mEditorItem = NPCDescriptor.Get(id);
@@ -122,6 +131,15 @@ public partial class FrmNpc : EditorForm
 
         lstDrops.DataSource = _dropList;
         lstDrops.DisplayMember = nameof(NotifiableDrop.DisplayName);
+
+        lstBestiary.DataSource = _bestiaryUnlocks;
+        lstBestiary.DisplayMember = nameof(NotifiableBestiaryUnlock.DisplayName);
+            cmbBestiary.Items.Clear();
+        cmbBestiary.Items.AddRange(Enum.GetNames<BestiaryUnlock>());
+        if (cmbBestiary.Items.Count > 0)
+        {
+            cmbBestiary.SelectedIndex = 0;
+        }
 
         nudStr.Maximum = Options.Instance.Player.MaxStat;
         nudMag.Maximum = Options.Instance.Player.MaxStat;
@@ -371,6 +389,8 @@ public partial class FrmNpc : EditorForm
             UpdateDropValues();
             chkIndividualLoot.Checked = mEditorItem.IndividualizedLoot;
 
+            UpdateBestiaryUnlockValues();
+
             DrawNpcSprite();
             if (mChanged.IndexOf(mEditorItem) == -1)
             {
@@ -441,6 +461,29 @@ public partial class FrmNpc : EditorForm
         gfx.Dispose();
 
         picNpc.BackgroundImage = picSpriteBmp;
+    }
+
+    private void UpdateBestiaryUnlockValues()
+    {
+        _bestiaryUnlocks.Clear();
+        foreach (var kvp in mEditorItem.BestiaryUnlocks)
+        {
+            _bestiaryUnlocks.Add(new NotifiableBestiaryUnlock
+            {
+                UnlockType = kvp.Key,
+                Amount = kvp.Value
+            });
+        }
+
+        if (_bestiaryUnlocks.Count > 0)
+        {
+            lstBestiary.SelectedIndex = 0;
+        }
+        else
+        {
+            cmbBestiary.SelectedIndex = 0;
+            nudBestiaryAmount.Value = 0;
+        }
     }
 
     private void UpdateDropValues()
@@ -811,6 +854,71 @@ public partial class FrmNpc : EditorForm
         var index = lstDrops.SelectedIndex;
         mEditorItem.Drops.RemoveAt(index);
         _dropList.RemoveAt(index);
+    }
+
+    private void lstBestiary_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (lstBestiary.SelectedIndex < 0)
+        {
+            return;
+        }
+
+        var entry = _bestiaryUnlocks[lstBestiary.SelectedIndex];
+        cmbBestiary.SelectedIndex = (int)entry.UnlockType;
+        nudBestiaryAmount.Value = entry.Amount;
+    }
+
+    private void cmbBestiary_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (lstBestiary.SelectedIndex < 0)
+        {
+            return;
+        }
+
+        var entry = _bestiaryUnlocks[lstBestiary.SelectedIndex];
+        var newType = (BestiaryUnlock)cmbBestiary.SelectedIndex;
+        if (entry.UnlockType == newType)
+        {
+            return;
+        }
+
+        mEditorItem.BestiaryUnlocks.Remove(entry.UnlockType);
+        entry.UnlockType = newType;
+        mEditorItem.BestiaryUnlocks[newType] = entry.Amount;
+        lstBestiary.Refresh();
+    }
+
+    private void nudBestiaryAmount_ValueChanged(object sender, EventArgs e)
+    {
+        if (lstBestiary.SelectedIndex < 0)
+        {
+            return;
+        }
+
+        var entry = _bestiaryUnlocks[lstBestiary.SelectedIndex];
+        entry.Amount = (int)nudBestiaryAmount.Value;
+        mEditorItem.BestiaryUnlocks[entry.UnlockType] = entry.Amount;
+    }
+
+    private void btnBestiaryAdd_Click(object sender, EventArgs e)
+    {
+        var unlockType = (BestiaryUnlock)cmbBestiary.SelectedIndex;
+        var amount = (int)nudBestiaryAmount.Value;
+        mEditorItem.BestiaryUnlocks[unlockType] = amount;
+        _bestiaryUnlocks.Add(new NotifiableBestiaryUnlock { UnlockType = unlockType, Amount = amount });
+        lstBestiary.SelectedIndex = _bestiaryUnlocks.Count - 1;
+    }
+
+    private void btnBestiaryRemove_Click(object sender, EventArgs e)
+    {
+        if (lstBestiary.SelectedIndex < 0)
+        {
+            return;
+        }
+
+        var entry = _bestiaryUnlocks[lstBestiary.SelectedIndex];
+        mEditorItem.BestiaryUnlocks.Remove(entry.UnlockType);
+        _bestiaryUnlocks.RemoveAt(lstBestiary.SelectedIndex);
     }
 
     private void chkIndividualLoot_CheckedChanged(object sender, EventArgs e)

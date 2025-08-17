@@ -4,6 +4,7 @@ using Intersect.Client.Entities.Events;
 using Intersect.Client.Entities.Projectiles;
 using Intersect.Client.Framework.Entities;
 using Intersect.Client.Framework.Items;
+using Intersect.Client.Controllers;
 using Intersect.Client.General;
 using Intersect.Client.Interface.Game.Chat;
 using Intersect.Client.Interface.Menu;
@@ -2296,6 +2297,12 @@ internal sealed partial class PacketHandler
         {
             Globals.Me.TryTarget(Globals.Entities[packet.TargetId], true);
         }
+    }
+
+    //UnlockedBestiaryEntriesPacket
+    public void HandlePacket(IPacketSender packetSender, UnlockedBestiaryEntriesPacket packet)
+    {
+        BestiaryController.SetUnlocked(packet.Unlocks);
     }
 
     //EnteringGamePacket

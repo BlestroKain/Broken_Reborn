@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using Intersect.Core;
 using Intersect.Enums;
 using Intersect.Framework.Core;
@@ -432,6 +433,7 @@ public static partial class PacketSender
             SendQuestsProgress(player);
             SendItemCooldowns(player);
             SendSpellCooldowns(player);
+            SendUnlockedBestiaryEntries(player);
             SendJobSync(player);
         }
 
@@ -2198,6 +2200,19 @@ public static partial class PacketSender
         }
 
         player.SendPacket(new QuestProgressPacket(dict, hiddenQuests.ToArray()));
+    }
+
+    //UnlockedBestiaryEntriesPacket
+    public static void SendUnlockedBestiaryEntries(Player player)
+    {
+        var unlocks = player.BestiaryUnlocks
+            .GroupBy(b => b.NpcId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.ToDictionary(b => b.UnlockType, b => b.Value)
+            );
+
+        player.SendPacket(new UnlockedBestiaryEntriesPacket(unlocks));
     }
 
     //TradePacket

@@ -35,6 +35,8 @@ public partial class EventCommandConditionalBranch : UserControl
     private readonly ConditionControl_SelfSwitch _selfSwitchControl;
     private readonly ConditionControl_TimeBetween _timeBetweenControl;
     private readonly ConditionControl_Variable _variableControl;
+    private readonly ConditionControl_BeastHasUnlock _beastHasUnlockControl;
+    private readonly ConditionControl_BeastsCompleted _beastsCompletedControl;
 
     public EventCommandConditionalBranch(
         Condition refCommand,
@@ -70,6 +72,8 @@ public partial class EventCommandConditionalBranch : UserControl
         _selfSwitchControl = new();
         _timeBetweenControl = new();
         _variableControl = new(this);
+        _beastHasUnlockControl = new();
+        _beastsCompletedControl = new();
 
         pnlConditionControl.Controls.Add(_equippedItemControl);
         pnlConditionControl.Controls.Add(_equippedSlotControl);
@@ -89,6 +93,8 @@ public partial class EventCommandConditionalBranch : UserControl
         pnlConditionControl.Controls.Add(_selfSwitchControl);
         pnlConditionControl.Controls.Add(_timeBetweenControl);
         pnlConditionControl.Controls.Add(_variableControl);
+        pnlConditionControl.Controls.Add(_beastHasUnlockControl);
+        pnlConditionControl.Controls.Add(_beastsCompletedControl);
 
         InitLocalization();
         UpdateFormElements(refCommand.Type);
@@ -149,6 +155,8 @@ public partial class EventCommandConditionalBranch : UserControl
         _selfSwitchControl.Hide();
         _timeBetweenControl.Hide();
         _variableControl.Hide();
+        _beastHasUnlockControl.Hide();
+        _beastsCompletedControl.Hide();
 
         switch (type)
         {
@@ -229,6 +237,14 @@ public partial class EventCommandConditionalBranch : UserControl
                 break;
 
             case ConditionType.IsInCombat:
+                break;
+
+            case ConditionType.BeastHasUnlock:
+                _beastHasUnlockControl.Show();
+                break;
+
+            case ConditionType.BeastsCompleted:
+                _beastsCompletedControl.Show();
                 break;
 
             default:
@@ -319,6 +335,14 @@ public partial class EventCommandConditionalBranch : UserControl
             case CombatCondition _:
                 break;
 
+            case BeastHasUnlockCondition beastUnlockCondition:
+                _beastHasUnlockControl.SetupFormValues(beastUnlockCondition);
+                break;
+
+            case BeastsCompletedCondition beastsCompletedCondition:
+                _beastsCompletedControl.SetupFormValues(beastsCompletedCondition);
+                break;
+
             default:
                 throw new ArgumentOutOfRangeException();
         }
@@ -405,6 +429,14 @@ public partial class EventCommandConditionalBranch : UserControl
                 break;
 
             case CombatCondition _:
+                break;
+
+            case BeastHasUnlockCondition beastUnlockCondition:
+                _beastHasUnlockControl.SaveFormValues(beastUnlockCondition);
+                break;
+
+            case BeastsCompletedCondition beastsCompletedCondition:
+                _beastsCompletedControl.SaveFormValues(beastsCompletedCondition);
                 break;
 
             default:
@@ -538,6 +570,14 @@ public partial class EventCommandConditionalBranch : UserControl
 
                 case ConditionType.IsInCombat:
                     Condition = new CombatCondition();
+                    break;
+
+                case ConditionType.BeastHasUnlock:
+                    Condition = new BeastHasUnlockCondition();
+                    break;
+
+                case ConditionType.BeastsCompleted:
+                    Condition = new BeastsCompletedCondition();
                     break;
 
                 default:

@@ -372,6 +372,23 @@ public static partial class Strings
         return EventConditionDesc.Combat.ToString();
     }
 
+    public static string GetEventConditionalDesc(BeastHasUnlockCondition condition)
+    {
+        return EventConditionDesc.BeastHasUnlock.ToString(
+            NPCDescriptor.GetName(condition.NpcId),
+            condition.Unlock,
+            condition.Value
+        );
+    }
+
+    public static string GetEventConditionalDesc(BeastsCompletedCondition condition)
+    {
+        return EventConditionDesc.BeastsCompleted.ToString(
+            condition.Unlock,
+            condition.Count
+        );
+    }
+
     public static string GetVariableComparisonString(VariableComparison comparison)
     {
         return "";
@@ -1780,6 +1797,29 @@ Tick timer saved in server config.json.";
 
     }
 
+    public partial struct EventChangeBestiary
+    {
+
+        public static LocalizedString title = @"Change Bestiary";
+
+        public static LocalizedString beast = @"Beast:";
+
+        public static LocalizedString unlock = @"Unlock:";
+
+        public static LocalizedString operation = @"Operation:";
+
+        public static LocalizedString amount = @"Amount:";
+
+        public static LocalizedString add = @"Add";
+
+        public static LocalizedString remove = @"Remove";
+
+        public static LocalizedString okay = @"Ok";
+
+        public static LocalizedString cancel = @"Cancel";
+
+    }
+
     public partial struct EventChangeNameColor
     {
 
@@ -1958,6 +1998,7 @@ Tick timer saved in server config.json.";
         public static LocalizedString changename = @"Change Name to Variable: {00}";
 
         public static LocalizedString changeitems = @"Change Player Items [{00}]";
+        public static LocalizedString changebestiary = @"Change Bestiary [{00}]";
 
         public static LocalizedString equipitem = @"Equip Player Item [{00}]";
 
@@ -2382,6 +2423,7 @@ Tick timer saved in server config.json.";
             {"changeface", @"Change Face"},
             {"changegender", @"Change Gender"},
             {"changeitems", @"Change Items"},
+            {"changebestiary", @"Change Bestiary"},
             {"changelevel", @"Change Level"},
             {"changespells", @"Change Spells"},
             {"changesprite", @"Change Sprite"},
@@ -2542,6 +2584,8 @@ Tick timer saved in server config.json.";
             {ConditionType.MapZoneTypeIs, @"Map Zone Type is..." },
             {ConditionType.CheckEquipment, @"Check Equipped Slot..." },
             {ConditionType.IsInCombat, @"Is in Combat" },
+            {ConditionType.BeastHasUnlock, @"Beast has unlock..." },
+            {ConditionType.BeastsCompleted, @"Beasts completed..." },
         };
 
         public static LocalizedString endrange = @"End Range:";
@@ -2723,6 +2767,10 @@ Tick timer saved in server config.json.";
         public static LocalizedString Class = @"Player's class is {00}";
 
         public static LocalizedString Combat = @"Is in Combat";
+
+        public static LocalizedString BeastHasUnlock = @"Bestiary unlock {1} for {0} >= {2}";
+
+        public static LocalizedString BeastsCompleted = @"Bestiary beasts with unlock {0} completed >= {1}";
 
         public static LocalizedString contains = @"contains {00}";
 

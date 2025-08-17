@@ -49,6 +49,11 @@ public partial class NPCDescriptor : DatabaseObject<NPCDescriptor>, IFolderable
         set => BestiaryRequirements = JsonConvert.DeserializeObject<Dictionary<BestiaryUnlock, int>>(value ?? "{}") ?? new();
     }
 
+    public void SyncBestiaryJson()
+    {
+        BestiaryUnlocksJson = JsonConvert.SerializeObject(BestiaryRequirements ?? new());
+    }
+
     [NotMapped, JsonIgnore]
     public long[] MaxVitals
     {

@@ -16,7 +16,6 @@ using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.GameObjects;
 using Intersect.Utilities;
-using Newtonsoft.Json;
 using EventDescriptor = Intersect.Framework.Core.GameObjects.Events.EventDescriptor;
 using Graphics = System.Drawing.Graphics;
 
@@ -91,8 +90,8 @@ public partial class FrmNpc : EditorForm
             // Sort immunities to keep change checker consistent
             item.Immunities.Sort();
 
-            // ✅ Serialize BestiaryRequirements to BestiaryUnlocksJson before saving
-            item.BestiaryUnlocksJson = JsonConvert.SerializeObject(item.BestiaryRequirements);
+            // Ensure BestiaryUnlocksJson is in sync before saving
+            item.SyncBestiaryJson();
 
             PacketSender.SendSaveObject(item);
             item.DeleteBackup();

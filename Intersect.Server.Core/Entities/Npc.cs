@@ -19,6 +19,7 @@ using Intersect.Server.Maps;
 using Intersect.Server.Networking;
 using Intersect.Utilities;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 using Stat = Intersect.Enums.Stat;
 
 namespace Intersect.Server.Entities;
@@ -170,6 +171,38 @@ public partial class Npc : Entity
         lock (EntityLock)
         {
             base.Die(generateLoot, killer);
+
+            if (killer is Player player)
+            {
+                var changed = false;
+
+                if (Descriptor.BestiaryUnlocks.TryGetValue(BestiaryUnlock.Kill, out _))
+                {
+                    var unlock = player.BestiaryUnlocks.FirstOrDefault(
+                        b => b.NpcId == Descriptor.Id && b.UnlockType == BestiaryUnlock.Kill
+                    );
+
+                    if (unlock == null)
+                    {
+                        unlock = new BestiaryUnlockInstance
+                        {
+                            NpcId = Descriptor.Id,
+                            UnlockType = BestiaryUnlock.Kill,
+                            Value = 0,
+                        };
+                        player.BestiaryUnlocks.Add(unlock);
+                    }
+
+                    var previous = unlock.Value;
+                    unlock.Value++;
+                    changed = previous != unlock.Value;
+                }
+
+                if (changed)
+                {
+                    PacketSender.SendUnlockedBestiaryEntries(player);
+                }
+            }
 
             AggroCenterMap = null;
             AggroCenterX = 0;

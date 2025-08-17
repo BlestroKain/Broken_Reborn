@@ -175,7 +175,8 @@ public partial class GameInterface : MutableInterface
     }
     public void OpenEnchantWindow()
     {
-        if (mEnchantItemWindow != null)
+
+        if (mEnchantItemWindow == null)
         {
             mEnchantItemWindow = new EnchantItemWindow(GameCanvas);
 

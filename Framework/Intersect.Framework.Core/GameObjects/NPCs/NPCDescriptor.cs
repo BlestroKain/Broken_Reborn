@@ -11,6 +11,11 @@ using Newtonsoft.Json;
 
 namespace Intersect.Framework.Core.GameObjects.NPCs;
 
+public enum BestiaryUnlock
+{
+    Kill,
+}
+
 public partial class NPCDescriptor : DatabaseObject<NPCDescriptor>, IFolderable
 {
     private long[] _maxVitals = new long[Enum.GetValues<Vital>().Length];
@@ -22,6 +27,16 @@ public partial class NPCDescriptor : DatabaseObject<NPCDescriptor>, IFolderable
 
     [NotMapped]
     public List<Drop> Drops { get; set; }= [];
+
+    [NotMapped]
+    public Dictionary<BestiaryUnlock, int> BestiaryUnlocks { get; set; } = new();
+
+    [Column("BestiaryUnlocks"), JsonIgnore]
+    public string BestiaryUnlocksJson
+    {
+        get => JsonConvert.SerializeObject(BestiaryUnlocks);
+        set => BestiaryUnlocks = JsonConvert.DeserializeObject<Dictionary<BestiaryUnlock, int>>(value ?? "") ?? new();
+    }
 
     [NotMapped, JsonIgnore]
     public long[] MaxVitals

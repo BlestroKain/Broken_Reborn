@@ -66,7 +66,8 @@ namespace Intersect.Editor.Forms.Editors.Events
             var treeNode30 = new TreeNode("Change Player Name");
             var treeNode31 = new TreeNode("Reset Stat Point Allocations");
             var treeNode32 = new TreeNode("Cast Spell On");
-            var treeNode33 = new TreeNode("Player Control", new TreeNode[] { treeNode14, treeNode15, treeNode16, treeNode17, treeNode18, treeNode19, treeNode20, treeNode21, treeNode22, treeNode23, treeNode24, treeNode25, treeNode26, treeNode27, treeNode28, treeNode29, treeNode30, treeNode31, treeNode32 });
+            var treeNode77 = new TreeNode("Change Bestiary");
+            var treeNode33 = new TreeNode("Player Control", new TreeNode[] { treeNode14, treeNode15, treeNode16, treeNode17, treeNode18, treeNode19, treeNode20, treeNode21, treeNode22, treeNode23, treeNode24, treeNode25, treeNode26, treeNode27, treeNode28, treeNode29, treeNode30, treeNode31, treeNode32, treeNode77 });
             var treeNode34 = new TreeNode("Warp Player");
             var treeNode35 = new TreeNode("Set Move Route");
             var treeNode36 = new TreeNode("Wait for Route Completion");
@@ -917,6 +918,8 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode31.Text = "Reset Stat Point Allocations";
             treeNode32.Name = "castspellon";
             treeNode32.Text = "Cast Spell On";
+            treeNode77.Name = "changebestiary";
+            treeNode77.Text = "Change Bestiary";
             treeNode33.Name = "playercontrol";
             treeNode33.Text = "Player Control";
             treeNode34.Name = "warpplayer";

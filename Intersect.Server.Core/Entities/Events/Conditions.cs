@@ -4,9 +4,11 @@ using Intersect.Framework.Core.GameObjects.Conditions;
 using Intersect.Framework.Core.GameObjects.Conditions.ConditionMetadata;
 using Intersect.Framework.Core.GameObjects.Events;
 using Intersect.Framework.Core.GameObjects.Variables;
+using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.GameObjects;
 using Intersect.Server.General;
 using Intersect.Server.Maps;
+using System.Linq;
 
 namespace Intersect.Server.Entities.Events;
 
@@ -519,6 +521,44 @@ public static partial class Conditions
         QuestDescriptor questDescriptor)
     {
         return player.CombatTimer > Timing.Global.Milliseconds;
+    }
+
+    public static bool MeetsCondition(
+        BeastHasUnlockCondition condition,
+        Player player,
+        Event eventInstance,
+        QuestDescriptor questDescriptor)
+    {
+        var unlock = player.BestiaryUnlocks.FirstOrDefault(
+            b => b.NpcId == condition.NpcId && b.UnlockType == condition.Unlock
+        );
+
+        return unlock != null && unlock.Value > 0;
+    }
+
+    public static bool MeetsCondition(
+        BeastsCompletedCondition condition,
+        Player player,
+        Event eventInstance,
+        QuestDescriptor questDescriptor)
+    {
+        var count = player.BestiaryUnlocks.Count(b =>
+        {
+            if (b.UnlockType != condition.Unlock)
+            {
+                return false;
+            }
+
+            var npc = NPCDescriptor.Get(b.NpcId);
+            if (npc == null)
+            {
+                return false;
+            }
+
+            return npc.BestiaryRequirements.ContainsKey(condition.Unlock) && b.Value > 0;
+        });
+
+        return count >= condition.Count;
     }
 
     //Variable Comparison Processing

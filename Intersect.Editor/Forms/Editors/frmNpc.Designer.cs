@@ -168,6 +168,14 @@ namespace Intersect.Editor.Forms.Editors
             btnRemove = new DarkButton();
             btnAdd = new DarkButton();
             lstSpells = new ListBox();
+            grpBestiary = new DarkGroupBox();
+            lstBestiary = new ListBox();
+            cmbBestiary = new DarkComboBox();
+            nudBestiaryAmount = new DarkNumericUpDown();
+            lblBestiaryUnlock = new Label();
+            lblBestiaryAmount = new Label();
+            btnBestiaryAdd = new DarkButton();
+            btnBestiaryRemove = new DarkButton();
             btnCancel = new DarkButton();
             btnSave = new DarkButton();
             toolStrip = new DarkToolStrip();
@@ -227,6 +235,8 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)nudDropChance).BeginInit();
             grpNpcVsNpc.SuspendLayout();
             grpSpells.SuspendLayout();
+            grpBestiary.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)nudBestiaryAmount).BeginInit();
             toolStrip.SuspendLayout();
             SuspendLayout();
             // 
@@ -894,6 +904,7 @@ namespace Intersect.Editor.Forms.Editors
             pnlContainer.Controls.Add(grpSpells);
             pnlContainer.Controls.Add(grpGeneral);
             pnlContainer.Controls.Add(grpStats);
+            pnlContainer.Controls.Add(grpBestiary);
             pnlContainer.Location = new System.Drawing.Point(252, 39);
             pnlContainer.Margin = new Padding(4, 3, 4, 3);
             pnlContainer.Name = "pnlContainer";
@@ -2082,6 +2093,118 @@ namespace Intersect.Editor.Forms.Editors
             lstSpells.TabIndex = 29;
             lstSpells.SelectedIndexChanged += lstSpells_SelectedIndexChanged;
             // 
+            // grpBestiary
+            // 
+            grpBestiary.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
+            grpBestiary.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+            grpBestiary.Controls.Add(lstBestiary);
+            grpBestiary.Controls.Add(cmbBestiary);
+            grpBestiary.Controls.Add(nudBestiaryAmount);
+            grpBestiary.Controls.Add(lblBestiaryUnlock);
+            grpBestiary.Controls.Add(lblBestiaryAmount);
+            grpBestiary.Controls.Add(btnBestiaryAdd);
+            grpBestiary.Controls.Add(btnBestiaryRemove);
+            grpBestiary.ForeColor = System.Drawing.Color.Gainsboro;
+            grpBestiary.Location = new System.Drawing.Point(536, 717);
+            grpBestiary.Margin = new Padding(2);
+            grpBestiary.Name = "grpBestiary";
+            grpBestiary.Padding = new Padding(2);
+            grpBestiary.Size = new Size(266, 157);
+            grpBestiary.TabIndex = 34;
+            grpBestiary.TabStop = false;
+            grpBestiary.Text = "Bestiary";
+            // 
+            // lstBestiary
+            // 
+            lstBestiary.BackColor = System.Drawing.Color.FromArgb(60, 63, 65);
+            lstBestiary.BorderStyle = BorderStyle.FixedSingle;
+            lstBestiary.ForeColor = System.Drawing.Color.Gainsboro;
+            lstBestiary.FormattingEnabled = true;
+            lstBestiary.ItemHeight = 15;
+            lstBestiary.Location = new System.Drawing.Point(7, 22);
+            lstBestiary.Margin = new Padding(4, 3, 4, 3);
+            lstBestiary.Name = "lstBestiary";
+            lstBestiary.Size = new Size(120, 92);
+            lstBestiary.TabIndex = 0;
+            lstBestiary.SelectedIndexChanged += lstBestiary_SelectedIndexChanged;
+            // 
+            // cmbBestiary
+            // 
+            cmbBestiary.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            cmbBestiary.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+            cmbBestiary.BorderStyle = ButtonBorderStyle.Solid;
+            cmbBestiary.ButtonColor = System.Drawing.Color.FromArgb(43, 43, 43);
+            cmbBestiary.DrawDropdownHoverOutline = false;
+            cmbBestiary.DrawFocusRectangle = false;
+            cmbBestiary.DrawMode = DrawMode.OwnerDrawFixed;
+            cmbBestiary.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbBestiary.FlatStyle = FlatStyle.Flat;
+            cmbBestiary.ForeColor = System.Drawing.Color.Gainsboro;
+            cmbBestiary.FormattingEnabled = true;
+            cmbBestiary.Location = new System.Drawing.Point(133, 22);
+            cmbBestiary.Margin = new Padding(4, 3, 4, 3);
+            cmbBestiary.Name = "cmbBestiary";
+            cmbBestiary.Size = new Size(120, 24);
+            cmbBestiary.TabIndex = 1;
+            cmbBestiary.Text = null;
+            cmbBestiary.TextPadding = new Padding(2);
+            cmbBestiary.SelectedIndexChanged += cmbBestiary_SelectedIndexChanged;
+            // 
+            // nudBestiaryAmount
+            // 
+            nudBestiaryAmount.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            nudBestiaryAmount.ForeColor = System.Drawing.Color.Gainsboro;
+            nudBestiaryAmount.Location = new System.Drawing.Point(133, 72);
+            nudBestiaryAmount.Margin = new Padding(4, 3, 4, 3);
+            nudBestiaryAmount.Maximum = new decimal(new int[] { 999999, 0, 0, 0 });
+            nudBestiaryAmount.Name = "nudBestiaryAmount";
+            nudBestiaryAmount.Size = new Size(120, 23);
+            nudBestiaryAmount.TabIndex = 2;
+            nudBestiaryAmount.Value = new decimal(new int[] { 0, 0, 0, 0 });
+            nudBestiaryAmount.ValueChanged += nudBestiaryAmount_ValueChanged;
+            // 
+            // lblBestiaryUnlock
+            // 
+            lblBestiaryUnlock.AutoSize = true;
+            lblBestiaryUnlock.Location = new System.Drawing.Point(133, 4);
+            lblBestiaryUnlock.Margin = new Padding(4, 0, 4, 0);
+            lblBestiaryUnlock.Name = "lblBestiaryUnlock";
+            lblBestiaryUnlock.Size = new Size(44, 15);
+            lblBestiaryUnlock.TabIndex = 99;
+            lblBestiaryUnlock.Text = "Unlock";
+            // 
+            // lblBestiaryAmount
+            // 
+            lblBestiaryAmount.AutoSize = true;
+            lblBestiaryAmount.Location = new System.Drawing.Point(133, 54);
+            lblBestiaryAmount.Margin = new Padding(4, 0, 4, 0);
+            lblBestiaryAmount.Name = "lblBestiaryAmount";
+            lblBestiaryAmount.Size = new Size(51, 15);
+            lblBestiaryAmount.TabIndex = 100;
+            lblBestiaryAmount.Text = "Amount";
+            // 
+            // btnBestiaryAdd
+            // 
+            btnBestiaryAdd.Location = new System.Drawing.Point(7, 126);
+            btnBestiaryAdd.Margin = new Padding(4, 3, 4, 3);
+            btnBestiaryAdd.Name = "btnBestiaryAdd";
+            btnBestiaryAdd.Padding = new Padding(6);
+            btnBestiaryAdd.Size = new Size(60, 23);
+            btnBestiaryAdd.TabIndex = 3;
+            btnBestiaryAdd.Text = "Add";
+            btnBestiaryAdd.Click += btnBestiaryAdd_Click;
+            // 
+            // btnBestiaryRemove
+            // 
+            btnBestiaryRemove.Location = new System.Drawing.Point(73, 126);
+            btnBestiaryRemove.Margin = new Padding(4, 3, 4, 3);
+            btnBestiaryRemove.Name = "btnBestiaryRemove";
+            btnBestiaryRemove.Padding = new Padding(6);
+            btnBestiaryRemove.Size = new Size(60, 23);
+            btnBestiaryRemove.TabIndex = 4;
+            btnBestiaryRemove.Text = "Remove";
+            btnBestiaryRemove.Click += btnBestiaryRemove_Click;
+            // 
             // btnCancel
             // 
             btnCancel.DialogResult = DialogResult.Cancel;
@@ -2297,6 +2420,9 @@ namespace Intersect.Editor.Forms.Editors
             grpNpcVsNpc.PerformLayout();
             grpSpells.ResumeLayout(false);
             grpSpells.PerformLayout();
+            grpBestiary.ResumeLayout(false);
+            grpBestiary.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)nudBestiaryAmount).EndInit();
             toolStrip.ResumeLayout(false);
             toolStrip.PerformLayout();
             ResumeLayout(false);
@@ -2452,5 +2578,14 @@ namespace Intersect.Editor.Forms.Editors
         private Label label11;
         private DarkNumericUpDown nudCur;
         private Label Curlabel;
+        private DarkGroupBox grpBestiary;
+        private System.Windows.Forms.ListBox lstBestiary;
+        private DarkComboBox cmbBestiary;
+        private DarkNumericUpDown nudBestiaryAmount;
+        private DarkButton btnBestiaryAdd;
+        private DarkButton btnBestiaryRemove;
+        private System.Windows.Forms.Label lblBestiaryUnlock;
+        private System.Windows.Forms.Label lblBestiaryAmount;
+
     }
 }

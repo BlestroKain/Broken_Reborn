@@ -36,6 +36,7 @@ using Intersect.Config;
 using Intersect.Network.Packets.Client;
 using Intersect.Framework.Core.GameObjects.Guild;
 using Serilog;
+using Intersect.Client.Controllers;
 
 namespace Intersect.Client.Networking;
 
@@ -231,6 +232,12 @@ internal sealed partial class PacketHandler
                 Interface.Interface.GameUi.OpenMailBox();
             }
         }
+    }
+
+    //UnlockedBestiaryEntriesPacket
+    public void HandlePacket(IPacketSender packetSender, UnlockedBestiaryEntriesPacket packet)
+    {
+        BestiaryController.ApplyPacket(packet);
     }
 
 }

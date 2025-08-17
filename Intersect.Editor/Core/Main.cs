@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Intersect.Editor.Content;
 using Intersect.Editor.Forms;
 using Intersect.Editor.General;
@@ -28,6 +29,44 @@ public static partial class Main
     private static FrmProgress sProgressForm;
 
     private static long sWaterfallTimer = Timing.Global.MillisecondsUtc;
+
+    private static readonly object sMapsLock = new();
+
+    private static readonly List<MapInstance> sMaps = new();
+
+    private static MapInstance[] SnapshotMaps()
+    {
+        lock (sMapsLock)
+        {
+            return sMaps.ToArray();
+        }
+    }
+
+    public static void AddMap(MapInstance map)
+    {
+        if (map == null)
+        {
+            return;
+        }
+
+        lock (sMapsLock)
+        {
+            sMaps.Add(map);
+        }
+    }
+
+    public static void RemoveMap(MapInstance map)
+    {
+        if (map == null)
+        {
+            return;
+        }
+
+        lock (sMapsLock)
+        {
+            sMaps.Remove(map);
+        }
+    }
 
     public static void StartLoop()
     {
@@ -127,7 +166,7 @@ public static partial class Main
                     {
                         try
                         {
-                            var maps = MapInstance.Lookup.ValueList.ToArray();
+                            var maps = SnapshotMaps();
                             foreach (MapInstance map in maps)
                             {
                                 if (!sMyForm.Disposing && sProgressForm.IsHandleCreated)

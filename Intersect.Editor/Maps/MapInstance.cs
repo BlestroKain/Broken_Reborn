@@ -1,5 +1,6 @@
 ﻿using System.Drawing.Imaging;
 using Intersect.Compression;
+using Intersect.Config;
 using Intersect.Editor.Classes.Maps;
 using Intersect.Editor.Core;
 using Intersect.Editor.Entities;
@@ -205,6 +206,12 @@ public partial class MapInstance : MapDescriptor, IGameObject<Guid, MapInstance>
                     lock (Graphics.GraphicsLock)
                     {
                         var screenshotTexture = Graphics.ScreenShotMap();
+                        if (screenshotTexture == null)
+                        {
+                            Globals.CurrentMap = prevMap;
+                            return;
+                        }
+
                         screenshotTexture.Save(ms, ImageFormat.Png);
                         ms.Close();
                     }
@@ -303,16 +310,37 @@ public partial class MapInstance : MapDescriptor, IGameObject<Guid, MapInstance>
 
     public EventDescriptor? FindEventAt(int x, int y)
     {
-        if (LocalEvents.Count <= 0)
+        // Validate bounds against current map options.
+        var mapWidth = Options.Instance.Map.MapWidth;
+        var mapHeight = Options.Instance.Map.MapHeight;
+        if (x < 0 || y < 0 || x >= mapWidth || y >= mapHeight)
         {
             return null;
         }
 
-        foreach (var t in LocalEvents.Values)
+        // Snapshot events to avoid concurrent modifications.
+        EventDescriptor[] snapshot;
+        lock (MapLock)
         {
-            if (t.SpawnX == x && t.SpawnY == y)
+            if (LocalEvents == null || LocalEvents.Count == 0)
             {
-                return t;
+                return null;
+            }
+
+            snapshot = LocalEvents.Values.ToArray();
+        }
+
+        for (var i = 0; i < snapshot.Length; i++)
+        {
+            var evt = snapshot[i];
+            if (evt == null)
+            {
+                continue;
+            }
+
+            if (evt.SpawnX == x && evt.SpawnY == y)
+            {
+                return evt;
             }
         }
 

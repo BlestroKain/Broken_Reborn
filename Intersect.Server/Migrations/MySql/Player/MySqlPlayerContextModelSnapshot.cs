@@ -434,6 +434,35 @@ namespace Intersect.Server.Migrations.MySql.Player
                     b.ToTable("Player_Variables");
                 });
 
+            modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.BestiaryUnlockInstance", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)")
+                        .UseCollation("ascii_general_ci");
+
+                    b.Property<Guid>("NpcId")
+                        .HasColumnType("char(36)")
+                        .UseCollation("ascii_general_ci");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("char(36)")
+                        .UseCollation("ascii_general_ci");
+
+                    b.Property<int>("UnlockType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Value")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerId", "NpcId", "UnlockType")
+                        .IsUnique();
+
+                    b.ToTable("Player_BestiaryUnlocks");
+                });
+
             modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.Quest", b =>
                 {
                     b.Property<Guid>("Id")

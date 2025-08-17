@@ -4,6 +4,7 @@ using Intersect.Client.Interface.Game.Admin;
 using Intersect.Client.Interface.Game.Bag;
 using Intersect.Client.Interface.Game.Bank;
 using Intersect.Client.Interface.Game.Breaking;
+using Intersect.Client.Interface.Game.Bestiary;
 using Intersect.Client.Interface.Game.Chat;
 using Intersect.Client.Interface.Game.Crafting;
 using Intersect.Client.Interface.Game.DescriptionWindows;
@@ -42,6 +43,8 @@ public partial class GameInterface : MutableInterface
     private BagWindow _bagWindow;
 
     private BankWindow? _bankWindow;
+
+    private BestiaryWindow? _bestiaryWindow;
 
     private Chatbox mChatBox;
 
@@ -326,6 +329,21 @@ public partial class GameInterface : MutableInterface
         mShouldCloseGuildCreation = false;
     }
 
+    // Bestiary
+    public void ToggleBestiaryWindow()
+    {
+        if (_bestiaryWindow?.IsVisibleInTree == true)
+        {
+            _bestiaryWindow.Hide();
+        }
+        else
+        {
+            GameMenu.HideWindows();
+            _bestiaryWindow ??= new BestiaryWindow(GameCanvas);
+            _bestiaryWindow.Show();
+        }
+    }
+
     //Bag
     public void NotifyOpenBag()
     {
@@ -442,6 +460,7 @@ public partial class GameInterface : MutableInterface
         mBreakItemWindow?.Update();
         mEnchantItemWindow?.Update();
         mRuneItemWindow?.Update();
+        _bestiaryWindow?.Update();
         mMailBoxWindow?.UpdateMail();
         var questDescriptorId = Globals.QuestOffers.FirstOrDefault();
         if (questDescriptorId == default)
@@ -704,6 +723,12 @@ public partial class GameInterface : MutableInterface
             closedWindows = true;
         }
 
+        if (_bestiaryWindow is { IsVisibleInTree: true })
+        {
+            _bestiaryWindow.Hide();
+            closedWindows = true;
+        }
+
         if (GameMenu != null && GameMenu.HasWindowsOpen())
         {
             GameMenu.CloseAllWindows();
@@ -727,6 +752,8 @@ public partial class GameInterface : MutableInterface
         CloseCraftingTable();
         CloseShop();
         CloseTrading();
+        _bestiaryWindow?.Hide();
+        _bestiaryWindow = null;
         GameCanvas.Dispose();
     }
 

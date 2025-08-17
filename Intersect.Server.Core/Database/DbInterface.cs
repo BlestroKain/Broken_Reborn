@@ -1521,7 +1521,11 @@ public static partial class DbInterface
                         break;
                     }
                     case GameObjectType.Npc:
-                        context.Npcs.Update((NPCDescriptor)gameObject);
+                        if (gameObject is NPCDescriptor npcDescriptor)
+                        {
+                            npcDescriptor.SyncBestiaryJson();
+                            context.Npcs.Update(npcDescriptor);
+                        }
 
                         break;
                     case GameObjectType.Projectile:

@@ -142,4 +142,5 @@ public enum EventCommandType
     OpenBrokeItem = 203,
     OpenMailBox = 204,
     SendMail = 205,
+    ChangeBestiary = 206,
 }

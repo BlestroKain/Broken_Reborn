@@ -591,6 +591,10 @@ public partial class FrmEvent : Form
                 tmpCommand = new ChangeItemsCommand(CurrentPage.CommandLists);
 
                 break;
+            case EventCommandType.ChangeBestiary:
+                tmpCommand = new ChangeBestiaryCommand();
+
+                break;
             case EventCommandType.EquipItem:
                 tmpCommand = new EquipItemCommand();
 
@@ -1285,6 +1289,10 @@ public partial class FrmEvent : Form
                 break;
             case EventCommandType.ChangeItems:
                 cmdWindow = new EventCommandChangeItems((ChangeItemsCommand)command, CurrentPage, this);
+
+                break;
+            case EventCommandType.ChangeBestiary:
+                cmdWindow = new EventCommandChangeBestiary((ChangeBestiaryCommand)command, this);
 
                 break;
             case EventCommandType.EquipItem:

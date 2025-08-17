@@ -846,7 +846,7 @@ public static partial class CommandPrinter
 
     private static string GetCommandText(ChangePlayerLabelCommand command, MapInstance map)
     {
-        return Strings.EventCommandList.changeplayerlabel.ToString(command.Value);
+        return Strings.EventCommandList.playerlabel.ToString(command.Value);
     }
 
     private static string GetCommandText(ChangeGenderCommand command, MapInstance map)
@@ -1023,7 +1023,7 @@ public static partial class CommandPrinter
 
     private static string GetCommandText(DespawnNpcCommand command, MapInstance map)
     {
-        return Strings.EventCommandList.despawnnpcs;
+        return Strings.EventCommandList.despawnnpc;
     }
 
     private static string GetCommandText(PlayAnimationCommand command, MapInstance map)
@@ -1160,7 +1160,7 @@ public static partial class CommandPrinter
     {
         return command.JournalMode ?
             Strings.EventCommandList.OpenCraftingJournal.ToString(CraftingTableDescriptor.GetName(command.CraftingTableId)) :
-            Strings.EventCommandList.opencrafting.ToString(CraftingTableDescriptor.GetName(command.CraftingTableId));
+            Strings.EventCommandList.opencraftingtable.ToString(CraftingTableDescriptor.GetName(command.CraftingTableId));
     }
 
     private static string GetCommandText(SetClassCommand command, MapInstance map)

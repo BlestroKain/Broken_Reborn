@@ -533,7 +533,7 @@ public static partial class Conditions
             b => b.NpcId == condition.NpcId && b.UnlockType == condition.Unlock
         );
 
-        return unlock != null && unlock.Value >= condition.Value;
+        return unlock != null && unlock.Value > 0;
     }
 
     public static bool MeetsCondition(
@@ -555,12 +555,7 @@ public static partial class Conditions
                 return false;
             }
 
-            if (!npc.BestiaryUnlocks.TryGetValue(condition.Unlock, out var required))
-            {
-                return false;
-            }
-
-            return b.Value >= required;
+            return npc.BestiaryRequirements.ContainsKey(condition.Unlock) && b.Value > 0;
         });
 
         return count >= condition.Count;

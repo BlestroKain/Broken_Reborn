@@ -2302,7 +2302,7 @@ internal sealed partial class PacketHandler
     //UnlockedBestiaryEntriesPacket
     public void HandlePacket(IPacketSender packetSender, UnlockedBestiaryEntriesPacket packet)
     {
-        BestiaryController.SetUnlocked(packet.Unlocks);
+        BestiaryController.ApplyPacket(packet);
     }
 
     //EnteringGamePacket

@@ -16,6 +16,7 @@ using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.GameObjects;
 using Intersect.Utilities;
+using Newtonsoft.Json;
 using EventDescriptor = Intersect.Framework.Core.GameObjects.Events.EventDescriptor;
 using Graphics = System.Drawing.Graphics;
 
@@ -89,6 +90,9 @@ public partial class FrmNpc : EditorForm
         {
             // Sort immunities to keep change checker consistent
             item.Immunities.Sort();
+
+            // ✅ Serialize BestiaryRequirements to BestiaryUnlocksJson before saving
+            item.BestiaryUnlocksJson = JsonConvert.SerializeObject(item.BestiaryRequirements);
 
             PacketSender.SendSaveObject(item);
             item.DeleteBackup();
@@ -466,7 +470,7 @@ public partial class FrmNpc : EditorForm
     private void UpdateBestiaryUnlockValues()
     {
         _bestiaryUnlocks.Clear();
-        foreach (var kvp in mEditorItem.BestiaryUnlocks)
+        foreach (var kvp in mEditorItem.BestiaryRequirements)
         {
             _bestiaryUnlocks.Add(new NotifiableBestiaryUnlock
             {
@@ -882,9 +886,9 @@ public partial class FrmNpc : EditorForm
             return;
         }
 
-        mEditorItem.BestiaryUnlocks.Remove(entry.UnlockType);
+        mEditorItem.BestiaryRequirements.Remove(entry.UnlockType);
         entry.UnlockType = newType;
-        mEditorItem.BestiaryUnlocks[newType] = entry.Amount;
+        mEditorItem.BestiaryRequirements[newType] = entry.Amount;
         lstBestiary.Refresh();
     }
 
@@ -897,14 +901,14 @@ public partial class FrmNpc : EditorForm
 
         var entry = _bestiaryUnlocks[lstBestiary.SelectedIndex];
         entry.Amount = (int)nudBestiaryAmount.Value;
-        mEditorItem.BestiaryUnlocks[entry.UnlockType] = entry.Amount;
+        mEditorItem.BestiaryRequirements[entry.UnlockType] = entry.Amount;
     }
 
     private void btnBestiaryAdd_Click(object sender, EventArgs e)
     {
         var unlockType = (BestiaryUnlock)cmbBestiary.SelectedIndex;
         var amount = (int)nudBestiaryAmount.Value;
-        mEditorItem.BestiaryUnlocks[unlockType] = amount;
+        mEditorItem.BestiaryRequirements[unlockType] = amount;
         _bestiaryUnlocks.Add(new NotifiableBestiaryUnlock { UnlockType = unlockType, Amount = amount });
         lstBestiary.SelectedIndex = _bestiaryUnlocks.Count - 1;
     }
@@ -917,7 +921,7 @@ public partial class FrmNpc : EditorForm
         }
 
         var entry = _bestiaryUnlocks[lstBestiary.SelectedIndex];
-        mEditorItem.BestiaryUnlocks.Remove(entry.UnlockType);
+        mEditorItem.BestiaryRequirements.Remove(entry.UnlockType);
         _bestiaryUnlocks.RemoveAt(lstBestiary.SelectedIndex);
     }
 

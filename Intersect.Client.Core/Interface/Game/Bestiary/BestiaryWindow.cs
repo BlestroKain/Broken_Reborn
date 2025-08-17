@@ -1,162 +1,264 @@
-using Intersect.Client.Core;
-using Intersect.Client.Framework.File_Management;
-using Intersect.Client.Framework.Gwen;
+using Intersect.Client.Controllers;
 using Intersect.Client.Framework.Gwen.Control;
-using Intersect.Client.Framework.Gwen.Control.EventArguments;
-using Intersect.Client.Interface.Game.DescriptionWindows;
+using Intersect.Client.Framework.Gwen;
+
+using Intersect.Client.Utilities;
+using Intersect.Framework.Core.GameObjects.NPCs;
+using Intersect.GameObjects;
+using Intersect.Client.Interface;
+using Intersect.Client.Framework.File_Management;
+using Intersect.Client.Core;
 using Intersect.Client.Localization;
-
-namespace Intersect.Client.Interface.Game.Bestiary
+using Intersect.Framework.Core.GameObjects.Items;
+using System.Drawing;
+using Intersect;
+namespace Intersect.Client.Interface.Game.Bestiary;
+public sealed class BestiaryWindow : Window
 {
-    public partial class BestiaryWindow : Window
+    private readonly ScrollControl _tilesScroll;
+    private readonly ImagePanel _detailsPanel;
+    private readonly TextBox _searchBox;
+    private readonly Button _sortButton;
+    private bool _sortAsc = true;
+    private readonly List<BeastTile> _tiles = new();
+
+    public BestiaryWindow(Canvas canvas)
+        : base(canvas, Strings.Bestiary.Title, false, nameof(BestiaryWindow))
     {
-        private readonly Label _lblStats;
-        private readonly Label _lblMagic;
-        private readonly Label _lblLoot;
-        private readonly Label _lblSpellCombat;
+        SetSize(720, 520);
+        SetPosition(100, 100);
+        IsResizable = false;
+        IsClosable = true;
 
-        private readonly BestiaryStatsComponent _stats;
-        private readonly BestiaryMagicComponent _magic;
-        private readonly BestiaryLootComponent _loot;
-        private readonly BestiarySpellCombatComponent _spellCombat;
+        _searchBox = new TextBox(this) { PlaceholderText = "Buscar...", Margin = new Margin(8, 8, 0, 0) };
+        _searchBox.SetPosition(16, 8);
+        _searchBox.SetSize(280, 30);
+        _searchBox.TextChanged += (_, _) => RebuildTiles();
 
-        public BestiaryWindow(Canvas gameCanvas) : base(gameCanvas, Strings.Bestiary.Title, false, nameof(BestiaryWindow))
+        _sortButton = new Button(this) { Text = "↕", Margin = new Margin(0, 8, 0, 0) };
+        _sortButton.SetSize(30, 30);
+        _sortButton.SetPosition(304, 8);
+        _sortButton.Clicked += (_, _) => { _sortAsc = !_sortAsc; RebuildTiles(); };
+
+        _tilesScroll = new ScrollControl(this);
+
+
+        _tilesScroll.EnableScroll(false, true);
+        
+        _tilesScroll.SetPosition(16, 50);
+        _tilesScroll.SetSize(320, 440);
+
+        _detailsPanel = new ImagePanel(this);
+        _detailsPanel.SetPosition(352, 16);
+        _detailsPanel.SetSize(340, 480);
+
+        LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+
+        BestiaryController.InitializeAllBeasts();
+        BestiaryController.OnUnlockGained += (_, _) => RefreshTilesState();
+
+        BuildTiles();
+    }
+
+    private void BuildTiles()
+    {
+        foreach (var ch in _tiles) _tilesScroll.RemoveChild(ch, dispose: true);
+        _tiles.Clear();
+
+        var ids = BestiaryController.AllBeastNpcIds;
+        IEnumerable<Guid> filtered = ids;
+
+        if (!string.IsNullOrWhiteSpace(_searchBox.Text))
         {
-            IsResizable = false;
-            SetSize(600, 420);
-            SetPosition(100, 100);
-            IsVisibleInTree = false;
-            IsClosable = true;
+            filtered = ids.Where(id =>
+                NPCDescriptor.TryGet(id, out var d) &&
+                SearchHelper.Matches(_searchBox.Text, d.Name));
+        }
 
-            // --- Labels (mismo estilo que tu referencia: set font + override color por control) ---
-            _lblStats = new Label(this, "StatsLabel")
+        filtered = _sortAsc
+            ? filtered.OrderBy(id => NPCDescriptor.TryGet(id, out var d) ? d.Name : string.Empty)
+            : filtered.OrderByDescending(id => NPCDescriptor.TryGet(id, out var d) ? d.Name : string.Empty);
+
+        var list = filtered.ToList();
+        const int tileW = 84, tileH = 104, pad = 6;
+        var cols = Math.Max(1, (_tilesScroll.Width - _tilesScroll.VerticalScrollBar.Width) / (tileW + pad));
+
+        for (int i = 0; i < list.Count; i++)
+        {
+            var tile = new BeastTile(_tilesScroll, list[i]);
+            tile.ClickedNpc += OnSelectNpc;
+
+            var col = i % cols;
+            var row = i / cols;
+            tile.SetBounds(col * (tileW + pad), row * (tileH + pad), tileW, tileH);
+
+            _tiles.Add(tile);
+        }
+    }
+
+    private void RebuildTiles()
+    {
+        foreach (var tile in _tiles)
+        {
+            var match = SearchHelper.Matches(
+                _searchBox.Text,
+                NPCDescriptor.TryGet(tile.NpcId, out var d) ? d.Name : ""
+            );
+
+            tile.SetFilterMatch(match);
+            tile.Update(); // Actualiza su visibilidad y apariencia
+        }
+    }
+
+
+    private void RefreshTilesState() => _tiles.ForEach(t => t.RefreshState());
+
+    private void OnSelectNpc(Guid npcId) => ShowNpcDetails(npcId);
+
+    private void ShowNpcDetails(Guid npcId)
+    {
+        _detailsPanel.DeleteAllChildren();
+
+        if (!NPCDescriptor.TryGet(npcId, out var desc)) return;
+
+        int yOffset = 0;
+        const int spacing = 26;
+
+        var title = new Label(_detailsPanel)
+        {
+            Text = desc.Name,
+            FontName = "sourcesansproblack",
+            FontSize = 14,
+        };
+        title.SetPosition(10, yOffset);
+        title.SetSize(300, 30);
+        yOffset += 35;
+
+        // Secciones condicionales por desbloqueo
+        AddSection(npcId, BestiaryUnlock.Stats, "Estadísticas", desc, ref yOffset);
+        AddSection(npcId, BestiaryUnlock.Drops, "Drops", desc, ref yOffset);
+        AddSection(npcId, BestiaryUnlock.Spells, "Hechizos", desc, ref yOffset);
+        AddSection(npcId, BestiaryUnlock.Behavior, "Comportamiento", desc, ref yOffset);
+        AddSection(npcId, BestiaryUnlock.Lore, "Historia", desc, ref yOffset);
+    }
+
+    private void AddSection(Guid npcId, BestiaryUnlock unlock, string title, NPCDescriptor desc, ref int yOffset)
+    {
+        var unlocked = BestiaryController.HasUnlock(npcId, unlock);
+
+        var sectionTitle = new Label(_detailsPanel)
+        {
+            Text = title,
+            FontName = "sourcesansproblack",
+            FontSize = 11,
+            TextColorOverride= Intersect.Color.White,
+        };
+        sectionTitle.SetPosition(10, yOffset);
+        sectionTitle.SetSize(300, 22);
+        yOffset += 22;
+
+        if (!unlocked)
+        {
+            var killsReq = desc.BestiaryRequirements.TryGetValue(unlock, out var req) ? req : 0;
+            var lockedText = killsReq > 0
+                ? $"🔒 Derrota {killsReq} veces para desbloquear."
+                : "🔒 Información bloqueada.";
+
+            var label = new Label(_detailsPanel)
             {
-                Text = "Stats",
-                FontName = "sourcesansproblack",
-                FontSize = 10
+                Text = lockedText,
+                FontSize = 10,
             };
-            _lblStats.SetPosition(20, 20);
-            _lblStats.SetSize(260, 24);
-            _lblStats.SetTextColor(Color.White, ComponentState.Normal);
-
-            _lblMagic = new Label(this, "MagicLabel")
-            {
-                Text = "Magic",
-                FontName = "sourcesansproblack",
-                FontSize = 10
-            };
-            _lblMagic.SetPosition(20, 100);
-            _lblMagic.SetSize(260, 24);
-            _lblMagic.SetTextColor(Color.White, ComponentState.Normal);
-
-            _lblLoot = new Label(this, "LootLabel")
-            {
-                Text = "Loot",
-                FontName = "sourcesansproblack",
-                FontSize = 10
-            };
-            _lblLoot.SetPosition(20, 180);
-            _lblLoot.SetSize(260, 24);
-            _lblLoot.SetTextColor(Color.White, ComponentState.Normal);
-
-            _lblSpellCombat = new Label(this, "SpellCombatLabel")
-            {
-                Text = "Spell Combat",
-                FontName = "sourcesansproblack",
-                FontSize = 10
-            };
-            _lblSpellCombat.SetPosition(20, 260);
-            _lblSpellCombat.SetSize(260, 24);
-            _lblSpellCombat.SetTextColor(Color.White, ComponentState.Normal);
-
-            // --- Componentes (creados y posicionados explícitamente, como en tu referencia) ---
-            _stats = new BestiaryStatsComponent(this, "StatsComponent");
-            _stats.SetPosition(20, 50);
-            _stats.SetSize(560, 40);
-
-            _magic = new BestiaryMagicComponent(this, "MagicComponent");
-            _magic.SetPosition(20, 130);
-            _magic.SetSize(560, 40);
-
-            _loot = new BestiaryLootComponent(this, "LootComponent");
-            _loot.SetPosition(20, 210);
-            _loot.SetSize(560, 40);
-
-            _spellCombat = new BestiarySpellCombatComponent(this, "SpellCombatComponent");
-            _spellCombat.SetPosition(20, 290);
-            _spellCombat.SetSize(560, 40);
-
-            // Cargar UI JSON al final (igual que en la referencia)
-            LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
-
-            Reset();
+            label.SetPosition(20, yOffset);
+            label.SetSize(300, 22);
+            yOffset += 24;
+            return;
         }
 
-        protected override void EnsureInitialized()
+        // Contenido real por sección
+        switch (unlock)
         {
-            // Igual que tu referencia: recargar layout JSON aquí también
-            LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+            case BestiaryUnlock.Stats:
+                foreach (var stat in desc.StatsLookup)
+                {
+                    var statLbl = new Label(_detailsPanel)
+                    {
+                        Text = $"{Strings.ItemDescription.StatCounts[(int)stat.Key]}: {stat.Value}",
+                        FontSize = 10
+                    };
+                    statLbl.SetPosition(20, yOffset);
+                    statLbl.SetSize(300, 20);
+                    yOffset += 20;
+                }
+                break;
 
-            // Reubicar por si el skin ajusta algo
-            _stats.SetPosition(20, 50);
-            _magic.SetPosition(20, 130);
-            _loot.SetPosition(20, 210);
-            _spellCombat.SetPosition(20, 290);
+            case BestiaryUnlock.Drops:
+                foreach (var drop in desc.Drops)
+                {
+                    var item = ItemDescriptor.Get(drop.ItemId);
+                    if (item == null) continue;
 
-            _stats.SetSize(560, 40);
-            _magic.SetSize(560, 40);
-            _loot.SetSize(560, 40);
-            _spellCombat.SetSize(560, 40);
+                    var dropLbl = new Label(_detailsPanel)
+                    {
+                        Text = $"- {item.Name} ({drop.Chance}% chance)",
+                        FontSize = 10
+                    };
+                    dropLbl.SetPosition(20, yOffset);
+                    dropLbl.SetSize(300, 20);
+                    yOffset += 20;
+                }
+                break;
 
-            // Si tus componentes exponen CorrectWidth como antes, puedes llamarlo aquí:
-            _stats.CorrectWidth();
-            _magic.CorrectWidth();
-            _loot.CorrectWidth();
-            _spellCombat.CorrectWidth();
+            case BestiaryUnlock.Spells:
+                foreach (var spellId in desc.Spells)
+                {
+                    var spell = SpellDescriptor.Get(spellId);
+                    if (spell == null) continue;
 
-            Reset();
+                    var spellLbl = new Label(_detailsPanel)
+                    {
+                        Text = $"- {spell.Name}",
+                        FontSize = 10
+                    };
+                    spellLbl.SetPosition(20, yOffset);
+                    spellLbl.SetSize(300, 20);
+                    yOffset += 20;
+                }
+                break;
+
+            case BestiaryUnlock.Behavior:
+                AddText($"Agresivo: {(desc.Aggressive ? "Sí" : "No")}", ref yOffset);
+                AddText($"Movimiento: {desc.Movement}", ref yOffset);
+                AddText($"Flee HP %: {desc.FleeHealthPercentage}%", ref yOffset);
+                AddText($"Swarm: {(desc.Swarm ? "Sí" : "No")}", ref yOffset);
+                break;
+
+            case BestiaryUnlock.Lore:
+                AddText("(Aquí puedes insertar un sistema de descripciones opcionales por NPC)", ref yOffset);
+                break;
         }
-        public void Update()
+    }
+
+    private void AddText(string content, ref int yOffset)
+    {
+        var lbl = new Label(_detailsPanel)
         {
-            if (!IsVisibleInParent)
-                return;
+            Text = content,
+            FontSize = 10
+        };
+        lbl.SetPosition(20, yOffset);
+        lbl.SetSize(300, 20);
+        yOffset += 20;
+    }
 
-            // Mantener layout y ancho correcto de cada bloque
-            // (igual que en EnsureInitialized, pero sin recargar el JSON)
-            _stats.SetPosition(20, 50);
-            _magic.SetPosition(20, 130);
-            _loot.SetPosition(20, 210);
-            _spellCombat.SetPosition(20, 290);
+    internal void Update()
+    {
+        if (!IsVisibleInParent) return;
+        foreach (var tile in _tiles) tile.Update();
+    }
 
-            _stats.SetSize(560, 40);
-            _magic.SetSize(560, 40);
-            _loot.SetSize(560, 40);
-            _spellCombat.SetSize(560, 40);
-
-            _stats.CorrectWidth();
-            _magic.CorrectWidth();
-            _loot.CorrectWidth();
-            _spellCombat.CorrectWidth();
-        }
-
-        public override void Show()
-        {
-            Reset();
-            base.Show();
-        }
-
-        public override void Hide()
-        {
-            base.Hide();
-            Reset();
-        }
-
-        private void Reset()
-        {
-            _stats.Lock();
-            _magic.Lock();
-            _loot.Lock();
-            _spellCombat.Lock();
-        }
+    protected override void EnsureInitialized()
+    {
+        LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
     }
 }

@@ -176,33 +176,74 @@ public partial class Npc : Entity
             {
                 var changed = false;
 
-                if (Descriptor.BestiaryUnlocks.TryGetValue(BestiaryUnlock.Kill, out _))
+                var npcId = Descriptor.Id;
+
+                // Incrementar contador de muertes
+                if (Descriptor.BestiaryRequirements.TryGetValue(BestiaryUnlock.Kill, out _))
                 {
-                    var unlock = player.BestiaryUnlocks.FirstOrDefault(
-                        b => b.NpcId == Descriptor.Id && b.UnlockType == BestiaryUnlock.Kill
+                    var killUnlock = player.BestiaryUnlocks.FirstOrDefault(
+                        b => b.NpcId == npcId && b.UnlockType == BestiaryUnlock.Kill
                     );
 
-                    if (unlock == null)
+                    if (killUnlock == null)
                     {
-                        unlock = new BestiaryUnlockInstance
+                        killUnlock = new BestiaryUnlockInstance
                         {
-                            NpcId = Descriptor.Id,
+                            Player = player,
+                            NpcId = npcId,
                             UnlockType = BestiaryUnlock.Kill,
-                            Value = 0,
+                            Value = 1
                         };
-                        player.BestiaryUnlocks.Add(unlock);
+                        player.BestiaryUnlocks.Add(killUnlock);
+                        changed = true;
                     }
-
-                    var previous = unlock.Value;
-                    unlock.Value++;
-                    changed = previous != unlock.Value;
+                    else
+                    {
+                        var previous = killUnlock.Value;
+                        killUnlock.Value++;
+                        if (killUnlock.Value != previous)
+                            changed = true;
+                    }
                 }
 
+                // Evaluar otros desbloqueos si los hay
+                if (Descriptor.BestiaryRequirements != null)
+                {
+                    foreach (var kvp in Descriptor.BestiaryRequirements)
+                    {
+                        var unlockType = kvp.Key;
+                        var requiredKills = kvp.Value;
+
+                        if (unlockType == BestiaryUnlock.Kill)
+                            continue;
+
+                        var alreadyUnlocked = player.BestiaryUnlocks
+                            .Any(b => b.NpcId == npcId && b.UnlockType == unlockType);
+
+                        var killCount = player.BestiaryUnlocks
+                            .FirstOrDefault(b => b.NpcId == npcId && b.UnlockType == BestiaryUnlock.Kill)?.Value ?? 0;
+
+                        if (!alreadyUnlocked && killCount >= requiredKills)
+                        {
+                            player.BestiaryUnlocks.Add(new BestiaryUnlockInstance
+                            {
+                                Player = player,
+                                NpcId = npcId,
+                                UnlockType = unlockType,
+                                Value = 1
+                            });
+                            changed = true;
+                        }
+                    }
+                }
+
+                // Enviar paquete si hay cambios
                 if (changed)
                 {
                     PacketSender.SendUnlockedBestiaryEntries(player);
                 }
             }
+
 
             AggroCenterMap = null;
             AggroCenterX = 0;

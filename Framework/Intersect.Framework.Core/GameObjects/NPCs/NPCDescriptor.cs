@@ -13,7 +13,14 @@ namespace Intersect.Framework.Core.GameObjects.NPCs;
 
 public enum BestiaryUnlock
 {
-    Kill,
+    Kill = 0,
+    Discovery = 1,
+    HpBar = 2,
+    Stats = 3,
+    Drops = 4,
+    Spells = 5,
+    Behavior = 6,
+    Lore = 7,
 }
 
 public partial class NPCDescriptor : DatabaseObject<NPCDescriptor>, IFolderable
@@ -28,14 +35,18 @@ public partial class NPCDescriptor : DatabaseObject<NPCDescriptor>, IFolderable
     [NotMapped]
     public List<Drop> Drops { get; set; }= [];
 
+    public string BestiaryIcon { get; set; } = string.Empty;
+
+    public bool HiddenUntilDefeated { get; set; } = false;
+
     [NotMapped]
-    public Dictionary<BestiaryUnlock, int> BestiaryUnlocks { get; set; } = new();
+    public Dictionary<BestiaryUnlock, int> BestiaryRequirements { get; set; } = new();
 
     [Column("BestiaryUnlocks"), JsonIgnore]
     public string BestiaryUnlocksJson
     {
-        get => JsonConvert.SerializeObject(BestiaryUnlocks);
-        set => BestiaryUnlocks = JsonConvert.DeserializeObject<Dictionary<BestiaryUnlock, int>>(value ?? "") ?? new();
+        get => JsonConvert.SerializeObject(BestiaryRequirements ?? new());
+        set => BestiaryRequirements = JsonConvert.DeserializeObject<Dictionary<BestiaryUnlock, int>>(value ?? "{}") ?? new();
     }
 
     [NotMapped, JsonIgnore]

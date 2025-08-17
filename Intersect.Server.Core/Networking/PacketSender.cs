@@ -2206,14 +2206,16 @@ public static partial class PacketSender
     public static void SendUnlockedBestiaryEntries(Player player)
     {
         var unlocks = player.BestiaryUnlocks
+            .Where(b => b.Value > 0) // ✅ Ya no se excluye Kill
             .GroupBy(b => b.NpcId)
             .ToDictionary(
                 g => g.Key,
-                g => g.ToDictionary(b => b.UnlockType, b => b.Value)
+                g => g.Select(b => (int)b.UnlockType).Distinct().ToArray()
             );
 
         player.SendPacket(new UnlockedBestiaryEntriesPacket(unlocks));
     }
+
 
     //TradePacket
     public static void StartTrade(Player player, Player target)

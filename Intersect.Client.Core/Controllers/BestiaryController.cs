@@ -1,107 +1,51 @@
 using System;
 using System.Collections.Generic;
-using Intersect.Client.Interface;
+using System.Linq;
 using Intersect.Framework.Core.GameObjects.NPCs;
+using Intersect.Network.Packets.Server;
 
 namespace Intersect.Client.Controllers;
 
-/// <summary>
-///     Tracks kill counts and unlock progress for the bestiary on the client.
-///     Refreshes state from the server and exposes helpers for UI queries.
-/// </summary>
 public static class BestiaryController
 {
-    private static readonly Dictionary<Guid, int> Kills = new();
-    private static readonly Dictionary<Guid, Dictionary<BestiaryUnlock, int>> Values = new();
+    public static IReadOnlyDictionary<Guid, HashSet<BestiaryUnlock>> KnownUnlocks => _known;
+    private static readonly Dictionary<Guid, HashSet<BestiaryUnlock>> _known = new();
 
-    /// <summary>
-    ///     Gets a read-only view of NPC kill counts.
-    /// </summary>
-    public static IReadOnlyDictionary<Guid, int> KillCounts => Kills;
+    public static IReadOnlyList<Guid> AllBeastNpcIds => _allBeastNpcIds;
+    private static List<Guid> _allBeastNpcIds = new();
 
-    /// <summary>
-    ///     Updates the cached kill counts and unlock values from the server, displaying a toast when
-    ///     an unlock threshold is crossed.
-    /// </summary>
-    /// <param name="unlocks">Dictionary of NPC IDs to unlock type/value pairs.</param>
-    public static void SetUnlocked(Dictionary<Guid, Dictionary<BestiaryUnlock, int>> unlocks)
+    public static event Action<Guid, BestiaryUnlock>? OnUnlockGained;
+
+    public static void InitializeAllBeasts()
     {
-        // Keep a copy of the existing values so we can detect newly unlocked entries.
-        var previous = new Dictionary<Guid, Dictionary<BestiaryUnlock, int>>();
-        foreach (var (npcId, dict) in Values)
-        {
-            previous[npcId] = new Dictionary<BestiaryUnlock, int>(dict);
-        }
+        _allBeastNpcIds = NPCDescriptor.Lookup
+            .Select(pair => pair.Value)
+            .OfType<NPCDescriptor>()
+            .Where(d => d.BestiaryRequirements is { Count: > 0 })
+            .Select(d => d.Id)
+            .ToList();
+    }
 
-        Values.Clear();
-        Kills.Clear();
+    public static bool HasUnlock(Guid npcId, BestiaryUnlock unlock)
+        => _known.TryGetValue(npcId, out var set) && set.Contains(unlock);
 
-        foreach (var (npcId, dict) in unlocks)
+    public static void ApplyPacket(UnlockedBestiaryEntriesPacket packet)
+    {
+        foreach (var (npcId, unlockInts) in packet.Unlocked)
         {
-            var current = Values[npcId] = new Dictionary<BestiaryUnlock, int>();
-            foreach (var (unlockType, value) in dict)
+            if (!_known.TryGetValue(npcId, out var set))
             {
-                current[unlockType] = value;
-                if (unlockType == BestiaryUnlock.Kill)
+                set = _known[npcId] = new HashSet<BestiaryUnlock>();
+            }
+
+            foreach (var val in unlockInts)
+            {
+                var unlock = (BestiaryUnlock)val;
+                if (set.Add(unlock))
                 {
-                    Kills[npcId] = value;
-                }
-
-                var wasUnlocked = previous.TryGetValue(npcId, out var prevDict)
-                                   && prevDict.TryGetValue(unlockType, out var prevValue)
-                                   && IsUnlocked(npcId, unlockType, prevValue);
-
-                var isUnlocked = IsUnlocked(npcId, unlockType, value);
-
-                if (!wasUnlocked && isUnlocked)
-                {
-                    var npc = NPCDescriptor.Get(npcId);
-                    if (npc != null)
-                    {
-                        Interface.Interface.EnqueueInGame(
-                            gi => gi.AnnouncementWindow.ShowAnnouncement(
-                                $"Bestiary unlocked: {npc.Name}",
-                                3000
-                            )
-                        );
-                    }
+                    OnUnlockGained?.Invoke(npcId, unlock);
                 }
             }
         }
     }
-
-    /// <summary>
-    ///     Determines whether the specified NPC has the given unlock type.
-    /// </summary>
-    public static bool HasUnlock(Guid npcId, BestiaryUnlock type)
-    {
-        if (!Values.TryGetValue(npcId, out var dict))
-        {
-            return false;
-        }
-
-        if (!dict.TryGetValue(type, out var value))
-        {
-            return false;
-        }
-
-        return IsUnlocked(npcId, type, value);
-    }
-
-    private static bool IsUnlocked(Guid npcId, BestiaryUnlock type, int value)
-    {
-        var descriptor = NPCDescriptor.Get(npcId);
-        if (descriptor == null)
-        {
-            return false;
-        }
-
-        if (!descriptor.BestiaryUnlocks.TryGetValue(type, out var required))
-        {
-            return false;
-        }
-
-        return value >= required;
-    }
 }
-

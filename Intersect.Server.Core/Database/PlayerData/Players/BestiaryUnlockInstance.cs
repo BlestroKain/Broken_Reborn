@@ -8,7 +8,7 @@ namespace Intersect.Server.Database.PlayerData.Players;
 public class BestiaryUnlockInstance : IPlayerOwned
 {
     [DatabaseGenerated(DatabaseGeneratedOption.Identity), JsonIgnore]
-    public Guid Id { get; private set; }
+    public Guid Id { get; set; }
 
     public Guid NpcId { get; set; }
 
@@ -17,10 +17,10 @@ public class BestiaryUnlockInstance : IPlayerOwned
     public int Value { get; set; }
 
     [JsonIgnore]
-    public Guid PlayerId { get; private set; }
+    public Guid PlayerId { get; set; }
 
     [JsonIgnore]
     [ForeignKey(nameof(PlayerId))]
-    public Player Player { get; private set; }
+    public Player Player { get;set; }
 }
 

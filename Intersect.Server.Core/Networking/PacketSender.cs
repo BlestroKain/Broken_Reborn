@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using Intersect.Core;
 using Intersect.Enums;
 using Intersect.Framework.Core;
@@ -432,6 +433,7 @@ public static partial class PacketSender
             SendQuestsProgress(player);
             SendItemCooldowns(player);
             SendSpellCooldowns(player);
+            SendUnlockedBestiaryEntries(player);
             SendJobSync(player);
         }
 
@@ -2200,6 +2202,7 @@ public static partial class PacketSender
         player.SendPacket(new QuestProgressPacket(dict, hiddenQuests.ToArray()));
     }
 
+  
     //TradePacket
     public static void StartTrade(Player player, Player target)
     {

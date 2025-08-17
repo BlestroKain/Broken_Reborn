@@ -197,5 +197,23 @@ public static partial class PacketSender
 
         player.SendPacket(new MailBoxPacket(true, true));
     }
+    //UnlockedBestiaryEntriesPacket
+    public static void SendUnlockedBestiaryEntries(Player player)
+    {
+        var unlocks = player.BestiaryUnlocks
+            .Where(b => b.Value > 0) // ✅ Ya no se excluye Kill
+            .GroupBy(b => b.NpcId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Select(b => (int)b.UnlockType).Distinct().ToArray()
+            );
+
+        var killCounts = player.BestiaryUnlocks
+            .Where(b => b.UnlockType == BestiaryUnlock.Kill)
+            .ToDictionary(b => b.NpcId, b => b.Value);
+
+        player.SendPacket(new UnlockedBestiaryEntriesPacket(unlocks, killCounts));
+    }
+
 
 }

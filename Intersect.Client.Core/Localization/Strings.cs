@@ -854,6 +854,21 @@ public static partial class Strings
         public static LocalizedString TwoWeeks = @"2 weeks";
     }
 
+    public partial struct Bestiary
+    {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Title = @"Bestiary";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Locked = @"Locked";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Unlocked = @"Unlocked";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString UnlockNotice = @"Unlocked {1} for {0}";
+    }
+
     public partial struct Character
     {
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

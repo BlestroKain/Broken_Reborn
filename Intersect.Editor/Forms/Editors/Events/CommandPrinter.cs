@@ -799,6 +799,13 @@ public static partial class CommandPrinter
         );
     }
 
+    private static string GetCommandText(ChangeBestiaryCommand command, MapInstance map)
+    {
+        var npcName = NPCDescriptor.GetName(command.NpcId);
+        var sign = command.Add ? "+" : "-";
+        return Strings.EventCommandList.changebestiary.ToString($"{sign}{command.Amount} {command.UnlockType} {npcName}");
+    }
+
     private static string GetCommandText(EquipItemCommand command, MapInstance map)
     {
         var commandText = string.Empty;

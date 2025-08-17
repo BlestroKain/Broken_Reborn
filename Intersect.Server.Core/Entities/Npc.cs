@@ -19,6 +19,7 @@ using Intersect.Server.Maps;
 using Intersect.Server.Networking;
 using Intersect.Utilities;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 using Stat = Intersect.Enums.Stat;
 
 namespace Intersect.Server.Entities;
@@ -170,6 +171,96 @@ public partial class Npc : Entity
         lock (EntityLock)
         {
             base.Die(generateLoot, killer);
+
+            if (killer is Player player)
+            {
+                var npcId = Descriptor.Id;
+                var changed = false;
+
+                lock (player.EntityLock)
+                {
+                    // Incrementar contador de muertes
+                    if (Descriptor.BestiaryRequirements.TryGetValue(BestiaryUnlock.Kill, out _))
+                    {
+                        var killUnlock = player.BestiaryUnlocks.FirstOrDefault(
+                            b => b.NpcId == npcId && b.UnlockType == BestiaryUnlock.Kill
+                        );
+
+                        if (killUnlock == null)
+                        {
+                            var alreadyExists = player.BestiaryUnlocks.Any(
+                                b => b.NpcId == npcId && b.UnlockType == BestiaryUnlock.Kill
+                            );
+
+                            if (!alreadyExists)
+                            {
+                                killUnlock = new BestiaryUnlockInstance
+                                {
+                                    Player = player,
+                                    PlayerId = player.Id,
+                                    NpcId = npcId,
+                                    UnlockType = BestiaryUnlock.Kill,
+                                    Value = 1,
+                                };
+                                player.BestiaryUnlocks.Add(killUnlock);
+                                changed = true;
+                            }
+                        }
+                        else
+                        {
+                            var previous = killUnlock.Value;
+                            killUnlock.Value++;
+                            if (killUnlock.Value != previous)
+                            {
+                                changed = true;
+                            }
+                        }
+                    }
+
+                    // Evaluar otros desbloqueos si los hay
+                    if (Descriptor.BestiaryRequirements != null)
+                    {
+                        foreach (var kvp in Descriptor.BestiaryRequirements)
+                        {
+                            var unlockType = kvp.Key;
+                            var requiredKills = kvp.Value;
+
+                            if (unlockType == BestiaryUnlock.Kill)
+                            {
+                                continue;
+                            }
+
+                            var alreadyUnlocked = player.BestiaryUnlocks.Any(
+                                b => b.NpcId == npcId && b.UnlockType == unlockType
+                            );
+
+                            var killCount = player.BestiaryUnlocks
+                                .FirstOrDefault(b => b.NpcId == npcId && b.UnlockType == BestiaryUnlock.Kill)?.Value ?? 0;
+
+                            if (!alreadyUnlocked && killCount >= requiredKills)
+                            {
+                                player.BestiaryUnlocks.Add(
+                                    new BestiaryUnlockInstance
+                                    {
+                                        Player = player,
+                                        PlayerId = player.Id,
+                                        NpcId = npcId,
+                                        UnlockType = unlockType,
+                                        Value = 1,
+                                    }
+                                );
+                                changed = true;
+                            }
+                        }
+                    }
+                }
+
+                if (changed)
+                {
+                    PacketSender.SendUnlockedBestiaryEntries(player);
+                }
+            }
+
 
             AggroCenterMap = null;
             AggroCenterX = 0;

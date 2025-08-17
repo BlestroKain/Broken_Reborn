@@ -37,6 +37,8 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
 
     public DbSet<PlayerVariable> Player_Variables { get; set; }
 
+    public DbSet<BestiaryUnlockInstance> Player_BestiaryUnlocks { get; set; }
+
     public DbSet<Bag> Bags { get; set; }
 
     public DbSet<BagSlot> Bag_Items { get; set; }
@@ -94,6 +96,8 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
         modelBuilder.Entity<Player>().HasMany(b => b.Items).WithOne(p => p.Player);
 
         modelBuilder.Entity<Player>().HasMany(b => b.Variables).WithOne(p => p.Player);
+        modelBuilder.Entity<Player>().HasMany(b => b.BestiaryUnlocks).WithOne(p => p.Player);
+        modelBuilder.Entity<BestiaryUnlockInstance>().HasIndex(p => new { p.PlayerId, p.NpcId, p.UnlockType }).IsUnique();
         modelBuilder.Entity<PlayerVariable>().HasIndex(p => new { p.VariableId, p.PlayerId }).IsUnique();
 
         modelBuilder.Entity<Player>().HasMany(b => b.Hotbar).WithOne(p => p.Player);
@@ -203,6 +207,9 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
             Entry(itm).State = EntityState.Detached;
 
         foreach (var itm in player.Bank)
+            Entry(itm).State = EntityState.Detached;
+
+        foreach (var itm in player.BestiaryUnlocks)
             Entry(itm).State = EntityState.Detached;
     }
 

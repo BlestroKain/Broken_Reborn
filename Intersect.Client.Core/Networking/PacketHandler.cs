@@ -2298,6 +2298,12 @@ internal sealed partial class PacketHandler
         }
     }
 
+    //UnlockedBestiaryEntriesPacket
+    public void HandlePacket(IPacketSender packetSender, UnlockedBestiaryEntriesPacket packet)
+    {
+        BestiaryController.SetUnlocked(packet.Unlocks);
+    }
+
     //EnteringGamePacket
     public void HandlePacket(IPacketSender packetSender, EnteringGamePacket packet)
     {

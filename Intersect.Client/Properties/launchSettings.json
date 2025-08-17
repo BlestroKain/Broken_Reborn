@@ -2,30 +2,27 @@
   "profiles": {
     "Development": {
       "commandName": "Project",
-      "commandLineArgs": "",
+      "workingDirectory": "C:\\Users\\jlroo\\Desktop\\Broken Bridge Online 2025 8.0\\Client and Editor",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development",
         "LD_LIBRARY_PATH": "."
-      },
-      "workingDirectory": "$(ProjectDir)../assets/development/client"
+      }
     },
     "Staging": {
       "commandName": "Project",
-      "commandLineArgs": "",
+      "workingDirectory": "$(ProjectDir)../assets/staging/client",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Staging",
         "LD_LIBRARY_PATH": "."
-      },
-      "workingDirectory": "$(ProjectDir)../assets/staging/client"
+      }
     },
     "Production": {
       "commandName": "Project",
-      "commandLineArgs": "",
+      "workingDirectory": "$(ProjectDir)../assets/production/client",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Production",
         "LD_LIBRARY_PATH": "."
-      },
-      "workingDirectory": "$(ProjectDir)../assets/production/client"
+      }
     }
   }
 }

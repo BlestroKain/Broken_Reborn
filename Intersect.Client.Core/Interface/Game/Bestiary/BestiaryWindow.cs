@@ -1,162 +1,131 @@
-using Intersect.Client.Core;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Intersect.Client.Controllers;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
-using Intersect.Client.Interface.Game.DescriptionWindows;
+using Intersect.Client.General;
 using Intersect.Client.Localization;
+using Intersect.Framework.Core.GameObjects.NPCs;
 
-namespace Intersect.Client.Interface.Game.Bestiary
+namespace Intersect.Client.Interface.Game.Bestiary;
+
+public sealed class BestiaryWindow : Window
 {
-    public partial class BestiaryWindow : Window
+    private readonly ScrollControl _tilesScroll;
+    private readonly ImagePanel _detailsPanel;
+    private readonly TextBox _searchBox;
+    private readonly Button _sortButton;
+
+    private bool _sortAsc = true;
+    private readonly List<BeastTile> _tiles = new();
+
+    public BestiaryWindow(Canvas canvas)
+        : base(canvas, Strings.Bestiary.Title, false, nameof(BestiaryWindow))
     {
-        private readonly Label _lblStats;
-        private readonly Label _lblMagic;
-        private readonly Label _lblLoot;
-        private readonly Label _lblSpellCombat;
+        DisableResizing();
+        IsClosable = true; IsResizable = false;
 
-        private readonly BestiaryStatsComponent _stats;
-        private readonly BestiaryMagicComponent _magic;
-        private readonly BestiaryLootComponent _loot;
-        private readonly BestiarySpellCombatComponent _spellCombat;
+        _tilesScroll = new ScrollControl(this, "TilesScroll") { Dock = Pos.Left, Width = 320, OverflowY = OverflowBehavior.Scroll };
+        _detailsPanel = new ImagePanel(this, "DetailsPanel") { Dock = Pos.Fill };
 
-        public BestiaryWindow(Canvas gameCanvas) : base(gameCanvas, Strings.Bestiary.Title, false, nameof(BestiaryWindow))
+        _searchBox = new TextBox(this, "SearchBox") { Margin = new Margin(4), Width = 150 };
+        _searchBox.TextChanged += (_, _) => RebuildTiles();
+
+        _sortButton = new Button(this, "SortButton") { Margin = new Margin(4) };
+        _sortButton.SetText("Sort");
+        _sortButton.Clicked += (_, _) => { _sortAsc = !_sortAsc; RebuildTiles(); };
+
+        LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+
+        BestiaryController.InitializeAllBeasts();
+        BestiaryController.OnUnlockGained += (_, _) => RefreshTilesState();
+
+        BuildTiles();
+    }
+
+    private void BuildTiles()
+    {
+        foreach (var ch in _tiles) _tilesScroll.RemoveChild(ch, dispose: true);
+        _tiles.Clear();
+
+        var ids = BestiaryController.AllBeastNpcIds;
+
+        IEnumerable<Guid> filtered = ids;
+        if (!string.IsNullOrWhiteSpace(_searchBox.Text))
         {
-            IsResizable = false;
-            SetSize(600, 420);
-            SetPosition(100, 100);
-            IsVisibleInTree = false;
-            IsClosable = true;
+            filtered = ids.Where(id =>
+                NPCDescriptor.TryGet(id, out var d) &&
+                SearchHelper.Matches(_searchBox.Text, d.Name));
+        }
 
-            // --- Labels (mismo estilo que tu referencia: set font + override color por control) ---
-            _lblStats = new Label(this, "StatsLabel")
+        filtered = _sortAsc
+            ? filtered.OrderBy(id => NPCDescriptor.TryGet(id, out var d) ? d.Name : string.Empty)
+            : filtered.OrderByDescending(id => NPCDescriptor.TryGet(id, out var d) ? d.Name : string.Empty);
+
+        var list = filtered.ToList();
+        const int tileW = 84, tileH = 104, pad = 6;
+        var cols = Math.Max(1, (_tilesScroll.Width - _tilesScroll.VerticalScrollBar.Width) / (tileW + pad));
+
+        for (int i = 0; i < list.Count; i++)
+        {
+            var tile = new BeastTile(_tilesScroll, list[i]);
+            tile.ClickedNpc += OnSelectNpc;
+
+            var col = i % cols;
+            var row = i / cols;
+            tile.SetBounds(col * (tileW + pad), row * (tileH + pad), tileW, tileH);
+
+            _tiles.Add(tile);
+        }
+    }
+
+    private void RebuildTiles() => BuildTiles();
+    private void RefreshTilesState() { foreach (var t in _tiles) t.RefreshState(); }
+
+    private void OnSelectNpc(Guid npcId)
+    {
+        ShowNpcDetails(npcId);
+    }
+
+    private void ShowNpcDetails(Guid npcId)
+    {
+        _detailsPanel.DeleteAllChildren();
+
+        if (!NPCDescriptor.TryGet(npcId, out var desc)) return;
+
+        var header = new Label(_detailsPanel, "Title") { Text = desc.Name, FontName = "sourcesansproblack", FontSize = 12, Margin = new Margin(8, 8, 8, 4) };
+
+        AddSection(BestiaryUnlock.Stats, "Stats", npcId);
+        AddSection(BestiaryUnlock.Drops, "Drops", npcId);
+        AddSection(BestiaryUnlock.Spells, "Spells", npcId);
+        AddSection(BestiaryUnlock.Behavior, "Behavior", npcId);
+        AddSection(BestiaryUnlock.Lore, "Lore", npcId);
+    }
+
+    private void AddSection(BestiaryUnlock unlock, string title, Guid npcId)
+    {
+        var section = new ImagePanel(_detailsPanel, title) { Margin = new Margin(8, 4, 8, 4) };
+        var unlocked = BestiaryController.HasUnlock(npcId, unlock);
+
+        new Label(section, $"{title}_Label") { Text = title, FontName = "sourcesansproblack", FontSize = 10 };
+
+        if (!unlocked)
+        {
+            var req = 0;
+            if (NPCDescriptor.TryGet(npcId, out var d) && d.BestiaryRequirements.TryGetValue(unlock, out var kills))
+                req = kills;
+
+            new Label(section, $"{title}_Locked")
             {
-                Text = "Stats",
-                FontName = "sourcesansproblack",
-                FontSize = 10
+                Text = req > 0 ? $"🔒 Derrota a esta criatura {req} veces para desbloquear." : "🔒 Bloqueado.",
+                Margin = new Margin(0, 4, 0, 0)
             };
-            _lblStats.SetPosition(20, 20);
-            _lblStats.SetSize(260, 24);
-            _lblStats.SetTextColor(Color.White, ComponentState.Normal);
-
-            _lblMagic = new Label(this, "MagicLabel")
-            {
-                Text = "Magic",
-                FontName = "sourcesansproblack",
-                FontSize = 10
-            };
-            _lblMagic.SetPosition(20, 100);
-            _lblMagic.SetSize(260, 24);
-            _lblMagic.SetTextColor(Color.White, ComponentState.Normal);
-
-            _lblLoot = new Label(this, "LootLabel")
-            {
-                Text = "Loot",
-                FontName = "sourcesansproblack",
-                FontSize = 10
-            };
-            _lblLoot.SetPosition(20, 180);
-            _lblLoot.SetSize(260, 24);
-            _lblLoot.SetTextColor(Color.White, ComponentState.Normal);
-
-            _lblSpellCombat = new Label(this, "SpellCombatLabel")
-            {
-                Text = "Spell Combat",
-                FontName = "sourcesansproblack",
-                FontSize = 10
-            };
-            _lblSpellCombat.SetPosition(20, 260);
-            _lblSpellCombat.SetSize(260, 24);
-            _lblSpellCombat.SetTextColor(Color.White, ComponentState.Normal);
-
-            // --- Componentes (creados y posicionados explícitamente, como en tu referencia) ---
-            _stats = new BestiaryStatsComponent(this, "StatsComponent");
-            _stats.SetPosition(20, 50);
-            _stats.SetSize(560, 40);
-
-            _magic = new BestiaryMagicComponent(this, "MagicComponent");
-            _magic.SetPosition(20, 130);
-            _magic.SetSize(560, 40);
-
-            _loot = new BestiaryLootComponent(this, "LootComponent");
-            _loot.SetPosition(20, 210);
-            _loot.SetSize(560, 40);
-
-            _spellCombat = new BestiarySpellCombatComponent(this, "SpellCombatComponent");
-            _spellCombat.SetPosition(20, 290);
-            _spellCombat.SetSize(560, 40);
-
-            // Cargar UI JSON al final (igual que en la referencia)
-            LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
-
-            Reset();
+            return;
         }
 
-        protected override void EnsureInitialized()
-        {
-            // Igual que tu referencia: recargar layout JSON aquí también
-            LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
-
-            // Reubicar por si el skin ajusta algo
-            _stats.SetPosition(20, 50);
-            _magic.SetPosition(20, 130);
-            _loot.SetPosition(20, 210);
-            _spellCombat.SetPosition(20, 290);
-
-            _stats.SetSize(560, 40);
-            _magic.SetSize(560, 40);
-            _loot.SetSize(560, 40);
-            _spellCombat.SetSize(560, 40);
-
-            // Si tus componentes exponen CorrectWidth como antes, puedes llamarlo aquí:
-            _stats.CorrectWidth();
-            _magic.CorrectWidth();
-            _loot.CorrectWidth();
-            _spellCombat.CorrectWidth();
-
-            Reset();
-        }
-        public void Update()
-        {
-            if (!IsVisibleInParent)
-                return;
-
-            // Mantener layout y ancho correcto de cada bloque
-            // (igual que en EnsureInitialized, pero sin recargar el JSON)
-            _stats.SetPosition(20, 50);
-            _magic.SetPosition(20, 130);
-            _loot.SetPosition(20, 210);
-            _spellCombat.SetPosition(20, 290);
-
-            _stats.SetSize(560, 40);
-            _magic.SetSize(560, 40);
-            _loot.SetSize(560, 40);
-            _spellCombat.SetSize(560, 40);
-
-            _stats.CorrectWidth();
-            _magic.CorrectWidth();
-            _loot.CorrectWidth();
-            _spellCombat.CorrectWidth();
-        }
-
-        public override void Show()
-        {
-            Reset();
-            base.Show();
-        }
-
-        public override void Hide()
-        {
-            base.Hide();
-            Reset();
-        }
-
-        private void Reset()
-        {
-            _stats.Lock();
-            _magic.Lock();
-            _loot.Lock();
-            _spellCombat.Lock();
-        }
+        new Label(section, $"{title}_Content") { Text = "TODO", Margin = new Margin(0, 4, 0, 0) };
     }
 }

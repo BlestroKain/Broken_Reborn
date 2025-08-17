@@ -172,30 +172,48 @@ public partial class Npc : Entity
         {
             base.Die(generateLoot, killer);
 
-            if (killer is Player player)
+            if (killer is Player player && Descriptor.BestiaryRequirements.Count > 0)
             {
-                var changed = false;
+                var killUnlock = player.BestiaryUnlocks.FirstOrDefault(
+                    b => b.NpcId == Descriptor.Id && b.UnlockType == BestiaryUnlock.Kill
+                );
 
-                if (Descriptor.BestiaryUnlocks.TryGetValue(BestiaryUnlock.Kill, out _))
+                if (killUnlock == null)
                 {
-                    var unlock = player.BestiaryUnlocks.FirstOrDefault(
-                        b => b.NpcId == Descriptor.Id && b.UnlockType == BestiaryUnlock.Kill
-                    );
-
-                    if (unlock == null)
+                    killUnlock = new BestiaryUnlockInstance
                     {
-                        unlock = new BestiaryUnlockInstance
+                        NpcId = Descriptor.Id,
+                        UnlockType = BestiaryUnlock.Kill,
+                        Value = 0,
+                    };
+                    player.BestiaryUnlocks.Add(killUnlock);
+                }
+
+                killUnlock.Value++;
+                var kills = killUnlock.Value;
+                var changed = true;
+
+                if (kills > 0 && player.BestiaryUnlocks.All(b => b.NpcId != Descriptor.Id || b.UnlockType != BestiaryUnlock.Discovery))
+                {
+                    player.BestiaryUnlocks.Add(new BestiaryUnlockInstance
+                    {
+                        NpcId = Descriptor.Id,
+                        UnlockType = BestiaryUnlock.Discovery,
+                        Value = 1,
+                    });
+                }
+
+                foreach (var (unlock, required) in Descriptor.BestiaryRequirements)
+                {
+                    if (kills >= required && player.BestiaryUnlocks.All(b => b.NpcId != Descriptor.Id || b.UnlockType != unlock))
+                    {
+                        player.BestiaryUnlocks.Add(new BestiaryUnlockInstance
                         {
                             NpcId = Descriptor.Id,
-                            UnlockType = BestiaryUnlock.Kill,
-                            Value = 0,
-                        };
-                        player.BestiaryUnlocks.Add(unlock);
+                            UnlockType = unlock,
+                            Value = 1,
+                        });
                     }
-
-                    var previous = unlock.Value;
-                    unlock.Value++;
-                    changed = previous != unlock.Value;
                 }
 
                 if (changed)

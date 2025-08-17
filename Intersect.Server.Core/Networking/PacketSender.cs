@@ -2206,10 +2206,11 @@ public static partial class PacketSender
     public static void SendUnlockedBestiaryEntries(Player player)
     {
         var unlocks = player.BestiaryUnlocks
+            .Where(b => b.UnlockType != BestiaryUnlock.Kill && b.Value > 0)
             .GroupBy(b => b.NpcId)
             .ToDictionary(
                 g => g.Key,
-                g => g.ToDictionary(b => b.UnlockType, b => b.Value)
+                g => g.Select(b => (int)b.UnlockType).ToArray()
             );
 
         player.SendPacket(new UnlockedBestiaryEntriesPacket(unlocks));

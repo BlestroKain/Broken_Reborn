@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Intersect.Core;
 using Intersect.Editor.Content;
 using Intersect.Editor.Core;
@@ -60,6 +61,9 @@ internal sealed partial class PacketHandler
     public static GameObjectUpdated GameObjectUpdatedDelegate;
 
     public static MapUpdated MapUpdatedDelegate;
+
+    private static readonly Queue<MapPacket> sPendingMapPackets = new();
+    private static volatile bool sMapGridReady;
 
     public IApplicationContext Context { get; }
 
@@ -166,6 +170,21 @@ internal sealed partial class PacketHandler
     //MapPacket
     public void HandlePacket(IPacketSender packetSender, MapPacket packet)
     {
+        if (!sMapGridReady || Globals.MapGrid == null || !Globals.MapGrid.Loaded)
+        {
+            lock (sPendingMapPackets)
+            {
+                sPendingMapPackets.Enqueue(packet);
+            }
+
+            return;
+        }
+
+        ProcessMapPacket(packetSender, packet);
+    }
+
+    private void ProcessMapPacket(IPacketSender packetSender, MapPacket packet)
+    {
         if (packet.Deleted)
         {
             if (!MapInstance.TryGet(packet.MapId, out var existingMapToDelete))
@@ -178,6 +197,7 @@ internal sealed partial class PacketHandler
                 Globals.MainForm.EnterMap(MapList.List.FindFirstMap());
             }
 
+            Main.RemoveMap(existingMapToDelete);
             existingMapToDelete.Delete();
             return;
         }
@@ -191,7 +211,7 @@ internal sealed partial class PacketHandler
         receivedMap.SaveStateAsUnchanged();
         receivedMap.InitAutotiles();
         receivedMap.UpdateAdjacentAutotiles();
-        
+
         if (MapInstance.TryGet(packet.MapId, out var existingMap))
         {
             lock (existingMap.MapLock)
@@ -201,11 +221,13 @@ internal sealed partial class PacketHandler
                     Globals.CurrentMap = receivedMap;
                 }
 
+                Main.RemoveMap(existingMap);
                 existingMap.Delete();
             }
         }
 
         MapInstance.Lookup.Set(packet.MapId, receivedMap);
+        Main.AddMap(receivedMap);
         if (!Globals.InEditor && Globals.HasGameData)
         {
             Globals.CurrentMap = receivedMap;
@@ -324,7 +346,7 @@ internal sealed partial class PacketHandler
             {
                 continue;
             }
-                
+
             for (var x = currentMap.MapGridX - 1; x <= currentMap.MapGridX + 1; x++)
             {
                 if (x < 0 || x >= mapGrid.GridWidth)
@@ -342,9 +364,28 @@ internal sealed partial class PacketHandler
                 {
                     continue;
                 }
-                    
+
                 PacketSender.SendNeedMap(gridMapId);
             }
+        }
+    }
+
+    private void FlushPendingMapPackets(IPacketSender packetSender)
+    {
+        while (true)
+        {
+            MapPacket pending;
+            lock (sPendingMapPackets)
+            {
+                if (sPendingMapPackets.Count == 0)
+                {
+                    break;
+                }
+
+                pending = sPendingMapPackets.Dequeue();
+            }
+
+            ProcessMapPacket(packetSender, pending);
         }
     }
 
@@ -421,6 +462,8 @@ internal sealed partial class PacketHandler
         if (Globals.MapGrid != null)
         {
             Globals.MapGrid.Load(packet.EditorGrid);
+            sMapGridReady = true;
+            FlushPendingMapPackets(packetSender);
             if (Globals.CurrentMap != null && Globals.MapGrid != null && Globals.MapGrid.Loaded)
             {
                 for (var y = Globals.CurrentMap.MapGridY + 1; y >= Globals.CurrentMap.MapGridY - 1; y--)

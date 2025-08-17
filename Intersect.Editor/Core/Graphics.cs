@@ -1569,119 +1569,131 @@ public static partial class Graphics
             return;
         }
 
-        var tmpMap = Globals.CurrentMap;
-        if (tmpMap == null)
+        if (map == null || Globals.MapGrid == null || !Globals.MapGrid.Loaded)
         {
             return;
         }
 
-        int x1 = 0, y1 = 0, x2 = 0, y2 = 0, xoffset = 0, yoffset = 0;
-
-        x1 = 0;
-        x2 = Options.Instance.Map.MapWidth;
-        y1 = 0;
-        y2 = Options.Instance.Map.MapHeight;
-        xoffset = CurrentView.Left + gridX * Options.Instance.Map.TileWidth * Options.Instance.Map.MapWidth;
-        yoffset = CurrentView.Top + gridY * Options.Instance.Map.TileHeight * Options.Instance.Map.MapHeight;
-        if (gridX != 0 || gridY != 0)
+        try
         {
-            tmpMap = map;
-        }
-
-        if (screenShotting)
-        {
-            xoffset -= CurrentView.Left;
-            yoffset -= CurrentView.Top;
-        }
-
-        if (gridX == 0 && gridY == 0)
-        {
-            if ((!HideTilePreview || Globals.Dragging) && !screenShotting)
+            var tmpMap = Globals.CurrentMap;
+            if (tmpMap == null)
             {
-                tmpMap = TilePreviewStruct;
+                return;
+            }
+
+            int x1 = 0, y1 = 0, x2 = 0, y2 = 0, xoffset = 0, yoffset = 0;
+
+            x1 = 0;
+            x2 = Options.Instance.Map.MapWidth;
+            y1 = 0;
+            y2 = Options.Instance.Map.MapHeight;
+            xoffset = CurrentView.Left + gridX * Options.Instance.Map.TileWidth * Options.Instance.Map.MapWidth;
+            yoffset = CurrentView.Top + gridY * Options.Instance.Map.TileHeight * Options.Instance.Map.MapHeight;
+            if (gridX != 0 || gridY != 0)
+            {
+                tmpMap = map;
+            }
+
+            if (screenShotting)
+            {
+                xoffset -= CurrentView.Left;
+                yoffset -= CurrentView.Top;
+            }
+
+            if (gridX == 0 && gridY == 0)
+            {
+                if ((!HideTilePreview || Globals.Dragging) && !screenShotting)
+                {
+                    tmpMap = TilePreviewStruct;
+                }
+            }
+
+            if (tmpMap == null)
+            {
+                return;
+            }
+
+            for (var y = y1; y < y2; y++)
+            {
+                for (var x = x1; x < x2; x++)
+                {
+                    var tmpEvent = tmpMap.FindEventAt(x, y);
+                    if (tmpEvent == null)
+                    {
+                        continue;
+                    }
+
+                    if (tmpEvent.Pages[0].Graphic == null)
+                    {
+                        continue;
+                    }
+
+                    var tmpGraphic = tmpEvent.Pages[0].Graphic;
+                    if (TextUtils.IsNone(tmpGraphic.Filename))
+                    {
+                        continue;
+                    }
+
+                    Texture2D eventTex = null;
+                    var destinationX = x * Options.Instance.Map.TileWidth + xoffset;
+                    var destinationY = y * Options.Instance.Map.TileHeight + yoffset;
+                    var sourceX = 0;
+                    var sourceY = 0;
+                    var width = 0;
+                    var height = 0;
+
+                    switch (tmpGraphic.Type)
+                    {
+                        case EventGraphicType.Sprite: //Sprite
+                            eventTex = GameContentManager.GetTexture(
+                                GameContentManager.TextureType.Entity, tmpGraphic.Filename
+                            );
+                            if (eventTex == null)
+                            {
+                                continue;
+                            }
+
+                            sourceX = (int)tmpGraphic.X * (eventTex.Width / Options.Instance.Sprites.NormalFrames);
+                            sourceY = (int)tmpGraphic.Y * (eventTex.Height / Options.Instance.Sprites.Directions);
+                            width = (eventTex.Width / Options.Instance.Sprites.NormalFrames);
+                            height = (eventTex.Height / Options.Instance.Sprites.Directions);
+
+                            break;
+                        case EventGraphicType.Tileset: //Tile
+                            eventTex = GameContentManager.GetTexture(
+                                GameContentManager.TextureType.Tileset, tmpGraphic.Filename
+                            );
+                            if (eventTex == null)
+                            {
+                                continue;
+                            }
+
+                            sourceX = (int)tmpGraphic.X * Options.Instance.Map.TileWidth;
+                            sourceY = (int)tmpGraphic.Y * Options.Instance.Map.TileHeight;
+                            width = (tmpGraphic.Width + 1) * Options.Instance.Map.TileWidth;
+                            height = (tmpGraphic.Height + 1) * Options.Instance.Map.TileHeight;
+
+                            break;
+                    }
+
+                    if (height > Options.Instance.Map.TileHeight)
+                    {
+                        destinationY -= (height - Options.Instance.Map.TileHeight);
+                    }
+
+                    if (width > Options.Instance.Map.TileWidth)
+                    {
+                        destinationX -= (width  - Options.Instance.Map.TileWidth) / 2;
+                    }
+
+                    DrawTexture(eventTex, destinationX, destinationY, sourceX, sourceY, width, height, renderTarget);
+                }
             }
         }
-
-        if (tmpMap == null)
+        catch (Exception ex)
         {
-            return;
-        }
-
-        for (var y = y1; y < y2; y++)
-        {
-            for (var x = x1; x < x2; x++)
-            {
-                var tmpEvent = tmpMap.FindEventAt(x, y);
-                if (tmpEvent == null)
-                {
-                    continue;
-                }
-
-                if (tmpEvent.Pages[0].Graphic == null)
-                {
-                    continue;
-                }
-
-                var tmpGraphic = tmpEvent.Pages[0].Graphic;
-                if (TextUtils.IsNone(tmpGraphic.Filename))
-                {
-                    continue;
-                }
-
-                Texture2D eventTex = null;
-                var destinationX = x * Options.Instance.Map.TileWidth + xoffset;
-                var destinationY = y * Options.Instance.Map.TileHeight + yoffset;
-                var sourceX = 0;
-                var sourceY = 0;
-                var width = 0;
-                var height = 0;
-
-                switch (tmpGraphic.Type)
-                {
-                    case EventGraphicType.Sprite: //Sprite
-                        eventTex = GameContentManager.GetTexture(
-                            GameContentManager.TextureType.Entity, tmpGraphic.Filename
-                        );
-                        if (eventTex == null)
-                        {
-                            continue;
-                        }
-
-                        sourceX = (int)tmpGraphic.X * (eventTex.Width / Options.Instance.Sprites.NormalFrames);
-                        sourceY = (int)tmpGraphic.Y * (eventTex.Height / Options.Instance.Sprites.Directions);
-                        width = (eventTex.Width / Options.Instance.Sprites.NormalFrames);
-                        height = (eventTex.Height / Options.Instance.Sprites.Directions);
-
-                        break;
-                    case EventGraphicType.Tileset: //Tile
-                        eventTex = GameContentManager.GetTexture(
-                            GameContentManager.TextureType.Tileset, tmpGraphic.Filename
-                        );
-                        if (eventTex == null)
-                        {
-                            continue;
-                        }
-
-                        sourceX = (int)tmpGraphic.X * Options.Instance.Map.TileWidth;
-                        sourceY = (int)tmpGraphic.Y * Options.Instance.Map.TileHeight;
-                        width = (tmpGraphic.Width + 1) * Options.Instance.Map.TileWidth;
-                        height = (tmpGraphic.Height + 1) * Options.Instance.Map.TileHeight;
-
-                        break;
-                }
-
-                if (height > Options.Instance.Map.TileHeight)
-                {
-                    destinationY -= (height - Options.Instance.Map.TileHeight);
-                }
-
-                if (width > Options.Instance.Map.TileWidth)
-                {
-                    destinationX -= (width  - Options.Instance.Map.TileWidth) / 2;
-                }
-
-                DrawTexture(eventTex, destinationX, destinationY, sourceX, sourceY, width, height, renderTarget);
-            }
+            Intersect.Core.ApplicationContext.Context.Value?.Logger.LogError(ex, "DrawMapEvents failed defensively");
         }
     }
     private static void DrawMapOverlay(RenderTarget2D target)
@@ -1694,8 +1706,13 @@ public static partial class Graphics
         );
     }
 
-    public static Bitmap ScreenShotMap()
+    public static Bitmap? ScreenShotMap()
     {
+        if (Globals.MapGrid == null || !Globals.MapGrid.Loaded || Globals.CurrentMap == null)
+        {
+            return null;
+        }
+
         if (sScreenShotRenderTexture == null)
         {
             sScreenShotRenderTexture = CreateRenderTexture(

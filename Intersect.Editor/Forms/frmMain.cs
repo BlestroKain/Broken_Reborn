@@ -1407,7 +1407,7 @@ public partial class FrmMain : Form
             using (var fs = new FileStream(fileDialog.FileName, FileMode.OpenOrCreate))
             {
                 var screenshotTexture = Core.Graphics.ScreenShotMap();
-                screenshotTexture.Save(fs, System.Drawing.Imaging.ImageFormat.Png);
+                screenshotTexture?.Save(fs, System.Drawing.Imaging.ImageFormat.Png);
             }
         }
     }

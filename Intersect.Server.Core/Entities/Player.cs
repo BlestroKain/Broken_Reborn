@@ -203,6 +203,9 @@ public partial class Player : Entity
     //Variables
     public virtual List<PlayerVariable> Variables { get; set; } = [];
 
+    //Bestiary
+    public virtual List<BestiaryUnlockInstance> BestiaryUnlocks { get; set; } = [];
+
     [JsonIgnore, NotMapped]
     public bool IsValidPlayer => !IsDisposed && Client?.Entity == this;
 

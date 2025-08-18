@@ -43,9 +43,10 @@ public static class BestiaryController
                 var unlock = (BestiaryUnlock)val;
                 if (set.Add(unlock))
                 {
-                    OnUnlockGained?.Invoke(npcId, unlock);
+                    OnUnlockGained?.Invoke(npcId, unlock); // ✅ esto debe disparar Refresh en BeastTile
                 }
             }
         }
     }
+
 }

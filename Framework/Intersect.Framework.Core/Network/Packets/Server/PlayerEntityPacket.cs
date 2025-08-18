@@ -68,4 +68,7 @@ public partial class PlayerEntityPacket : EntityPacket
 
     [Key(40)]
     public byte GuildBackgroundB { get; set; }
+
+    [Key(41)]
+    public int AvailableSpellPoints { get; set; }
 }

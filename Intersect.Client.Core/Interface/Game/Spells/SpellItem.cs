@@ -1,108 +1,151 @@
+using System;
 using Intersect.Client.Core;
 using Intersect.Client.Framework.Content;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
-using Intersect.Client.Framework.Gwen.DragDrop;
 using Intersect.Client.Framework.Gwen.Input;
-using Intersect.Client.Framework.Input;
+using Intersect.Client.Interface.Game;
 using Intersect.Client.General;
-using Intersect.Client.Interface.Game.Hotbar;
-using Intersect.Client.Localization;
-using Intersect.Configuration;
+using Intersect.Client.Framework.GenericClasses;
 using Intersect.GameObjects;
+using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Utilities;
+using Intersect.Client.Framework.Input;
 
 namespace Intersect.Client.Interface.Game.Spells;
 
 public partial class SpellItem : SlotItem
 {
-    // Controls
+    public Guid SpellId { get; }
+
+    private readonly Label _nameLabel;
+    private readonly Label _levelPips;
     private readonly Label _cooldownLabel;
-    private readonly SpellsWindow _spellWindow;
+    private readonly SpellsWindow _window;
 
-    // Context Menu Handling
-    private readonly MenuItem _useSpellMenuItem;
-    private readonly MenuItem _forgetSpellMenuItem;
+    private SpellProperties _properties;
 
-    public SpellItem(SpellsWindow spellWindow, Base parent, int index, ContextMenu contextMenu)
-        : base(parent, nameof(SpellItem), index, contextMenu)
+    public SpellItem(SpellsWindow window, Base parent, int index, Guid spellId, SpellProperties properties)
+        : base(parent, $"{nameof(SpellItem)}{index}", index, null)
     {
-        _spellWindow = spellWindow;
+        _window = window;
+        SpellId = spellId;
+        _properties = properties;
+
         TextureFilename = "spellitem.png";
 
         Icon.HoverEnter += Icon_HoverEnter;
         Icon.HoverLeave += Icon_HoverLeave;
-        Icon.Clicked += Icon_Clicked;
-        Icon.DoubleClicked += Icon_DoubleClicked;
+        Icon.Clicked += Item_Clicked;
 
-        _cooldownLabel = new Label(this, "CooldownLabel")
+        _cooldownLabel = new Label(this, $"CooldownLabel{index}")
         {
-            IsVisibleInParent = false,
             FontName = "sourcesansproblack",
             FontSize = 8,
-            TextColor = new Color(0, 255, 255, 255),
+            IsVisibleInParent = false,
             Alignment = [Alignments.Center],
             BackgroundTemplateName = "quantity.png",
             Padding = new Padding(2),
+            TextColor = new Color(0, 255, 255, 255),
+        };
+
+        _nameLabel = new Label(this, $"NameLabel{index}")
+        {
+            FontName = "sourcesansproblack",
+            FontSize = 10,
+        };
+
+        _levelPips = new Label(this, $"LevelLabel{index}")
+        {
+            FontName = "sourcesansproblack",
+            FontSize = 10,
         };
 
         LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
 
-        contextMenu.ClearChildren();
-        _useSpellMenuItem = contextMenu.AddItem(Strings.SpellContextMenu.Cast.ToString());
-        _useSpellMenuItem.Clicked += _useSpellMenuItem_Clicked;
-        _forgetSpellMenuItem = contextMenu.AddItem(Strings.SpellContextMenu.Forget.ToString());
-        _forgetSpellMenuItem.Clicked += _forgetSpellMenuItem_Clicked;
-        contextMenu.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+        _nameLabel.SetPosition(40, 0);
+        _levelPips.SetPosition(40, 20);
+
+        Refresh(properties);
     }
 
-    #region Context Menu
-
-    protected override void OnContextMenuOpening(ContextMenu contextMenu)
+    private void Item_Clicked(Base sender, MouseButtonState args)
     {
-        // Clear out the old options.
-        contextMenu.ClearChildren();
+        if (args.MouseButton == MouseButton.Left)
+        {
+            _window.SelectSpell(SpellId);
+        }
+    }
 
-        if (Globals.Me?.Spells is not { Length: > 0 } spellSlots)
+    public void Refresh(SpellProperties properties)
+    {
+        _properties = properties;
+        var level = Globals.Me?.Spellbook.GetLevel(SpellId) ?? 1;
+        _levelPips.Text = BuildPips(level);
+
+        if (SpellDescriptor.TryGet(SpellId, out var descriptor))
+        {
+            var tex = GameContentManager.Current.GetTexture(TextureType.Spell, descriptor.Icon);
+            if (tex != null)
+            {
+                Icon.Texture = tex;
+                Icon.IsVisibleInParent = true;
+            }
+
+            _nameLabel.Text = descriptor.Name;
+        }
+    }
+
+    private static string BuildPips(int level)
+    {
+        var filled = new string('\u25CF', level);
+        var empty = new string('\u25CB', Math.Max(0, 5 - level));
+        return filled + empty;
+    }
+
+    public override void Update()
+    {
+        // Maintain cooldown label similar to original slot items
+        if (Globals.Me == default)
         {
             return;
         }
 
-        // No point showing a menu for blank space.
-        if (!SpellDescriptor.TryGet(spellSlots[SlotIndex].Id, out var spell))
+        var slotIndex = -1;
+        var spells = Globals.Me.Spells;
+        if (spells != null)
         {
+            for (var i = 0; i < spells.Length; i++)
+            {
+                if (spells[i].Id == SpellId)
+                {
+                    slotIndex = i;
+                    break;
+                }
+            }
+        }
+
+        if (slotIndex < 0)
+        {
+            _cooldownLabel.IsVisibleInParent = false;
+            Icon.RenderColor.A = 255;
             return;
         }
 
-        // Add our use spell option.
-        contextMenu.AddChild(_useSpellMenuItem);
-        _useSpellMenuItem.SetText(Strings.SpellContextMenu.Cast.ToString(spell.Name));
-
-        // If this spell is not bound, allow users to forget it!
-        if (!spell.Bound)
+        if (!Globals.Me.IsSpellOnCooldown(slotIndex))
         {
-            contextMenu.AddChild(_forgetSpellMenuItem);
-            _forgetSpellMenuItem.SetText(Strings.SpellContextMenu.Forget.ToString(spell.Name));
+            _cooldownLabel.IsVisibleInParent = false;
+            Icon.RenderColor.A = 255;
+            return;
         }
 
-        base.OnContextMenuOpening(contextMenu);
+        _cooldownLabel.IsVisibleInParent = !Icon.IsDragging;
+        var remaining = Globals.Me.GetSpellRemainingCooldown(slotIndex);
+        _cooldownLabel.Text = TimeSpan.FromMilliseconds(remaining).WithSuffix("0.0");
+        Icon.RenderColor.A = 100;
     }
-
-    private void _useSpellMenuItem_Clicked(Base sender, MouseButtonState arguments)
-    {
-        Globals.Me?.TryUseSpell(SlotIndex);
-    }
-
-    private void _forgetSpellMenuItem_Clicked(Base sender, MouseButtonState arguments)
-    {
-        Globals.Me?.TryForgetSpell(SlotIndex);
-    }
-
-    #endregion
-
-    #region Mouse Events
 
     private void Icon_HoverEnter(Base? sender, EventArgs? arguments)
     {
@@ -116,126 +159,12 @@ public partial class SpellItem : SlotItem
             return;
         }
 
-        if (Globals.Me?.Spells is not { Length: > 0 } spellSlots)
-        {
-            return;
-        }
-
-        Interface.GameUi.SpellDescriptionWindow?.Show(spellSlots[SlotIndex].Id);
+        Interface.GameUi.SpellDescriptionWindow?.Show(SpellId);
     }
 
     private void Icon_HoverLeave(Base sender, EventArgs arguments)
     {
         Interface.GameUi.SpellDescriptionWindow?.Hide();
     }
-
-    private void Icon_Clicked(Base sender, MouseButtonState arguments)
-    {
-        if (arguments.MouseButton is MouseButton.Right)
-        {
-            if (ClientConfiguration.Instance.EnableContextMenus)
-            {
-                OpenContextMenu();
-            }
-            else
-            {
-                Globals.Me?.TryForgetSpell(SlotIndex);
-            }
-        }
-    }
-
-    private void Icon_DoubleClicked(Base sender, MouseButtonState arguments)
-    {
-        Globals.Me?.TryUseSpell(SlotIndex);
-    }
-
-    #endregion
-
-    #region Drag and Drop
-
-    public override bool DragAndDrop_HandleDrop(Package package, int x, int y)
-    {
-        if (Globals.Me is not { } player)
-        {
-            return false;
-        }
-
-        var targetNode = Interface.FindComponentUnderCursor();
-
-        // Find the first parent acceptable in that tree that can accept the package
-        while (targetNode != default)
-        {
-            switch (targetNode)
-            {
-                case SpellItem spellItem:
-                    player.SwapSpells(SlotIndex, spellItem.SlotIndex);
-                    return true;
-
-                case HotbarItem hotbarItem:
-                    player.AddToHotbar(hotbarItem.SlotIndex, 1, SlotIndex);
-                    return true;
-
-                default:
-                    targetNode = targetNode.Parent;
-                    break;
-            }
-        }
-
-        // If we've reached the top of the tree, we can't drop here, so cancel drop
-        return false;
-    }
-
-    #endregion
-
-    public override void Update()
-    {
-        if (Globals.Me == default)
-        {
-            return;
-        }
-
-        if (Globals.Me?.Spells is not { Length: > 0 } spellSlots)
-        {
-            return;
-        }
-
-        if (!SpellDescriptor.TryGet(spellSlots[SlotIndex].Id, out var spell))
-        {
-            Icon.Hide();
-            Icon.Texture = null;
-            _cooldownLabel.Hide();
-            return;
-        }
-
-        _cooldownLabel.IsVisibleInParent = !Icon.IsDragging && Globals.Me.IsSpellOnCooldown(SlotIndex);
-        if (_cooldownLabel.IsVisibleInParent)
-        {
-            var itemCooldownRemaining = Globals.Me.GetSpellRemainingCooldown(SlotIndex);
-            _cooldownLabel.Text = TimeSpan.FromMilliseconds(itemCooldownRemaining).WithSuffix("0.0");
-            Icon.RenderColor.A = 100;
-        }
-        else
-        {
-            Icon.RenderColor.A = 255;
-        }
-
-        if (Path.GetFileName(Icon.Texture?.Name) != spell.Icon)
-        {
-            var spellIconTexture = GameContentManager.Current.GetTexture(TextureType.Spell, spell.Icon);
-            if (spellIconTexture != null)
-            {
-                Icon.Texture = spellIconTexture;
-                Icon.RenderColor.A = (byte)(_cooldownLabel.IsVisibleInParent ? 100 : 255);
-                Icon.IsVisibleInParent = true;
-            }
-            else
-            {
-                if (Icon.Texture != null)
-                {
-                    Icon.Texture = null;
-                    Icon.IsVisibleInParent = false;
-                }
-            }
-        }
-    }
 }
+

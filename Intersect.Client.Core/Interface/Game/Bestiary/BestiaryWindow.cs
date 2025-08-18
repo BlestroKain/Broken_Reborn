@@ -1,27 +1,28 @@
 using Intersect.Client.Controllers;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen;
-
 using Intersect.Client.Utilities;
 using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.GameObjects;
-using Intersect.Client.Interface;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Core;
 using Intersect.Client.Localization;
 using Intersect.Framework.Core.GameObjects.Items;
 using System.Drawing;
 using Intersect;
+using Intersect.Enums;
 namespace Intersect.Client.Interface.Game.Bestiary;
 public sealed class BestiaryWindow : Window
 {
     private readonly ScrollControl _tilesScroll;
-    private readonly ImagePanel _detailsPanel;
+    private readonly ScrollControl _detailsScroll;
     private readonly TextBox _searchBox;
     private readonly Button _sortButton;
     private bool _sortAsc = true;
     private readonly List<BeastTile> _tiles = new();
     private Guid? _selectedNpcId;
+    private Label statLbl;
+    private BestiaryStatsPanel _statsPanel;
 
     public BestiaryWindow(Canvas canvas)
         : base(canvas, Strings.Bestiary.Title, false, nameof(BestiaryWindow))
@@ -31,28 +32,28 @@ public sealed class BestiaryWindow : Window
         IsResizable = false;
         IsClosable = true;
 
-        _searchBox = new TextBox(this) { PlaceholderText = "Buscar...", Margin = new Margin(8, 8, 0, 0) };
+        _searchBox = new TextBox(this,$"Searcher") { PlaceholderText = "Buscar...", Margin = new Margin(8, 8, 0, 0) };
         _searchBox.SetPosition(16, 8);
-        _searchBox.SetSize(280, 30);
+        _searchBox.SetSize(280, 40);
         _searchBox.TextChanged += (_, _) => RebuildTiles();
 
-        _sortButton = new Button(this) { Text = "↕", Margin = new Margin(0, 8, 0, 0) };
+        _sortButton = new Button(this,$"SortBtuttom") { Text = "↕", Margin = new Margin(0, 8, 0, 0) };
         _sortButton.SetSize(30, 30);
         _sortButton.SetPosition(304, 8);
         _sortButton.Clicked += (_, _) => { _sortAsc = !_sortAsc; RebuildTiles(); };
 
-        _tilesScroll = new ScrollControl(this);
-
-
+        _tilesScroll = new ScrollControl(this, $"MobsControl");
         _tilesScroll.EnableScroll(false, true);
-        
         _tilesScroll.SetPosition(16, 50);
         _tilesScroll.SetSize(320, 440);
 
-        _detailsPanel = new ImagePanel(this);
-        _detailsPanel.SetPosition(352, 16);
-        _detailsPanel.SetSize(340, 480);
-
+        _detailsScroll = new ScrollControl(this, $"DetailsControl");
+        _detailsScroll.SetPosition(352, 16);
+        _detailsScroll.SetSize(340, 480);
+        _detailsScroll.EnableScroll(false, true);
+     
+        _detailsScroll.AutoHideBars = true;
+      
         LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
 
         BestiaryController.InitializeAllBeasts();
@@ -129,18 +130,22 @@ public sealed class BestiaryWindow : Window
 
     private void ShowNpcDetails(Guid npcId)
     {
-        _detailsPanel.DeleteAllChildren();
+        _detailsScroll.DeleteAllChildren();
+        _statsPanel = null;
 
-        if (!NPCDescriptor.TryGet(npcId, out var desc)) return;
+        if (!NPCDescriptor.TryGet(npcId, out var desc))
+        {
+            return;
+        }
 
         int yOffset = 0;
-        const int spacing = 26;
 
-        var title = new Label(_detailsPanel)
+        var title = new Label(_detailsScroll, "NpcTitle")
         {
             Text = desc.Name,
             FontName = "sourcesansproblack",
             FontSize = 14,
+            TextColorOverride = Color.White,
         };
         title.SetPosition(10, yOffset);
         title.SetSize(300, 30);
@@ -158,12 +163,13 @@ public sealed class BestiaryWindow : Window
     {
         var unlocked = BestiaryController.HasUnlock(npcId, unlock);
 
-        var sectionTitle = new Label(_detailsPanel)
+        var sectionTitle = new Label(_detailsScroll, $"{unlock}SectionTitle")
         {
             Text = title,
             FontName = "sourcesansproblack",
             FontSize = 11,
-            TextColorOverride= Intersect.Color.White,
+            TextColorOverride = Color.White,
+            AutoSizeToContents = true,
         };
         sectionTitle.SetPosition(10, yOffset);
         sectionTitle.SetSize(300, 22);
@@ -171,16 +177,25 @@ public sealed class BestiaryWindow : Window
 
         if (!unlocked)
         {
+            // Si la sección es de estadísticas y no está desbloqueada, oculta
+            // el panel de estadísticas para evitar mostrar datos stale.
+            if (unlock == BestiaryUnlock.Stats && _statsPanel != null)
+            {
+                _statsPanel.Hide();
+            }
+
             var killsReq = desc.BestiaryRequirements.TryGetValue(unlock, out var req) ? req : 0;
             var currentKills = BestiaryController.GetKillCount(npcId);
             var lockedText = killsReq > 0
                 ? $"🔒 Derrota {currentKills}/{killsReq} veces para desbloquear."
                 : "🔒 Información bloqueada.";
 
-            var label = new Label(_detailsPanel)
+            var label = new Label(_detailsScroll, $"{unlock}LockedLabel")
             {
                 Text = lockedText,
                 FontSize = 10,
+                TextColorOverride = Color.White,
+                AutoSizeToContents = true,
             };
             label.SetPosition(20, yOffset);
             label.SetSize(300, 22);
@@ -192,35 +207,45 @@ public sealed class BestiaryWindow : Window
         switch (unlock)
         {
             case BestiaryUnlock.Stats:
-                foreach (var stat in desc.StatsLookup)
+                if (_statsPanel == null)
                 {
-                    var statLbl = new Label(_detailsPanel)
-                    {
-                        Text = $"{Strings.ItemDescription.StatCounts[(int)stat.Key]}: {stat.Value}",
-                        FontSize = 10
-                    };
-                    statLbl.SetPosition(20, yOffset);
-                    statLbl.SetSize(300, 20);
-                    yOffset += 20;
+                    _statsPanel = new BestiaryStatsPanel(_detailsScroll);
                 }
+
+                _statsPanel.SetPosition(20, yOffset);
+                _statsPanel.Show();
+                _statsPanel.UpdateData(desc);
+                yOffset += _statsPanel.Height + 8;
                 break;
+
 
             case BestiaryUnlock.Drops:
-                foreach (var drop in desc.Drops)
-                {
-                    var item = ItemDescriptor.Get(drop.ItemId);
-                    if (item == null) continue;
+                
+                    const int maxPerRow = 6;
+                    const int iconSize = 40;
+                    const int spacing = 6;
+                    int index = 0;
 
-                    var dropLbl = new Label(_detailsPanel)
+                    foreach (var drop in desc.Drops)
                     {
-                        Text = $"- {item.Name} ({drop.Chance}% chance)",
-                        FontSize = 10
-                    };
-                    dropLbl.SetPosition(20, yOffset);
-                    dropLbl.SetSize(300, 20);
-                    yOffset += 20;
-                }
-                break;
+                        if (!ItemDescriptor.TryGet(drop.ItemId, out _)) continue;
+
+                        var col = index % maxPerRow;
+                        var row = index / maxPerRow;
+
+                        var dropDisplay = new BestiaryItemDisplay(_detailsScroll, drop.ItemId, drop.Chance);
+                        int x = 20 + col * (iconSize + spacing);
+                        int y = yOffset + row * (iconSize + spacing);
+                        dropDisplay.SetPosition(x, y);
+
+                        index++;
+                    }
+
+                    // Aumenta yOffset según las filas usadas
+                    int totalRows = (index + maxPerRow - 1) / maxPerRow;
+                    yOffset += totalRows * (iconSize + spacing);
+                
+                    break;           
 
             case BestiaryUnlock.Spells:
                 foreach (var spellId in desc.Spells)
@@ -228,40 +253,42 @@ public sealed class BestiaryWindow : Window
                     var spell = SpellDescriptor.Get(spellId);
                     if (spell == null) continue;
 
-                    var spellLbl = new Label(_detailsPanel)
-                    {
-                        Text = $"- {spell.Name}",
-                        FontSize = 10
-                    };
-                    spellLbl.SetPosition(20, yOffset);
-                    spellLbl.SetSize(300, 20);
-                    yOffset += 20;
+                    var spellDisplay = new BestiarySpellDisplay(_detailsScroll, spell);
+                    spellDisplay.SetPosition(20, yOffset);
+                    yOffset += spellDisplay.Height + 4;
                 }
                 break;
 
             case BestiaryUnlock.Behavior:
-                AddText($"Agresivo: {(desc.Aggressive ? "Sí" : "No")}", ref yOffset);
-                AddText($"Movimiento: {desc.Movement}", ref yOffset);
-                AddText($"Flee HP %: {desc.FleeHealthPercentage}%", ref yOffset);
-                AddText($"Swarm: {(desc.Swarm ? "Sí" : "No")}", ref yOffset);
+                AddText($"Agresivo: {(desc.Aggressive ? "Sí" : "No")}", ref yOffset, "AggressiveLabel");
+                AddText($"Movimiento: {desc.Movement}", ref yOffset, "MovementLabel");
+                AddText($"Flee HP %: {desc.FleeHealthPercentage}%", ref yOffset, "FleeHpLabel");
+                AddText($"Swarm: {(desc.Swarm ? "Sí" : "No")}", ref yOffset, "SwarmLabel");
                 break;
 
             case BestiaryUnlock.Lore:
-                AddText("(Aquí puedes insertar un sistema de descripciones opcionales por NPC)", ref yOffset);
+                AddText("(Aquí puedes insertar un sistema de descripciones opcionales por NPC)", ref yOffset, "LoreLabel");
                 break;
         }
+
+        yOffset += 4;
     }
 
-    private void AddText(string content, ref int yOffset)
+    private void AddText(string content, ref int yOffset, string name)
     {
-        var lbl = new Label(_detailsPanel)
+        var lbl = new Label(_detailsScroll, name)
         {
             Text = content,
-            FontSize = 10
+            FontSize = 10,
+            TextColorOverride = Color.White,
+            AutoSizeToContents = true,
+            
         };
         lbl.SetPosition(20, yOffset);
-        lbl.SetSize(300, 20);
-        yOffset += 20;
+        lbl.SetSize(300, 30);
+        lbl.SizeToContents();
+        yOffset += lbl.Height + 4;
+      
     }
 
     internal void Update()

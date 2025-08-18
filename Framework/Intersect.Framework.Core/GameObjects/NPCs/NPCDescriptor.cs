@@ -13,9 +13,7 @@ namespace Intersect.Framework.Core.GameObjects.NPCs;
 
 public enum BestiaryUnlock
 {
-    Kill = 0,
-    Discovery = 1,
-    HpBar = 2,
+    Kill = 0,      
     Stats = 3,
     Drops = 4,
     Spells = 5,
@@ -34,8 +32,6 @@ public partial class NPCDescriptor : DatabaseObject<NPCDescriptor>, IFolderable
 
     [NotMapped]
     public List<Drop> Drops { get; set; }= [];
-
-    public string BestiaryIcon { get; set; } = string.Empty;
 
     public bool HiddenUntilDefeated { get; set; } = false;
 

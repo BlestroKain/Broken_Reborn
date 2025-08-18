@@ -2811,6 +2811,13 @@ public partial class Player : Entity, IPlayer
             }
         }
 
+        if (borderColor is not { A: > 0 })
+        {
+            borderColor = textColor == Color.Black ? Color.White : Color.Black;
+        }
+
+        backgroundColor = Color.Transparent;
+
         DrawNameAndLabels(textColor, borderColor, backgroundColor);
     }
 

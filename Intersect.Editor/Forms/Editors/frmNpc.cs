@@ -395,7 +395,9 @@ public partial class FrmNpc : EditorForm
             UpdateDropValues();
             chkIndividualLoot.Checked = mEditorItem.IndividualizedLoot;
 
-            UpdateBestiaryUnlockValues();
+            // Load existing bestiary unlock requirements from the descriptor
+            // so they are displayed when an NPC is selected.
+            LoadBestiaryUnlocks();
 
             DrawNpcSprite();
             if (mChanged.IndexOf(mEditorItem) == -1)
@@ -467,35 +469,6 @@ public partial class FrmNpc : EditorForm
         gfx.Dispose();
 
         picNpc.BackgroundImage = picSpriteBmp;
-    }
-
-    private void UpdateBestiaryUnlockValues()
-    {
-        mEditorItem.BestiaryRequirements.Clear();
-        var seenTypes = new HashSet<BestiaryUnlock>();
-        var duplicates = new List<BestiaryUnlock>();
-
-        foreach (var kvp in _bestiaryUnlocks)
-        {
-            if (!seenTypes.Add(kvp.UnlockType))
-            {
-                // Ya existe un unlock con ese tipo
-                duplicates.Add(kvp.UnlockType);
-                continue;
-            }
-
-            mEditorItem.BestiaryRequirements[kvp.UnlockType] = kvp.Amount;
-        }
-
-        // Mostrar advertencia si hubo duplicados
-        if (duplicates.Count > 0)
-        {
-            var dupStr = string.Join(", ", duplicates.Select(d => d.ToString()));
-            MessageBox.Show($"Los siguientes tipos de desbloqueo están duplicados y no se guardarán múltiples veces: {dupStr}", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-        }
-
-        // Selecciona el primero si hay alguno
-        lstBestiary.SelectedIndex = _bestiaryUnlocks.Count > 0 ? 0 : -1;
     }
 
     private void SaveBestiaryUnlocks()

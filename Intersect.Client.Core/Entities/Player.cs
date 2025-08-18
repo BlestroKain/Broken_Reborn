@@ -2034,7 +2034,7 @@ public partial class Player : Entity, IPlayer
     public bool TryBlock()
     {
         var shieldIndex = Options.Instance.Equipment.ShieldSlot;
-        var myShieldIndex = MyEquipment.GetValueOrDefault(shieldIndex).FirstOrDefault(-1);
+        var myShieldIndex = MyEquipment?.GetValueOrDefault(shieldIndex)?.FirstOrDefault(-1) ?? -1;
 
         // Return false if character is attacking, or blocking or if they don't have a shield equipped.
         if (IsAttacking || IsBlocking || shieldIndex < 0 || myShieldIndex < 0)

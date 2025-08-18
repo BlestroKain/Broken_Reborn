@@ -208,6 +208,9 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
 
         foreach (var itm in player.Bank)
             Entry(itm).State = EntityState.Detached;
+
+        foreach (var itm in player.BestiaryUnlocks)
+            Entry(itm).State = EntityState.Detached;
     }
 
 }

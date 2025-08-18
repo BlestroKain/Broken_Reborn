@@ -10,6 +10,7 @@ using Intersect.Framework.Core.GameObjects.Events;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Framework.Core.GameObjects.Maps.Attributes;
+using Intersect.Framework.Core.Services;
 using Intersect.GameObjects;
 using Intersect.Network.Packets.Server;
 using Intersect.Server.Database;
@@ -411,14 +412,15 @@ public abstract partial class Entity : IEntity
     ///     Updates the entity's spell cooldown for the specified <paramref name="spellDescriptor"/>.
     ///     <para> This method is called when a spell is casted by an entity. </para>
     /// </summary>
-    public virtual void UpdateSpellCooldown(SpellDescriptor spellDescriptor, int spellSlot)
+    public virtual void UpdateSpellCooldown(SpellDescriptor spellDescriptor, int spellSlot, int? overrideCooldown = null)
     {
         if (spellSlot < 0 || spellSlot >= Options.Instance.Player.MaxSpells)
         {
             return;
         }
 
-        SpellCooldowns[Spells[spellSlot].SpellId] = Timing.Global.MillisecondsUtc + spellDescriptor.CooldownDuration;
+        var duration = overrideCooldown ?? spellDescriptor.CooldownDuration;
+        SpellCooldowns[Spells[spellSlot].SpellId] = Timing.Global.MillisecondsUtc + duration;
     }
 
     /// <summary>
@@ -1765,7 +1767,8 @@ public abstract partial class Entity : IEntity
         Entity target,
         SpellDescriptor spellDescriptor,
         bool onHitTrigger = false,
-        bool trapTrigger = false
+        bool trapTrigger = false,
+        SpellLevelingService.AdjustedSpell adjusted = null
     )
     {
         if (target is Resource || target is EventPageInstance)
@@ -1849,17 +1852,33 @@ public abstract partial class Entity : IEntity
         }
 
         var statBuffTime = -1;
-        var expireTime = Timing.Global.Milliseconds + spellDescriptor.Combat.Duration;
+        var duration = spellDescriptor.Combat.Duration;
+        if (adjusted != null)
+        {
+            var factor = spellDescriptor.Combat.Friendly
+                ? 1f + adjusted.BuffDurationFactor
+                : 1f + adjusted.DebuffDurationFactor;
+            duration = (int)(duration * factor);
+        }
+        var expireTime = Timing.Global.Milliseconds + duration;
         for (var i = 0; i < Enum.GetValues<Stat>().Length; i++)
         {
-            target.Stat[i]
-                .AddBuff(
-                    new Buff(spellDescriptor, spellDescriptor.Combat.StatDiff[i], spellDescriptor.Combat.PercentageStatDiff[i], expireTime)
-                );
-
-            if (spellDescriptor.Combat.StatDiff[i] != 0 || spellDescriptor.Combat.PercentageStatDiff[i] != 0)
+            var flat = spellDescriptor.Combat.StatDiff[i];
+            var percent = spellDescriptor.Combat.PercentageStatDiff[i];
+            if (adjusted != null)
             {
-                statBuffTime = spellDescriptor.Combat.Duration;
+                var strength = spellDescriptor.Combat.Friendly
+                    ? 1f + adjusted.BuffStrengthFactor
+                    : 1f + adjusted.DebuffStrengthFactor;
+                flat = (int)(flat * strength);
+                percent = (int)(percent * strength);
+            }
+
+            target.Stat[i].AddBuff(new Buff(spellDescriptor, flat, percent, expireTime));
+
+            if (flat != 0 || percent != 0)
+            {
+                statBuffTime = duration;
             }
         }
 
@@ -1867,19 +1886,25 @@ public abstract partial class Entity : IEntity
         {
             if (spellDescriptor.Combat.HoTDoT && spellDescriptor.Combat.HotDotInterval > 0)
             {
-                statBuffTime = spellDescriptor.Combat.Duration;
+                statBuffTime = duration;
             }
         }
 
         var damageHealth = spellDescriptor.Combat.VitalDiff[(int)Vital.Health];
         var damageMana = spellDescriptor.Combat.VitalDiff[(int)Vital.Mana];
+        var scaling = spellDescriptor.Combat.Scaling;
+        if (adjusted != null)
+        {
+            damageHealth = (int)(damageHealth * (1 + adjusted.PowerScalingBonus)) + adjusted.PowerBonusFlat;
+            scaling = (int)(scaling * (1 + adjusted.PowerScalingBonus));
+        }
 
         if ((spellDescriptor.Combat.Effect != SpellEffect.OnHit || onHitTrigger) &&
             spellDescriptor.Combat.Effect != SpellEffect.Shield)
         {
             Attack(
                 target, damageHealth, damageMana, (DamageType)spellDescriptor.Combat.DamageType,
-                (Stat)spellDescriptor.Combat.ScalingStat, spellDescriptor.Combat.Scaling, spellDescriptor.Combat.CritChance,
+                (Stat)spellDescriptor.Combat.ScalingStat, scaling, spellDescriptor.Combat.CritChance,
                 spellDescriptor.Combat.CritMultiplier, deadAnimations, aliveAnimations, false
             );
         }
@@ -1900,7 +1925,7 @@ public abstract partial class Entity : IEntity
                 {
                     // Else, apply the status
                     new Status(
-                        target, this, spellDescriptor, spellDescriptor.Combat.Effect, spellDescriptor.Combat.Duration,
+                        target, this, spellDescriptor, spellDescriptor.Combat.Effect, duration,
                         spellDescriptor.Combat.TransformSprite
                     );
 
@@ -2517,22 +2542,24 @@ public abstract partial class Entity : IEntity
             return;
         }
 
-        if (spellBase.VitalCost[(int)Vital.Mana] > 0)
+        var adjusted = SpellCastResolver.Resolve(this, spellBase);
+
+        if (adjusted.VitalCosts[(int)Vital.Mana] > 0)
         {
-            SubVital(Vital.Mana, spellBase.VitalCost[(int)Vital.Mana]);
+            SubVital(Vital.Mana, adjusted.VitalCosts[(int)Vital.Mana]);
         }
         else
         {
-            AddVital(Vital.Mana, -spellBase.VitalCost[(int)Vital.Mana]);
+            AddVital(Vital.Mana, -adjusted.VitalCosts[(int)Vital.Mana]);
         }
 
-        if (spellBase.VitalCost[(int)Vital.Health] > 0)
+        if (adjusted.VitalCosts[(int)Vital.Health] > 0)
         {
-            SubVital(Vital.Health, spellBase.VitalCost[(int)Vital.Health]);
+            SubVital(Vital.Health, adjusted.VitalCosts[(int)Vital.Health]);
         }
         else
         {
-            AddVital(Vital.Health, -spellBase.VitalCost[(int)Vital.Health]);
+            AddVital(Vital.Health, -adjusted.VitalCosts[(int)Vital.Health]);
         }
 
         try
@@ -2560,7 +2587,7 @@ public abstract partial class Entity : IEntity
                                 ); //Target Type 1 will be global entity
                             }
 
-                            TryAttack(this, spellBase);
+                            TryAttack(this, spellBase, adjusted: adjusted);
 
                             break;
                         case SpellTargetType.Single:
@@ -2578,25 +2605,26 @@ public abstract partial class Entity : IEntity
                                 }
                             }
 
-                            if (spellBase.Combat.HitRadius > 0) //Single target spells with AoE hit radius'
+                            if (adjusted.AoERadius > 0) //Single target spells with AoE hit radius'
                             {
                                 HandleAoESpell(
                                     spellId,
-                                    spellBase.Combat.HitRadius,
+                                    adjusted.AoERadius,
                                     CastTarget.MapId,
                                     CastTarget.X,
                                     CastTarget.Y,
-                                    null
+                                    null,
+                                    adjusted
                                 );
                             }
                             else
                             {
-                                TryAttack(CastTarget, spellBase);
+                                TryAttack(CastTarget, spellBase, adjusted: adjusted);
                             }
 
                             break;
                         case SpellTargetType.AoE:
-                            HandleAoESpell(spellId, spellBase.Combat.HitRadius, MapId, X, Y, null);
+                            HandleAoESpell(spellId, adjusted.AoERadius, MapId, X, Y, null, adjusted);
 
                             break;
                         case SpellTargetType.Projectile:
@@ -2714,7 +2742,7 @@ public abstract partial class Entity : IEntity
                     break;
             }
 
-            UpdateSpellCooldown(spellBase, spellSlot);
+            UpdateSpellCooldown(spellBase, spellSlot, adjusted.CooldownTimeMs);
         }
         finally
         {
@@ -2731,12 +2759,14 @@ public abstract partial class Entity : IEntity
         Guid startMapId,
         int startX,
         int startY,
-        Entity spellTarget
+        Entity spellTarget,
+        SpellLevelingService.AdjustedSpell adjusted = null
     )
     {
         var spellBase = SpellDescriptor.Get(spellId);
         if (spellBase != null)
         {
+            var spellAdjusted = adjusted ?? SpellCastResolver.Resolve(this, spellBase);
             var startMap = MapController.Get(startMapId);
             foreach (var instance in MapController.GetSurroundingMapInstances(startMapId, MapInstanceId, true))
             {
@@ -2760,7 +2790,7 @@ public abstract partial class Entity : IEntity
                                     }
                                 }
 
-                                TryAttack(entity, spellBase); //Handle damage
+                                TryAttack(entity, spellBase, adjusted: spellAdjusted); //Handle damage
                             }
                         }
                     }

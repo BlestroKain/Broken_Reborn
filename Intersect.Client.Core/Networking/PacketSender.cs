@@ -226,6 +226,11 @@ public static partial class PacketSender
         Network.SendPacket(new UseSpellPacket(slot, targetId, Globals.ShouldSoftRetargetOnSelfCast));
     }
 
+    public static void SendRequestSpellUpgrade(Guid spellId)
+    {
+        Network.SendPacket(new RequestSpellUpgradePacket(spellId));
+    }
+
     public static void SendUnequipItem(int slot)
     {
         Network.SendPacket(new UnequipItemPacket(slot));

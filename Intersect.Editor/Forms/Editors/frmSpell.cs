@@ -35,6 +35,7 @@ public partial class FrmSpell : EditorForm
     {
         ApplyHooks();
         InitializeComponent();
+        InitializeProgressionTab();
         Icon = Program.Icon;
         _btnSave = btnSave;
         _btnCancel = btnCancel;

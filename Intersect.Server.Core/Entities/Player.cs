@@ -19,7 +19,9 @@ using Intersect.Framework.Core.GameObjects.Maps.Attributes;
 using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.GameObjects.Quests;
+using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Framework.Core.GameObjects.Variables;
+using Intersect.Framework.Core.Services;
 using Intersect.GameObjects;
 using Intersect.Network;
 using Intersect.Network.Packets.Server;
@@ -37,6 +39,8 @@ using Intersect.Server.Maps;
 using Intersect.Server.Networking;
 using Intersect.Utilities;
 using Microsoft.Extensions.Logging;
+using Intersect.Framework.Core.Services;
+using Intersect.Server.Entities.Combat;
 using Newtonsoft.Json;
 using Stat = Intersect.Enums.Stat;
 using Intersect.Framework.Core.GameObjects.Guild;
@@ -84,6 +88,11 @@ public partial class Player : Entity
     public long Exp { get; set; }
 
     public int StatPoints { get; set; }
+
+    public int AvailableSpellPoints { get; set; }
+
+    [NotMapped, JsonIgnore]
+    public PlayerSpellbookState Spellbook { get; set; } = new();
 
     [Column("Equipment"), JsonIgnore]
     public string EquipmentJson
@@ -459,6 +468,8 @@ public partial class Player : Entity
                 spl.Set(Spell.None);
             }
         }
+
+        EnsureSpellbookEntries();
 
         OnlinePlayersById[Id] = this;
         _onlinePlayers.Add(this);
@@ -1036,16 +1047,27 @@ public partial class Player : Entity
     ///     Updates the player's spell cooldown for the specified <paramref name="spellDescriptor"/>.
     ///     <para> This method is called when a spell is casted by a player. </para>
     /// </summary>
-    public override void UpdateSpellCooldown(SpellDescriptor spellDescriptor, int spellSlot)
+    public override void UpdateSpellCooldown(SpellDescriptor spellDescriptor, int spellSlot, int? overrideCooldown = null)
     {
         if (spellSlot < 0 || spellSlot >= Options.Instance.Player.MaxSpells)
         {
             return;
         }
 
-        this.UpdateCooldown(spellDescriptor);
+        var cooldown = overrideCooldown ?? spellDescriptor.CooldownDuration;
 
-        // Trigger the global cooldown, if we're allowed to.
+        // Are we dealing with a cooldown group?
+        if (spellDescriptor.CooldownGroup.Trim().Length > 0)
+        {
+            UpdateCooldownGroup(GameObjectType.Spell, spellDescriptor.CooldownGroup, cooldown, spellDescriptor.IgnoreCooldownReduction);
+        }
+        else
+        {
+            var cooldownReduction = 1 - (spellDescriptor.IgnoreCooldownReduction ? 0 : GetEquipmentBonusEffect(ItemEffect.CooldownReduction) / 100f);
+            AssignSpellCooldown(spellDescriptor.Id, Timing.Global.MillisecondsUtc + (long)(cooldown * cooldownReduction));
+            PacketSender.SendSpellCooldown(this, spellDescriptor.Id);
+        }
+
         if (!spellDescriptor.IgnoreGlobalCooldown)
         {
             this.UpdateGlobalCooldown();
@@ -1131,6 +1153,8 @@ public partial class Player : Entity
             pkt.GuildSymbolB = Guild.SymbolB;
 
         }
+
+        pkt.AvailableSpellPoints = Spellbook.AvailableSpellPoints;
         return pkt;
     }
 
@@ -1338,6 +1362,8 @@ public partial class Player : Entity
             PacketSender.SendEntityDataToProximity(this);
             PacketSender.SendExperience(this);
         }
+
+        Save();
     }
 
     /// <summary>
@@ -1760,7 +1786,8 @@ public partial class Player : Entity
         Entity target,
         SpellDescriptor spellDescriptor,
         bool onHitTrigger = false,
-        bool trapTrigger = false
+        bool trapTrigger = false,
+        SpellLevelingService.AdjustedSpell adjusted = null
     )
     {
         if (!trapTrigger && !ValidTauntTarget(target)) //Traps ignore taunts.
@@ -1768,7 +1795,7 @@ public partial class Player : Entity
             return;
         }
 
-        base.TryAttack(target, spellDescriptor, onHitTrigger, trapTrigger);
+        base.TryAttack(target, spellDescriptor, onHitTrigger, trapTrigger, adjusted);
     }
 
     /// <summary>
@@ -5604,6 +5631,41 @@ public partial class Player : Entity
         return -1;
     }
 
+    public SpellProperties GetSpellProperties(Guid spellId)
+    {
+        if (!Spellbook.Spells.TryGetValue(spellId, out var properties))
+        {
+            properties = new SpellProperties();
+            Spellbook.Spells[spellId] = properties;
+        }
+
+        if (!Spellbook.SpellLevels.ContainsKey(spellId))
+        {
+            Spellbook.SpellLevels[spellId] = 1;
+        }
+
+        return properties;
+    }
+
+    public void EnsureSpellbookEntries()
+    {
+        foreach (var slot in Spells)
+        {
+            if (slot.SpellId != Guid.Empty)
+            {
+                if (!Spellbook.Spells.ContainsKey(slot.SpellId))
+                {
+                    Spellbook.Spells[slot.SpellId] = new SpellProperties();
+                }
+
+                if (!Spellbook.SpellLevels.ContainsKey(slot.SpellId))
+                {
+                    Spellbook.SpellLevels[slot.SpellId] = 1;
+                }
+            }
+        }
+    }
+
     public void SwapSpells(int spell1, int spell2)
     {
         var tmpInstance = Spells[spell2].Clone();
@@ -5828,6 +5890,8 @@ public partial class Player : Entity
             return;
         }
 
+        var adjusted = SpellCastResolver.Resolve(this, spellDescriptor);
+
         if (!CanCastSpell(spellDescriptor, target, true, softRetargetOnSelfCast, out var spellCastFailureReason))
         {
             switch (spellCastFailureReason)
@@ -5888,7 +5952,7 @@ public partial class Player : Entity
 
         if (CastTime == 0)
         {
-            CastTime = Timing.Global.Milliseconds + spellDescriptor.CastDuration;
+            CastTime = Timing.Global.Milliseconds + adjusted.CastTimeMs;
 
             //Remove stealth status.
             foreach (var status in CachedStatuses)
@@ -5946,6 +6010,8 @@ public partial class Player : Entity
             return;
         }
 
+        var adjusted = SpellCastResolver.Resolve(this, spellBase);
+
         switch (spellBase.SpellType)
         {
             case SpellType.Event:
@@ -5964,7 +6030,7 @@ public partial class Player : Entity
                 break;
         }
 
-        UpdateSpellCooldown(spellBase, spellSlot);
+        UpdateSpellCooldown(spellBase, spellSlot, adjusted.CooldownTimeMs);
 
         ConsumeSpellProjectile(spellBase);
     }

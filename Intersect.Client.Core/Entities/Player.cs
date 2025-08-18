@@ -29,6 +29,7 @@ using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Framework.Core.GameObjects.Maps.Attributes;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
+using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Framework.Reflection;
 using Intersect.GameObjects;
 using Intersect.Network.Packets.Server;
@@ -142,6 +143,8 @@ public partial class Player : Entity, IPlayer
     IReadOnlyDictionary<Guid, long> IPlayer.SpellCooldowns => SpellCooldowns;
 
     public Dictionary<Guid, long> SpellCooldowns { get; set; } = [];
+
+    public PlayerSpellbookState Spellbook { get; set; } = new();
 
     public int StatPoints { get; set; } = 0;
 
@@ -389,6 +392,7 @@ public partial class Player : Entity, IPlayer
         GuildBackgroundR = playerPacket.GuildBackgroundR;
         GuildBackgroundG = playerPacket.GuildBackgroundG;
         GuildBackgroundB = playerPacket.GuildBackgroundB;
+        Spellbook.AvailableSpellPoints = playerPacket.AvailableSpellPoints;
         GuildSymbolFile = playerPacket.GuildSymbolFile;
         GuildSymbolR = playerPacket.GuildSymbolR;
         GuildSymbolG = playerPacket.GuildSymbolG;
@@ -1466,6 +1470,22 @@ public partial class Player : Entity, IPlayer
         }
 
         return 0;
+    }
+
+    public SpellProperties GetSpellProperties(Guid spellId)
+    {
+        if (!Spellbook.Spells.TryGetValue(spellId, out var properties))
+        {
+            properties = new SpellProperties();
+            Spellbook.Spells[spellId] = properties;
+        }
+
+        if (!Spellbook.SpellLevels.ContainsKey(spellId))
+        {
+            Spellbook.SpellLevels[spellId] = 1;
+        }
+
+        return properties;
     }
 
     public void TryUseSpell(Guid spellId)

@@ -1632,21 +1632,18 @@ public partial class Entity : IEntity
             return;
         }
 
-        if (borderColor == null)
-        {
-            borderColor = Color.Transparent;
-        }
-
-        if (backgroundColor == null)
-        {
-            backgroundColor = Color.Transparent;
-        }
-
-        //If we have a non-transparent label color then use it, otherwise use the players name color
+        // If we have a non-transparent label color then use it, otherwise use the player's name color
         if (labelColor != null && labelColor.A != 0)
         {
             textColor = labelColor;
         }
+
+        if (borderColor == null || borderColor.Value.A == 0)
+        {
+            borderColor = textColor == Color.Black ? Color.White : Color.Black;
+        }
+
+        backgroundColor ??= Color.Transparent;
 
         var textSize = Graphics.Renderer.MeasureText(label, Graphics.EntityNameFont, Graphics.EntityNameFontSize, 1);
 
@@ -1688,34 +1685,34 @@ public partial class Entity : IEntity
             return;
         }
 
-        // Obtener el nivel del jugador
+        // Get the player's level
         var player = Globals.Me;
         if (player == null)
         {
             return;
         }
 
-        // Solo recalcular si el nivel del jugador o del NPC ha cambiado
+        // Only recalculate if the player's level has changed
         if (cachedNameColor == null || lastPlayerLevel != player.Level)
         {
-            int nivelDiferencia = Level - player.Level;
+            var levelDifference = Level - player.Level;
             lastPlayerLevel = player.Level;
 
-            if (nivelDiferencia >= 10)
+            if (levelDifference >= 10)
             {
-                cachedNameColor = Color.Black; // NPC tiene 10 niveles más que el jugador
+                cachedNameColor = Color.Black; // NPC is 10 levels above the player
             }
-            else if (nivelDiferencia >= 5)
+            else if (levelDifference >= 5)
             {
-                cachedNameColor = Color.Red; // NPC tiene 5 niveles más que el jugador
+                cachedNameColor = Color.Red; // NPC is 5 levels above the player
             }
-            else if (nivelDiferencia >= -2)
+            else if (levelDifference >= -2)
             {
-                cachedNameColor = Color.White; // NPC tiene hasta 2 niveles más que el jugador
+                cachedNameColor = Color.White; // NPC is up to 2 levels above the player
             }
-            else if (nivelDiferencia <= -5)
+            else
             {
-                cachedNameColor = Color.Green; // Jugador tiene 5 niveles más que el NPC
+                cachedNameColor = Color.Green; // Player is more than 2 levels above the NPC
             }
         }
 
@@ -1724,7 +1721,7 @@ public partial class Entity : IEntity
             textColor = cachedNameColor;
         }
 
-        //Check for npc colors
+        // Check for NPC colors
         if (textColor == null)
         {
             var color = Aggression switch
@@ -1744,15 +1741,12 @@ public partial class Entity : IEntity
             }
         }
 
-        if (borderColor == null)
+        if (borderColor == null || borderColor.Value.A == 0)
         {
-            borderColor = Color.Transparent;
+            borderColor = textColor == Color.Black ? Color.White : Color.Black;
         }
 
-        if (backgroundColor == null)
-        {
-            backgroundColor = Color.Transparent;
-        }
+        backgroundColor ??= Color.Transparent;
 
         var name = Name;
         if ((this is Player && Options.Instance.Player.ShowLevelByName) ||
@@ -1773,48 +1767,6 @@ public partial class Entity : IEntity
                 new FloatRect(0, 0, 1, 1),
                 new FloatRect(x - textSize.X / 2f - 4, y, textSize.X + 8, textSize.Y),
                 backgroundColor
-            );
-        }
-
-        // Dibujar borde blanco si el nombre es negro
-        if (cachedNameColor == Color.Black)
-        {
-            var outlineColor = Color.White;
-            Graphics.Renderer.DrawString(
-                name,
-                Graphics.EntityNameFont,
-                Graphics.EntityNameFontSize,
-                x - (int)Math.Ceiling(textSize.X / 2f) - 1,
-                (int)y - 1,
-                1,
-                outlineColor
-            );
-            Graphics.Renderer.DrawString(
-                name,
-                Graphics.EntityNameFont,
-                Graphics.EntityNameFontSize,
-                x - (int)Math.Ceiling(textSize.X / 2f) + 1,
-                (int)y - 1,
-                1,
-                outlineColor
-            );
-            Graphics.Renderer.DrawString(
-                name,
-                Graphics.EntityNameFont,
-                Graphics.EntityNameFontSize,
-                x - (int)Math.Ceiling(textSize.X / 2f) - 1,
-                (int)y + 1,
-                1,
-                outlineColor
-            );
-            Graphics.Renderer.DrawString(
-                name,
-                Graphics.EntityNameFont,
-                Graphics.EntityNameFontSize,
-                x - (int)Math.Ceiling(textSize.X / 2f) + 1,
-                (int)y + 1,
-                1,
-                outlineColor
             );
         }
 

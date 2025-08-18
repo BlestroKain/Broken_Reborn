@@ -21,6 +21,7 @@ public sealed class BestiaryWindow : Window
     private readonly Button _sortButton;
     private bool _sortAsc = true;
     private readonly List<BeastTile> _tiles = new();
+    private Guid? _selectedNpcId;
 
     public BestiaryWindow(Canvas canvas)
         : base(canvas, Strings.Bestiary.Title, false, nameof(BestiaryWindow))
@@ -55,7 +56,14 @@ public sealed class BestiaryWindow : Window
         LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
 
         BestiaryController.InitializeAllBeasts();
-        BestiaryController.OnUnlockGained += (_, _) => RefreshTilesState();
+        BestiaryController.OnUnlockGained += (npcId, _) =>
+        {
+            RefreshTilesState();
+            if (_selectedNpcId == npcId)
+            {
+                ShowNpcDetails(npcId);
+            }
+        };
 
         BuildTiles();
     }
@@ -113,7 +121,11 @@ public sealed class BestiaryWindow : Window
 
     private void RefreshTilesState() => _tiles.ForEach(t => t.RefreshState());
 
-    private void OnSelectNpc(Guid npcId) => ShowNpcDetails(npcId);
+    private void OnSelectNpc(Guid npcId)
+    {
+        _selectedNpcId = npcId;
+        ShowNpcDetails(npcId);
+    }
 
     private void ShowNpcDetails(Guid npcId)
     {

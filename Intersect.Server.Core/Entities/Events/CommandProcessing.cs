@@ -625,8 +625,17 @@ public static partial class CommandProcessing
                 return;
             }
 
+            if (player.BestiaryUnlocks.Any(
+                    b => b.NpcId == command.NpcId && b.UnlockType == command.UnlockType
+                ))
+            {
+                return;
+            }
+
             unlock = new BestiaryUnlockInstance
             {
+                Player = player,
+                PlayerId = player.Id,
                 NpcId = command.NpcId,
                 UnlockType = command.UnlockType,
                 Value = 0,

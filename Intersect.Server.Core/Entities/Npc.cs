@@ -187,22 +187,30 @@ public partial class Npc : Entity
 
                     if (killUnlock == null)
                     {
-                        killUnlock = new BestiaryUnlockInstance
+                        if (!player.BestiaryUnlocks.Any(
+                                b => b.NpcId == npcId && b.UnlockType == BestiaryUnlock.Kill
+                            ))
                         {
-                            Player = player,
-                            NpcId = npcId,
-                            UnlockType = BestiaryUnlock.Kill,
-                            Value = 1
-                        };
-                        player.BestiaryUnlocks.Add(killUnlock);
-                        changed = true;
+                            killUnlock = new BestiaryUnlockInstance
+                            {
+                                Player = player,
+                                PlayerId = player.Id,
+                                NpcId = npcId,
+                                UnlockType = BestiaryUnlock.Kill,
+                                Value = 1,
+                            };
+                            player.BestiaryUnlocks.Add(killUnlock);
+                            changed = true;
+                        }
                     }
                     else
                     {
                         var previous = killUnlock.Value;
                         killUnlock.Value++;
                         if (killUnlock.Value != previous)
+                        {
                             changed = true;
+                        }
                     }
                 }
 
@@ -225,13 +233,16 @@ public partial class Npc : Entity
 
                         if (!alreadyUnlocked && killCount >= requiredKills)
                         {
-                            player.BestiaryUnlocks.Add(new BestiaryUnlockInstance
-                            {
-                                Player = player,
-                                NpcId = npcId,
-                                UnlockType = unlockType,
-                                Value = 1
-                            });
+                            player.BestiaryUnlocks.Add(
+                                new BestiaryUnlockInstance
+                                {
+                                    Player = player,
+                                    PlayerId = player.Id,
+                                    NpcId = npcId,
+                                    UnlockType = unlockType,
+                                    Value = 1,
+                                }
+                            );
                             changed = true;
                         }
                     }

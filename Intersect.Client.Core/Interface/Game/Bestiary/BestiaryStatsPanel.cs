@@ -8,6 +8,7 @@ using Intersect.GameObjects;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace Intersect.Client.Interface.Game.Bestiary;
 
@@ -50,8 +51,14 @@ public class BestiaryStatsPanel : Base
     
     }
 
-    public void UpdateData(NPCDescriptor desc)
+    public void UpdateData(NPCDescriptor? desc)
     {
+        if (desc == null)
+        {
+            Hide();
+            return;
+        }
+
         int yOffset = 0;
 
         // Aseguramos que todas las etiquetas comiencen ocultas para evitar
@@ -78,13 +85,18 @@ public class BestiaryStatsPanel : Base
         }
 
         _levelLabel.Text = $"Nivel: {desc.Level}";
-        _levelLabel.SetPosition(0, yOffset); yOffset += _levelLabel.Height + 4;
+        _levelLabel.SetPosition(0, yOffset);
+        yOffset += _levelLabel.Height + 4;
 
-        _healthLabel.Text = $"Vida: {desc.MaxVitalsLookup[Vital.Health]}";
-        _healthLabel.SetPosition(0, yOffset); yOffset += _healthLabel.Height + 4;
+        var health = desc.MaxVitalsLookup.TryGetValue(Vital.Health, out var h) ? h : 0;
+        _healthLabel.Text = $"Vida: {health}";
+        _healthLabel.SetPosition(0, yOffset);
+        yOffset += _healthLabel.Height + 4;
 
-        _manaLabel.Text = $"Mana: {desc.MaxVitalsLookup[Vital.Mana]}";
-        _manaLabel.SetPosition(0, yOffset); yOffset += _manaLabel.Height + 4;
+        var mana = desc.MaxVitalsLookup.TryGetValue(Vital.Mana, out var m) ? m : 0;
+        _manaLabel.Text = $"Mana: {mana}";
+        _manaLabel.SetPosition(0, yOffset);
+        yOffset += _manaLabel.Height + 4;
 
         var scalingValue = desc.Stats.Length > desc.ScalingStat ? desc.Stats[desc.ScalingStat] : 0;
         var baseDamage = desc.Damage + scalingValue * (desc.Scaling / 100f);
@@ -92,10 +104,12 @@ public class BestiaryStatsPanel : Base
         var maxAttack = (int)Math.Round(baseDamage * 1.025f);
 
         _minDamageLabel.Text = $"Daño Mínimo: {minAttack}";
-        _minDamageLabel.SetPosition(0, yOffset); yOffset += _minDamageLabel.Height + 4;
+        _minDamageLabel.SetPosition(0, yOffset);
+        yOffset += _minDamageLabel.Height + 4;
 
         _maxDamageLabel.Text = $"Daño Máximo: {maxAttack}";
-        _maxDamageLabel.SetPosition(0, yOffset); yOffset += _maxDamageLabel.Height + 4;
+        _maxDamageLabel.SetPosition(0, yOffset);
+        yOffset += _maxDamageLabel.Height + 4;
 
         SetSize(300, yOffset);
     }

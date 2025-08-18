@@ -131,8 +131,12 @@ public sealed class BestiaryWindow : Window
     private void ShowNpcDetails(Guid npcId)
     {
         _detailsScroll.DeleteAllChildren();
+        _statsPanel = null;
 
-        if (!NPCDescriptor.TryGet(npcId, out var desc)) return;
+        if (!NPCDescriptor.TryGet(npcId, out var desc))
+        {
+            return;
+        }
 
         int yOffset = 0;
 
@@ -177,7 +181,7 @@ public sealed class BestiaryWindow : Window
             // el panel de estadísticas para evitar mostrar datos stale.
             if (unlock == BestiaryUnlock.Stats && _statsPanel != null)
             {
-                _statsPanel.IsHidden = true;
+                _statsPanel.Hide();
             }
 
             var killsReq = desc.BestiaryRequirements.TryGetValue(unlock, out var req) ? req : 0;
@@ -206,13 +210,11 @@ public sealed class BestiaryWindow : Window
                 if (_statsPanel == null)
                 {
                     _statsPanel = new BestiaryStatsPanel(_detailsScroll);
-                    _statsPanel.SetPosition(20, yOffset);
                 }
-                _statsPanel.IsHidden = false;
 
+                _statsPanel.SetPosition(20, yOffset);
+                _statsPanel.Show();
                 _statsPanel.UpdateData(desc);
-           
-
                 yOffset += _statsPanel.Height + 8;
                 break;
 

@@ -16,6 +16,7 @@ public sealed class BestiaryWindow : Window
 {
     private readonly ScrollControl _tilesScroll;
     private readonly ScrollControl _detailsScroll;
+    private readonly Base _detailsContent;
     private readonly TextBox _searchBox;
     private readonly Button _sortButton;
     private bool _sortAsc = true;
@@ -47,12 +48,15 @@ public sealed class BestiaryWindow : Window
         _tilesScroll.SetPosition(16, 50);
         _tilesScroll.SetSize(320, 440);
 
-        _detailsScroll = new ScrollControl(this, $"DetailsControl");
+        _detailsScroll = new ScrollControl(this, "DetailsControl");
         _detailsScroll.SetPosition(352, 16);
         _detailsScroll.SetSize(340, 480);
-        _detailsScroll.EnableScroll(false, true);
-     
+        _detailsScroll.EnableScroll(horizontal: false, vertical: true);
         _detailsScroll.AutoHideBars = true;
+
+        _detailsContent = new Base(_detailsScroll);
+        _detailsContent.SetPosition(0, 0);
+        _detailsContent.SetSize(1, 1);
       
         LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
 
@@ -130,7 +134,7 @@ public sealed class BestiaryWindow : Window
 
     private void ShowNpcDetails(Guid npcId)
     {
-        _detailsScroll.DeleteAllChildren();
+        _detailsContent.DeleteAllChildren();
         _statsPanel = null;
 
         if (!NPCDescriptor.TryGet(npcId, out var desc))
@@ -140,7 +144,7 @@ public sealed class BestiaryWindow : Window
 
         int yOffset = 0;
 
-        var title = new Label(_detailsScroll, "NpcTitle")
+        var title = new Label(_detailsContent, "NpcTitle")
         {
             Text = desc.Name,
             FontName = "sourcesansproblack",
@@ -157,13 +161,15 @@ public sealed class BestiaryWindow : Window
         AddSection(npcId, BestiaryUnlock.Spells, "Hechizos", desc, ref yOffset);
         AddSection(npcId, BestiaryUnlock.Behavior, "Comportamiento", desc, ref yOffset);
         AddSection(npcId, BestiaryUnlock.Lore, "Historia", desc, ref yOffset);
+
+        _detailsContent.SetSize(_detailsScroll.Width - 20, yOffset);
     }
 
     private void AddSection(Guid npcId, BestiaryUnlock unlock, string title, NPCDescriptor desc, ref int yOffset)
     {
         var unlocked = BestiaryController.HasUnlock(npcId, unlock);
 
-        var sectionTitle = new Label(_detailsScroll, $"{unlock}SectionTitle")
+        var sectionTitle = new Label(_detailsContent, $"{unlock}SectionTitle")
         {
             Text = title,
             FontName = "sourcesansproblack",
@@ -190,7 +196,7 @@ public sealed class BestiaryWindow : Window
                 ? $"🔒 Derrota {currentKills}/{killsReq} veces para desbloquear."
                 : "🔒 Información bloqueada.";
 
-            var label = new Label(_detailsScroll, $"{unlock}LockedLabel")
+            var label = new Label(_detailsContent, $"{unlock}LockedLabel")
             {
                 Text = lockedText,
                 FontSize = 10,
@@ -209,7 +215,7 @@ public sealed class BestiaryWindow : Window
             case BestiaryUnlock.Stats:
                 if (_statsPanel == null)
                 {
-                    _statsPanel = new BestiaryStatsPanel(_detailsScroll);
+                    _statsPanel = new BestiaryStatsPanel(_detailsContent);
                 }
 
                 _statsPanel.SetPosition(20, yOffset);
@@ -233,7 +239,7 @@ public sealed class BestiaryWindow : Window
                         var col = index % maxPerRow;
                         var row = index / maxPerRow;
 
-                        var dropDisplay = new BestiaryItemDisplay(_detailsScroll, drop.ItemId, drop.Chance);
+                        var dropDisplay = new BestiaryItemDisplay(_detailsContent, drop.ItemId, drop.Chance);
                         int x = 20 + col * (iconSize + spacing);
                         int y = yOffset + row * (iconSize + spacing);
                         dropDisplay.SetPosition(x, y);
@@ -253,7 +259,7 @@ public sealed class BestiaryWindow : Window
                     var spell = SpellDescriptor.Get(spellId);
                     if (spell == null) continue;
 
-                    var spellDisplay = new BestiarySpellDisplay(_detailsScroll, spell);
+                    var spellDisplay = new BestiarySpellDisplay(_detailsContent, spell);
                     spellDisplay.SetPosition(20, yOffset);
                     yOffset += spellDisplay.Height + 4;
                 }
@@ -276,7 +282,7 @@ public sealed class BestiaryWindow : Window
 
     private void AddText(string content, ref int yOffset, string name)
     {
-        var lbl = new Label(_detailsScroll, name)
+        var lbl = new Label(_detailsContent, name)
         {
             Text = content,
             FontSize = 10,

@@ -1,3 +1,4 @@
+using System;
 using Intersect.Client.Core;
 using Intersect.Client.Framework.Content;
 using Intersect.Client.Framework.File_Management;
@@ -10,7 +11,6 @@ namespace Intersect.Client.Interface.Game.Bestiary;
 public partial class BestiarySpellDisplay : Base
 {
     private readonly ImagePanel _icon;
-    private readonly Label _label;
     private readonly SpellDescriptor _spell;
 
     public BestiarySpellDisplay(Base parent, SpellDescriptor spell)
@@ -18,20 +18,11 @@ public partial class BestiarySpellDisplay : Base
     {
         _spell = spell;
 
-        SetSize(300, 36);
+        SetSize(40, 40);
 
         _icon = new ImagePanel(this, "SpellIcon");
         _icon.SetSize(32, 32);
-        _icon.SetPosition(0, 2);
-
-        _label = new Label(this, "SpellLabel")
-        {
-            Text = $"- {spell.Name}",
-            FontSize = 10,
-            TextColorOverride = Color.White,
-        };
-        _label.SetPosition(36, 10);
-        _label.SizeToContents();
+        _icon.SetPosition(4, 4);
 
         var tex = GameContentManager.Current.GetTexture(TextureType.Spell, spell.Icon);
         if (tex != null)

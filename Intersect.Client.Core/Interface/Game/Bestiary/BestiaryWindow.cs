@@ -136,11 +136,12 @@ public sealed class BestiaryWindow : Window
         int yOffset = 0;
         const int spacing = 26;
 
-        var title = new Label(_detailsPanel)
+        var title = new Label(_detailsPanel, "NpcTitle")
         {
             Text = desc.Name,
             FontName = "sourcesansproblack",
             FontSize = 14,
+            TextColorOverride = Color.White,
         };
         title.SetPosition(10, yOffset);
         title.SetSize(300, 30);
@@ -158,12 +159,12 @@ public sealed class BestiaryWindow : Window
     {
         var unlocked = BestiaryController.HasUnlock(npcId, unlock);
 
-        var sectionTitle = new Label(_detailsPanel)
+        var sectionTitle = new Label(_detailsPanel, $"{unlock}SectionTitle")
         {
             Text = title,
             FontName = "sourcesansproblack",
             FontSize = 11,
-            TextColorOverride= Intersect.Color.White,
+            TextColorOverride = Color.White,
         };
         sectionTitle.SetPosition(10, yOffset);
         sectionTitle.SetSize(300, 22);
@@ -177,10 +178,11 @@ public sealed class BestiaryWindow : Window
                 ? $"🔒 Derrota {currentKills}/{killsReq} veces para desbloquear."
                 : "🔒 Información bloqueada.";
 
-            var label = new Label(_detailsPanel)
+            var label = new Label(_detailsPanel, $"{unlock}LockedLabel")
             {
                 Text = lockedText,
                 FontSize = 10,
+                TextColorOverride = Color.White,
             };
             label.SetPosition(20, yOffset);
             label.SetSize(300, 22);
@@ -192,15 +194,18 @@ public sealed class BestiaryWindow : Window
         switch (unlock)
         {
             case BestiaryUnlock.Stats:
+                var statIndex = 0;
                 foreach (var stat in desc.StatsLookup)
                 {
-                    var statLbl = new Label(_detailsPanel)
+                    var statLbl = new Label(_detailsPanel, $"StatLabel_{statIndex++}")
                     {
                         Text = $"{Strings.ItemDescription.StatCounts[(int)stat.Key]}: {stat.Value}",
-                        FontSize = 10
+                        FontSize = 10,
+                        TextColorOverride = Color.White,
                     };
                     statLbl.SetPosition(20, yOffset);
                     statLbl.SetSize(300, 20);
+                    statLbl.SizeToContents();
                     yOffset += 20;
                 }
                 break;
@@ -211,14 +216,9 @@ public sealed class BestiaryWindow : Window
                     var item = ItemDescriptor.Get(drop.ItemId);
                     if (item == null) continue;
 
-                    var dropLbl = new Label(_detailsPanel)
-                    {
-                        Text = $"- {item.Name} ({drop.Chance}% chance)",
-                        FontSize = 10
-                    };
-                    dropLbl.SetPosition(20, yOffset);
-                    dropLbl.SetSize(300, 20);
-                    yOffset += 20;
+                    var dropDisplay = new BestiaryItemDisplay(_detailsPanel, item, drop.Chance);
+                    dropDisplay.SetPosition(20, yOffset);
+                    yOffset += 24;
                 }
                 break;
 
@@ -228,39 +228,36 @@ public sealed class BestiaryWindow : Window
                     var spell = SpellDescriptor.Get(spellId);
                     if (spell == null) continue;
 
-                    var spellLbl = new Label(_detailsPanel)
-                    {
-                        Text = $"- {spell.Name}",
-                        FontSize = 10
-                    };
-                    spellLbl.SetPosition(20, yOffset);
-                    spellLbl.SetSize(300, 20);
-                    yOffset += 20;
+                    var spellDisplay = new BestiarySpellDisplay(_detailsPanel, spell);
+                    spellDisplay.SetPosition(20, yOffset);
+                    yOffset += 24;
                 }
                 break;
 
             case BestiaryUnlock.Behavior:
-                AddText($"Agresivo: {(desc.Aggressive ? "Sí" : "No")}", ref yOffset);
-                AddText($"Movimiento: {desc.Movement}", ref yOffset);
-                AddText($"Flee HP %: {desc.FleeHealthPercentage}%", ref yOffset);
-                AddText($"Swarm: {(desc.Swarm ? "Sí" : "No")}", ref yOffset);
+                AddText($"Agresivo: {(desc.Aggressive ? "Sí" : "No")}", ref yOffset, "AggressiveLabel");
+                AddText($"Movimiento: {desc.Movement}", ref yOffset, "MovementLabel");
+                AddText($"Flee HP %: {desc.FleeHealthPercentage}%", ref yOffset, "FleeHpLabel");
+                AddText($"Swarm: {(desc.Swarm ? "Sí" : "No")}", ref yOffset, "SwarmLabel");
                 break;
 
             case BestiaryUnlock.Lore:
-                AddText("(Aquí puedes insertar un sistema de descripciones opcionales por NPC)", ref yOffset);
+                AddText("(Aquí puedes insertar un sistema de descripciones opcionales por NPC)", ref yOffset, "LoreLabel");
                 break;
         }
     }
 
-    private void AddText(string content, ref int yOffset)
+    private void AddText(string content, ref int yOffset, string name)
     {
-        var lbl = new Label(_detailsPanel)
+        var lbl = new Label(_detailsPanel, name)
         {
             Text = content,
-            FontSize = 10
+            FontSize = 10,
+            TextColorOverride = Color.White,
         };
         lbl.SetPosition(20, yOffset);
         lbl.SetSize(300, 20);
+        lbl.SizeToContents();
         yOffset += 20;
     }
 

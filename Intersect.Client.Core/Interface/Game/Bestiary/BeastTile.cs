@@ -82,7 +82,7 @@ namespace Intersect.Client.Interface.Game.Bestiary
         }
 
         private bool IsDiscovered() =>
-            BestiaryController.HasUnlock(NpcId, BestiaryUnlock.Discovery);
+            BestiaryController.HasUnlock(NpcId, BestiaryUnlock.Kill);
 
         public void RefreshState()
         {

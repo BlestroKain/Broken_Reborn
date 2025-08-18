@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Network.Packets.Server;
+using Intersect.Client.Interface.Game.Chat;
+using Intersect.Client.Localization;
+using Intersect.Enums;
+using Intersect;
 
 namespace Intersect.Client.Controllers;
 
@@ -69,6 +73,17 @@ public static class BestiaryController
                 if (set.Add(unlock))
                 {
                     OnUnlockGained?.Invoke(npcId, unlock); // ✅ esto debe disparar Refresh en BeastTile
+
+                    if (NPCDescriptor.TryGet(npcId, out var desc))
+                    {
+                        ChatboxMsg.AddMessage(
+                            new ChatboxMsg(
+                                Strings.Bestiary.UnlockNotice.ToString(desc.Name, unlock),
+                                CustomColors.Alerts.Success,
+                                ChatMessageType.Notice
+                            )
+                        );
+                    }
                 }
             }
         }

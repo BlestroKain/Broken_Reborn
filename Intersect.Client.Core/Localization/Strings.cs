@@ -864,6 +864,9 @@ public static partial class Strings
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString Unlocked = @"Unlocked";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString UnlockNotice = @"Unlocked {1} for {0}";
     }
 
     public partial struct Character

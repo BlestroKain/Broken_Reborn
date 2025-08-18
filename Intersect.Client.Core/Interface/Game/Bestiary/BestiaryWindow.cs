@@ -266,15 +266,34 @@ public sealed class BestiaryWindow : Window
                     break;           
 
             case BestiaryUnlock.Spells:
+
+                const int spellMaxPerRow = 6;
+                const int spellIconSize = 40;
+                const int spellSpacing = 6;
+                int spellIndex = 0;
+
+
                 foreach (var spellId in desc.Spells)
                 {
                     var spell = SpellDescriptor.Get(spellId);
                     if (spell == null) continue;
 
+
+                    var col = spellIndex % spellMaxPerRow;
+                    var row = spellIndex / spellMaxPerRow;
+
                     var spellDisplay = new BestiarySpellDisplay(_detailsContent, spell);
-                    spellDisplay.SetPosition(20, yOffset);
-                    yOffset += spellDisplay.Height + 4;
+                    int x = 20 + col * (spellIconSize + spellSpacing);
+                    int y = yOffset + row * (spellIconSize + spellSpacing);
+                    spellDisplay.SetPosition(x, y);
+
+                    spellIndex++;
                 }
+
+                int spellRows = (spellIndex + spellMaxPerRow - 1) / spellMaxPerRow;
+                yOffset += spellRows * (spellIconSize + spellSpacing);
+
+
                 break;
 
             case BestiaryUnlock.Behavior:

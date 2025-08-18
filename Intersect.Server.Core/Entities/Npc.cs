@@ -174,81 +174,87 @@ public partial class Npc : Entity
 
             if (killer is Player player)
             {
+                var npcId = Descriptor.Id;
                 var changed = false;
 
-                var npcId = Descriptor.Id;
-
-                // Incrementar contador de muertes
-                if (Descriptor.BestiaryRequirements.TryGetValue(BestiaryUnlock.Kill, out _))
+                lock (player.EntityLock)
                 {
-                    var killUnlock = player.BestiaryUnlocks.FirstOrDefault(
-                        b => b.NpcId == npcId && b.UnlockType == BestiaryUnlock.Kill
-                    );
-
-                    if (killUnlock == null)
+                    // Incrementar contador de muertes
+                    if (Descriptor.BestiaryRequirements.TryGetValue(BestiaryUnlock.Kill, out _))
                     {
-                        if (!player.BestiaryUnlocks.Any(
+                        var killUnlock = player.BestiaryUnlocks.FirstOrDefault(
+                            b => b.NpcId == npcId && b.UnlockType == BestiaryUnlock.Kill
+                        );
+
+                        if (killUnlock == null)
+                        {
+                            var alreadyExists = player.BestiaryUnlocks.Any(
                                 b => b.NpcId == npcId && b.UnlockType == BestiaryUnlock.Kill
-                            ))
-                        {
-                            killUnlock = new BestiaryUnlockInstance
+                            );
+
+                            if (!alreadyExists)
                             {
-                                Player = player,
-                                PlayerId = player.Id,
-                                NpcId = npcId,
-                                UnlockType = BestiaryUnlock.Kill,
-                                Value = 1,
-                            };
-                            player.BestiaryUnlocks.Add(killUnlock);
-                            changed = true;
-                        }
-                    }
-                    else
-                    {
-                        var previous = killUnlock.Value;
-                        killUnlock.Value++;
-                        if (killUnlock.Value != previous)
-                        {
-                            changed = true;
-                        }
-                    }
-                }
-
-                // Evaluar otros desbloqueos si los hay
-                if (Descriptor.BestiaryRequirements != null)
-                {
-                    foreach (var kvp in Descriptor.BestiaryRequirements)
-                    {
-                        var unlockType = kvp.Key;
-                        var requiredKills = kvp.Value;
-
-                        if (unlockType == BestiaryUnlock.Kill)
-                            continue;
-
-                        var alreadyUnlocked = player.BestiaryUnlocks
-                            .Any(b => b.NpcId == npcId && b.UnlockType == unlockType);
-
-                        var killCount = player.BestiaryUnlocks
-                            .FirstOrDefault(b => b.NpcId == npcId && b.UnlockType == BestiaryUnlock.Kill)?.Value ?? 0;
-
-                        if (!alreadyUnlocked && killCount >= requiredKills)
-                        {
-                            player.BestiaryUnlocks.Add(
-                                new BestiaryUnlockInstance
+                                killUnlock = new BestiaryUnlockInstance
                                 {
                                     Player = player,
                                     PlayerId = player.Id,
                                     NpcId = npcId,
-                                    UnlockType = unlockType,
+                                    UnlockType = BestiaryUnlock.Kill,
                                     Value = 1,
-                                }
+                                };
+                                player.BestiaryUnlocks.Add(killUnlock);
+                                changed = true;
+                            }
+                        }
+                        else
+                        {
+                            var previous = killUnlock.Value;
+                            killUnlock.Value++;
+                            if (killUnlock.Value != previous)
+                            {
+                                changed = true;
+                            }
+                        }
+                    }
+
+                    // Evaluar otros desbloqueos si los hay
+                    if (Descriptor.BestiaryRequirements != null)
+                    {
+                        foreach (var kvp in Descriptor.BestiaryRequirements)
+                        {
+                            var unlockType = kvp.Key;
+                            var requiredKills = kvp.Value;
+
+                            if (unlockType == BestiaryUnlock.Kill)
+                            {
+                                continue;
+                            }
+
+                            var alreadyUnlocked = player.BestiaryUnlocks.Any(
+                                b => b.NpcId == npcId && b.UnlockType == unlockType
                             );
-                            changed = true;
+
+                            var killCount = player.BestiaryUnlocks
+                                .FirstOrDefault(b => b.NpcId == npcId && b.UnlockType == BestiaryUnlock.Kill)?.Value ?? 0;
+
+                            if (!alreadyUnlocked && killCount >= requiredKills)
+                            {
+                                player.BestiaryUnlocks.Add(
+                                    new BestiaryUnlockInstance
+                                    {
+                                        Player = player,
+                                        PlayerId = player.Id,
+                                        NpcId = npcId,
+                                        UnlockType = unlockType,
+                                        Value = 1,
+                                    }
+                                );
+                                changed = true;
+                            }
                         }
                     }
                 }
 
-                // Enviar paquete si hay cambios
                 if (changed)
                 {
                     PacketSender.SendUnlockedBestiaryEntries(player);

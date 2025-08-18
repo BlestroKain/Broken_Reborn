@@ -614,46 +614,53 @@ public static partial class CommandProcessing
         Stack<CommandInstance> callStack
     )
     {
-        var unlock = player.BestiaryUnlocks.FirstOrDefault(
-            b => b.NpcId == command.NpcId && b.UnlockType == command.UnlockType
-        );
+        var changed = false;
 
-        if (unlock == null)
+        lock (player.EntityLock)
         {
-            if (!command.Add)
+            var unlock = player.BestiaryUnlocks.FirstOrDefault(
+                b => b.NpcId == command.NpcId && b.UnlockType == command.UnlockType
+            );
+
+            if (unlock == null)
             {
-                return;
+                if (!command.Add)
+                {
+                    return;
+                }
+
+                if (player.BestiaryUnlocks.Any(
+                        b => b.NpcId == command.NpcId && b.UnlockType == command.UnlockType
+                    ))
+                {
+                    return;
+                }
+
+                unlock = new BestiaryUnlockInstance
+                {
+                    Player = player,
+                    PlayerId = player.Id,
+                    NpcId = command.NpcId,
+                    UnlockType = command.UnlockType,
+                    Value = 0,
+                };
+                player.BestiaryUnlocks.Add(unlock);
             }
 
-            if (player.BestiaryUnlocks.Any(
-                    b => b.NpcId == command.NpcId && b.UnlockType == command.UnlockType
-                ))
+            var previous = unlock.Value;
+            if (command.Add)
             {
-                return;
+                unlock.Value += command.Amount;
+            }
+            else
+            {
+                unlock.Value = Math.Max(0, unlock.Value - command.Amount);
             }
 
-            unlock = new BestiaryUnlockInstance
-            {
-                Player = player,
-                PlayerId = player.Id,
-                NpcId = command.NpcId,
-                UnlockType = command.UnlockType,
-                Value = 0,
-            };
-            player.BestiaryUnlocks.Add(unlock);
+            changed = previous != unlock.Value;
         }
 
-        var previous = unlock.Value;
-        if (command.Add)
-        {
-            unlock.Value += command.Amount;
-        }
-        else
-        {
-            unlock.Value = Math.Max(0, unlock.Value - command.Amount);
-        }
-
-        if (previous != unlock.Value)
+        if (changed)
         {
             PacketSender.SendUnlockedBestiaryEntries(player);
         }

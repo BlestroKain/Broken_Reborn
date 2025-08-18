@@ -34,7 +34,8 @@ namespace Intersect.Client.Interface.Game.Bestiary
             _icon = new ImagePanel(this)
             {
                 Width = 64,
-                Height = 64
+                Height = 64,
+                MouseInputEnabled = true,
             };
             _icon.SetPosition(10, 6);
 

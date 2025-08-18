@@ -173,6 +173,13 @@ public sealed class BestiaryWindow : Window
 
         if (!unlocked)
         {
+            // Si la sección es de estadísticas y no está desbloqueada, oculta
+            // el panel de estadísticas para evitar mostrar datos stale.
+            if (unlock == BestiaryUnlock.Stats && _statsPanel != null)
+            {
+                _statsPanel.IsHidden = true;
+            }
+
             var killsReq = desc.BestiaryRequirements.TryGetValue(unlock, out var req) ? req : 0;
             var currentKills = BestiaryController.GetKillCount(npcId);
             var lockedText = killsReq > 0

@@ -18,8 +18,6 @@ public sealed class BestiaryWindow : Window
     private readonly ScrollControl _detailsScroll;
     private readonly Base _detailsContent;
     private readonly TextBox _searchBox;
-    private readonly Button _sortButton;
-    private bool _sortAsc = true;
     private readonly List<BeastTile> _tiles = new();
     private Guid? _selectedNpcId;
     private Label statLbl;
@@ -35,13 +33,8 @@ public sealed class BestiaryWindow : Window
 
         _searchBox = new TextBox(this,$"Searcher") { PlaceholderText = "Buscar...", Margin = new Margin(8, 8, 0, 0) };
         _searchBox.SetPosition(16, 8);
-        _searchBox.SetSize(280, 40);
+        _searchBox.SetSize(320, 40);
         _searchBox.TextChanged += (_, _) => RebuildTiles();
-
-        _sortButton = new Button(this,$"SortBtuttom") { Text = "↕", Margin = new Margin(0, 8, 0, 0) };
-        _sortButton.SetSize(30, 30);
-        _sortButton.SetPosition(304, 8);
-        _sortButton.Clicked += (_, _) => { _sortAsc = !_sortAsc; RebuildTiles(); };
 
         _tilesScroll = new ScrollControl(this, $"MobsControl");
         _tilesScroll.EnableScroll(false, true);
@@ -88,11 +81,9 @@ public sealed class BestiaryWindow : Window
                 SearchHelper.Matches(_searchBox.Text, d.Name));
         }
 
-        filtered = _sortAsc
-            ? filtered.OrderBy(id => NPCDescriptor.TryGet(id, out var d) ? d.Name : string.Empty)
-            : filtered.OrderByDescending(id => NPCDescriptor.TryGet(id, out var d) ? d.Name : string.Empty);
-
-        var list = filtered.ToList();
+        var list = filtered
+            .OrderBy(id => NPCDescriptor.TryGet(id, out var d) ? d.Name : string.Empty)
+            .ToList();
         const int tileW = 84, tileH = 104, pad = 6;
         var cols = Math.Max(1, (_tilesScroll.Width - _tilesScroll.VerticalScrollBar.Width) / (tileW + pad));
 
@@ -111,15 +102,32 @@ public sealed class BestiaryWindow : Window
 
     private void RebuildTiles()
     {
+        const int tileW = 84, tileH = 104, pad = 6;
+        var cols = Math.Max(1, (_tilesScroll.Width - _tilesScroll.VerticalScrollBar.Width) / (tileW + pad));
+
+        var matches = new List<BeastTile>();
+
         foreach (var tile in _tiles)
         {
             var match = SearchHelper.Matches(
                 _searchBox.Text,
-                NPCDescriptor.TryGet(tile.NpcId, out var d) ? d.Name : ""
+                NPCDescriptor.TryGet(tile.NpcId, out var d) ? d.Name : string.Empty
             );
 
             tile.SetFilterMatch(match);
-            tile.Update(); // Actualiza su visibilidad y apariencia
+            tile.Update();
+
+            if (match)
+            {
+                matches.Add(tile);
+            }
+        }
+
+        for (int i = 0; i < matches.Count; i++)
+        {
+            var col = i % cols;
+            var row = i / cols;
+            matches[i].SetBounds(col * (tileW + pad), row * (tileH + pad), tileW, tileH);
         }
     }
 

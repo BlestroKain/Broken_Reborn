@@ -7,7 +7,6 @@ using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
 using Intersect.Client.Framework.Input;
 using Intersect.Client.Interface.Game.DescriptionWindows;
-using Intersect.Client.Localization;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.GameObjects;
 
@@ -15,24 +14,24 @@ namespace Intersect.Client.Interface.Game.Bestiary;
 
 public class BestiaryItemDisplay : SlotItem
 {
-    private readonly Label _quantityLabel;
+    private readonly Label _chanceLabel;
 
     public Guid ItemId { get; }
-    public int Quantity { get; }
+    public double Chance { get; }
     private readonly ImagePanel _icon;
-    public BestiaryItemDisplay(Base parent, Guid itemId, int quantity, ContextMenu contextMenu)
+    public BestiaryItemDisplay(Base parent, Guid itemId, double chance, ContextMenu? contextMenu = null)
         : base(parent, nameof(BestiaryItemDisplay), -1, contextMenu) // slotIndex = -1 porque no se basa en inventario real
     {
         ItemId = itemId;
-        Quantity = quantity;
+        Chance = chance;
 
         TextureFilename = "inventoryitem.png";
         _icon = new ImagePanel(this, "DropItemIcon");
         _icon.HoverEnter += OnHoverEnter;
         _icon.HoverLeave += OnHoverLeave;
-        _icon.Clicked +=  OnClick;
-        _icon .SetSize(32,32);
-        _quantityLabel = new Label(this, "Quantity")
+        _icon.Clicked += OnClick;
+        _icon.SetSize(32, 32);
+        _chanceLabel = new Label(this, "Chance")
         {
             Alignment = [Alignments.Bottom, Alignments.Right],
             BackgroundTemplateName = "quantity.png",
@@ -56,7 +55,7 @@ public class BestiaryItemDisplay : SlotItem
         {
             Icon.Texture = null;
             Icon.IsVisibleInParent = false;
-            _quantityLabel.IsVisibleInParent = false;
+            _chanceLabel.IsVisibleInParent = false;
             return;
         }
 
@@ -64,8 +63,8 @@ public class BestiaryItemDisplay : SlotItem
         Icon.RenderColor = descriptor.Color;
         Icon.IsVisibleInParent = true;
 
-        _quantityLabel.IsVisibleInParent = descriptor.IsStackable && Quantity > 1;
-        _quantityLabel.Text = Strings.FormatQuantityAbbreviated(Quantity);
+        _chanceLabel.IsVisibleInParent = true;
+        _chanceLabel.Text = $"{Chance:0.#}%";
     }
 
     private void OnHoverEnter(Base sender, EventArgs args)
@@ -73,7 +72,7 @@ public class BestiaryItemDisplay : SlotItem
         if (!ItemDescriptor.TryGet(ItemId, out var descriptor)) return;
 
         Interface.GameUi.ItemDescriptionWindow ??= new ItemDescriptionWindow();
-        Interface.GameUi.ItemDescriptionWindow.Show(descriptor, Quantity);
+        Interface.GameUi.ItemDescriptionWindow.Show(descriptor, 1);
     }
 
     private void OnHoverLeave(Base sender, EventArgs args)

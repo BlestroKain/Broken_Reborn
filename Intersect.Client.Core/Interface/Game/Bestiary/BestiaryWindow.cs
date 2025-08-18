@@ -11,6 +11,7 @@ using Intersect.Framework.Core.GameObjects.Items;
 using System.Drawing;
 using Intersect;
 using Intersect.Enums;
+using System.Linq;
 namespace Intersect.Client.Interface.Game.Bestiary;
 public sealed class BestiaryWindow : Window
 {
@@ -82,7 +83,10 @@ public sealed class BestiaryWindow : Window
         }
 
         var list = filtered
-            .OrderBy(id => NPCDescriptor.TryGet(id, out var d) ? d.Name : string.Empty)
+            .Select(id => (id, desc: NPCDescriptor.TryGet(id, out var d) ? d : null))
+            .OrderBy(t => t.desc?.Level > 0 ? t.desc.Level : int.MaxValue)
+            .ThenBy(t => t.desc?.Name ?? string.Empty)
+            .Select(t => t.id)
             .ToList();
         const int tileW = 84, tileH = 104, pad = 6;
         var cols = Math.Max(1, (_tilesScroll.Width - _tilesScroll.VerticalScrollBar.Width) / (tileW + pad));

@@ -266,15 +266,18 @@ public sealed class BestiaryWindow : Window
                     break;           
 
             case BestiaryUnlock.Spells:
+
                 const int spellMaxPerRow = 6;
                 const int spellIconSize = 40;
                 const int spellSpacing = 6;
                 int spellIndex = 0;
 
+
                 foreach (var spellId in desc.Spells)
                 {
                     var spell = SpellDescriptor.Get(spellId);
                     if (spell == null) continue;
+
 
                     var col = spellIndex % spellMaxPerRow;
                     var row = spellIndex / spellMaxPerRow;
@@ -289,6 +292,7 @@ public sealed class BestiaryWindow : Window
 
                 int spellRows = (spellIndex + spellMaxPerRow - 1) / spellMaxPerRow;
                 yOffset += spellRows * (spellIconSize + spellSpacing);
+
 
                 break;
 

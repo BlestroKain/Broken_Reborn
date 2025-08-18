@@ -11,6 +11,7 @@ namespace Intersect.Client.Interface.Game.Bestiary;
 public partial class BestiarySpellDisplay : Base
 {
     private readonly ImagePanel _icon;
+
     private readonly SpellDescriptor _spell;
 
     public BestiarySpellDisplay(Base parent, SpellDescriptor spell)
@@ -18,11 +19,13 @@ public partial class BestiarySpellDisplay : Base
     {
         _spell = spell;
 
+
         SetSize(40, 40);
 
         _icon = new ImagePanel(this, "SpellIcon");
         _icon.SetSize(32, 32);
         _icon.SetPosition(4, 4);
+
 
         var tex = GameContentManager.Current.GetTexture(TextureType.Spell, spell.Icon);
         if (tex != null)

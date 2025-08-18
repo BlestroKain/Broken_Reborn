@@ -54,20 +54,26 @@ public class BestiaryStatsPanel : Base
     {
         int yOffset = 0;
 
+        // Aseguramos que todas las etiquetas comiencen ocultas para evitar
+        // que queden escondidas al cambiar entre distintos NPCs.
+        foreach (var lbl in _statLabels)
+        {
+            lbl.Hide();
+        }
+
         for (int i = 0; i < _statLabels.Count; i++)
         {
             var stat = (Stat)i;
+            var value = desc.StatsLookup.TryGetValue(stat, out var v) ? v : 0;
 
-            if (desc.StatsLookup.TryGetValue(stat, out var value) && value > 0)
+            var lbl = _statLabels[i];
+            lbl.Text = $"{Strings.ItemDescription.StatCounts[i]}: {value}";
+
+            if (value > 0)
             {
-                _statLabels[i].IsHidden = false;
-                _statLabels[i].Text = $"{Strings.ItemDescription.StatCounts[i]}: {value}";
-                _statLabels[i].SetPosition(0, yOffset);
-                yOffset += _statLabels[i].Height + 4;
-            }
-            else
-            {
-                _statLabels[i].IsHidden = true;
+                lbl.SetPosition(0, yOffset);
+                lbl.Show();
+                yOffset += lbl.Height + 4;
             }
         }
 

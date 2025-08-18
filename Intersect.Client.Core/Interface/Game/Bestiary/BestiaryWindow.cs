@@ -11,14 +11,14 @@ using Intersect.Framework.Core.GameObjects.Items;
 using System.Drawing;
 using Intersect;
 using Intersect.Enums;
+using System.Linq;
 namespace Intersect.Client.Interface.Game.Bestiary;
 public sealed class BestiaryWindow : Window
 {
     private readonly ScrollControl _tilesScroll;
     private readonly ScrollControl _detailsScroll;
+    private readonly Base _detailsContent;
     private readonly TextBox _searchBox;
-    private readonly Button _sortButton;
-    private bool _sortAsc = true;
     private readonly List<BeastTile> _tiles = new();
     private Guid? _selectedNpcId;
     private Label statLbl;
@@ -34,25 +34,23 @@ public sealed class BestiaryWindow : Window
 
         _searchBox = new TextBox(this,$"Searcher") { PlaceholderText = "Buscar...", Margin = new Margin(8, 8, 0, 0) };
         _searchBox.SetPosition(16, 8);
-        _searchBox.SetSize(280, 40);
+        _searchBox.SetSize(320, 40);
         _searchBox.TextChanged += (_, _) => RebuildTiles();
-
-        _sortButton = new Button(this,$"SortBtuttom") { Text = "↕", Margin = new Margin(0, 8, 0, 0) };
-        _sortButton.SetSize(30, 30);
-        _sortButton.SetPosition(304, 8);
-        _sortButton.Clicked += (_, _) => { _sortAsc = !_sortAsc; RebuildTiles(); };
-
+        Interface.FocusComponents.Add(_searchBox);
         _tilesScroll = new ScrollControl(this, $"MobsControl");
         _tilesScroll.EnableScroll(false, true);
         _tilesScroll.SetPosition(16, 50);
         _tilesScroll.SetSize(320, 440);
 
-        _detailsScroll = new ScrollControl(this, $"DetailsControl");
+        _detailsScroll = new ScrollControl(this, "DetailsControl");
         _detailsScroll.SetPosition(352, 16);
         _detailsScroll.SetSize(340, 480);
-        _detailsScroll.EnableScroll(false, true);
-     
+        _detailsScroll.EnableScroll(horizontal: false, vertical: true);
         _detailsScroll.AutoHideBars = true;
+
+        _detailsContent = new Base(_detailsScroll);
+        _detailsContent.SetPosition(0, 0);
+        _detailsContent.SetSize(1, 1);
       
         LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
 
@@ -84,11 +82,12 @@ public sealed class BestiaryWindow : Window
                 SearchHelper.Matches(_searchBox.Text, d.Name));
         }
 
-        filtered = _sortAsc
-            ? filtered.OrderBy(id => NPCDescriptor.TryGet(id, out var d) ? d.Name : string.Empty)
-            : filtered.OrderByDescending(id => NPCDescriptor.TryGet(id, out var d) ? d.Name : string.Empty);
-
-        var list = filtered.ToList();
+        var list = filtered
+            .Select(id => (id, desc: NPCDescriptor.TryGet(id, out var d) ? d : null))
+            .OrderBy(t => t.desc?.Level > 0 ? t.desc.Level : int.MaxValue)
+            .ThenBy(t => t.desc?.Name ?? string.Empty)
+            .Select(t => t.id)
+            .ToList();
         const int tileW = 84, tileH = 104, pad = 6;
         var cols = Math.Max(1, (_tilesScroll.Width - _tilesScroll.VerticalScrollBar.Width) / (tileW + pad));
 
@@ -107,15 +106,32 @@ public sealed class BestiaryWindow : Window
 
     private void RebuildTiles()
     {
+        const int tileW = 84, tileH = 104, pad = 6;
+        var cols = Math.Max(1, (_tilesScroll.Width - _tilesScroll.VerticalScrollBar.Width) / (tileW + pad));
+
+        var matches = new List<BeastTile>();
+
         foreach (var tile in _tiles)
         {
             var match = SearchHelper.Matches(
                 _searchBox.Text,
-                NPCDescriptor.TryGet(tile.NpcId, out var d) ? d.Name : ""
+                NPCDescriptor.TryGet(tile.NpcId, out var d) ? d.Name : string.Empty
             );
 
             tile.SetFilterMatch(match);
-            tile.Update(); // Actualiza su visibilidad y apariencia
+            tile.Update();
+
+            if (match)
+            {
+                matches.Add(tile);
+            }
+        }
+
+        for (int i = 0; i < matches.Count; i++)
+        {
+            var col = i % cols;
+            var row = i / cols;
+            matches[i].SetBounds(col * (tileW + pad), row * (tileH + pad), tileW, tileH);
         }
     }
 
@@ -130,7 +146,7 @@ public sealed class BestiaryWindow : Window
 
     private void ShowNpcDetails(Guid npcId)
     {
-        _detailsScroll.DeleteAllChildren();
+        _detailsContent.DeleteAllChildren();
         _statsPanel = null;
 
         if (!NPCDescriptor.TryGet(npcId, out var desc))
@@ -140,7 +156,7 @@ public sealed class BestiaryWindow : Window
 
         int yOffset = 0;
 
-        var title = new Label(_detailsScroll, "NpcTitle")
+        var title = new Label(_detailsContent, "NpcTitle")
         {
             Text = desc.Name,
             FontName = "sourcesansproblack",
@@ -157,13 +173,15 @@ public sealed class BestiaryWindow : Window
         AddSection(npcId, BestiaryUnlock.Spells, "Hechizos", desc, ref yOffset);
         AddSection(npcId, BestiaryUnlock.Behavior, "Comportamiento", desc, ref yOffset);
         AddSection(npcId, BestiaryUnlock.Lore, "Historia", desc, ref yOffset);
+
+        _detailsContent.SetSize(_detailsScroll.Width - 20, yOffset);
     }
 
     private void AddSection(Guid npcId, BestiaryUnlock unlock, string title, NPCDescriptor desc, ref int yOffset)
     {
         var unlocked = BestiaryController.HasUnlock(npcId, unlock);
 
-        var sectionTitle = new Label(_detailsScroll, $"{unlock}SectionTitle")
+        var sectionTitle = new Label(_detailsContent, $"{unlock}SectionTitle")
         {
             Text = title,
             FontName = "sourcesansproblack",
@@ -190,7 +208,7 @@ public sealed class BestiaryWindow : Window
                 ? $"🔒 Derrota {currentKills}/{killsReq} veces para desbloquear."
                 : "🔒 Información bloqueada.";
 
-            var label = new Label(_detailsScroll, $"{unlock}LockedLabel")
+            var label = new Label(_detailsContent, $"{unlock}LockedLabel")
             {
                 Text = lockedText,
                 FontSize = 10,
@@ -209,7 +227,7 @@ public sealed class BestiaryWindow : Window
             case BestiaryUnlock.Stats:
                 if (_statsPanel == null)
                 {
-                    _statsPanel = new BestiaryStatsPanel(_detailsScroll);
+                    _statsPanel = new BestiaryStatsPanel(_detailsContent);
                 }
 
                 _statsPanel.SetPosition(20, yOffset);
@@ -233,7 +251,7 @@ public sealed class BestiaryWindow : Window
                         var col = index % maxPerRow;
                         var row = index / maxPerRow;
 
-                        var dropDisplay = new BestiaryItemDisplay(_detailsScroll, drop.ItemId, drop.Chance);
+                        var dropDisplay = new BestiaryItemDisplay(_detailsContent, drop.ItemId, drop.Chance);
                         int x = 20 + col * (iconSize + spacing);
                         int y = yOffset + row * (iconSize + spacing);
                         dropDisplay.SetPosition(x, y);
@@ -253,7 +271,7 @@ public sealed class BestiaryWindow : Window
                     var spell = SpellDescriptor.Get(spellId);
                     if (spell == null) continue;
 
-                    var spellDisplay = new BestiarySpellDisplay(_detailsScroll, spell);
+                    var spellDisplay = new BestiarySpellDisplay(_detailsContent, spell);
                     spellDisplay.SetPosition(20, yOffset);
                     yOffset += spellDisplay.Height + 4;
                 }
@@ -276,7 +294,7 @@ public sealed class BestiaryWindow : Window
 
     private void AddText(string content, ref int yOffset, string name)
     {
-        var lbl = new Label(_detailsScroll, name)
+        var lbl = new Label(_detailsContent, name)
         {
             Text = content,
             FontSize = 10,

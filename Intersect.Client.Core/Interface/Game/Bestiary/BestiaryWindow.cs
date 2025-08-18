@@ -22,7 +22,6 @@ public sealed class BestiaryWindow : Window
     private readonly List<BeastTile> _tiles = new();
     private Guid? _selectedNpcId;
     private Label statLbl;
-    private BestiaryStatsPanel _statsPanel;
 
     public BestiaryWindow(Canvas canvas)
         : base(canvas, Strings.Bestiary.Title, false, nameof(BestiaryWindow))
@@ -196,17 +195,10 @@ public sealed class BestiaryWindow : Window
         switch (unlock)
         {
             case BestiaryUnlock.Stats:
-                if (_statsPanel == null)
-                {
-                    _statsPanel = new BestiaryStatsPanel(_detailsScroll);
-                    _statsPanel.SetPosition(20, yOffset);
-                }
-                _statsPanel.IsHidden = false;
-
-                _statsPanel.UpdateData(desc);
-           
-
-                yOffset += _statsPanel.Height + 8;
+                var statsPanel = new BestiaryStatsPanel(_detailsScroll);
+                statsPanel.SetPosition(20, yOffset);
+                statsPanel.UpdateData(desc);
+                yOffset += statsPanel.Height + 8;
                 break;
 
 

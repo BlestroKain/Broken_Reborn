@@ -13,12 +13,16 @@ public partial class UnlockedBestiaryEntriesPacket : IntersectPacket
     {
     }
 
-    public UnlockedBestiaryEntriesPacket(Dictionary<Guid, int[]> unlocked)
+    public UnlockedBestiaryEntriesPacket(Dictionary<Guid, int[]> unlocked, Dictionary<Guid, int> killCounts)
     {
         Unlocked = unlocked;
+        KillCounts = killCounts;
     }
 
     [Key(0)]
     public Dictionary<Guid, int[]> Unlocked { get; set; } = new();
+
+    [Key(1)]
+    public Dictionary<Guid, int> KillCounts { get; set; } = new();
 }
 

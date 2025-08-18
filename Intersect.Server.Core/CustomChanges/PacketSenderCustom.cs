@@ -208,7 +208,11 @@ public static partial class PacketSender
                 g => g.Select(b => (int)b.UnlockType).Distinct().ToArray()
             );
 
-        player.SendPacket(new UnlockedBestiaryEntriesPacket(unlocks));
+        var killCounts = player.BestiaryUnlocks
+            .Where(b => b.UnlockType == BestiaryUnlock.Kill)
+            .ToDictionary(b => b.NpcId, b => b.Value);
+
+        player.SendPacket(new UnlockedBestiaryEntriesPacket(unlocks, killCounts));
     }
 
 

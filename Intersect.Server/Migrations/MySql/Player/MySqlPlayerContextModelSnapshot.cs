@@ -494,6 +494,30 @@ namespace Intersect.Server.Migrations.MySql.Player
                     b.ToTable("Player_Spells");
                 });
 
+            modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.PlayerSpell", b =>
+                {
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("char(36)")
+                        .UseCollation("ascii_general_ci");
+
+                    b.Property<Guid>("SpellId")
+                        .HasColumnType("char(36)")
+                        .UseCollation("ascii_general_ci");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("int");
+
+                    b.Property<long>("LastUsedAtMs")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("PlayerId", "SpellId");
+
+                    b.HasIndex("PlayerId", "SpellId")
+                        .IsUnique();
+
+                    b.ToTable("PlayerSpells");
+                });
+
             modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.UserVariable", b =>
                 {
                     b.Property<Guid>("Id")
@@ -697,6 +721,9 @@ namespace Intersect.Server.Migrations.MySql.Player
                         .HasColumnType("longtext");
 
                     b.Property<int>("StatPoints")
+                        .HasColumnType("int");
+
+                    b.Property<int>("AvailableSpellPoints")
                         .HasColumnType("int");
 
                     b.Property<string>("StatPointsJson")

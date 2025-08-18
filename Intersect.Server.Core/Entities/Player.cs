@@ -19,6 +19,7 @@ using Intersect.Framework.Core.GameObjects.Maps.Attributes;
 using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.GameObjects.Quests;
+using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Framework.Core.GameObjects.Variables;
 using Intersect.GameObjects;
 using Intersect.Network;
@@ -84,6 +85,9 @@ public partial class Player : Entity
     public long Exp { get; set; }
 
     public int StatPoints { get; set; }
+
+    [NotMapped, JsonIgnore]
+    public PlayerSpellbookState Spellbook { get; set; } = new();
 
     [Column("Equipment"), JsonIgnore]
     public string EquipmentJson
@@ -5602,6 +5606,17 @@ public partial class Player : Entity
         }
 
         return -1;
+    }
+
+    public SpellProperties GetSpellProperties(Guid spellId)
+    {
+        if (!Spellbook.Spells.TryGetValue(spellId, out var properties))
+        {
+            properties = new SpellProperties { Level = 1 };
+            Spellbook.Spells[spellId] = properties;
+        }
+
+        return properties;
     }
 
     public void SwapSpells(int spell1, int spell2)

@@ -475,33 +475,32 @@ internal sealed partial class PacketHandler
             return;
         }
 
-        if (!player.Spellbook.Spells.TryGetValue(packet.SpellId, out var properties))
+        if (!player.Spellbook.Spells.ContainsKey(packet.SpellId))
         {
-            PacketSender.SendSpellUpgradeFailed(player, packet.SpellId, SpellUpgradeFailedPacket.Reason.SpellNotOwned);
+            PacketSender.SendSpellUpgradeFailed(player, packet.SpellId, SpellUpgradeFailedPacket.FailureReason.SpellNotOwned);
             Log.Warning("Spell upgrade failed: spell {SpellId} not owned", packet.SpellId);
             return;
         }
 
         if (player.Spellbook.AvailableSpellPoints <= 0)
         {
-            PacketSender.SendSpellUpgradeFailed(player, packet.SpellId, SpellUpgradeFailedPacket.Reason.NotEnoughPoints);
+            PacketSender.SendSpellUpgradeFailed(player, packet.SpellId, SpellUpgradeFailedPacket.FailureReason.NotEnoughPoints);
             Log.Warning("Spell upgrade failed: not enough points for spell {SpellId}", packet.SpellId);
             return;
         }
 
-        if (properties.Level >= 5)
+        if (!player.Spellbook.TryUpgradeSpell(packet.SpellId, out var newLevel))
         {
-            PacketSender.SendSpellUpgradeFailed(player, packet.SpellId, SpellUpgradeFailedPacket.Reason.AlreadyMaxLevel);
-            Log.Warning("Spell upgrade failed: spell {SpellId} already at max level {Level}", packet.SpellId, properties.Level);
+            PacketSender.SendSpellUpgradeFailed(player, packet.SpellId, SpellUpgradeFailedPacket.FailureReason.AlreadyMaxLevel);
+            Log.Warning("Spell upgrade failed: spell {SpellId} already at max level", packet.SpellId);
             return;
         }
 
-        properties.Level++;
         player.Spellbook.AvailableSpellPoints--;
         player.Save();
 
-        PacketSender.SendSpellUpgraded(player, packet.SpellId, properties.Level);
-        Log.Information("Spell {SpellId} upgraded to level {Level}", packet.SpellId, properties.Level);
+        PacketSender.SendSpellUpgraded(player, packet.SpellId, newLevel);
+        Log.Information("Spell {SpellId} upgraded to level {Level}", packet.SpellId, newLevel);
     }
 
 }

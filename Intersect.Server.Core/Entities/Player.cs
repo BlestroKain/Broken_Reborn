@@ -5633,8 +5633,13 @@ public partial class Player : Entity
     {
         if (!Spellbook.Spells.TryGetValue(spellId, out var properties))
         {
-            properties = new SpellProperties { Level = 1 };
+            properties = new SpellProperties();
             Spellbook.Spells[spellId] = properties;
+        }
+
+        if (!Spellbook.SpellLevels.ContainsKey(spellId))
+        {
+            Spellbook.SpellLevels[spellId] = 1;
         }
 
         return properties;
@@ -5644,9 +5649,17 @@ public partial class Player : Entity
     {
         foreach (var slot in Spells)
         {
-            if (slot.SpellId != Guid.Empty && !Spellbook.Spells.ContainsKey(slot.SpellId))
+            if (slot.SpellId != Guid.Empty)
             {
-                Spellbook.Spells[slot.SpellId] = new SpellProperties { Level = 1 };
+                if (!Spellbook.Spells.ContainsKey(slot.SpellId))
+                {
+                    Spellbook.Spells[slot.SpellId] = new SpellProperties();
+                }
+
+                if (!Spellbook.SpellLevels.ContainsKey(slot.SpellId))
+                {
+                    Spellbook.SpellLevels[slot.SpellId] = 1;
+                }
             }
         }
     }

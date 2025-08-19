@@ -5,7 +5,7 @@ namespace Intersect.Network.Packets.Server;
 [MessagePackObject]
 public partial class SpellUpgradeFailedPacket : IntersectPacket
 {
-    public enum Reason
+    public enum FailureReason
     {
         NotEnoughPoints,
         AlreadyMaxLevel,
@@ -18,7 +18,7 @@ public partial class SpellUpgradeFailedPacket : IntersectPacket
     {
     }
 
-    public SpellUpgradeFailedPacket(Guid spellId, Reason reason)
+    public SpellUpgradeFailedPacket(Guid spellId, FailureReason reason)
     {
         SpellId = spellId;
         Reason = reason;
@@ -28,6 +28,6 @@ public partial class SpellUpgradeFailedPacket : IntersectPacket
     public Guid SpellId { get; set; }
 
     [Key(1)]
-    public Reason Reason { get; set; }
+    public FailureReason Reason { get; set; }
 }
 

@@ -466,6 +466,8 @@ public partial class Player : Entity
             }
         }
 
+        EnsureSpellbookEntries();
+
         OnlinePlayersById[Id] = this;
         _onlinePlayers.Add(this);
 
@@ -1137,6 +1139,8 @@ public partial class Player : Entity
             pkt.GuildSymbolB = Guild.SymbolB;
 
         }
+
+        pkt.AvailableSpellPoints = Spellbook.AvailableSpellPoints;
         return pkt;
     }
 
@@ -1344,6 +1348,8 @@ public partial class Player : Entity
             PacketSender.SendEntityDataToProximity(this);
             PacketSender.SendExperience(this);
         }
+
+        Save();
     }
 
     /// <summary>
@@ -5619,6 +5625,17 @@ public partial class Player : Entity
         }
 
         return properties;
+    }
+
+    public void EnsureSpellbookEntries()
+    {
+        foreach (var slot in Spells)
+        {
+            if (slot.SpellId != Guid.Empty && !Spellbook.Spells.ContainsKey(slot.SpellId))
+            {
+                Spellbook.Spells[slot.SpellId] = new SpellProperties { Level = 1 };
+            }
+        }
     }
 
     public void SwapSpells(int spell1, int spell2)

@@ -396,6 +396,7 @@ public partial class Player
                 playerContext = createdPlayerContext = DbInterface.CreatePlayerContext(readOnly: false);
             }
 
+            EnsureSpellbookEntries();
             playerContext.Update(this);
             playerContext.ChangeTracker.DetectChanges();
             playerContext.SaveChanges();

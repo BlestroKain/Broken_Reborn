@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using Intersect.Client.Core;
-using Intersect.Client.Core.Networking;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
@@ -12,6 +11,9 @@ using Intersect.Client.Utilities;
 using Intersect.GameObjects;
 using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Framework.Core.Services;
+using Intersect.Client.General;
+using Intersect.Client.Networking;
+using Intersect.Utilities;
 
 namespace Intersect.Client.Interface.Game.Spells;
 

@@ -11,6 +11,8 @@ using Intersect.Client.General;
 using Intersect.Client.Framework.GenericClasses;
 using Intersect.GameObjects;
 using Intersect.Framework.Core.GameObjects.Spells;
+using Intersect.Utilities;
+using Intersect.Client.Framework.Input;
 
 namespace Intersect.Client.Interface.Game.Spells;
 

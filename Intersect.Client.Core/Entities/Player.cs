@@ -1472,6 +1472,7 @@ public partial class Player : Entity, IPlayer
         return 0;
     }
 
+
     public void TryUseSpell(Guid spellId)
     {
         if (spellId == Guid.Empty)

@@ -29,8 +29,6 @@ public partial class SpellProperties
         DebuffDurationFactor = other.DebuffDurationFactor;
         UnlocksAoE = other.UnlocksAoE;
         AoERadiusDelta = other.AoERadiusDelta;
-
-        Level = other.Level;
     }
 
     [Key(0)]
@@ -65,8 +63,5 @@ public partial class SpellProperties
 
     [Key(10)]
     public int AoERadiusDelta { get; set; }
-
-    [IgnoreMember]
-    public int Level { get; set; } = 1;
 }
 

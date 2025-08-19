@@ -1489,18 +1489,30 @@ internal sealed partial class PacketHandler
     //SpellUpgradedPacket
     public void HandlePacket(IPacketSender packetSender, SpellUpgradedPacket packet)
     {
-        if (Globals.Me != null)
+        if (Globals.Me == null)
         {
-            Globals.Me.Spellbook.AvailableSpellPoints = packet.RemainingSpellPoints;
-            if (!Globals.Me.Spellbook.Spells.TryGetValue(packet.SpellId, out var properties))
-            {
-                properties = new SpellProperties();
-                Globals.Me.Spellbook.Spells[packet.SpellId] = properties;
-            }
+            return;
+        }
 
-            Globals.Me.Spellbook.SpellLevels[packet.SpellId] = packet.NewLevel;
-           Interface.GameUi.GameMenu.SpellsWindow.Refresh();
+        Globals.Me.Spellbook.AvailableSpellPoints = packet.RemainingSpellPoints;
 
+        if (!Globals.Me.Spellbook.Spells.TryGetValue(packet.SpellId, out var properties))
+        {
+            properties = new SpellProperties();
+            Globals.Me.Spellbook.Spells[packet.SpellId] = properties;
+        }
+
+        // Update the player's known level for this spell
+        properties.Level = packet.NewLevel;
+        Globals.Me.Spellbook.SpellLevels[packet.SpellId] = packet.NewLevel;
+
+        Interface.GameUi.GameMenu.SpellsWindow.Refresh();
+
+        // Refresh any open spell tooltip (e.g. from the hotbar)
+        var tooltip = Interface.GameUi.SpellDescriptionWindow;
+        if (tooltip?.IsVisibleInTree == true)
+        {
+            tooltip.Show(packet.SpellId);
         }
     }
 

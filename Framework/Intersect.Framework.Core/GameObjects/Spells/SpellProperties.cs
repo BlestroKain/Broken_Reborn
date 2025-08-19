@@ -37,6 +37,8 @@ public partial class SpellProperties
         {
             CustomRolls[kvp.Key] = (int[])kvp.Value.Clone();
         }
+
+        Level = other.Level;
     }
 
     [Key(0)]
@@ -77,5 +79,8 @@ public partial class SpellProperties
 
     [Key(12)]
     public Dictionary<int, int[]> CustomRolls { get; set; } = new Dictionary<int, int[]>();
+
+    [IgnoreMember]
+    public int Level { get; set; } = 1;
 }
 

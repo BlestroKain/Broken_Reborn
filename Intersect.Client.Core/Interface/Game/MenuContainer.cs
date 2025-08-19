@@ -28,6 +28,8 @@ public partial class MenuContainer : Panel
     private readonly Button _spellsButton;
     private readonly SpellsWindow _spellsWindow;
 
+    public SpellsWindow SpellsWindow => _spellsWindow;
+
     private readonly ImagePanel _characterButtonContainer;
     private readonly Button _characterButton;
     private readonly CharacterWindow _characterWindow;

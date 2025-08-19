@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Intersect.Framework.Core.GameObjects.Spells;
 
 namespace Intersect.GameObjects;
@@ -28,5 +27,5 @@ public class SpellProgression
     /// <param name="level">The level to query.</param>
     /// <returns>The <see cref="SpellProperties"/> for the requested level or <c>null</c> if not found.</returns>
     public SpellProperties? GetLevel(int level) =>
-        Levels.FirstOrDefault(row => row.Level == level);
+        level >= 1 && level <= Levels.Count ? Levels[level - 1] : null;
 }

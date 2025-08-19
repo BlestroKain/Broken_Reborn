@@ -39,20 +39,18 @@ public static class SpellProgressionStore
 
     /// <summary>
     /// Populates the store with the provided progressions.
-    /// Ensures each progression contains exactly five rows.
+    /// Ensures each progression contains at least one row.
     /// </summary>
     private static void Load(IEnumerable<SpellProgression> progressions)
     {
         s_bySpellId.Clear();
         foreach (var progression in progressions)
         {
-            if (progression.Levels.Count != 5)
+            if (progression.Levels.Count == 0)
             {
-                throw new InvalidDataException($"Spell {progression.SpellId} must define exactly five progression rows.");
+                throw new InvalidDataException($"Spell {progression.SpellId} must define at least one progression row.");
             }
 
-            // Ensure rows are ordered by level.
-            progression.Levels = progression.Levels.OrderBy(l => l.Level).ToList();
             s_bySpellId[progression.SpellId] = progression;
         }
     }
@@ -67,9 +65,7 @@ public static class SpellProgressionStore
             .Select(descriptor => new SpellProgression
             {
                 SpellId = descriptor.Id,
-                Levels = Enumerable.Range(1, 5)
-                    .Select(level => new SpellProperties { Level = level })
-                    .ToList()
+                Levels = new List<SpellProperties> { new SpellProperties() }
             });
 
         Load(progressions);

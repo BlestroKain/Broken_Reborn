@@ -3,12 +3,18 @@ using Intersect.GameObjects;
 using Intersect.Client.Localization;
 using Intersect.Utilities;
 using Intersect.Client.Framework.File_Management;
+using Intersect.Client.Framework.Gwen.Input;
+using Intersect.Client.General;
+using Intersect.Framework.Core.GameObjects.Spells;
+using Intersect.Framework.Core.Services;
 
 namespace Intersect.Client.Interface.Game.DescriptionWindows;
 
 public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.GameUi.GameCanvas, "DescriptionWindow")
 {
     private SpellDescriptor? _spellDescriptor;
+    private SpellLevelingService.AdjustedSpell? _adjusted;
+    private int _level;
 
     public void Show(Guid spellId, ItemDescriptionWindow? itemDecriptionContainer = default)
     {
@@ -44,6 +50,28 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
         if (_spellDescriptor == default)
         {
             return;
+        }
+        _level = 1;
+        _adjusted = null;
+
+        if (Globals.Me != null)
+        {
+            var level = Globals.Me.Spellbook.GetLevel(_spellDescriptor.Id);
+            SpellProgressionStore.BySpellId.TryGetValue(_spellDescriptor.Id, out var progression);
+            var row = progression?.GetLevel(level) ?? new SpellProperties();
+
+            if (InputHandler.IsShiftDown && progression != null)
+            {
+                var next = progression.GetLevel(level + 1);
+                if (next != null)
+                {
+                    row = next;
+                    level += 1;
+                }
+            }
+
+            _level = level;
+            _adjusted = SpellLevelingService.BuildAdjusted(_spellDescriptor, row);
         }
 
         // Set up our header information.
@@ -98,21 +126,23 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
         // Set up the header as the item name.
         header.SetTitle(_spellDescriptor.Name, Color.White);
 
-        // Set up the spell type description.
+        // Set up the spell type description with level information.
         Strings.SpellDescription.SpellTypes.TryGetValue((int)_spellDescriptor.SpellType, out var spellType);
-        header.SetSubtitle(spellType, Color.White);
+        var levelText = Strings.EntityBox.Level.ToString(_level);
+        header.SetSubtitle($"{spellType} - {levelText}", Color.White);
 
         // Set up the spelldescription based on what kind of spell it is.
         if (_spellDescriptor.SpellType == (int)SpellType.CombatSpell)
         {
+            var hitRadius = _adjusted?.AoERadius ?? _spellDescriptor.Combat.HitRadius;
             if (_spellDescriptor.Combat.TargetType == SpellTargetType.Projectile)
             {
                 var proj = ProjectileDescriptor.Get(_spellDescriptor.Combat.ProjectileId);
-                header.SetDescription(Strings.SpellDescription.TargetTypes[(int)_spellDescriptor.Combat.TargetType].ToString(proj?.Range ?? 0, _spellDescriptor.Combat.HitRadius), Color.White);
+                header.SetDescription(Strings.SpellDescription.TargetTypes[(int)_spellDescriptor.Combat.TargetType].ToString(proj?.Range ?? 0, hitRadius), Color.White);
             }
             else
             {
-                header.SetDescription(Strings.SpellDescription.TargetTypes[(int)_spellDescriptor.Combat.TargetType].ToString(_spellDescriptor.Combat.CastRange, _spellDescriptor.Combat.HitRadius), Color.White);
+                header.SetDescription(Strings.SpellDescription.TargetTypes[(int)_spellDescriptor.Combat.TargetType].ToString(_spellDescriptor.Combat.CastRange, hitRadius), Color.White);
             }
         }
 
@@ -146,26 +176,29 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
         }
 
         // Add cast time
+        var castTimeMs = _adjusted?.CastTimeMs ?? _spellDescriptor.CastDuration;
         var castTime = Strings.SpellDescription.Instant;
-        if (_spellDescriptor.CastDuration > 0)
+        if (castTimeMs > 0)
         {
-            castTime = TimeSpan.FromMilliseconds(_spellDescriptor.CastDuration).WithSuffix();
+            castTime = TimeSpan.FromMilliseconds(castTimeMs).WithSuffix();
         }
         rows.AddKeyValueRow(Strings.SpellDescription.CastTime, castTime);
 
         // Add Vital Costs
         for (var i = 0; i < Enum.GetValues<Vital>().Length; i++)
         {
-            if (_spellDescriptor.VitalCost[i] != 0)
+            var cost = _adjusted?.VitalCosts[i] ?? _spellDescriptor.VitalCost[i];
+            if (cost != 0)
             {
-                rows.AddKeyValueRow(Strings.SpellDescription.VitalCosts[i], _spellDescriptor.VitalCost[i].ToString());
+                rows.AddKeyValueRow(Strings.SpellDescription.VitalCosts[i], cost.ToString());
             }
         }
 
         // Add Cooldown time
-        if (_spellDescriptor.CooldownDuration > 0)
+        var cooldownMs = _adjusted?.CooldownTimeMs ?? _spellDescriptor.CooldownDuration;
+        if (cooldownMs > 0)
         {
-            rows.AddKeyValueRow(Strings.SpellDescription.Cooldown, TimeSpan.FromMilliseconds(_spellDescriptor.CooldownDuration).WithSuffix());
+            rows.AddKeyValueRow(Strings.SpellDescription.Cooldown, TimeSpan.FromMilliseconds(cooldownMs).WithSuffix());
         }
 
         // Add Cooldown Group
@@ -240,11 +273,12 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
         Strings.SpellDescription.DamageTypes.TryGetValue(_spellDescriptor.Combat.DamageType, out var damageType);
         rows.AddKeyValueRow(Strings.SpellDescription.DamageType, damageType);
 
-        if (_spellDescriptor.Combat.Scaling > 0)
+        var scaling = _spellDescriptor.Combat.Scaling + (_adjusted?.PowerScalingBonus ?? 0);
+        if (scaling > 0)
         {
             Strings.SpellDescription.Stats.TryGetValue(_spellDescriptor.Combat.ScalingStat, out var stat);
             rows.AddKeyValueRow(Strings.SpellDescription.ScalingStat, stat);
-            rows.AddKeyValueRow(Strings.SpellDescription.ScalingPercentage, Strings.SpellDescription.Percentage.ToString(_spellDescriptor.Combat.Scaling));
+            rows.AddKeyValueRow(Strings.SpellDescription.ScalingPercentage, Strings.SpellDescription.Percentage.ToString(scaling));
         }
 
         // Crit Chance

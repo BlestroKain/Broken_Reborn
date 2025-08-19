@@ -26,7 +26,7 @@ public class SpellLevelingServiceTests
     public void BuildAdjusted_Level1_NoChanges()
     {
         var baseDesc = CreateBaseDescriptor();
-        var row = new SpellProperties { Level = 1 };
+        var row = new SpellProperties();
 
         var adjusted = SpellLevelingService.BuildAdjusted(baseDesc, row);
 
@@ -49,7 +49,6 @@ public class SpellLevelingServiceTests
         var baseDesc = CreateBaseDescriptor();
         var row = new SpellProperties
         {
-            Level = 5,
             CastTimeDeltaMs = -100,
             CooldownDeltaMs = -200,
             VitalCostDeltas = new long[] { -5, 5 },

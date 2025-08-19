@@ -19,7 +19,6 @@ public partial class SpellProperties
             throw new ArgumentNullException(nameof(other));
         }
 
-        Level = other.Level;
         LastUsedAtMs = other.LastUsedAtMs;
         Array.Copy(other.VitalCostDeltas, VitalCostDeltas, Enum.GetValues<Vital>().Length);
         PowerBonusFlat = other.PowerBonusFlat;
@@ -41,45 +40,42 @@ public partial class SpellProperties
     }
 
     [Key(0)]
-    public int Level { get; set; }
-
-    [Key(1)]
     public long LastUsedAtMs { get; set; }
 
-    [Key(2)]
+    [Key(1)]
     public long[] VitalCostDeltas { get; set; } = new long[Enum.GetValues<Vital>().Length];
 
-    [Key(3)]
+    [Key(2)]
     public int PowerBonusFlat { get; set; }
 
-    [Key(4)]
+    [Key(3)]
     public float PowerScalingBonus { get; set; }
 
-    [Key(5)]
+    [Key(4)]
     public int CastTimeDeltaMs { get; set; }
 
-    [Key(6)]
+    [Key(5)]
     public int CooldownDeltaMs { get; set; }
 
-    [Key(7)]
+    [Key(6)]
     public float BuffStrengthFactor { get; set; }
 
-    [Key(8)]
+    [Key(7)]
     public float BuffDurationFactor { get; set; }
 
-    [Key(9)]
+    [Key(8)]
     public float DebuffStrengthFactor { get; set; }
 
-    [Key(10)]
+    [Key(9)]
     public float DebuffDurationFactor { get; set; }
 
-    [Key(11)]
+    [Key(10)]
     public bool UnlocksAoE { get; set; }
 
-    [Key(12)]
+    [Key(11)]
     public int AoERadiusDelta { get; set; }
 
-    [Key(13)]
+    [Key(12)]
     public Dictionary<int, int[]> CustomRolls { get; set; } = new Dictionary<int, int[]>();
 }
 

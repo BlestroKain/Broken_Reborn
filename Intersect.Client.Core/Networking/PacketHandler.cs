@@ -1498,8 +1498,9 @@ internal sealed partial class PacketHandler
                 Globals.Me.Spellbook.Spells[packet.SpellId] = properties;
             }
 
-            properties.Level = packet.NewLevel;
-            Interface.GameUi.GameMenu.SpellsWindow.Refresh();
+            Globals.Me.Spellbook.SpellLevels[packet.SpellId] = packet.NewLevel;
+           Interface.GameUi.GameMenu.SpellsWindow.Refresh();
+
         }
     }
 

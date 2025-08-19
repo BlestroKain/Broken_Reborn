@@ -226,7 +226,7 @@ public static partial class PacketSender
         player.SendPacket(new SpellUpgradedPacket(spellId, newLevel, player.Spellbook.AvailableSpellPoints));
     }
 
-    public static void SendSpellUpgradeFailed(Player player, Guid spellId, SpellUpgradeFailedPacket.Reason reason)
+    public static void SendSpellUpgradeFailed(Player player, Guid spellId, SpellUpgradeFailedPacket.FailureReason reason)
     {
         if (player == null)
         {

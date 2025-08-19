@@ -35,6 +35,8 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
 
     public DbSet<SpellSlot> Player_Spells { get; set; }
 
+    public DbSet<PlayerSpell> PlayerSpells { get; set; }
+
     public DbSet<PlayerVariable> Player_Variables { get; set; }
 
     public DbSet<BestiaryUnlockInstance> Player_BestiaryUnlocks { get; set; }
@@ -92,6 +94,16 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
         modelBuilder.Entity<Friend>().HasOne(b => b.Target).WithMany().OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Player>().HasMany(b => b.Spells).WithOne(p => p.Player);
+
+        modelBuilder.Entity<PlayerSpell>()
+            .HasKey(p => new { p.PlayerId, p.SpellId });
+
+        modelBuilder.Entity<PlayerSpell>()
+            .HasOne(ps => ps.Player)
+            .WithMany()
+            .HasForeignKey(ps => ps.PlayerId);
+
+        modelBuilder.Entity<PlayerSpell>().HasIndex(p => new { p.PlayerId, p.SpellId }).IsUnique();
 
         modelBuilder.Entity<Player>().HasMany(b => b.Items).WithOne(p => p.Player);
 

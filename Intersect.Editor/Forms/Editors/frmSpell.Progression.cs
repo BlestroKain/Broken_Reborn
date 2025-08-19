@@ -15,7 +15,7 @@ public partial class FrmSpell
         grpProgression = new DarkGroupBox
         {
             Text = "Progresión (5 niveles)",
-            ForeColor = Color.Gainsboro,
+            ForeColor = Color.FromArgb(220, 220, 220),
             BackColor = Color.FromArgb(45, 45, 48),
             BorderColor = Color.FromArgb(90, 90, 90),
             Location = new Point(603, 6),

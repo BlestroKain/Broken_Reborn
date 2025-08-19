@@ -123,6 +123,19 @@ public partial class SpellsWindow : Window
         UpdateDetails();
     }
 
+    public void Update()
+    {
+        if (!IsVisibleInParent)
+        {
+            return;
+        }
+
+        foreach (var item in Items)
+        {
+            item.Update();
+        }
+    }
+
     private void UpdateDetails()
     {
         if (_selectedSpellId == Guid.Empty || Globals.Me?.Spellbook?.Spells == null)

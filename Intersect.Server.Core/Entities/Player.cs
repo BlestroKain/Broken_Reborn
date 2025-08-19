@@ -21,6 +21,7 @@ using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.GameObjects.Quests;
 using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Framework.Core.GameObjects.Variables;
+using Intersect.Framework.Core.Services;
 using Intersect.GameObjects;
 using Intersect.Network;
 using Intersect.Network.Packets.Server;
@@ -1785,7 +1786,8 @@ public partial class Player : Entity
         Entity target,
         SpellDescriptor spellDescriptor,
         bool onHitTrigger = false,
-        bool trapTrigger = false
+        bool trapTrigger = false,
+        SpellLevelingService.AdjustedSpell adjusted = null
     )
     {
         if (!trapTrigger && !ValidTauntTarget(target)) //Traps ignore taunts.
@@ -1793,7 +1795,7 @@ public partial class Player : Entity
             return;
         }
 
-        base.TryAttack(target, spellDescriptor, onHitTrigger, trapTrigger);
+        base.TryAttack(target, spellDescriptor, onHitTrigger, trapTrigger, adjusted);
     }
 
     /// <summary>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
+using Intersect.Framework.Core.GameObjects.Spells;
 
 namespace Intersect.GameObjects;
 
@@ -67,8 +68,7 @@ public static class SpellProgressionStore
             {
                 SpellId = descriptor.Id,
                 Levels = Enumerable.Range(1, 5)
-                    .Select(level => new SpellLevelRow { Level = level, Power = 0 })
-                    .Cast<SpellLevelRow>()
+                    .Select(level => new SpellProperties { Level = level })
                     .ToList()
             });
 

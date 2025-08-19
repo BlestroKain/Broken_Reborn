@@ -38,6 +38,8 @@ using Intersect.Server.Maps;
 using Intersect.Server.Networking;
 using Intersect.Utilities;
 using Microsoft.Extensions.Logging;
+using Intersect.Framework.Core.Services;
+using Intersect.Server.Entities.Combat;
 using Newtonsoft.Json;
 using Stat = Intersect.Enums.Stat;
 using Intersect.Framework.Core.GameObjects.Guild;
@@ -1042,16 +1044,27 @@ public partial class Player : Entity
     ///     Updates the player's spell cooldown for the specified <paramref name="spellDescriptor"/>.
     ///     <para> This method is called when a spell is casted by a player. </para>
     /// </summary>
-    public override void UpdateSpellCooldown(SpellDescriptor spellDescriptor, int spellSlot)
+    public override void UpdateSpellCooldown(SpellDescriptor spellDescriptor, int spellSlot, int? overrideCooldown = null)
     {
         if (spellSlot < 0 || spellSlot >= Options.Instance.Player.MaxSpells)
         {
             return;
         }
 
-        this.UpdateCooldown(spellDescriptor);
+        var cooldown = overrideCooldown ?? spellDescriptor.CooldownDuration;
 
-        // Trigger the global cooldown, if we're allowed to.
+        // Are we dealing with a cooldown group?
+        if (spellDescriptor.CooldownGroup.Trim().Length > 0)
+        {
+            UpdateCooldownGroup(GameObjectType.Spell, spellDescriptor.CooldownGroup, cooldown, spellDescriptor.IgnoreCooldownReduction);
+        }
+        else
+        {
+            var cooldownReduction = 1 - (spellDescriptor.IgnoreCooldownReduction ? 0 : GetEquipmentBonusEffect(ItemEffect.CooldownReduction) / 100f);
+            AssignSpellCooldown(spellDescriptor.Id, Timing.Global.MillisecondsUtc + (long)(cooldown * cooldownReduction));
+            PacketSender.SendSpellCooldown(this, spellDescriptor.Id);
+        }
+
         if (!spellDescriptor.IgnoreGlobalCooldown)
         {
             this.UpdateGlobalCooldown();
@@ -5845,6 +5858,8 @@ public partial class Player : Entity
             return;
         }
 
+        var adjusted = SpellCastResolver.Resolve(this, spellDescriptor);
+
         if (!CanCastSpell(spellDescriptor, target, true, softRetargetOnSelfCast, out var spellCastFailureReason))
         {
             switch (spellCastFailureReason)
@@ -5905,7 +5920,7 @@ public partial class Player : Entity
 
         if (CastTime == 0)
         {
-            CastTime = Timing.Global.Milliseconds + spellDescriptor.CastDuration;
+            CastTime = Timing.Global.Milliseconds + adjusted.CastTimeMs;
 
             //Remove stealth status.
             foreach (var status in CachedStatuses)
@@ -5963,6 +5978,8 @@ public partial class Player : Entity
             return;
         }
 
+        var adjusted = SpellCastResolver.Resolve(this, spellBase);
+
         switch (spellBase.SpellType)
         {
             case SpellType.Event:
@@ -5981,7 +5998,7 @@ public partial class Player : Entity
                 break;
         }
 
-        UpdateSpellCooldown(spellBase, spellSlot);
+        UpdateSpellCooldown(spellBase, spellSlot, adjusted.CooldownTimeMs);
 
         ConsumeSpellProjectile(spellBase);
     }

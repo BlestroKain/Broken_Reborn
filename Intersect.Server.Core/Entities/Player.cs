@@ -5639,11 +5639,6 @@ public partial class Player : Entity
             Spellbook.Spells[spellId] = properties;
         }
 
-        if (!Spellbook.SpellLevels.ContainsKey(spellId))
-        {
-            Spellbook.SpellLevels[spellId] = 1;
-        }
-
         return properties;
     }
 
@@ -5658,10 +5653,6 @@ public partial class Player : Entity
                     Spellbook.Spells[slot.SpellId] = new SpellProperties();
                 }
 
-                if (!Spellbook.SpellLevels.ContainsKey(slot.SpellId))
-                {
-                    Spellbook.SpellLevels[slot.SpellId] = 1;
-                }
             }
         }
     }

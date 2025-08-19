@@ -1480,11 +1480,6 @@ public partial class Player : Entity, IPlayer
             Spellbook.Spells[spellId] = properties;
         }
 
-        if (!Spellbook.SpellLevels.ContainsKey(spellId))
-        {
-            Spellbook.SpellLevels[spellId] = 1;
-        }
-
         return properties;
     }
 

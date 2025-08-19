@@ -1,78 +1,186 @@
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
 using Intersect.Client.Core;
+using Intersect.Client.Core.Networking;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Localization;
 using Intersect.Client.Utilities;
+using Intersect.GameObjects;
+using Intersect.Framework.Core.GameObjects.Spells;
+using Intersect.Framework.Core.Services;
 
 namespace Intersect.Client.Interface.Game.Spells;
 
 public partial class SpellsWindow : Window
 {
-    public List<SlotItem> Items { get; set; } = [];
-    private readonly ScrollControl _slotContainer;
-    private readonly ContextMenu _contextMenu;
+    private readonly ScrollControl _spellList;
+    private readonly ImagePanel _detailPanel;
+    private readonly Label _nameLabel;
+    private readonly Label _levelLabel;
+    private readonly Label _currentLabel;
+    private readonly Label _nextLabel;
+    private readonly Button _levelUpButton;
+
+    private Guid _selectedSpellId = Guid.Empty;
+
+    public List<SpellItem> Items { get; } = new();
 
     public SpellsWindow(Canvas gameCanvas) : base(gameCanvas, Strings.Spells.Title, false, nameof(SpellsWindow))
     {
-        DisableResizing();
-
         Alignment = [Alignments.Bottom, Alignments.Right];
-        MinimumSize = new Point(x: 225, y: 327);
+        MinimumSize = new Point(300, 300);
         Margin = new Margin(0, 0, 15, 60);
-        IsVisibleInTree = false;
         IsResizable = false;
+        IsVisibleInTree = false;
         IsClosable = true;
 
-        _slotContainer = new ScrollControl(this, "SpellsContainer")
+        _spellList = new ScrollControl(this, nameof(_spellList))
         {
-            Dock = Pos.Fill,
-            OverflowX = OverflowBehavior.Auto,
+            Dock = Pos.Left,
+            Width = 150,
             OverflowY = OverflowBehavior.Scroll,
         };
 
-        _contextMenu = new ContextMenu(gameCanvas, "SpellContextMenu")
+        _detailPanel = new ImagePanel(this, nameof(_detailPanel))
         {
+            Dock = Pos.Fill,
             IsVisibleInParent = false,
-            IconMarginDisabled = true,
-            ItemFont = GameContentManager.Current.GetFont(name: "sourcesansproblack"),
-            ItemFontSize = 10,
         };
+
+        _nameLabel = new Label(_detailPanel, nameof(_nameLabel))
+        {
+            FontName = "sourcesansproblack",
+            FontSize = 12,
+        };
+        _nameLabel.SetPosition(4, 4);
+
+        _levelLabel = new Label(_detailPanel, nameof(_levelLabel))
+        {
+            FontName = "sourcesansproblack",
+            FontSize = 10,
+        };
+        _levelLabel.SetPosition(4, 24);
+
+        _currentLabel = new Label(_detailPanel, nameof(_currentLabel))
+        {
+            FontName = "sourcesansproblack",
+            FontSize = 10,
+        };
+        _currentLabel.SetPosition(4, 44);
+
+        _nextLabel = new Label(_detailPanel, nameof(_nextLabel))
+        {
+            FontName = "sourcesansproblack",
+            FontSize = 10,
+        };
+        _nextLabel.SetPosition(4, 84);
+
+        _levelUpButton = new Button(_detailPanel, nameof(_levelUpButton))
+        {
+            Text = "Level Up",
+            FontName = "sourcesansproblack",
+            FontSize = 10,
+        };
+        _levelUpButton.SetPosition(4, 120);
+        _levelUpButton.Clicked += (_, _) => LevelUp();
     }
 
     protected override void EnsureInitialized()
     {
-        LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
-        InitItemContainer();
+        Refresh();
     }
 
-    public void Update()
+    public void Refresh()
     {
-        if (!IsVisibleInTree)
+        _spellList.ClearChildren();
+        Items.Clear();
+
+        if (Globals.Me?.Spellbook?.Spells == null)
         {
             return;
         }
 
-        var slotCount = Math.Min(Items.Count, Options.Instance.Player.MaxSpells);
-        for (var slotIndex = 0; slotIndex < slotCount; slotIndex++)
+        var index = 0;
+        foreach (var (spellId, properties) in Globals.Me.Spellbook.Spells.OrderBy(p => SpellDescriptor.GetName(p.Key)))
         {
-            Items[slotIndex].Update();
+            var item = new SpellItem(this, _spellList, index++, spellId, properties);
+            Items.Add(item);
+        }
+
+        _spellList.SetInnerSize(_spellList.Width, index * 40);
+        UpdateDetails();
+    }
+
+    public void SelectSpell(Guid spellId)
+    {
+        _selectedSpellId = spellId;
+        UpdateDetails();
+    }
+
+    private void UpdateDetails()
+    {
+        if (_selectedSpellId == Guid.Empty || Globals.Me?.Spellbook?.Spells == null)
+        {
+            _detailPanel.IsVisibleInParent = false;
+            return;
+        }
+
+        if (!Globals.Me.Spellbook.Spells.TryGetValue(_selectedSpellId, out var properties))
+        {
+            _detailPanel.IsVisibleInParent = false;
+            return;
+        }
+
+        if (!SpellDescriptor.TryGet(_selectedSpellId, out var descriptor))
+        {
+            _detailPanel.IsVisibleInParent = false;
+            return;
+        }
+
+        _detailPanel.IsVisibleInParent = true;
+        _nameLabel.Text = descriptor.Name;
+        _levelLabel.Text = Strings.EntityBox.Level.ToString(properties.Level);
+
+        var currentAdjusted = SpellLevelingService.BuildAdjusted(descriptor, properties);
+        _currentLabel.Text = FormatAdjusted(currentAdjusted);
+
+        SpellProperties? nextRow = null;
+        if (SpellProgressionStore.BySpellId.TryGetValue(_selectedSpellId, out var progression))
+        {
+            nextRow = progression.GetLevel(properties.Level + 1);
+        }
+
+        if (nextRow != null)
+        {
+            var nextAdjusted = SpellLevelingService.BuildAdjusted(descriptor, nextRow);
+            _nextLabel.Text = FormatAdjusted(nextAdjusted);
+            _levelUpButton.IsDisabled = !(Globals.Me.Spellbook.AvailableSpellPoints > 0 && properties.Level < 5);
+        }
+        else
+        {
+            _nextLabel.Text = Strings.EntityBox.MaxLevel;
+            _levelUpButton.IsDisabled = true;
         }
     }
 
-    private void InitItemContainer()
+    private static string FormatAdjusted(SpellLevelingService.AdjustedSpell adjusted)
     {
-        for (var slotIndex = 0; slotIndex < Options.Instance.Player.MaxSpells; slotIndex++)
-        {
-            Items.Add(new SpellItem(this, _slotContainer, slotIndex, _contextMenu));
-        }
-
-        PopulateSlotContainer.Populate(_slotContainer, Items);
+        return $"{Strings.SpellDescription.CastTime}: {TimeSpan.FromMilliseconds(adjusted.CastTimeMs).WithSuffix()}\n" +
+               $"{Strings.SpellDescription.Cooldown}: {TimeSpan.FromMilliseconds(adjusted.CooldownTimeMs).WithSuffix()}";
     }
 
-    public override void Hide()
+    private void LevelUp()
     {
-        _contextMenu?.Close();
-        base.Hide();
+        if (_selectedSpellId == Guid.Empty)
+        {
+            return;
+        }
+
+        PacketSender.SendRequestSpellUpgrade(_selectedSpellId);
     }
 }
+

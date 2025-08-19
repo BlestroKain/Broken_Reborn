@@ -30,6 +30,7 @@ using Intersect.Framework.Core.GameObjects.Mapping.Tilesets;
 using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Framework.Core.GameObjects.Maps.Attributes;
 using Intersect.Framework.Core.GameObjects.Maps.MapList;
+using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Framework.Core.Security;
 using Intersect.Localization;
 using Microsoft.Extensions.Logging;
@@ -1482,6 +1483,28 @@ internal sealed partial class PacketHandler
                 Globals.Me.SpellCooldowns[cd.Key] = time;
             }
         }
+    }
+
+    //SpellUpgradedPacket
+    public void HandlePacket(IPacketSender packetSender, SpellUpgradedPacket packet)
+    {
+        if (Globals.Me != null)
+        {
+            Globals.Me.Spellbook.AvailableSpellPoints = packet.RemainingSpellPoints;
+            if (!Globals.Me.Spellbook.Spells.TryGetValue(packet.SpellId, out var properties))
+            {
+                properties = new SpellProperties();
+                Globals.Me.Spellbook.Spells[packet.SpellId] = properties;
+            }
+
+            properties.Level = packet.NewLevel;
+        }
+    }
+
+    //SpellUpgradeFailedPacket
+    public void HandlePacket(IPacketSender packetSender, SpellUpgradeFailedPacket packet)
+    {
+        // Failure handling can be implemented as needed
     }
 
     //ItemCooldownPacket

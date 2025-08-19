@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Intersect.Enums;
 using MessagePack;
 
@@ -19,7 +18,6 @@ public partial class SpellProperties
             throw new ArgumentNullException(nameof(other));
         }
 
-        LastUsedAtMs = other.LastUsedAtMs;
         Array.Copy(other.VitalCostDeltas, VitalCostDeltas, Enum.GetValues<Vital>().Length);
         PowerBonusFlat = other.PowerBonusFlat;
         PowerScalingBonus = other.PowerScalingBonus;
@@ -32,53 +30,41 @@ public partial class SpellProperties
         UnlocksAoE = other.UnlocksAoE;
         AoERadiusDelta = other.AoERadiusDelta;
 
-        CustomRolls = new Dictionary<int, int[]>(other.CustomRolls.Count);
-        foreach (var kvp in other.CustomRolls)
-        {
-            CustomRolls[kvp.Key] = (int[])kvp.Value.Clone();
-        }
-
         Level = other.Level;
     }
 
     [Key(0)]
-    public long LastUsedAtMs { get; set; }
-
-    [Key(1)]
     public long[] VitalCostDeltas { get; set; } = new long[Enum.GetValues<Vital>().Length];
 
-    [Key(2)]
+    [Key(1)]
     public int PowerBonusFlat { get; set; }
 
-    [Key(3)]
+    [Key(2)]
     public float PowerScalingBonus { get; set; }
 
-    [Key(4)]
+    [Key(3)]
     public int CastTimeDeltaMs { get; set; }
 
-    [Key(5)]
+    [Key(4)]
     public int CooldownDeltaMs { get; set; }
 
-    [Key(6)]
+    [Key(5)]
     public float BuffStrengthFactor { get; set; }
 
-    [Key(7)]
+    [Key(6)]
     public float BuffDurationFactor { get; set; }
 
-    [Key(8)]
+    [Key(7)]
     public float DebuffStrengthFactor { get; set; }
 
-    [Key(9)]
+    [Key(8)]
     public float DebuffDurationFactor { get; set; }
 
-    [Key(10)]
+    [Key(9)]
     public bool UnlocksAoE { get; set; }
 
-    [Key(11)]
+    [Key(10)]
     public int AoERadiusDelta { get; set; }
-
-    [Key(12)]
-    public Dictionary<int, int[]> CustomRolls { get; set; } = new Dictionary<int, int[]>();
 
     [IgnoreMember]
     public int Level { get; set; } = 1;

@@ -23,6 +23,7 @@ public partial class HotbarItem : SlotItem
     private readonly Label _cooldownLabel;
     private readonly Label _equipLabel;
     private readonly Label _keyLabel;
+    private readonly Label _levelLabel;
 
     private Guid _currentId = Guid.Empty;
     private ItemDescriptor? _currentItem = null;
@@ -121,6 +122,21 @@ public partial class HotbarItem : SlotItem
             FontSize = 8,
             Padding = Padding.FourH,
             TextColorOverride = Color.White,
+        };
+
+        _levelLabel = new Label(this, $"LevelLabel{hotbarSlotIndex}")
+        {
+            Alignment = [Alignments.Bottom, Alignments.Left],
+            X = 0,
+            Y = 25,
+            Width = 10,
+            Height = 11,
+            BackgroundTemplateName = "hotbar_label.png",
+            Font = font,
+            FontSize = 8,
+            Padding = Padding.FourH,
+            TextColorOverride = Color.White,
+            IsHidden = true,
         };
     }
 
@@ -387,12 +403,24 @@ public partial class HotbarItem : SlotItem
             _equipLabel.IsHidden = true;
             _quantityLabel.IsHidden = true;
             _cooldownLabel.IsHidden = true;
+            _levelLabel.IsHidden = true;
         }
         else
         {
             _equipLabel.IsHidden = !_isEquipped || invalidInventoryIndex;
             _quantityLabel.IsHidden = _currentItem?.Stackable == false || invalidInventoryIndex;
             _cooldownLabel.IsHidden = !_isFaded || invalidInventoryIndex;
+            _levelLabel.IsHidden = _currentSpell == null || _spellBookItem == null;
+        }
+
+        if (!_levelLabel.IsHidden && _currentSpell != null)
+        {
+            var spellProps = Globals.Me.GetSpellProperties(_currentSpell.Id);
+            var levelText = Strings.EntityBox.Level.ToString(spellProps.Level);
+            if (_levelLabel.Text != levelText)
+            {
+                _levelLabel.Text = levelText;
+            }
         }
 
         if (updateDisplay) //Item on cd and fade is incorrect

@@ -20,6 +20,22 @@ public partial class PlayerSpellbookState
     public int GetLevel(Guid spellId) =>
         SpellLevels.TryGetValue(spellId, out var level) ? level : 1;
 
+    public SpellProperties GetOrCreateProperties(Guid spellId)
+    {
+        if (!Spells.TryGetValue(spellId, out var properties))
+        {
+            properties = new SpellProperties();
+            Spells[spellId] = properties;
+        }
+
+        if (!SpellLevels.ContainsKey(spellId))
+        {
+            SpellLevels[spellId] = 1;
+        }
+
+        return properties;
+    }
+
     public bool TryUpgradeSpell(Guid spellId, out int newLevel)
     {
         var currentLevel = GetLevel(spellId);

@@ -1472,22 +1472,6 @@ public partial class Player : Entity, IPlayer
         return 0;
     }
 
-    public SpellProperties GetSpellProperties(Guid spellId)
-    {
-        if (!Spellbook.Spells.TryGetValue(spellId, out var properties))
-        {
-            properties = new SpellProperties();
-            Spellbook.Spells[spellId] = properties;
-        }
-
-        if (!Spellbook.SpellLevels.ContainsKey(spellId))
-        {
-            Spellbook.SpellLevels[spellId] = 1;
-        }
-
-        return properties;
-    }
-
     public void TryUseSpell(Guid spellId)
     {
         if (spellId == Guid.Empty)

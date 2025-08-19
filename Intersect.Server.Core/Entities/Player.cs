@@ -469,8 +469,6 @@ public partial class Player : Entity
             }
         }
 
-        EnsureSpellbookEntries();
-
         OnlinePlayersById[Id] = this;
         _onlinePlayers.Add(this);
 
@@ -5629,41 +5627,6 @@ public partial class Player : Entity
         }
 
         return -1;
-    }
-
-    public SpellProperties GetSpellProperties(Guid spellId)
-    {
-        if (!Spellbook.Spells.TryGetValue(spellId, out var properties))
-        {
-            properties = new SpellProperties();
-            Spellbook.Spells[spellId] = properties;
-        }
-
-        if (!Spellbook.SpellLevels.ContainsKey(spellId))
-        {
-            Spellbook.SpellLevels[spellId] = 1;
-        }
-
-        return properties;
-    }
-
-    public void EnsureSpellbookEntries()
-    {
-        foreach (var slot in Spells)
-        {
-            if (slot.SpellId != Guid.Empty)
-            {
-                if (!Spellbook.Spells.ContainsKey(slot.SpellId))
-                {
-                    Spellbook.Spells[slot.SpellId] = new SpellProperties();
-                }
-
-                if (!Spellbook.SpellLevels.ContainsKey(slot.SpellId))
-                {
-                    Spellbook.SpellLevels[slot.SpellId] = 1;
-                }
-            }
-        }
     }
 
     public void SwapSpells(int spell1, int spell2)

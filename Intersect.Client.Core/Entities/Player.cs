@@ -1476,8 +1476,13 @@ public partial class Player : Entity, IPlayer
     {
         if (!Spellbook.Spells.TryGetValue(spellId, out var properties))
         {
-            properties = new SpellProperties { Level = 1 };
+            properties = new SpellProperties();
             Spellbook.Spells[spellId] = properties;
+        }
+
+        if (!Spellbook.SpellLevels.ContainsKey(spellId))
+        {
+            Spellbook.SpellLevels[spellId] = 1;
         }
 
         return properties;

@@ -56,19 +56,21 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
 
         if (Globals.Me != null)
         {
-            var properties = Globals.Me.GetSpellProperties(_spellDescriptor.Id);
-            var row = properties;
+            var level = Globals.Me.Spellbook.GetLevel(_spellDescriptor.Id);
+            SpellProgressionStore.BySpellId.TryGetValue(_spellDescriptor.Id, out var progression);
+            var row = progression?.GetLevel(level) ?? new SpellProperties();
 
-            if (InputHandler.IsShiftDown && SpellProgressionStore.BySpellId.TryGetValue(_spellDescriptor.Id, out var progression))
+            if (InputHandler.IsShiftDown && progression != null)
             {
-                var next = progression.GetLevel(properties.Level + 1);
+                var next = progression.GetLevel(level + 1);
                 if (next != null)
                 {
                     row = next;
+                    level += 1;
                 }
             }
 
-            _level = row.Level;
+            _level = level;
             _adjusted = SpellLevelingService.BuildAdjusted(_spellDescriptor, row);
         }
 

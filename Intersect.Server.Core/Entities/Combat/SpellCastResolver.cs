@@ -22,20 +22,15 @@ public static class SpellCastResolver
         }
 
         var level = 1;
-        var row = new SpellProperties { Level = level };
+        var row = new SpellProperties();
 
         if (caster is Player player)
         {
-            var props = player.GetSpellProperties(baseSpell.Id);
-            level = props?.Level ?? 1;
+            level = player.Spellbook.GetLevel(baseSpell.Id);
 
             if (SpellProgressionStore.BySpellId.TryGetValue(baseSpell.Id, out var progression))
             {
-                row = progression.GetLevel(level) ?? new SpellProperties { Level = level };
-            }
-            else
-            {
-                row.Level = level;
+                row = progression.GetLevel(level) ?? new SpellProperties();
             }
         }
 

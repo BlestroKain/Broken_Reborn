@@ -86,6 +86,8 @@ public partial class Player : Entity
 
     public int StatPoints { get; set; }
 
+    public int AvailableSpellPoints { get; set; }
+
     [NotMapped, JsonIgnore]
     public PlayerSpellbookState Spellbook { get; set; } = new();
 

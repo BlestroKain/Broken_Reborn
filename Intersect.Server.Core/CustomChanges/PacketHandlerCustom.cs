@@ -467,6 +467,41 @@ internal sealed partial class PacketHandler
         PacketSender.SendOpenMailBox(player);
     }
 
+    public void HandlePacket(Client client, RequestSpellUpgradePacket packet)
+    {
+        var player = client?.Entity;
+        if (player == null)
+        {
+            return;
+        }
 
+        if (!player.Spellbook.Spells.TryGetValue(packet.SpellId, out var properties))
+        {
+            PacketSender.SendSpellUpgradeFailed(player, packet.SpellId, SpellUpgradeFailedPacket.Reason.SpellNotOwned);
+            Log.Warning("Spell upgrade failed: spell {SpellId} not owned", packet.SpellId);
+            return;
+        }
+
+        if (player.Spellbook.AvailableSpellPoints <= 0)
+        {
+            PacketSender.SendSpellUpgradeFailed(player, packet.SpellId, SpellUpgradeFailedPacket.Reason.NotEnoughPoints);
+            Log.Warning("Spell upgrade failed: not enough points for spell {SpellId}", packet.SpellId);
+            return;
+        }
+
+        if (properties.Level >= 5)
+        {
+            PacketSender.SendSpellUpgradeFailed(player, packet.SpellId, SpellUpgradeFailedPacket.Reason.AlreadyMaxLevel);
+            Log.Warning("Spell upgrade failed: spell {SpellId} already at max level {Level}", packet.SpellId, properties.Level);
+            return;
+        }
+
+        properties.Level++;
+        player.Spellbook.AvailableSpellPoints--;
+        player.Save();
+
+        PacketSender.SendSpellUpgraded(player, packet.SpellId, properties.Level);
+        Log.Information("Spell {SpellId} upgraded to level {Level}", packet.SpellId, properties.Level);
+    }
 
 }

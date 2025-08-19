@@ -1863,18 +1863,6 @@ internal sealed partial class PacketHandler
         }
     }
 
-    //RequestSpellUpgradePacket
-    public void HandlePacket(Client client, RequestSpellUpgradePacket packet)
-    {
-        var player = client?.Entity;
-        if (player == null)
-        {
-            return;
-        }
-
-        // Spell upgrade request handling to be implemented
-    }
-
     //UnequipItemPacket
     public void HandlePacket(Client client, UnequipItemPacket packet)
     {

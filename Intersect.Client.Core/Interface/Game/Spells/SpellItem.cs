@@ -82,7 +82,8 @@ public partial class SpellItem : SlotItem
     public void Refresh(SpellProperties properties)
     {
         _properties = properties;
-        _levelPips.Text = BuildPips(_properties.Level);
+        var level = Globals.Me?.Spellbook.GetLevel(SpellId) ?? 1;
+        _levelPips.Text = BuildPips(level);
 
         if (SpellDescriptor.TryGet(SpellId, out var descriptor))
         {

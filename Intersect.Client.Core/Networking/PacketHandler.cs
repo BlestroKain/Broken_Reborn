@@ -1503,7 +1503,6 @@ internal sealed partial class PacketHandler
         }
 
         // Update the player's known level for this spell
-        properties.Level = packet.NewLevel;
         Globals.Me.Spellbook.SpellLevels[packet.SpellId] = packet.NewLevel;
 
        Interface.Interface.GameUi.GameMenu.SpellsWindow.Refresh();

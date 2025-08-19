@@ -144,7 +144,7 @@ public partial class SpellsWindow : Window
             return;
         }
 
-        if (!Globals.Me.Spellbook.Spells.TryGetValue(_selectedSpellId, out var properties))
+        if (!Globals.Me.Spellbook.Spells.ContainsKey(_selectedSpellId))
         {
             _detailPanel.IsVisibleInParent = false;
             return;
@@ -158,22 +158,20 @@ public partial class SpellsWindow : Window
 
         _detailPanel.IsVisibleInParent = true;
         _nameLabel.Text = descriptor.Name;
-        _levelLabel.Text = Strings.EntityBox.Level.ToString(properties.Level);
+        var level = Globals.Me.Spellbook.GetLevel(_selectedSpellId);
+        _levelLabel.Text = Strings.EntityBox.Level.ToString(level);
 
-        var currentAdjusted = SpellLevelingService.BuildAdjusted(descriptor, properties);
+        SpellProgressionStore.BySpellId.TryGetValue(_selectedSpellId, out var progression);
+        var currentRow = progression?.GetLevel(level) ?? new SpellProperties();
+        var currentAdjusted = SpellLevelingService.BuildAdjusted(descriptor, currentRow);
         _currentLabel.Text = FormatAdjusted(currentAdjusted);
 
-        SpellProperties? nextRow = null;
-        if (SpellProgressionStore.BySpellId.TryGetValue(_selectedSpellId, out var progression))
-        {
-            nextRow = progression.GetLevel(properties.Level + 1);
-        }
-
+        var nextRow = progression?.GetLevel(level + 1);
         if (nextRow != null)
         {
             var nextAdjusted = SpellLevelingService.BuildAdjusted(descriptor, nextRow);
             _nextLabel.Text = FormatAdjusted(nextAdjusted);
-            _levelUpButton.IsDisabled = !(Globals.Me.Spellbook.AvailableSpellPoints > 0 && properties.Level < 5);
+            _levelUpButton.IsDisabled = !(Globals.Me.Spellbook.AvailableSpellPoints > 0 && level < 5);
         }
         else
         {

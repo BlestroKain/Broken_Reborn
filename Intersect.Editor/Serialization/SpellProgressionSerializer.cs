@@ -32,8 +32,7 @@ public static class SpellProgressionSerializer
             throw new InvalidDataException($"Spell {spellId} progression must contain exactly five rows (found {levels.Count}).");
         }
 
-        // Ensure rows are ordered by level before returning.
-        levels = levels.OrderBy(l => l.Level).ToList();
+        // Assume rows are already ordered by level.
         return new SpellProgression
         {
             SpellId = spellId,
@@ -54,12 +53,9 @@ public static class SpellProgressionSerializer
         }
 
         var list = new List<SpellProperties>(5);
-        for (var i = 1; i <= 5; i++)
+        for (var i = 0; i < 5; i++)
         {
-            var copy = new SpellProperties(levelOne)
-            {
-                Level = i,
-            };
+            var copy = new SpellProperties(levelOne);
             list.Add(copy);
         }
 

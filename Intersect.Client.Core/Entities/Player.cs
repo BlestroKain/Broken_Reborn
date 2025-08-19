@@ -392,6 +392,7 @@ public partial class Player : Entity, IPlayer
         GuildBackgroundR = playerPacket.GuildBackgroundR;
         GuildBackgroundG = playerPacket.GuildBackgroundG;
         GuildBackgroundB = playerPacket.GuildBackgroundB;
+        Spellbook.AvailableSpellPoints = playerPacket.AvailableSpellPoints;
         GuildSymbolFile = playerPacket.GuildSymbolFile;
         GuildSymbolR = playerPacket.GuildSymbolR;
         GuildSymbolG = playerPacket.GuildSymbolG;

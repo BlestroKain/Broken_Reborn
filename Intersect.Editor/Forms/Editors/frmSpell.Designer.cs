@@ -69,6 +69,19 @@ namespace Intersect.Editor.Forms.Editors
             lblHPCost = new Label();
             lblCastDuration = new Label();
             lblCooldownDuration = new Label();
+            grpProgression = new DarkGroupBox();
+            cmbLevel = new DarkComboBox();
+            btnAddLevel = new DarkButton();
+            btnRemoveLevel = new DarkButton();
+            nudHpDelta = new DarkNumericUpDown();
+            nudMpDelta = new DarkNumericUpDown();
+            nudCastDelta = new DarkNumericUpDown();
+            nudCooldownDelta = new DarkNumericUpDown();
+            lblLevel = new Label();
+            lblHpDelta = new Label();
+            lblMpDelta = new Label();
+            lblCastDelta = new Label();
+            lblCooldownDelta = new Label();
             grpRequirements = new DarkGroupBox();
             lblCannotCast = new Label();
             txtCannotCast = new DarkTextBox();
@@ -205,6 +218,11 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)nudCastDuration).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudMpCost).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudHPCost).BeginInit();
+            grpProgression.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)nudHpDelta).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudMpDelta).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudCastDelta).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudCooldownDelta).BeginInit();
             grpRequirements.SuspendLayout();
             grpTargetInfo.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)nudDuration).BeginInit();
@@ -256,6 +274,7 @@ namespace Intersect.Editor.Forms.Editors
             pnlContainer.AutoScroll = true;
             pnlContainer.Controls.Add(grpGeneral);
             pnlContainer.Controls.Add(grpSpellCost);
+            pnlContainer.Controls.Add(grpProgression);
             pnlContainer.Controls.Add(grpRequirements);
             pnlContainer.Controls.Add(grpTargetInfo);
             pnlContainer.Controls.Add(grpCombat);
@@ -634,6 +653,166 @@ namespace Intersect.Editor.Forms.Editors
             grpSpellCost.TabIndex = 36;
             grpSpellCost.TabStop = false;
             grpSpellCost.Text = "Spell Cost:";
+            //
+            // grpProgression
+            //
+            grpProgression.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
+            grpProgression.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+            grpProgression.Controls.Add(btnRemoveLevel);
+            grpProgression.Controls.Add(btnAddLevel);
+            grpProgression.Controls.Add(cmbLevel);
+            grpProgression.Controls.Add(lblLevel);
+            grpProgression.Controls.Add(lblHpDelta);
+            grpProgression.Controls.Add(nudHpDelta);
+            grpProgression.Controls.Add(lblMpDelta);
+            grpProgression.Controls.Add(nudMpDelta);
+            grpProgression.Controls.Add(lblCastDelta);
+            grpProgression.Controls.Add(nudCastDelta);
+            grpProgression.Controls.Add(lblCooldownDelta);
+            grpProgression.Controls.Add(nudCooldownDelta);
+            grpProgression.ForeColor = System.Drawing.Color.Gainsboro;
+            grpProgression.Location = new System.Drawing.Point(334, 334);
+            grpProgression.Margin = new Padding(4, 3, 4, 3);
+            grpProgression.Name = "grpProgression";
+            grpProgression.Padding = new Padding(4, 3, 4, 3);
+            grpProgression.Size = new Size(262, 210);
+            grpProgression.TabIndex = 37;
+            grpProgression.TabStop = false;
+            grpProgression.Text = "Progression";
+            //
+            // lblLevel
+            //
+            lblLevel.AutoSize = true;
+            lblLevel.Location = new System.Drawing.Point(14, 22);
+            lblLevel.Name = "lblLevel";
+            lblLevel.Size = new Size(36, 15);
+            lblLevel.TabIndex = 0;
+            lblLevel.Text = "Level:";
+            //
+            // cmbLevel
+            //
+            cmbLevel.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            cmbLevel.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+            cmbLevel.BorderStyle = ButtonBorderStyle.Solid;
+            cmbLevel.ButtonColor = System.Drawing.Color.FromArgb(43, 43, 43);
+            cmbLevel.DrawDropdownHoverOutline = false;
+            cmbLevel.DrawFocusRectangle = false;
+            cmbLevel.DrawMode = DrawMode.OwnerDrawFixed;
+            cmbLevel.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbLevel.FlatStyle = FlatStyle.Flat;
+            cmbLevel.ForeColor = System.Drawing.Color.Gainsboro;
+            cmbLevel.FormattingEnabled = true;
+            cmbLevel.Location = new System.Drawing.Point(60, 18);
+            cmbLevel.Margin = new Padding(4, 3, 4, 3);
+            cmbLevel.Name = "cmbLevel";
+            cmbLevel.Size = new Size(120, 24);
+            cmbLevel.TabIndex = 1;
+            cmbLevel.TextPadding = new Padding(2);
+            cmbLevel.SelectedIndexChanged += cmbLevel_SelectedIndexChanged;
+            //
+            // btnAddLevel
+            //
+            btnAddLevel.Location = new System.Drawing.Point(186, 18);
+            btnAddLevel.Margin = new Padding(4, 3, 4, 3);
+            btnAddLevel.Name = "btnAddLevel";
+            btnAddLevel.Padding = new Padding(6);
+            btnAddLevel.Size = new Size(23, 24);
+            btnAddLevel.TabIndex = 2;
+            btnAddLevel.Text = "+";
+            btnAddLevel.Click += btnAddLevel_Click;
+            //
+            // btnRemoveLevel
+            //
+            btnRemoveLevel.Location = new System.Drawing.Point(215, 18);
+            btnRemoveLevel.Margin = new Padding(4, 3, 4, 3);
+            btnRemoveLevel.Name = "btnRemoveLevel";
+            btnRemoveLevel.Padding = new Padding(6);
+            btnRemoveLevel.Size = new Size(23, 24);
+            btnRemoveLevel.TabIndex = 3;
+            btnRemoveLevel.Text = "-";
+            btnRemoveLevel.Click += btnRemoveLevel_Click;
+            //
+            // lblHpDelta
+            //
+            lblHpDelta.AutoSize = true;
+            lblHpDelta.Location = new System.Drawing.Point(14, 60);
+            lblHpDelta.Name = "lblHpDelta";
+            lblHpDelta.Size = new Size(64, 15);
+            lblHpDelta.TabIndex = 4;
+            lblHpDelta.Text = "HP \u0394 Cost:";
+            //
+            // nudHpDelta
+            //
+            nudHpDelta.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            nudHpDelta.ForeColor = System.Drawing.Color.Gainsboro;
+            nudHpDelta.Location = new System.Drawing.Point(120, 58);
+            nudHpDelta.Margin = new Padding(4, 3, 4, 3);
+            nudHpDelta.Maximum = new decimal(new int[] { 10000, 0, 0, 0 });
+            nudHpDelta.Minimum = new decimal(new int[] { 10000, 0, 0, int.MinValue });
+            nudHpDelta.Name = "nudHpDelta";
+            nudHpDelta.Size = new Size(118, 23);
+            nudHpDelta.TabIndex = 5;
+            //
+            // lblMpDelta
+            //
+            lblMpDelta.AutoSize = true;
+            lblMpDelta.Location = new System.Drawing.Point(14, 89);
+            lblMpDelta.Name = "lblMpDelta";
+            lblMpDelta.Size = new Size(68, 15);
+            lblMpDelta.TabIndex = 6;
+            lblMpDelta.Text = "MP \u0394 Cost:";
+            //
+            // nudMpDelta
+            //
+            nudMpDelta.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            nudMpDelta.ForeColor = System.Drawing.Color.Gainsboro;
+            nudMpDelta.Location = new System.Drawing.Point(120, 87);
+            nudMpDelta.Margin = new Padding(4, 3, 4, 3);
+            nudMpDelta.Maximum = new decimal(new int[] { 10000, 0, 0, 0 });
+            nudMpDelta.Minimum = new decimal(new int[] { 10000, 0, 0, int.MinValue });
+            nudMpDelta.Name = "nudMpDelta";
+            nudMpDelta.Size = new Size(118, 23);
+            nudMpDelta.TabIndex = 7;
+            //
+            // lblCastDelta
+            //
+            lblCastDelta.AutoSize = true;
+            lblCastDelta.Location = new System.Drawing.Point(14, 118);
+            lblCastDelta.Name = "lblCastDelta";
+            lblCastDelta.Size = new Size(86, 15);
+            lblCastDelta.TabIndex = 8;
+            lblCastDelta.Text = "Cast \u0394 (ms):";
+            //
+            // nudCastDelta
+            //
+            nudCastDelta.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            nudCastDelta.ForeColor = System.Drawing.Color.Gainsboro;
+            nudCastDelta.Location = new System.Drawing.Point(120, 116);
+            nudCastDelta.Margin = new Padding(4, 3, 4, 3);
+            nudCastDelta.Maximum = new decimal(new int[] { -100, 49, 0, 0 });
+            nudCastDelta.Name = "nudCastDelta";
+            nudCastDelta.Size = new Size(118, 23);
+            nudCastDelta.TabIndex = 9;
+            //
+            // lblCooldownDelta
+            //
+            lblCooldownDelta.AutoSize = true;
+            lblCooldownDelta.Location = new System.Drawing.Point(14, 147);
+            lblCooldownDelta.Name = "lblCooldownDelta";
+            lblCooldownDelta.Size = new Size(102, 15);
+            lblCooldownDelta.TabIndex = 10;
+            lblCooldownDelta.Text = "Cooldown \u0394 (ms):";
+            //
+            // nudCooldownDelta
+            //
+            nudCooldownDelta.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            nudCooldownDelta.ForeColor = System.Drawing.Color.Gainsboro;
+            nudCooldownDelta.Location = new System.Drawing.Point(120, 145);
+            nudCooldownDelta.Margin = new Padding(4, 3, 4, 3);
+            nudCooldownDelta.Maximum = new decimal(new int[] { -100, 49, 0, 0 });
+            nudCooldownDelta.Name = "nudCooldownDelta";
+            nudCooldownDelta.Size = new Size(118, 23);
+            nudCooldownDelta.TabIndex = 11;
             // 
             // chkIgnoreCdr
             // 
@@ -2540,6 +2719,12 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)nudCastDuration).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudMpCost).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudHPCost).EndInit();
+            grpProgression.ResumeLayout(false);
+            grpProgression.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)nudHpDelta).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudMpDelta).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudCastDelta).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudCooldownDelta).EndInit();
             grpRequirements.ResumeLayout(false);
             grpRequirements.PerformLayout();
             grpTargetInfo.ResumeLayout(false);
@@ -2624,6 +2809,7 @@ namespace Intersect.Editor.Forms.Editors
         private System.Windows.Forms.Label lblTargetType;
         private DarkGroupBox grpWarp;
         private DarkGroupBox grpSpellCost;
+        private DarkGroupBox grpProgression;
         private System.Windows.Forms.Label lblMPCost;
         private System.Windows.Forms.Label lblHPCost;
         private System.Windows.Forms.Label lblDesc;
@@ -2768,5 +2954,17 @@ namespace Intersect.Editor.Forms.Editors
         private Label label11;
         private DarkComboBox cmbTrapAnimation;
         private System.Windows.Forms.Label lblTrapAnimation;
+        private DarkComboBox cmbLevel;
+        private DarkButton btnAddLevel;
+        private DarkButton btnRemoveLevel;
+        private DarkNumericUpDown nudHpDelta;
+        private DarkNumericUpDown nudMpDelta;
+        private DarkNumericUpDown nudCastDelta;
+        private DarkNumericUpDown nudCooldownDelta;
+        private System.Windows.Forms.Label lblLevel;
+        private System.Windows.Forms.Label lblHpDelta;
+        private System.Windows.Forms.Label lblMpDelta;
+        private System.Windows.Forms.Label lblCastDelta;
+        private System.Windows.Forms.Label lblCooldownDelta;
     }
 }

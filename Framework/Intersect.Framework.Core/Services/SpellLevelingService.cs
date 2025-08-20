@@ -21,7 +21,7 @@ public static class SpellLevelingService
         public int AoERadius { get; init; }
     }
 
-    public static EffectiveSpellStats BuildAdjusted(SpellDescriptor baseDesc, SpellProperties row)
+    public static EffectiveSpellStats BuildAdjusted(SpellDescriptor baseDesc, SpellProgressionRow row)
     {
         if (baseDesc == null)
         {

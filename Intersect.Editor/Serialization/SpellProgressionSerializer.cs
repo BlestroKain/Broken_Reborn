@@ -19,7 +19,7 @@ public static class SpellProgressionSerializer
     /// <param name="spellId">Identifier of the spell the progression belongs to.</param>
     /// <param name="rows">The rows describing each level of the progression.</param>
     /// <exception cref="InvalidDataException">Thrown when the number of rows is not equal to five.</exception>
-    public static SpellProgression FromRows(Guid spellId, IEnumerable<SpellProperties> rows)
+    public static SpellProgression FromRows(Guid spellId, IEnumerable<SpellProgressionRow> rows)
     {
         if (rows == null)
         {
@@ -45,17 +45,17 @@ public static class SpellProgressionSerializer
     /// </summary>
     /// <param name="levelOne">The template row representing level one values.</param>
     /// <returns>A list containing five copies of the template row with incrementing levels.</returns>
-    public static List<SpellProperties> AutoGenerateFromLevelOne(SpellProperties levelOne)
+    public static List<SpellProgressionRow> AutoGenerateFromLevelOne(SpellProgressionRow levelOne)
     {
         if (levelOne == null)
         {
             throw new ArgumentNullException(nameof(levelOne));
         }
 
-        var list = new List<SpellProperties>(5);
+        var list = new List<SpellProgressionRow>(5);
         for (var i = 0; i < 5; i++)
         {
-            var copy = new SpellProperties(levelOne);
+            var copy = new SpellProgressionRow(levelOne);
             list.Add(copy);
         }
 

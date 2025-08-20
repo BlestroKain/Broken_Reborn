@@ -1785,7 +1785,7 @@ public partial class Player : Entity
         SpellDescriptor spellDescriptor,
         bool onHitTrigger = false,
         bool trapTrigger = false,
-        SpellLevelingService.AdjustedSpell adjusted = null
+        SpellLevelingService.EffectiveSpellStats adjusted = null
     )
     {
         if (!trapTrigger && !ValidTauntTarget(target)) //Traps ignore taunts.

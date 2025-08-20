@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Framework.Core.Services;
 using Intersect.GameObjects;
@@ -20,6 +21,24 @@ public class SpellLevelingServiceTests
             VitalCost = new long[] { 10, 20 },
             Combat = new SpellCombatDescriptor { HitRadius = 2 }
         };
+    }
+
+    [Test]
+    public void SpellProgression_GetLevel_Boundaries()
+    {
+        var progression = new SpellProgression
+        {
+            SpellId = Guid.NewGuid(),
+            Levels = new List<SpellProperties>
+            {
+                new SpellProperties(),
+                new SpellProperties()
+            }
+        };
+
+        Assert.IsNotNull(progression.GetLevel(1));
+        Assert.IsNull(progression.GetLevel(0));
+        Assert.IsNull(progression.GetLevel(5));
     }
 
     [Test]
@@ -75,5 +94,23 @@ public class SpellLevelingServiceTests
         Assert.AreEqual(1.5f, adjusted.DebuffDurationFactor);
         Assert.IsTrue(adjusted.UnlocksAoE);
         Assert.AreEqual(5, adjusted.AoERadius);
+    }
+
+    [Test]
+    public void BuildAdjusted_ClampsTimesAndHandlesArrayLengths()
+    {
+        var baseDesc = CreateBaseDescriptor();
+        var row = new SpellProperties
+        {
+            CastTimeDeltaMs = -5000,
+            CooldownDeltaMs = -5000,
+            VitalCostDeltas = new long[] { -5 }
+        };
+
+        var adjusted = SpellLevelingService.BuildAdjusted(baseDesc, row);
+
+        Assert.AreEqual(0, adjusted.CastTimeMs);
+        Assert.AreEqual(0, adjusted.CooldownTimeMs);
+        CollectionAssert.AreEqual(new long[] { 5, 20 }, adjusted.VitalCosts);
     }
 }

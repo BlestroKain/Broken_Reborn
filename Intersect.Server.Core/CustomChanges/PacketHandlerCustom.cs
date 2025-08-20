@@ -26,6 +26,7 @@ using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.Security;
 using Intersect.Network.Packets.Server;
 using Intersect.Server.Core;
+using Intersect.Server.Core.Game.Spells;
 using Microsoft.Extensions.Logging;
 using ChatMsgPacket = Intersect.Network.Packets.Client.ChatMsgPacket;
 using LoginPacket = Intersect.Network.Packets.Client.LoginPacket;
@@ -475,29 +476,29 @@ internal sealed partial class PacketHandler
             return;
         }
 
-        if (!player.Spellbook.Spells.ContainsKey(packet.SpellId))
+        var result = SpellUpgradeService.CanUpgradeSpell(player, packet.SpellId, SpellProgressionStore);
+        switch (result)
         {
-            PacketSender.SendSpellUpgradeFailed(player, packet.SpellId, SpellUpgradeFailedPacket.FailureReason.SpellNotOwned);
-            Log.Warning("Spell upgrade failed: spell {SpellId} not owned", packet.SpellId);
-            return;
+            case SpellUpgradeResult.NoSuchSpell:
+                PacketSender.SendSpellUpgradeFailed(player, packet.SpellId, SpellUpgradeFailedPacket.FailureReason.NoSuchSpell);
+                Log.Warning("Spell upgrade failed: spell {SpellId} not owned", packet.SpellId);
+                return;
+            case SpellUpgradeResult.NotEnoughPoints:
+                PacketSender.SendSpellUpgradeFailed(player, packet.SpellId, SpellUpgradeFailedPacket.FailureReason.NotEnoughPoints);
+                Log.Warning("Spell upgrade failed: not enough points for spell {SpellId}", packet.SpellId);
+                return;
+            case SpellUpgradeResult.MaxLevelReached:
+                PacketSender.SendSpellUpgradeFailed(player, packet.SpellId, SpellUpgradeFailedPacket.FailureReason.MaxLevelReached);
+                Log.Warning("Spell upgrade failed: spell {SpellId} already at max level", packet.SpellId);
+                return;
+            case SpellUpgradeResult.RequirementsNotMet:
+                PacketSender.SendSpellUpgradeFailed(player, packet.SpellId, SpellUpgradeFailedPacket.FailureReason.RequirementsNotMet);
+                Log.Warning("Spell upgrade failed: requirements not met for spell {SpellId}", packet.SpellId);
+                return;
         }
 
-        if (player.Spellbook.AvailableSpellPoints <= 0)
-        {
-            PacketSender.SendSpellUpgradeFailed(player, packet.SpellId, SpellUpgradeFailedPacket.FailureReason.NotEnoughPoints);
-            Log.Warning("Spell upgrade failed: not enough points for spell {SpellId}", packet.SpellId);
-            return;
-        }
-
-        if (!player.Spellbook.TryUpgradeSpell(packet.SpellId, out var newLevel))
-        {
-            PacketSender.SendSpellUpgradeFailed(player, packet.SpellId, SpellUpgradeFailedPacket.FailureReason.AlreadyMaxLevel);
-            Log.Warning("Spell upgrade failed: spell {SpellId} already at max level", packet.SpellId);
-            return;
-        }
-
-        player.Spellbook.AvailableSpellPoints--;
-        player.Save();
+        using var db = DbInterface.CreatePlayerContext();
+        var (newLevel, _) = SpellUpgradeService.ApplyUpgrade(player, packet.SpellId, db);
 
         PacketSender.SendSpellUpgraded(player, packet.SpellId, newLevel);
         Log.Information("Spell {SpellId} upgraded to level {Level}", packet.SpellId, newLevel);

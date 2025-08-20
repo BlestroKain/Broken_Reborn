@@ -101,15 +101,15 @@ public partial class SpellsWindow : Window
         _spellList.ClearChildren();
         Items.Clear();
 
-        if (Globals.Me?.Spellbook?.Spells == null)
+        if (Globals.Me?.Spellbook?.SpellLevels == null)
         {
             return;
         }
 
         var index = 0;
-        foreach (var (spellId, properties) in Globals.Me.Spellbook.Spells.OrderBy(p => SpellDescriptor.GetName(p.Key)))
+        foreach (var spellId in Globals.Me.Spellbook.SpellLevels.Keys.OrderBy(SpellDescriptor.GetName))
         {
-            var item = new SpellItem(this, _spellList, index++, spellId, properties);
+            var item = new SpellItem(this, _spellList, index++, spellId);
             Items.Add(item);
         }
 
@@ -138,13 +138,13 @@ public partial class SpellsWindow : Window
 
     private void UpdateDetails()
     {
-        if (_selectedSpellId == Guid.Empty || Globals.Me?.Spellbook?.Spells == null)
+        if (_selectedSpellId == Guid.Empty || Globals.Me?.Spellbook?.SpellLevels == null)
         {
             _detailPanel.IsVisibleInParent = false;
             return;
         }
 
-        if (!Globals.Me.Spellbook.Spells.ContainsKey(_selectedSpellId))
+        if (!Globals.Me.Spellbook.SpellLevels.ContainsKey(_selectedSpellId))
         {
             _detailPanel.IsVisibleInParent = false;
             return;
@@ -158,7 +158,7 @@ public partial class SpellsWindow : Window
 
         _detailPanel.IsVisibleInParent = true;
         _nameLabel.Text = descriptor.Name;
-        var level = Globals.Me.Spellbook.GetLevel(_selectedSpellId);
+        var level = Globals.Me.Spellbook.GetLevelOrDefault(_selectedSpellId);
         _levelLabel.Text = Strings.EntityBox.Level.ToString(level);
 
         SpellProgressionStore.BySpellId.TryGetValue(_selectedSpellId, out var progression);
@@ -180,7 +180,7 @@ public partial class SpellsWindow : Window
         }
     }
 
-    private static string FormatAdjusted(SpellLevelingService.AdjustedSpell adjusted)
+    private static string FormatAdjusted(SpellLevelingService.EffectiveSpellStats adjusted)
     {
         return $"{Strings.SpellDescription.CastTime}: {TimeSpan.FromMilliseconds(adjusted.CastTimeMs).WithSuffix()}\n" +
                $"{Strings.SpellDescription.Cooldown}: {TimeSpan.FromMilliseconds(adjusted.CooldownTimeMs).WithSuffix()}";

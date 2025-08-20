@@ -415,7 +415,7 @@ public partial class HotbarItem : SlotItem
 
         if (!_levelLabel.IsHidden && _currentSpell != null)
         {
-            var level = Globals.Me.Spellbook.GetLevel(_currentSpell.Id);
+            var level = Globals.Me.Spellbook.GetLevelOrDefault(_currentSpell.Id);
             var levelText = Strings.EntityBox.Level.ToString(level);
             if (_levelLabel.Text != levelText)
             {

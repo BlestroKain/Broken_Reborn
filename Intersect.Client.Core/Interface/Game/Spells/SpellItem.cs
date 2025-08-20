@@ -10,7 +10,6 @@ using Intersect.Client.Interface.Game;
 using Intersect.Client.General;
 using Intersect.Client.Framework.GenericClasses;
 using Intersect.GameObjects;
-using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Utilities;
 using Intersect.Client.Framework.Input;
 
@@ -25,14 +24,11 @@ public partial class SpellItem : SlotItem
     private readonly Label _cooldownLabel;
     private readonly SpellsWindow _window;
 
-    private SpellProperties _properties;
-
-    public SpellItem(SpellsWindow window, Base parent, int index, Guid spellId, SpellProperties properties)
+    public SpellItem(SpellsWindow window, Base parent, int index, Guid spellId)
         : base(parent, $"{nameof(SpellItem)}{index}", index, null)
     {
         _window = window;
         SpellId = spellId;
-        _properties = properties;
 
         TextureFilename = "spellitem.png";
 
@@ -68,7 +64,7 @@ public partial class SpellItem : SlotItem
         _nameLabel.SetPosition(40, 0);
         _levelPips.SetPosition(40, 20);
 
-        Refresh(properties);
+        Refresh();
     }
 
     private void Item_Clicked(Base sender, MouseButtonState args)
@@ -79,10 +75,9 @@ public partial class SpellItem : SlotItem
         }
     }
 
-    public void Refresh(SpellProperties properties)
+    public void Refresh()
     {
-        _properties = properties;
-        var level = Globals.Me?.Spellbook.GetLevel(SpellId) ?? 1;
+        var level = Globals.Me?.Spellbook.GetLevelOrDefault(SpellId) ?? 1;
         _levelPips.Text = BuildPips(level);
 
         if (SpellDescriptor.TryGet(SpellId, out var descriptor))

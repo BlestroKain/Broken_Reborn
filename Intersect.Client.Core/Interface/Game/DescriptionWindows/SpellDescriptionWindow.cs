@@ -13,7 +13,7 @@ namespace Intersect.Client.Interface.Game.DescriptionWindows;
 public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.GameUi.GameCanvas, "DescriptionWindow")
 {
     private SpellDescriptor? _spellDescriptor;
-    private SpellLevelingService.AdjustedSpell? _adjusted;
+    private SpellLevelingService.EffectiveSpellStats? _adjusted;
     private int _level;
 
     public void Show(Guid spellId, ItemDescriptionWindow? itemDecriptionContainer = default)
@@ -56,7 +56,7 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
 
         if (Globals.Me != null)
         {
-            var level = Globals.Me.Spellbook.GetLevel(_spellDescriptor.Id);
+            var level = Globals.Me.Spellbook.GetLevelOrDefault(_spellDescriptor.Id);
             SpellProgressionStore.BySpellId.TryGetValue(_spellDescriptor.Id, out var progression);
             var row = progression?.GetLevel(level) ?? new SpellProperties();
 

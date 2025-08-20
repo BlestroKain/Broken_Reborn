@@ -1496,13 +1496,6 @@ internal sealed partial class PacketHandler
 
         Globals.Me.Spellbook.AvailableSpellPoints = packet.RemainingSpellPoints;
 
-        if (!Globals.Me.Spellbook.Spells.TryGetValue(packet.SpellId, out var properties))
-        {
-            properties = new SpellProperties();
-            Globals.Me.Spellbook.Spells[packet.SpellId] = properties;
-        }
-
-        // Update the player's known level for this spell
         Globals.Me.Spellbook.SpellLevels[packet.SpellId] = packet.NewLevel;
 
        Interface.Interface.GameUi.GameMenu.SpellsWindow.Refresh();

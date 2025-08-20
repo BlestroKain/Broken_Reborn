@@ -7,10 +7,10 @@ public partial class SpellUpgradeFailedPacket : IntersectPacket
 {
     public enum FailureReason
     {
+        NoSuchSpell,
+        MaxLevelReached,
         NotEnoughPoints,
-        AlreadyMaxLevel,
-        SpellNotOwned,
-        ServerError,
+        RequirementsNotMet,
     }
 
     // Parameterless Constructor for MessagePack

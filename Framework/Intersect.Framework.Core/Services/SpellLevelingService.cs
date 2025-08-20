@@ -6,7 +6,7 @@ namespace Intersect.Framework.Core.Services;
 
 public static class SpellLevelingService
 {
-    public sealed class AdjustedSpell
+    public sealed class EffectiveSpellStats
     {
         public int CastTimeMs { get; init; }
         public int CooldownTimeMs { get; init; }
@@ -21,7 +21,7 @@ public static class SpellLevelingService
         public int AoERadius { get; init; }
     }
 
-    public static AdjustedSpell BuildAdjusted(SpellDescriptor baseDesc, SpellProperties row)
+    public static EffectiveSpellStats BuildAdjusted(SpellDescriptor baseDesc, SpellProperties row)
     {
         if (baseDesc == null)
         {
@@ -33,25 +33,34 @@ public static class SpellLevelingService
             throw new ArgumentNullException(nameof(row));
         }
 
-        var castTime = baseDesc.CastDuration + row.CastTimeDeltaMs;
-        var cooldown = baseDesc.CooldownDuration + row.CooldownDeltaMs;
+        var castTime = Math.Max(0, baseDesc.CastDuration + row.CastTimeDeltaMs);
+        var cooldown = Math.Max(0, baseDesc.CooldownDuration + row.CooldownDeltaMs);
 
-        var vitalCosts = new long[baseDesc.VitalCost.Length];
-        for (var i = 0; i < vitalCosts.Length; ++i)
+        var baseCosts = baseDesc.VitalCost ?? Array.Empty<long>();
+        var rowCosts = row.VitalCostDeltas ?? Array.Empty<long>();
+        var length = Math.Max(baseCosts.Length, rowCosts.Length);
+        var vitalCosts = new long[length];
+        var min = Math.Min(baseCosts.Length, rowCosts.Length);
+
+        for (var i = 0; i < min; ++i)
         {
-            var delta = 0L;
-            if (row.VitalCostDeltas != null && i < row.VitalCostDeltas.Length)
-            {
-                delta = row.VitalCostDeltas[i];
-            }
+            vitalCosts[i] = baseCosts[i] + rowCosts[i];
+        }
 
-            vitalCosts[i] = baseDesc.VitalCost[i] + delta;
+        for (var i = min; i < baseCosts.Length; ++i)
+        {
+            vitalCosts[i] = baseCosts[i];
+        }
+
+        for (var i = min; i < rowCosts.Length; ++i)
+        {
+            vitalCosts[i] = rowCosts[i];
         }
 
         var aoeRadius = baseDesc.Combat?.HitRadius ?? 0;
         aoeRadius += row.AoERadiusDelta;
 
-        return new AdjustedSpell
+        return new EffectiveSpellStats
         {
             CastTimeMs = castTime,
             CooldownTimeMs = cooldown,

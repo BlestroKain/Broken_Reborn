@@ -65,7 +65,7 @@ public static class SpellProgressionStore
             .Select(descriptor => new SpellProgression
             {
                 SpellId = descriptor.Id,
-                Levels = new List<SpellProperties> { new SpellProperties() }
+                Levels = Enumerable.Range(0, 5).Select(_ => new SpellProperties()).ToList()
             });
 
         Load(progressions);

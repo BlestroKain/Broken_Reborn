@@ -14,7 +14,7 @@ public static class SpellCastResolver
     /// <summary>
     /// Builds an adjusted spell based on the caster's level for the provided spell descriptor.
     /// </summary>
-    public static SpellLevelingService.AdjustedSpell Resolve(Entity caster, SpellDescriptor baseSpell)
+    public static SpellLevelingService.EffectiveSpellStats Resolve(Entity caster, SpellDescriptor baseSpell)
     {
         if (baseSpell == null)
         {
@@ -26,7 +26,7 @@ public static class SpellCastResolver
 
         if (caster is Player player)
         {
-            level = player.Spellbook.GetLevel(baseSpell.Id);
+            level = player.Spellbook.GetLevelOrDefault(baseSpell.Id);
 
             if (SpellProgressionStore.BySpellId.TryGetValue(baseSpell.Id, out var progression))
             {

@@ -1768,7 +1768,7 @@ public abstract partial class Entity : IEntity
         SpellDescriptor spellDescriptor,
         bool onHitTrigger = false,
         bool trapTrigger = false,
-        SpellLevelingService.AdjustedSpell adjusted = null
+        SpellLevelingService.EffectiveSpellStats adjusted = null
     )
     {
         if (target is Resource || target is EventPageInstance)
@@ -2760,7 +2760,7 @@ public abstract partial class Entity : IEntity
         int startX,
         int startY,
         Entity spellTarget,
-        SpellLevelingService.AdjustedSpell adjusted = null
+        SpellLevelingService.EffectiveSpellStats adjusted = null
     )
     {
         var spellBase = SpellDescriptor.Get(spellId);

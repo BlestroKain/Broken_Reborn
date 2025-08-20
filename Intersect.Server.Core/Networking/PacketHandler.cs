@@ -1731,8 +1731,12 @@ internal sealed partial class PacketHandler
                 // Remove the item from the map now, because otherwise the overflow would just add to the existing quantity
                 mapInstanceWithItems.RemoveItem(mapItem);
 
-                // Try to give the item to our player.
-                if (!player.TryGiveItem(mapItem, ItemHandling.Overflow, false, -1, true, mapItem.X, mapItem.Y))
+                // Clone the map item's properties so the player's inventory retains enchantments and other data
+                var newItem = new Item(mapItem.ItemId, mapItem.Quantity, mapItem.BagId, mapItem.Bag,
+                    mapItem.Properties != null ? new ItemProperties(mapItem.Properties) : null);
+
+                // Try to give the cloned item to our player.
+                if (!player.TryGiveItem(newItem, ItemHandling.Overflow, false, -1, true, mapItem.X, mapItem.Y))
                 {
                     // We couldn't give the player their item, notify them.
                     PacketSender.SendChatMsg(
@@ -1746,7 +1750,14 @@ internal sealed partial class PacketHandler
 
                 if (ItemDescriptor.TryGet(mapItem.ItemId, out var item))
                 {
-                    PacketSender.SendActionMsg(player, item.Name, CustomColors.Items.Rarities[item.Rarity]);
+                    var itemName = item.Name;
+                    var level = mapItem.Properties?.EnchantmentLevel ?? 0;
+                    if (level > 0)
+                    {
+                        itemName += $" +{level}";
+                    }
+
+                    PacketSender.SendActionMsg(player, itemName, CustomColors.Items.Rarities[item.Rarity]);
                 }
             }
         }

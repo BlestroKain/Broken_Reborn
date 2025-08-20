@@ -162,13 +162,27 @@ public partial class SpellDescriptor : DatabaseObject<SpellDescriptor>, IFoldera
     public string ProgressionJson
     {
         get => JsonConvert.SerializeObject(Progression);
-        set => Progression = string.IsNullOrWhiteSpace(value)
-            ? new List<SpellProgressionRow>()
-            : JsonConvert.DeserializeObject<List<SpellProgressionRow>>(value) ?? new List<SpellProgressionRow>();
+        set
+        {
+            var list = string.IsNullOrWhiteSpace(value)
+                ? new List<SpellProgressionRow>()
+                : JsonConvert.DeserializeObject<List<SpellProgressionRow>>(value) ?? new List<SpellProgressionRow>();
+
+            if (list.Count == 0)
+            {
+                list = new List<SpellProgressionRow>(5);
+                for (var i = 0; i < 5; i++)
+                {
+                    list.Add(new SpellProgressionRow());
+                }
+            }
+
+            Progression = list;
+        }
     }
 
-    public SpellProgressionRow? GetProgressionLevel(int level) =>
-        level >= 1 && level <= Progression.Count ? Progression[level - 1] : null;
+    public SpellProgressionRow GetProgressionLevel(int level) =>
+        level >= 1 && level <= Progression.Count ? Progression[level - 1] : new SpellProgressionRow();
 
     /// <inheritdoc />
     public string Folder { get; set; } = string.Empty;

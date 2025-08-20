@@ -1,6 +1,7 @@
 using System;
 using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Framework.Core.Services;
+using Intersect.Framework.Core.Utilities;
 using Intersect.GameObjects;
 using Intersect.Server.Entities;
 
@@ -30,6 +31,6 @@ public static class SpellCastResolver
             row = baseSpell.GetProgressionLevel(level) ?? new SpellProgressionRow();
         }
 
-        return SpellLevelingService.BuildAdjusted(baseSpell, row);
+        return SpellMath.GetEffective(baseSpell, level, row);
     }
 }

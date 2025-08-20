@@ -1,6 +1,8 @@
 using System;
 using Intersect.GameObjects;
 using Intersect.Server.Database;
+using Intersect.Framework.Core.Utilities;
+using Intersect.Framework.Core.GameObjects.Spells;
 
 
 namespace Intersect.Server.Entities;
@@ -54,6 +56,11 @@ public static class SpellUpgradeService
         player.Spellbook.SpellLevels[spellId] = newLevel;
         player.Spellbook.AvailableSpellPoints--;
         db.SaveChanges();
+
+        var descriptor = SpellDescriptor.Get(spellId);
+        var row = descriptor.GetProgressionLevel(newLevel) ?? new SpellProgressionRow();
+        _ = SpellMath.GetEffective(descriptor, newLevel, row);
+
         return (newLevel, player.Spellbook.AvailableSpellPoints);
     }
 }

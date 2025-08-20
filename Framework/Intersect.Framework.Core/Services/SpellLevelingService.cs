@@ -1,6 +1,7 @@
 using System;
 using Intersect.GameObjects;
 using Intersect.Framework.Core.GameObjects.Spells;
+using Intersect.Framework.Core.Utilities;
 
 namespace Intersect.Framework.Core.Services;
 
@@ -33,46 +34,6 @@ public static class SpellLevelingService
             throw new ArgumentNullException(nameof(row));
         }
 
-        var castTime = Math.Max(0, baseDesc.CastDuration + row.CastTimeDeltaMs);
-        var cooldown = Math.Max(0, baseDesc.CooldownDuration + row.CooldownDeltaMs);
-
-        var baseCosts = baseDesc.VitalCost ?? Array.Empty<long>();
-        var rowCosts = row.VitalCostDeltas ?? Array.Empty<long>();
-        var length = Math.Max(baseCosts.Length, rowCosts.Length);
-        var vitalCosts = new long[length];
-        var min = Math.Min(baseCosts.Length, rowCosts.Length);
-
-        for (var i = 0; i < min; ++i)
-        {
-            vitalCosts[i] = baseCosts[i] + rowCosts[i];
-        }
-
-        for (var i = min; i < baseCosts.Length; ++i)
-        {
-            vitalCosts[i] = baseCosts[i];
-        }
-
-        for (var i = min; i < rowCosts.Length; ++i)
-        {
-            vitalCosts[i] = rowCosts[i];
-        }
-
-        var aoeRadius = baseDesc.Combat?.HitRadius ?? 0;
-        aoeRadius += row.AoERadiusDelta;
-
-        return new EffectiveSpellStats
-        {
-            CastTimeMs = castTime,
-            CooldownTimeMs = cooldown,
-            VitalCosts = vitalCosts,
-            PowerBonusFlat = row.PowerBonusFlat,
-            PowerScalingBonus = row.PowerScalingBonus,
-            BuffStrengthFactor = row.BuffStrengthFactor,
-            BuffDurationFactor = row.BuffDurationFactor,
-            DebuffStrengthFactor = row.DebuffStrengthFactor,
-            DebuffDurationFactor = row.DebuffDurationFactor,
-            UnlocksAoE = row.UnlocksAoE,
-            AoERadius = aoeRadius,
-        };
+        return SpellMath.GetEffective(baseDesc, 0, row);
     }
 }

@@ -1,5 +1,6 @@
 using Intersect.Server.Database;
 using Intersect.Server.Database.PlayerData.Players;
+using Intersect.Framework.Core.GameObjects.Items;
 using Newtonsoft.Json;
 
 namespace Intersect.Server.Maps;
@@ -59,18 +60,17 @@ public partial class MapItem : Item
     }
 
     /// <summary>
-    /// Sets up the Stat Buffs on this map item from a supplied item.
+    /// Copies all of the custom properties from the supplied item to this map item.
     /// </summary>
-    /// <param name="item">The item to take the Stat Buffs from and apply them to this MapItem.</param>
-    public void SetupStatBuffs(Item item)
+    /// <param name="item">The item whose properties should be copied.</param>
+    public void SetupProperties(Item item)
     {
-        if (Properties.StatModifiers != null && item.Properties.StatModifiers != null)
+        if (item?.Properties == null)
         {
-            for (var i = 0; i < Properties.StatModifiers.Length; ++i)
-            {
-                Properties.StatModifiers[i] = item.Properties.StatModifiers.Length > i ? item.Properties.StatModifiers[i] : 0;
-            }
+            return;
         }
+
+        Properties = new ItemProperties(item.Properties);
     }
 
 }

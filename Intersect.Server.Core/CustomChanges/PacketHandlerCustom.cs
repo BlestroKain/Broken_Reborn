@@ -467,6 +467,40 @@ internal sealed partial class PacketHandler
         PacketSender.SendOpenMailBox(player);
     }
 
+    public void HandlePacket(Client client, RequestSpellUpgradePacket packet)
+    {
+        var player = client?.Entity;
+        if (player == null)
+        {
+            return;
+        }
 
+        var result = SpellUpgradeService.CanUpgradeSpell(player, packet.SpellId);
+        switch (result)
+        {
+            case SpellUpgradeResult.NoSuchSpell:
+                PacketSender.SendSpellUpgradeFailed(player, packet.SpellId, SpellUpgradeFailedPacket.FailureReason.NoSuchSpell);
+                Log.Warning("Spell upgrade failed: spell {SpellId} not owned", packet.SpellId);
+                return;
+            case SpellUpgradeResult.NotEnoughPoints:
+                PacketSender.SendSpellUpgradeFailed(player, packet.SpellId, SpellUpgradeFailedPacket.FailureReason.NotEnoughPoints);
+                Log.Warning("Spell upgrade failed: not enough points for spell {SpellId}", packet.SpellId);
+                return;
+            case SpellUpgradeResult.MaxLevelReached:
+                PacketSender.SendSpellUpgradeFailed(player, packet.SpellId, SpellUpgradeFailedPacket.FailureReason.MaxLevelReached);
+                Log.Warning("Spell upgrade failed: spell {SpellId} already at max level", packet.SpellId);
+                return;
+            case SpellUpgradeResult.RequirementsNotMet:
+                PacketSender.SendSpellUpgradeFailed(player, packet.SpellId, SpellUpgradeFailedPacket.FailureReason.RequirementsNotMet);
+                Log.Warning("Spell upgrade failed: requirements not met for spell {SpellId}", packet.SpellId);
+                return;
+        }
+
+        using var db = DbInterface.CreatePlayerContext();
+        var (newLevel, _) = SpellUpgradeService.ApplyUpgrade(player, packet.SpellId, db);
+
+        PacketSender.SendSpellUpgraded(player, packet.SpellId, newLevel);
+        Log.Information("Spell {SpellId} upgraded to level {Level}", packet.SpellId, newLevel);
+    }
 
 }

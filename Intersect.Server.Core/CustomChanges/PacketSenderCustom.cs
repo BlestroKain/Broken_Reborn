@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using Intersect.Config;
 using Intersect.Core;
@@ -198,11 +199,11 @@ public static partial class PacketSender
         player.SendPacket(new MailBoxPacket(true, true));
     }
     //UnlockedBestiaryEntriesPacket
-    public static void SendUnlockedBestiaryEntries(Player player)
-    {
-        var unlocks = player.BestiaryUnlocks
-            .Where(b => b.Value > 0) // ✅ Ya no se excluye Kill
-            .GroupBy(b => b.NpcId)
+      public static void SendUnlockedBestiaryEntries(Player player)
+      {
+          var unlocks = player.BestiaryUnlocks
+              .Where(b => b.Value > 0) // ✅ Ya no se excluye Kill
+              .GroupBy(b => b.NpcId)
             .ToDictionary(
                 g => g.Key,
                 g => g.Select(b => (int)b.UnlockType).Distinct().ToArray()
@@ -212,8 +213,27 @@ public static partial class PacketSender
             .Where(b => b.UnlockType == BestiaryUnlock.Kill)
             .ToDictionary(b => b.NpcId, b => b.Value);
 
-        player.SendPacket(new UnlockedBestiaryEntriesPacket(unlocks, killCounts));
+          player.SendPacket(new UnlockedBestiaryEntriesPacket(unlocks, killCounts));
+      }
+
+    public static void SendSpellUpgraded(Player player, Guid spellId, int newLevel)
+    {
+        if (player == null)
+        {
+            return;
+        }
+
+        player.SendPacket(new SpellUpgradedPacket(spellId, newLevel, player.Spellbook.AvailableSpellPoints));
     }
 
+    public static void SendSpellUpgradeFailed(Player player, Guid spellId, SpellUpgradeFailedPacket.FailureReason reason)
+    {
+        if (player == null)
+        {
+            return;
+        }
+
+        player.SendPacket(new SpellUpgradeFailedPacket(spellId, reason));
+    }
 
 }

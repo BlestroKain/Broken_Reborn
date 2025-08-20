@@ -5,13 +5,13 @@ using MessagePack;
 namespace Intersect.Framework.Core.GameObjects.Spells;
 
 [MessagePackObject]
-public partial class SpellProperties
+public partial class SpellProgressionRow
 {
-    public SpellProperties()
+    public SpellProgressionRow()
     {
     }
 
-    public SpellProperties(SpellProperties other)
+    public SpellProgressionRow(SpellProgressionRow other)
     {
         if (other == default)
         {

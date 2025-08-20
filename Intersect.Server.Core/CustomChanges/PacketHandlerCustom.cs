@@ -26,7 +26,6 @@ using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.Security;
 using Intersect.Network.Packets.Server;
 using Intersect.Server.Core;
-using Intersect.Server.Core.Game.Spells;
 using Microsoft.Extensions.Logging;
 using ChatMsgPacket = Intersect.Network.Packets.Client.ChatMsgPacket;
 using LoginPacket = Intersect.Network.Packets.Client.LoginPacket;
@@ -476,7 +475,7 @@ internal sealed partial class PacketHandler
             return;
         }
 
-        var result = SpellUpgradeService.CanUpgradeSpell(player, packet.SpellId, SpellProgressionStore);
+        var result = SpellUpgradeService.CanUpgradeSpell(player, packet.SpellId);
         switch (result)
         {
             case SpellUpgradeResult.NoSuchSpell:

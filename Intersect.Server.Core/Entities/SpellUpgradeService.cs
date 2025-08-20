@@ -1,10 +1,9 @@
 using System;
 using Intersect.GameObjects;
-using Intersect.Framework.Core.GameObjects.Spells;
-using Intersect.Server.Core.Database;
-using Intersect.Server.Core.Entities;
+using Intersect.Server.Database;
 
-namespace Intersect.Server.Core.Game.Spells;
+
+namespace Intersect.Server.Entities;
 
 public enum SpellUpgradeResult
 {
@@ -17,7 +16,7 @@ public enum SpellUpgradeResult
 
 public static class SpellUpgradeService
 {
-    public static SpellUpgradeResult CanUpgradeSpell(Player player, Guid spellId, SpellProgressionStore store)
+    public static SpellUpgradeResult CanUpgradeSpell(Player player, Guid spellId)
     {
         if (player == null)
         {
@@ -29,13 +28,14 @@ public static class SpellUpgradeService
             return SpellUpgradeResult.NoSuchSpell;
         }
 
-        if (!store.BySpellId.TryGetValue(spellId, out var progression))
+        var descriptor = SpellDescriptor.Get(spellId);
+        if (descriptor == null)
         {
             return SpellUpgradeResult.NoSuchSpell;
         }
 
         var currentLevel = player.Spellbook.GetLevelOrDefault(spellId);
-        if (currentLevel >= progression.Levels.Count)
+        if (currentLevel >= descriptor.Progression.Count)
         {
             return SpellUpgradeResult.MaxLevelReached;
         }

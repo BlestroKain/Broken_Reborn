@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Framework.Core.Services;
+using Intersect.Framework.Core.Utilities;
 using Intersect.GameObjects;
 using NUnit.Framework;
 using Assert = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
@@ -10,7 +11,7 @@ using CollectionAssert = Microsoft.VisualStudio.TestTools.UnitTesting.Collection
 namespace Intersect.Services;
 
 [TestFixture]
-public class SpellLevelingServiceTests
+public class SpellMathTests
 {
     private static SpellDescriptor CreateBaseDescriptor()
     {
@@ -42,12 +43,12 @@ public class SpellLevelingServiceTests
     }
 
     [Test]
-    public void BuildAdjusted_Level1_NoChanges()
+    public void GetEffective_Level1_NoChanges()
     {
         var baseDesc = CreateBaseDescriptor();
         var row = new SpellProgressionRow();
 
-        var adjusted = SpellLevelingService.BuildAdjusted(baseDesc, row);
+        var adjusted = SpellMath.GetEffective(baseDesc, 1, row);
 
         Assert.AreEqual(1000, adjusted.CastTimeMs);
         Assert.AreEqual(2000, adjusted.CooldownTimeMs);
@@ -63,7 +64,7 @@ public class SpellLevelingServiceTests
     }
 
     [Test]
-    public void BuildAdjusted_Level5_AdjustsValues()
+    public void GetEffective_Level5_AdjustsValues()
     {
         var baseDesc = CreateBaseDescriptor();
         var row = new SpellProgressionRow
@@ -81,7 +82,7 @@ public class SpellLevelingServiceTests
             AoERadiusDelta = 3
         };
 
-        var adjusted = SpellLevelingService.BuildAdjusted(baseDesc, row);
+        var adjusted = SpellMath.GetEffective(baseDesc, 1, row);
 
         Assert.AreEqual(900, adjusted.CastTimeMs);
         Assert.AreEqual(1800, adjusted.CooldownTimeMs);
@@ -97,7 +98,7 @@ public class SpellLevelingServiceTests
     }
 
     [Test]
-    public void BuildAdjusted_ClampsTimesAndHandlesArrayLengths()
+    public void GetEffective_ClampsTimesAndHandlesArrayLengths()
     {
         var baseDesc = CreateBaseDescriptor();
         var row = new SpellProgressionRow
@@ -107,7 +108,7 @@ public class SpellLevelingServiceTests
             VitalCostDeltas = new long[] { -5 }
         };
 
-        var adjusted = SpellLevelingService.BuildAdjusted(baseDesc, row);
+        var adjusted = SpellMath.GetEffective(baseDesc, 1, row);
 
         Assert.AreEqual(0, adjusted.CastTimeMs);
         Assert.AreEqual(0, adjusted.CooldownTimeMs);

@@ -11,6 +11,7 @@ using Intersect.Client.Utilities;
 using Intersect.GameObjects;
 using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Framework.Core.Services;
+using Intersect.Framework.Core.Utilities;
 using Intersect.Client.General;
 using Intersect.Client.Networking;
 using Intersect.Utilities;
@@ -161,14 +162,14 @@ public partial class SpellsWindow : Window
         var level = Globals.Me.Spellbook.GetLevelOrDefault(_selectedSpellId);
         _levelLabel.Text = Strings.EntityBox.Level.ToString(level);
 
-        var currentRow = descriptor.GetProgressionLevel(level) ?? new SpellProgressionRow();
-        var currentAdjusted = SpellLevelingService.BuildAdjusted(descriptor, currentRow);
+        var currentRow = descriptor.GetProgressionLevel(level);
+        var currentAdjusted = SpellMath.GetEffective(descriptor, level, currentRow);
         _currentLabel.Text = FormatAdjusted(currentAdjusted);
 
         var nextRow = descriptor.GetProgressionLevel(level + 1);
         if (nextRow != null)
         {
-            var nextAdjusted = SpellLevelingService.BuildAdjusted(descriptor, nextRow);
+            var nextAdjusted = SpellMath.GetEffective(descriptor, level + 1, nextRow);
             _nextLabel.Text = FormatAdjusted(nextAdjusted);
             _levelUpButton.IsDisabled = !(Globals.Me.Spellbook.AvailableSpellPoints > 0 && level < 5);
         }

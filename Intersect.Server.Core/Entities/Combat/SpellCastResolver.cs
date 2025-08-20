@@ -1,6 +1,7 @@
 using System;
 using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Framework.Core.Services;
+using Intersect.Framework.Core.Utilities;
 using Intersect.GameObjects;
 using Intersect.Server.Entities;
 
@@ -22,14 +23,14 @@ public static class SpellCastResolver
         }
 
         var level = 1;
-        var row = new SpellProgressionRow();
+        SpellProgressionRow? row = null;
 
         if (caster is Player player)
         {
             level = player.Spellbook.GetLevelOrDefault(baseSpell.Id);
-            row = baseSpell.GetProgressionLevel(level) ?? new SpellProgressionRow();
+            row = baseSpell.GetProgressionLevel(level);
         }
 
-        return SpellLevelingService.BuildAdjusted(baseSpell, row);
+        return SpellMath.GetEffective(baseSpell, level, row);
     }
 }

@@ -3,6 +3,7 @@ using Intersect.Client.Entities;
 using Intersect.GameObjects;
 using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Framework.Core.Services;
+using CoreSpellMath = Intersect.Framework.Core.Utilities.SpellMath;
 
 namespace Intersect.Client.Utilities;
 
@@ -19,9 +20,9 @@ public static class SpellMath
         }
 
         var level = state.GetLevelOrDefault(spellId);
-        var row = descriptor.GetProgressionLevel(level) ?? new SpellProgressionRow();
+        var row = descriptor.GetProgressionLevel(level);
 
-        return SpellLevelingService.BuildAdjusted(descriptor, row);
+        return CoreSpellMath.GetEffective(descriptor, level, row);
     }
 }
 

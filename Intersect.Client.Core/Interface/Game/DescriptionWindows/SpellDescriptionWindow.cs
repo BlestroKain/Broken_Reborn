@@ -7,6 +7,7 @@ using Intersect.Client.Framework.Gwen.Input;
 using Intersect.Client.General;
 using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Framework.Core.Services;
+using Intersect.Framework.Core.Utilities;
 
 namespace Intersect.Client.Interface.Game.DescriptionWindows;
 
@@ -57,7 +58,7 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
         if (Globals.Me != null)
         {
             var level = Globals.Me.Spellbook.GetLevelOrDefault(_spellDescriptor.Id);
-            var row = _spellDescriptor.GetProgressionLevel(level) ?? new SpellProgressionRow();
+            var row = _spellDescriptor.GetProgressionLevel(level);
 
             if (InputHandler.IsShiftDown)
             {
@@ -70,7 +71,7 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
             }
 
             _level = level;
-            _adjusted = SpellLevelingService.BuildAdjusted(_spellDescriptor, row);
+            _adjusted = SpellMath.GetEffective(_spellDescriptor, level, row);
         }
 
         // Set up our header information.

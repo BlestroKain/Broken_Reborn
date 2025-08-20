@@ -170,7 +170,8 @@ public partial class SpellsWindow : Window
         {
             var nextAdjusted = SpellMath.GetEffective(descriptor, level + 1, nextRow);
             _nextLabel.Text = FormatAdjusted(nextAdjusted);
-            _levelUpButton.IsDisabled = !(Globals.Me.Spellbook.AvailableSpellPoints > 0 && level < 5);
+            var cost = SpellLevelingService.GetUpgradeCost(level + 1);
+            _levelUpButton.IsDisabled = !(Globals.Me.Spellbook.AvailableSpellPoints >= cost && level < 5);
         }
         else
         {

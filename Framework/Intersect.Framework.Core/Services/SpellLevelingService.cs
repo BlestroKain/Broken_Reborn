@@ -36,4 +36,12 @@ public static class SpellLevelingService
 
         return SpellMath.GetEffective(baseDesc, 0, row);
     }
+
+    /// <summary>
+    ///     Calculates the spell point cost required to upgrade a spell to the
+    ///     specified <paramref name="level"/>.
+    /// </summary>
+    /// <param name="level">The level the spell is being upgraded to.</param>
+    /// <returns>The number of spell points required for the upgrade.</returns>
+    public static int GetUpgradeCost(int level) => level;
 }

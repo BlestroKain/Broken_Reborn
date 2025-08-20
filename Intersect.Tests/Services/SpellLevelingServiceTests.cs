@@ -113,4 +113,11 @@ public class SpellLevelingServiceTests
         Assert.AreEqual(0, adjusted.CooldownTimeMs);
         CollectionAssert.AreEqual(new long[] { 5, 20 }, adjusted.VitalCosts);
     }
+
+    [Test]
+    public void GetUpgradeCost_ReturnsTargetLevel()
+    {
+        Assert.AreEqual(1, SpellLevelingService.GetUpgradeCost(1));
+        Assert.AreEqual(3, SpellLevelingService.GetUpgradeCost(3));
+    }
 }

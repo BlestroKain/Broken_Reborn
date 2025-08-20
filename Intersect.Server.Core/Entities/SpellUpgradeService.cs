@@ -3,6 +3,7 @@ using Intersect.GameObjects;
 using Intersect.Server.Database;
 using Intersect.Framework.Core.Utilities;
 using Intersect.Framework.Core.GameObjects.Spells;
+using Intersect.Framework.Core.Services;
 
 
 namespace Intersect.Server.Entities;
@@ -42,7 +43,8 @@ public static class SpellUpgradeService
             return SpellUpgradeResult.MaxLevelReached;
         }
 
-        if (player.Spellbook.AvailableSpellPoints <= 0)
+        var cost = SpellLevelingService.GetUpgradeCost(currentLevel + 1);
+        if (player.Spellbook.AvailableSpellPoints < cost)
         {
             return SpellUpgradeResult.NotEnoughPoints;
         }
@@ -53,8 +55,9 @@ public static class SpellUpgradeService
     public static (int newLevel, int remainingPoints) ApplyUpgrade(Player player, Guid spellId, IDbContext db)
     {
         var newLevel = player.Spellbook.GetLevelOrDefault(spellId) + 1;
+        var cost = SpellLevelingService.GetUpgradeCost(newLevel);
         player.Spellbook.SpellLevels[spellId] = newLevel;
-        player.Spellbook.AvailableSpellPoints--;
+        player.Spellbook.AvailableSpellPoints -= cost;
         db.SaveChanges();
 
         var descriptor = SpellDescriptor.Get(spellId);

@@ -1387,6 +1387,7 @@ public partial class Player : Entity
             while (Level < targetLevel)
             {
                 SetLevel(Level + 1, resetExperience, sendPackets: false);
+                Spellbook.AvailableSpellPoints++;
                 messageList.Add((Strings.Player.LevelUp.ToString(Level), CustomColors.Combat.LevelUp));
 
                 if ((classDescriptor?.Id == ClassId || ClassDescriptor.TryGet(ClassId, out classDescriptor)) && classDescriptor?.Spells != default)
@@ -1445,6 +1446,8 @@ public partial class Player : Entity
 
         PacketSender.SendPointsTo(this);
         PacketSender.SendPlayerSpells(this);
+
+        Save();
 
         if (StatPoints > 0)
         {

@@ -476,7 +476,7 @@ internal sealed partial class PacketHandler
             return;
         }
 
-        var result = SpellUpgradeService.CanUpgradeSpell(player, packet.SpellId, SpellProgressionStore);
+        var result = SpellUpgradeService.CanUpgradeSpell(player, packet.SpellId);
         switch (result)
         {
             case SpellUpgradeResult.NoSuchSpell:

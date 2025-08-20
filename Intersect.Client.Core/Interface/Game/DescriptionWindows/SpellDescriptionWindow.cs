@@ -57,12 +57,11 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
         if (Globals.Me != null)
         {
             var level = Globals.Me.Spellbook.GetLevelOrDefault(_spellDescriptor.Id);
-            SpellProgressionStore.BySpellId.TryGetValue(_spellDescriptor.Id, out var progression);
-            var row = progression?.GetLevel(level) ?? new SpellProperties();
+            var row = _spellDescriptor.GetProgressionLevel(level) ?? new SpellProgressionRow();
 
-            if (InputHandler.IsShiftDown && progression != null)
+            if (InputHandler.IsShiftDown)
             {
-                var next = progression.GetLevel(level + 1);
+                var next = _spellDescriptor.GetProgressionLevel(level + 1);
                 if (next != null)
                 {
                     row = next;

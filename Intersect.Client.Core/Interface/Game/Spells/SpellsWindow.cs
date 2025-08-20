@@ -161,12 +161,11 @@ public partial class SpellsWindow : Window
         var level = Globals.Me.Spellbook.GetLevelOrDefault(_selectedSpellId);
         _levelLabel.Text = Strings.EntityBox.Level.ToString(level);
 
-        SpellProgressionStore.BySpellId.TryGetValue(_selectedSpellId, out var progression);
-        var currentRow = progression?.GetLevel(level) ?? new SpellProperties();
+        var currentRow = descriptor.GetProgressionLevel(level) ?? new SpellProgressionRow();
         var currentAdjusted = SpellLevelingService.BuildAdjusted(descriptor, currentRow);
         _currentLabel.Text = FormatAdjusted(currentAdjusted);
 
-        var nextRow = progression?.GetLevel(level + 1);
+        var nextRow = descriptor.GetProgressionLevel(level + 1);
         if (nextRow != null)
         {
             var nextAdjusted = SpellLevelingService.BuildAdjusted(descriptor, nextRow);

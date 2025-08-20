@@ -29,10 +29,10 @@ public class SpellLevelingServiceTests
         var progression = new SpellProgression
         {
             SpellId = Guid.NewGuid(),
-            Levels = new List<SpellProperties>
+            Levels = new List<SpellProgressionRow>
             {
-                new SpellProperties(),
-                new SpellProperties()
+                new SpellProgressionRow(),
+                new SpellProgressionRow()
             }
         };
 
@@ -45,7 +45,7 @@ public class SpellLevelingServiceTests
     public void BuildAdjusted_Level1_NoChanges()
     {
         var baseDesc = CreateBaseDescriptor();
-        var row = new SpellProperties();
+        var row = new SpellProgressionRow();
 
         var adjusted = SpellLevelingService.BuildAdjusted(baseDesc, row);
 
@@ -66,7 +66,7 @@ public class SpellLevelingServiceTests
     public void BuildAdjusted_Level5_AdjustsValues()
     {
         var baseDesc = CreateBaseDescriptor();
-        var row = new SpellProperties
+        var row = new SpellProgressionRow
         {
             CastTimeDeltaMs = -100,
             CooldownDeltaMs = -200,
@@ -100,7 +100,7 @@ public class SpellLevelingServiceTests
     public void BuildAdjusted_ClampsTimesAndHandlesArrayLengths()
     {
         var baseDesc = CreateBaseDescriptor();
-        var row = new SpellProperties
+        var row = new SpellProgressionRow
         {
             CastTimeDeltaMs = -5000,
             CooldownDeltaMs = -5000,

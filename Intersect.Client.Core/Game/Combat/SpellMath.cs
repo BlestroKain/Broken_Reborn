@@ -11,7 +11,6 @@ public static class SpellMath
     public static SpellLevelingService.EffectiveSpellStats GetEffective(
         Player player,
         Guid spellId,
-        SpellProgressionStore store,
         PlayerSpellbookState state)
     {
         if (!SpellDescriptor.TryGet(spellId, out var descriptor))
@@ -20,8 +19,7 @@ public static class SpellMath
         }
 
         var level = state.GetLevelOrDefault(spellId);
-        store.BySpellId.TryGetValue(spellId, out var progression);
-        var row = progression?.GetLevel(level) ?? new SpellProperties();
+        var row = descriptor.GetProgressionLevel(level) ?? new SpellProgressionRow();
 
         return SpellLevelingService.BuildAdjusted(descriptor, row);
     }

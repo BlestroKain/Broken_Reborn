@@ -22,16 +22,12 @@ public static class SpellCastResolver
         }
 
         var level = 1;
-        var row = new SpellProperties();
+        var row = new SpellProgressionRow();
 
         if (caster is Player player)
         {
             level = player.Spellbook.GetLevelOrDefault(baseSpell.Id);
-
-            if (SpellProgressionStore.BySpellId.TryGetValue(baseSpell.Id, out var progression))
-            {
-                row = progression.GetLevel(level) ?? new SpellProperties();
-            }
+            row = baseSpell.GetProgressionLevel(level) ?? new SpellProgressionRow();
         }
 
         return SpellLevelingService.BuildAdjusted(baseSpell, row);

@@ -11,6 +11,7 @@ using Intersect.Framework.Core.GameObjects.Events;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Maps.MapList;
 using Intersect.Framework.Core.GameObjects.NPCs;
+using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.GameObjects;
 using Intersect.Utilities;
 using Graphics = System.Drawing.Graphics;
@@ -30,6 +31,8 @@ public partial class FrmSpell : EditorForm
     private List<string> mKnownFolders = new List<string>();
 
     private List<string> mKnownCooldownGroups = new List<string>();
+
+    private int mLastSelectedLevel = 1;
 
     public FrmSpell()
     {
@@ -81,6 +84,8 @@ public partial class FrmSpell : EditorForm
 
     private void btnSave_Click(object sender, EventArgs e)
     {
+        ReadDeltasIntoModel();
+
         //Send Changed items
         foreach (var item in mChanged)
         {
@@ -91,6 +96,65 @@ public partial class FrmSpell : EditorForm
         Hide();
         Globals.CurrentEditor = -1;
         Dispose();
+    }
+
+    private void cmbLevel_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (mEditorItem == null)
+        {
+            return;
+        }
+
+        ReadDeltasIntoModel(mLastSelectedLevel);
+        mLastSelectedLevel = SelectedLevel;
+        PopulateDeltas();
+    }
+
+    private void btnAddLevel_Click(object sender, EventArgs e)
+    {
+        if (mEditorItem == null)
+        {
+            return;
+        }
+
+        ReadDeltasIntoModel();
+        mEditorItem.Progression.Add(new SpellProgressionRow());
+        InitLevelSelector();
+        cmbLevel.SelectedIndex = mEditorItem.Progression.Count - 1;
+        mLastSelectedLevel = SelectedLevel;
+        PopulateDeltas();
+    }
+
+    private void btnRemoveLevel_Click(object sender, EventArgs e)
+    {
+        if (mEditorItem == null)
+        {
+            return;
+        }
+
+        if (mEditorItem.Progression.Count == 0)
+        {
+            return;
+        }
+
+        var index = SelectedLevel - 1;
+        if (index >= 0 && index < mEditorItem.Progression.Count)
+        {
+            mEditorItem.Progression.RemoveAt(index);
+            if (mEditorItem.Progression.Count == 0)
+            {
+                mEditorItem.Progression.Add(new SpellProgressionRow());
+            }
+        }
+
+        InitLevelSelector();
+        if (index >= mEditorItem.Progression.Count)
+        {
+            cmbLevel.SelectedIndex = mEditorItem.Progression.Count - 1;
+        }
+
+        mLastSelectedLevel = SelectedLevel;
+        PopulateDeltas();
     }
 
     private void frmSpell_Load(object sender, EventArgs e)
@@ -322,6 +386,10 @@ public partial class FrmSpell : EditorForm
 
             txtCannotCast.Text = mEditorItem.CannotCastMessage;
 
+            InitLevelSelector();
+            PopulateDeltas();
+            mLastSelectedLevel = SelectedLevel;
+
             UpdateSpellTypePanels();
             if (mChanged.IndexOf(mEditorItem) == -1)
             {
@@ -338,6 +406,68 @@ public partial class FrmSpell : EditorForm
         UpdateEditorButtons(hasItem);
         UpdateToolStripItems();
     }
+
+    private int SelectedLevel => cmbLevel.SelectedIndex + 1;
+
+    private void InitLevelSelector()
+    {
+        cmbLevel.Items.Clear();
+        var count = mEditorItem?.Progression.Count ?? 0;
+        for (var i = 0; i < count; ++i)
+        {
+            cmbLevel.Items.Add((i + 1).ToString());
+        }
+
+        if (cmbLevel.Items.Count == 0)
+        {
+            cmbLevel.Items.Add("1");
+            if (mEditorItem != null && mEditorItem.Progression.Count == 0)
+            {
+                mEditorItem.Progression.Add(new SpellProgressionRow());
+            }
+        }
+
+        cmbLevel.SelectedIndex = 0;
+    }
+
+    private void PopulateDeltas()
+    {
+        if (mEditorItem == null)
+        {
+            nudHpDelta.Value = 0;
+            nudMpDelta.Value = 0;
+            nudCastDelta.Value = 0;
+            nudCooldownDelta.Value = 0;
+            return;
+        }
+
+        var row = mEditorItem.GetProgressionLevel(SelectedLevel) ?? new SpellProgressionRow();
+        nudHpDelta.Value = row.VitalCostDeltas[(int)Vital.Health];
+        nudMpDelta.Value = row.VitalCostDeltas[(int)Vital.Mana];
+        nudCastDelta.Value = row.CastTimeDeltaMs;
+        nudCooldownDelta.Value = row.CooldownDeltaMs;
+    }
+
+    private void ReadDeltasIntoModel(int level)
+    {
+        if (mEditorItem == null)
+        {
+            return;
+        }
+
+        while (mEditorItem.Progression.Count < level)
+        {
+            mEditorItem.Progression.Add(new SpellProgressionRow());
+        }
+
+        var row = mEditorItem.Progression[level - 1];
+        row.VitalCostDeltas[(int)Vital.Health] = (long)nudHpDelta.Value;
+        row.VitalCostDeltas[(int)Vital.Mana] = (long)nudMpDelta.Value;
+        row.CastTimeDeltaMs = (int)nudCastDelta.Value;
+        row.CooldownDeltaMs = (int)nudCooldownDelta.Value;
+    }
+
+    private void ReadDeltasIntoModel() => ReadDeltasIntoModel(SelectedLevel);
 
     private void UpdateSpellTypePanels()
     {

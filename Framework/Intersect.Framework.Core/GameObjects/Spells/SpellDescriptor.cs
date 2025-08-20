@@ -1,9 +1,11 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Animations;
 using Intersect.Framework.Core.GameObjects.Conditions;
 using Intersect.Framework.Core.GameObjects.Events;
 using Intersect.Framework.Core.GameObjects.Items;
+using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Models;
 using Intersect.Utilities;
 using Newtonsoft.Json;
@@ -151,6 +153,36 @@ public partial class SpellDescriptor : DatabaseObject<SpellDescriptor>, IFoldera
         get => DatabaseUtils.SaveLongArray(_vitalCost, Enum.GetValues<Vital>().Length);
         set => DatabaseUtils.LoadLongArray(ref _vitalCost, value, Enum.GetValues<Vital>().Length);
     }
+
+    [NotMapped]
+    public List<SpellProgressionRow> Progression { get; set; } = new();
+
+    [Column("Progression")]
+    [JsonIgnore]
+    public string ProgressionJson
+    {
+        get => JsonConvert.SerializeObject(Progression);
+        set
+        {
+            var list = string.IsNullOrWhiteSpace(value)
+                ? new List<SpellProgressionRow>()
+                : JsonConvert.DeserializeObject<List<SpellProgressionRow>>(value) ?? new List<SpellProgressionRow>();
+
+            if (list.Count == 0)
+            {
+                list = new List<SpellProgressionRow>(5);
+                for (var i = 0; i < 5; i++)
+                {
+                    list.Add(new SpellProgressionRow());
+                }
+            }
+
+            Progression = list;
+        }
+    }
+
+    public SpellProgressionRow GetProgressionLevel(int level) =>
+        level >= 1 && level <= Progression.Count ? Progression[level - 1] : new SpellProgressionRow();
 
     /// <inheritdoc />
     public string Folder { get; set; } = string.Empty;

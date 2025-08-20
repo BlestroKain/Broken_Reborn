@@ -3,6 +3,7 @@ using System;
 using Intersect.Server.Database.GameData;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Intersect.Server.Migrations.Sqlite.Game
 {
     [DbContext(typeof(SqliteGameContext))]
-    partial class SqliteGameContextModelSnapshot : ModelSnapshot
+    [Migration("20250819025551_AddSpellsLevelsGame")]
+    partial class AddSpellsLevelsGame
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.11");
@@ -1154,10 +1157,6 @@ namespace Intersect.Server.Migrations.Sqlite.Game
                     b.Property<string>("Name")
                         .HasColumnType("TEXT")
                         .HasColumnOrder(0);
-
-                    b.Property<string>("ProgressionJson")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("Progression");
 
                     b.Property<int>("SpellType")
                         .HasColumnType("INTEGER");

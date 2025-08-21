@@ -467,6 +467,49 @@ internal sealed partial class PacketHandler
         PacketSender.SendOpenMailBox(player);
     }
 
+    public void HandlePacket(Client client, SpellLevelChangePacket packet)
+    {
+        var player = client?.Entity;
+        if (player == null || !player.IsPlaying())
+        {
+            return;
+        }
 
+        if (packet.SpellSlot < 0 || packet.SpellSlot >= player.Spells.Count)
+        {
+            return;
+        }
+
+        var spellSlot = player.Spells[packet.SpellSlot];
+        if (spellSlot.SpellId == Guid.Empty)
+        {
+            return;
+        }
+
+        var spellDescriptor = SpellDescriptor.Get(spellSlot.SpellId);
+        if (spellDescriptor == null || !spellDescriptor.Levelable)
+        {
+            return;
+        }
+
+        var currentLevel = spellSlot.Level;
+        var newLevel = currentLevel + packet.Delta;
+
+        if (newLevel < 1 || newLevel > spellDescriptor.MaxLevel)
+        {
+            return;
+        }
+
+        if (!player.HasEnoughSpellPoints(packet.Delta))
+        {
+            return;
+        }
+
+        spellSlot.Level = newLevel;
+        player.ConsumeSpellPoints(packet.Delta);
+
+        PacketSender.SendPlayerSpells(player);
+        PacketSender.SendSpellPoints(player);
+    }
 
 }

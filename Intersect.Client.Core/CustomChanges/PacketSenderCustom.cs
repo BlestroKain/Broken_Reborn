@@ -90,7 +90,7 @@ public static partial class PacketSender
     {
         var packet = new SpellLevelChangePacket
         {
-            SlotIndex = slotIndex,
+            SpellSlot = slotIndex,
             Delta = delta
         };
 

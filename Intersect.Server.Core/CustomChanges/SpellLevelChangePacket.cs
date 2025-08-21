@@ -21,3 +21,4 @@ namespace Intersect.Network.Packets.Client
         public int Delta { get; set; } // +1 para subir, -1 para bajar
     }
 }
+

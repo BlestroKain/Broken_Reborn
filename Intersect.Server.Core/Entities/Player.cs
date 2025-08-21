@@ -85,6 +85,11 @@ public partial class Player : Entity
 
     public int StatPoints { get; set; }
 
+    public int SpellPoints { get; set; } = 0;
+
+    [NotMapped]
+    public bool SpellPointsChanged { get; set; }
+
     [Column("Equipment"), JsonIgnore]
     public string EquipmentJson
     {
@@ -1384,6 +1389,8 @@ public partial class Player : Entity
 
                 StartCommonEventsWithTrigger(CommonEventTrigger.LevelUp);
                 PacketSender.SendActionMsg(this, Strings.Combat.LevelUp, CustomColors.Combat.LevelUp);
+                SpellPoints++;
+                SpellPointsChanged = true;
             }
         }
         else if (amount < 0)
@@ -5541,6 +5548,31 @@ public partial class Player : Entity
     }
 
     //Spells
+
+    public PlayerSpell? GetPlayerSpell(Guid spellId) =>
+        Spells.Select(s => s.PlayerSpell).FirstOrDefault(ps => ps != null && ps.SpellId == spellId);
+
+    public int GetSpellLevel(Guid spellId) =>
+        GetPlayerSpell(spellId)?.Level ?? 0;
+
+    public bool TryLevelUpSpell(Guid spellId)
+    {
+        var pspell = GetPlayerSpell(spellId);
+        if (pspell == null)
+            return false;
+
+        if (SpellPoints <= 0)
+            return false;
+
+        if (pspell.Level >= 5)
+            return false;
+
+        pspell.Level++;
+        SpellPoints--;
+        SpellPointsChanged = true;
+        return true;
+    }
+
     public bool TryTeachSpell(Spell spell, bool sendUpdate = true)
     {
         if (spell == null || spell.SpellId == Guid.Empty)
@@ -5821,12 +5853,21 @@ public partial class Player : Entity
 
     public void UseSpell(int spellSlot, Entity target, bool softRetargetOnSelfCast)
     {
-        var spellDescriptorId = Spells[spellSlot].SpellId;
-        Target = target;
-        if (!SpellDescriptor.TryGet(spellDescriptorId, out var spellDescriptor))
+        var slot = Spells[spellSlot];
+        var pspell = slot.PlayerSpell;
+        if (pspell == null)
         {
             return;
         }
+
+        Target = target;
+        var spellDescriptor = SpellDescriptor.Get(pspell.SpellId);
+        if (spellDescriptor == null)
+        {
+            return;
+        }
+        var spellLevel = pspell.Level;
+        _ = spellLevel;
 
         if (!CanCastSpell(spellDescriptor, target, true, softRetargetOnSelfCast, out var spellCastFailureReason))
         {
@@ -5926,7 +5967,7 @@ public partial class Player : Entity
             //Tell the client we are channeling the spell
             if (IsCasting)
             {
-                PacketSender.SendEntityCastTime(this, spellDescriptorId);
+                PacketSender.SendEntityCastTime(this, pspell.SpellId);
             }
         }
         else

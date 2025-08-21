@@ -10,6 +10,7 @@ public interface IPlayer : IEntity
     long Experience { get; }
     long ExperienceToNextLevel { get; }
     int StatPoints { get; }
+    int SpellPoints { get; }
     bool IsInParty { get; }
     IReadOnlyList<IPartyMember> PartyMembers { get; }
     long CombatTimer { get; }

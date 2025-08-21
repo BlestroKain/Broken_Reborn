@@ -1,10 +1,11 @@
-﻿namespace Intersect.Client.Spells;
+namespace Intersect.Client.Spells;
 
 
 public partial class Spell
 {
 
     public Guid Id { get; set; }
+    public int Level { get; internal set; }
 
     public Spell Clone()
     {

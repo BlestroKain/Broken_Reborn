@@ -1424,6 +1424,15 @@ internal sealed partial class PacketHandler
         }
     }
 
+    //UpdateSpellPointsPacket
+    public void HandlePacket(IPacketSender packetSender, UpdateSpellPointsPacket packet)
+    {
+        if (Globals.Me != null)
+        {
+            Globals.Me.SpellPoints = packet.SpellPoints;
+        }
+    }
+
     //HotbarPacket
     public void HandlePacket(IPacketSender packetSender, HotbarPacket packet)
     {

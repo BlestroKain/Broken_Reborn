@@ -467,6 +467,36 @@ internal sealed partial class PacketHandler
         PacketSender.SendOpenMailBox(player);
     }
 
+    public void HandlePacket(Client client, SpellLevelChangePacket packet)
+    {
+        var player = client?.Entity;
+        if (player == null)
+            return;
+
+        if (packet.SpellSlot < 0 || packet.SpellSlot >= player.Spells.Count)
+            return;
+
+        var spellSlot = player.Spells[packet.SpellSlot];
+        if (spellSlot.PlayerSpellId == Guid.Empty)
+            return;
+
+        // ¡Olvídate de SpellDescriptor.Levelable y MaxLevel!
+        var currentLevel = spellSlot.Level;
+        var newLevel = currentLevel + packet.Delta;
+
+        var maxLevel = Options.Instance.Player.MaxSpellLevel;
+        if (newLevel < 1 || newLevel > maxLevel)
+            return;
+
+        if (!player.HasEnoughSpellPoints(packet.Delta))
+            return;
+
+        spellSlot.Level = newLevel;
+        player.ConsumeSpellPoints(packet.Delta);
+
+        PacketSender.SendPlayerSpells(player);
+        PacketSender.SendSpellPoints(player);
+    }
 
 
 }

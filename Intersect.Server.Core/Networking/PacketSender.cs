@@ -429,6 +429,7 @@ public static partial class PacketSender
             SendInventory(player);
             SendPlayerSpells(player);
             SendPointsTo(player);
+            SendSpellPoints(player);
             SendHotbarSlots(player);
             SendQuestsProgress(player);
             SendItemCooldowns(player);
@@ -1382,6 +1383,18 @@ public static partial class PacketSender
     public static void SendPointsTo(Player player)
     {
         player.SendPacket(new StatPointsPacket(player.StatPoints), TransmissionMode.Any);
+    }
+
+    //SpellPointsPacket
+    public static void SendSpellPoints(Player player)
+    {
+        if (!player.SpellPointsChanged)
+        {
+            return;
+        }
+
+        player.SpellPointsChanged = false;
+        player.SendPacket(new UpdateSpellPointsPacket(player.SpellPoints), TransmissionMode.Any);
     }
 
     //HotbarPacket

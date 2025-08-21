@@ -9,35 +9,51 @@ namespace Intersect.Client.Interface.Game.Spells;
 
 public partial class SpellsWindow : Window
 {
-    public List<SlotItem> Items { get; set; } = [];
+    public List<SpellItem> Items { get; private set; } = [];
+
     private readonly ScrollControl _slotContainer;
     private readonly ContextMenu _contextMenu;
+    private readonly Label _lblSpellPoints;
 
     public SpellsWindow(Canvas gameCanvas) : base(gameCanvas, Strings.Spells.Title, false, nameof(SpellsWindow))
     {
         DisableResizing();
 
         Alignment = [Alignments.Bottom, Alignments.Right];
-        MinimumSize = new Point(x: 225, y: 327);
+        MinimumSize = new Point(340, 400);
         Margin = new Margin(0, 0, 15, 60);
         IsVisibleInTree = false;
         IsResizable = false;
         IsClosable = true;
 
-        _slotContainer = new ScrollControl(this, "SpellsContainer")
+        // Scrollable spell list
+        _slotContainer = new ScrollControl(this)
         {
-            Dock = Pos.Fill,
-            OverflowX = OverflowBehavior.Auto,
+            Dock = Pos.Top,
+            Margin = Margin.Two,
+          
+            OverflowX = OverflowBehavior.Hidden,
             OverflowY = OverflowBehavior.Scroll,
         };
-
-        _contextMenu = new ContextMenu(gameCanvas, "SpellContextMenu")
+        _slotContainer.SetSize (330, 320);
+        // Context Menu for spells
+        _contextMenu = new ContextMenu(gameCanvas)
         {
             IsVisibleInParent = false,
             IconMarginDisabled = true,
-            ItemFont = GameContentManager.Current.GetFont(name: "sourcesansproblack"),
+            ItemFont = GameContentManager.Current.GetFont("sourcesansproblack"),
             ItemFontSize = 10,
         };
+
+        // Label for remaining spell points
+        _lblSpellPoints = new Label(this)
+        {
+            Dock = Pos.Bottom,
+            Padding = Padding.Five,
+            AutoSizeToContents = true,
+            Text = "Puntos de hechizo: 0",
+        };
+        LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
     }
 
     protected override void EnsureInitialized()
@@ -46,28 +62,31 @@ public partial class SpellsWindow : Window
         InitItemContainer();
     }
 
-    public void Update()
+    private void InitItemContainer()
     {
-        if (!IsVisibleInTree)
-        {
-            return;
-        }
+        Items.Clear();
+        _slotContainer.DeleteAllChildren();
 
-        var slotCount = Math.Min(Items.Count, Options.Instance.Player.MaxSpells);
-        for (var slotIndex = 0; slotIndex < slotCount; slotIndex++)
+        for (var i = 0; i < Options.Instance.Player.MaxSpells; i++)
         {
-            Items[slotIndex].Update();
+            var spellItem = new SpellItem(this, _slotContainer, i, _contextMenu);
+            Items.Add(spellItem);
         }
     }
 
-    private void InitItemContainer()
+    public void Update()
     {
-        for (var slotIndex = 0; slotIndex < Options.Instance.Player.MaxSpells; slotIndex++)
+        if (!IsVisibleInTree)
+            return;
+
+        var slotCount = Math.Min(Items.Count, Options.Instance.Player.MaxSpells);
+        for (var i = 0; i < slotCount; i++)
         {
-            Items.Add(new SpellItem(this, _slotContainer, slotIndex, _contextMenu));
+            Items[i].Update();
         }
 
-        PopulateSlotContainer.Populate(_slotContainer, Items);
+        // Aquí puedes actualizar los puntos si tienes acceso
+        // _lblSpellPoints.Text = $"Puntos de hechizo: {PlayerInfo.SpellPoints}";
     }
 
     public override void Hide()

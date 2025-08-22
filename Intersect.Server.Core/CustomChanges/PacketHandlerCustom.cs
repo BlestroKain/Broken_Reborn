@@ -488,11 +488,29 @@ internal sealed partial class PacketHandler
         if (newLevel < 1 || newLevel > maxLevel)
             return;
 
-        if (!player.HasEnoughSpellPoints(packet.Delta))
-            return;
+        if (packet.Delta > 0)
+        {
+            if (player.SpellPoints < packet.Delta)
+            {
+                return;
+            }
+        }
+        else if (packet.Delta < 0)
+        {
+            if (currentLevel <= 1)
+            {
+                return;
+            }
+        }
 
         spellSlot.Level = newLevel;
         player.ConsumeSpellPoints(packet.Delta);
+
+        using (var context = DbInterface.CreatePlayerContext(readOnly: false))
+        {
+            context.Update(spellSlot);
+            context.SaveChanges();
+        }
 
         PacketSender.SendPlayerSpells(player);
         PacketSender.SendSpellPoints(player);

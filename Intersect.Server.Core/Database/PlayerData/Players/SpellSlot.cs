@@ -38,8 +38,53 @@ public partial class SpellSlot : ISlot, IPlayerOwned
     [ForeignKey(nameof(PlayerId))]
     public virtual Player Player { get; private set; }
 
+    // Backing field for NPC or non-player spell identifiers.
+    private Guid _spellId;
+
+    [NotMapped]
+    public Guid SpellId
+    {
+        get => PlayerSpell?.SpellId ?? _spellId;
+        set
+        {
+            if (PlayerSpell != null)
+            {
+                PlayerSpell.SpellId = value;
+            }
+            else
+            {
+                _spellId = value;
+            }
+        }
+    }
+
     [JsonIgnore]
-    public bool IsEmpty => PlayerSpellId == default;
+    public bool IsEmpty => SpellId == default;
 
     public int Level { get; internal set; }
+
+    public SpellSlot Clone()
+    {
+        return new SpellSlot(Slot)
+        {
+            PlayerSpellId = PlayerSpellId,
+            PlayerSpell = PlayerSpell,
+            _spellId = _spellId,
+            Level = Level
+        };
+    }
+
+    public void Set(Spell spell)
+    {
+        SpellId = spell.SpellId;
+        Level = spell.Properties?.Level ?? 1;
+    }
+
+    public void Set(SpellSlot slot)
+    {
+        PlayerSpellId = slot.PlayerSpellId;
+        PlayerSpell = slot.PlayerSpell;
+        _spellId = slot._spellId;
+        Level = slot.Level;
+    }
 }

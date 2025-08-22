@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using Intersect.Collections.Slotting;
+using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Server.Entities;
 using Newtonsoft.Json;
 
@@ -59,7 +60,23 @@ public partial class SpellSlot : ISlot, IPlayerOwned
     [JsonIgnore]
     public bool IsEmpty => SpellId == default;
 
-    public int Level { get; set; } = 1;
+    [NotMapped]
+    public SpellProperties Properties { get; set; } = new();
+
+    [Column(nameof(Properties))]
+    [JsonIgnore]
+    public string SpellPropertiesJson
+    {
+        get => JsonConvert.SerializeObject(Properties);
+        set => Properties = JsonConvert.DeserializeObject<SpellProperties>(value ?? string.Empty) ?? new();
+    }
+
+    [NotMapped]
+    public int Level
+    {
+        get => Properties.Level;
+        set => Properties.Level = value;
+    }
 
     public SpellSlot Clone()
     {
@@ -68,14 +85,14 @@ public partial class SpellSlot : ISlot, IPlayerOwned
             PlayerSpellId = PlayerSpellId,
             PlayerSpell = PlayerSpell,
             _spellId = _spellId,
-            Level = Level
+            Properties = new SpellProperties(Properties)
         };
     }
 
     public void Set(Spell spell)
     {
         SpellId = spell.SpellId;
-        Level = spell.Properties?.Level ?? 1;
+        Properties = new SpellProperties(spell.Properties);
     }
 
     public void Set(SpellSlot slot)
@@ -83,6 +100,6 @@ public partial class SpellSlot : ISlot, IPlayerOwned
         PlayerSpellId = slot.PlayerSpellId;
         PlayerSpell = slot.PlayerSpell;
         _spellId = slot._spellId;
-        Level = slot.Level;
+        Properties = new SpellProperties(slot.Properties);
     }
 }

@@ -487,6 +487,10 @@ namespace Intersect.Server.Migrations.MySql.Player
                         .HasColumnType("char(36)")
                         .UseCollation("ascii_general_ci");
 
+                    b.Property<string>("SpellPropertiesJson")
+                        .HasColumnType("longtext")
+                        .HasColumnName("Properties");
+
                     b.HasKey("Id");
 
                     b.HasIndex("PlayerId");

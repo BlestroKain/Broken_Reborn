@@ -92,7 +92,6 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
         modelBuilder.Entity<Friend>().HasOne(b => b.Target).WithMany().OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Player>().HasMany(b => b.Spells).WithOne(p => p.Player);
-        modelBuilder.Entity<SpellSlot>().Property(s => s.Level).HasDefaultValue(1);
 
         modelBuilder.Entity<Player>().HasMany(b => b.Items).WithOne(p => p.Player);
 

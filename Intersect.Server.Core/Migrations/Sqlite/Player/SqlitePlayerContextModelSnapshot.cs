@@ -535,6 +535,10 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.Property<Guid>("SpellId")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("SpellPropertiesJson")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("Properties");
+
                     b.HasKey("Id");
 
                     b.HasIndex("PlayerId");

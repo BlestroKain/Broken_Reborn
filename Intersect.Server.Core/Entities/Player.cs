@@ -5556,7 +5556,7 @@ public partial class Player : Entity
         Spells.Select(s => s.PlayerSpell).FirstOrDefault(ps => ps != null && ps.SpellId == spellId);
 
     public int GetSpellLevel(Guid spellId) =>
-        GetPlayerSpell(spellId)?.Level ?? 0;
+        Spells.FirstOrDefault(s => s.SpellId == spellId)?.Level ?? 0;
 
     public bool TryLevelUpSpell(Guid spellId)
     {

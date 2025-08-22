@@ -1871,8 +1871,10 @@ public abstract partial class Entity : IEntity
             }
         }
 
-        var damageHealth = spellDescriptor.Combat.VitalDiff[(int)Vital.Health];
-        var damageMana = spellDescriptor.Combat.VitalDiff[(int)Vital.Mana];
+        var spellProperties = (this as Player)?.GetSpellProperties(spellDescriptor.Id);
+        var spellLevel = spellProperties?.Level ?? 0;
+        var damageHealth = SpellMath.Scale(spellDescriptor.Combat.VitalDiff[(int)Vital.Health], spellLevel);
+        var damageMana = SpellMath.Scale(spellDescriptor.Combat.VitalDiff[(int)Vital.Mana], spellLevel);
 
         if ((spellDescriptor.Combat.Effect != SpellEffect.OnHit || onHitTrigger) &&
             spellDescriptor.Combat.Effect != SpellEffect.Shield)
@@ -1880,7 +1882,7 @@ public abstract partial class Entity : IEntity
             Attack(
                 target, damageHealth, damageMana, (DamageType)spellDescriptor.Combat.DamageType,
                 (Stat)spellDescriptor.Combat.ScalingStat, spellDescriptor.Combat.Scaling, spellDescriptor.Combat.CritChance,
-                spellDescriptor.Combat.CritMultiplier, deadAnimations, aliveAnimations, false
+                spellDescriptor.Combat.CritMultiplier, deadAnimations, aliveAnimations, false, spellLevel
             );
         }
 
@@ -2066,7 +2068,8 @@ public abstract partial class Entity : IEntity
         double critMultiplier,
         List<KeyValuePair<Guid, Direction>> deadAnimations = null,
         List<KeyValuePair<Guid, Direction>> aliveAnimations = null,
-        bool isAutoAttack = false
+        bool isAutoAttack = false,
+        int? spellLevel = null
     )
     {
         var damagingAttack = baseDamage > 0;
@@ -2096,7 +2099,7 @@ public abstract partial class Entity : IEntity
         if (!(enemy is Resource))
         {
             baseDamage = Formulas.CalculateDamage(
-            baseDamage, damageType, scalingStat, scaling, critMultiplier, this, enemy
+            baseDamage, damageType, scalingStat, scaling, critMultiplier, this, enemy, spellLevel
         );
         }
 
@@ -2221,7 +2224,7 @@ public abstract partial class Entity : IEntity
         if (secondaryDamage != 0)
         {
             secondaryDamage = Formulas.CalculateDamage(
-                secondaryDamage, damageType, scalingStat, scaling, critMultiplier, this, enemy
+                secondaryDamage, damageType, scalingStat, scaling, critMultiplier, this, enemy, spellLevel
             );
 
             if (secondaryDamage < 0 && secondaryDamagingAttack)

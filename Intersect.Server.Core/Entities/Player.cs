@@ -1210,6 +1210,8 @@ public partial class Player : Entity
         PacketSender.SendEntityDie(this);
         Respawn();
         PacketSender.SendInventory(this);
+        PacketSender.SendPlayerSpells(this);
+        PacketSender.SendSpellPoints(this);
     }
 
     public override void ProcessRegen()
@@ -1390,6 +1392,7 @@ public partial class Player : Entity
                 StartCommonEventsWithTrigger(CommonEventTrigger.LevelUp);
                 PacketSender.SendActionMsg(this, Strings.Combat.LevelUp, CustomColors.Combat.LevelUp);
                 SpellPoints++;
+                PacketSender.SendSpellPoints(this);
                 SpellPointsChanged = true;
             }
         }

@@ -274,6 +274,9 @@ public partial class SpellItem : SlotItem
         _nameLabel.Text = $"{spell.Name} Lv.{spellSlots[SlotIndex].Level}";
         SpellLevel = spellSlots[SlotIndex].Level;
 
+        _levelUpButton.IsDisabled = !(Globals.Me.SpellPoints > 0 && SpellLevel < Options.Instance.Player.MaxSpellLevel);
+        _levelDownButton.IsDisabled = !(SpellLevel > 1);
+
         if (Path.GetFileName(Icon.Texture?.Name) != spell.Icon)
         {
             var spellIconTexture = GameContentManager.Current.GetTexture(TextureType.Spell, spell.Icon);

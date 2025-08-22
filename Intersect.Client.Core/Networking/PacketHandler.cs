@@ -1383,6 +1383,8 @@ internal sealed partial class PacketHandler
         {
             HandlePacket(spl);
         }
+
+        Interface.Interface.GameUi.SpellsWindow?.Update();
     }
 
     //SpellUpdatePacket
@@ -1391,6 +1393,7 @@ internal sealed partial class PacketHandler
         if (Globals.Me != null)
         {
             Globals.Me.Spells[packet.Slot].Load(packet.SpellId, packet.Level);
+            Interface.Interface.GameUi.SpellsWindow?.Update();
         }
     }
 
@@ -1430,6 +1433,7 @@ internal sealed partial class PacketHandler
         if (Globals.Me != null)
         {
             Globals.Me.SpellPoints = packet.SpellPoints;
+            Interface.Interface.GameUi.SpellsWindow?.Update();
         }
     }
 

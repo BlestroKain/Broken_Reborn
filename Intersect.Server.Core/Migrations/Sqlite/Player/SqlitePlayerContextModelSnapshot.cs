@@ -532,6 +532,10 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.Property<int>("Slot")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("Level")
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(1);
+
                     b.Property<Guid>("SpellId")
                         .HasColumnType("TEXT");
 

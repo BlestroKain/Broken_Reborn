@@ -10,9 +10,7 @@ public partial class SpellSlot : ISlot, IPlayerOwned
 {
     public static SpellSlot Create(int slotIndex) => new(slotIndex);
 
-    public SpellSlot()
-    {
-    }
+    public SpellSlot() { }
 
     public SpellSlot(int slot)
     {
@@ -61,7 +59,7 @@ public partial class SpellSlot : ISlot, IPlayerOwned
     [JsonIgnore]
     public bool IsEmpty => SpellId == default;
 
-    public int Level { get; internal set; }
+    public int Level { get; set; } = 1;
 
     public SpellSlot Clone()
     {

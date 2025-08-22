@@ -10,6 +10,7 @@ using Intersect.Client.Framework.Input;
 using Intersect.Client.General;
 using Intersect.Client.Interface.Game.Hotbar;
 using Intersect.Client.Localization;
+using Intersect.Client.Networking;
 using Intersect.Configuration;
 using Intersect.GameObjects;
 using Intersect.Utilities;
@@ -21,7 +22,11 @@ public partial class SpellItem : SlotItem
     // Controls
     private readonly Label _cooldownLabel;
     private readonly SpellsWindow _spellWindow;
+    private readonly Label _nameLabel;
+    private readonly Button _levelUpButton;
+    private readonly Button _levelDownButton;
 
+    public int SpellLevel { get; private set; }
     // Context Menu Handling
     private readonly MenuItem _useSpellMenuItem;
     private readonly MenuItem _forgetSpellMenuItem;
@@ -36,6 +41,8 @@ public partial class SpellItem : SlotItem
         Icon.HoverLeave += Icon_HoverLeave;
         Icon.Clicked += Icon_Clicked;
         Icon.DoubleClicked += Icon_DoubleClicked;
+        Icon.SetSize(64, 64);
+        Icon.SetPosition(0, 0);
 
         _cooldownLabel = new Label(this, "CooldownLabel")
         {
@@ -47,8 +54,47 @@ public partial class SpellItem : SlotItem
             BackgroundTemplateName = "quantity.png",
             Padding = new Padding(2),
         };
+        _cooldownLabel.SetPosition(0, 4); // parte superior del ícono
 
-        LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+        _nameLabel = new Label(this)
+        {
+            AutoSizeToContents = true,
+            FontSize = 10,
+            FontName = "sourcesansproblack",
+            TextColor = Color.White,
+             
+        };
+        _nameLabel.SetSize(64, 16);
+        _nameLabel.SetPosition(0, 48);
+       
+        // Botón de subir nivel
+        _levelUpButton = new Button(this)
+        {
+            Text = "+",
+            FontSize = 10,
+            FontName = "sourcesansproblack",
+           
+      
+        };
+        _levelUpButton.Clicked += (_, _) => RequestLevelChange(+1);
+        _levelUpButton.SetSize(20, 20);
+       
+        // Botón de bajar nivel
+        _levelDownButton = new Button(this)
+        {
+            Text = "-",
+            FontSize = 10,
+            FontName = "sourcesansproblack",
+           
+         
+        };
+        _levelDownButton.SetSize(20, 20);
+        _levelUpButton.SetPosition(34, 66);    // al lado derecho del nombre
+        _levelDownButton.SetPosition(10, 66);  // al lado izquierdo del nombre
+
+        _levelDownButton.Clicked += (_, _) => RequestLevelChange(-1);
+    
+    LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
 
         contextMenu.ClearChildren();
         _useSpellMenuItem = contextMenu.AddItem(Strings.SpellContextMenu.Cast.ToString());
@@ -57,6 +103,12 @@ public partial class SpellItem : SlotItem
         _forgetSpellMenuItem.Clicked += _forgetSpellMenuItem_Clicked;
         contextMenu.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
     }
+
+    private void RequestLevelChange(int delta)
+    {
+        PacketSender.SendSpellLevelChange(SlotIndex, delta);
+    }
+
 
     #region Context Menu
 
@@ -218,6 +270,12 @@ public partial class SpellItem : SlotItem
         {
             Icon.RenderColor.A = 255;
         }
+        // Actualiza nombre y nivel si el hechizo está asignado
+        _nameLabel.Text = $"{spell.Name} Lv.{spellSlots[SlotIndex].Level}";
+        SpellLevel = spellSlots[SlotIndex].Level;
+
+        _levelUpButton.IsDisabled = !(Globals.Me.SpellPoints > 0 && SpellLevel < Options.Instance.Player.MaxSpellLevel);
+        _levelDownButton.IsDisabled = !(SpellLevel > 1);
 
         if (Path.GetFileName(Icon.Texture?.Name) != spell.Icon)
         {

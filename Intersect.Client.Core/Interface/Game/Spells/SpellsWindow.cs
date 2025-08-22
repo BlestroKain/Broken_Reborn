@@ -79,14 +79,22 @@ public partial class SpellsWindow : Window
         if (!IsVisibleInTree)
             return;
 
+        _lblSpellPoints.Text = $"Puntos de hechizo: {Globals.Me.SpellPoints}";
+
         var slotCount = Math.Min(Items.Count, Options.Instance.Player.MaxSpells);
         for (var i = 0; i < slotCount; i++)
         {
             Items[i].Update();
         }
+    }
 
-        // Aquí puedes actualizar los puntos si tienes acceso
-        // _lblSpellPoints.Text = $"Puntos de hechizo: {PlayerInfo.SpellPoints}";
+    public void Refresh()
+    {
+        var slotCount = Math.Min(Items.Count, Options.Instance.Player.MaxSpells);
+        for (var i = 0; i < slotCount; i++)
+        {
+            Items[i].Update();
+        }
     }
 
     public override void Hide()

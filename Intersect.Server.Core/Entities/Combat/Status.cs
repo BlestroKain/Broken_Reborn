@@ -106,7 +106,8 @@ public partial class Status
         {
             foreach (var vital in Enum.GetValues<Vital>())
             {
-                var level = (attacker as Player)?.GetSpellLevel(spell.Id);
+                var properties = (attacker as Player)?.GetSpellProperties(spell.Id);
+                var level = properties?.Level ?? 0;
                 long vitalDiff = Math.Abs(SpellMath.Scale(spell.Combat.VitalDiff[(int)vital], level));
 
                 // If the user did not configure for this vital to have a mana shield, ignore it

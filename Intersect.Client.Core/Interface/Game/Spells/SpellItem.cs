@@ -13,6 +13,7 @@ using Intersect.Client.Localization;
 using Intersect.Client.Networking;
 using Intersect.Configuration;
 using Intersect.GameObjects;
+using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Utilities;
 
 namespace Intersect.Client.Interface.Game.Spells;
@@ -26,7 +27,7 @@ public partial class SpellItem : SlotItem
     private readonly Button _levelUpButton;
     private readonly Button _levelDownButton;
 
-    public int SpellLevel { get; private set; }
+    public SpellProperties SpellProperties { get; private set; } = new();
     // Context Menu Handling
     private readonly MenuItem _useSpellMenuItem;
     private readonly MenuItem _forgetSpellMenuItem;
@@ -106,7 +107,7 @@ public partial class SpellItem : SlotItem
 
     private void RequestLevelChange(int delta)
     {
-        PacketSender.SendSpellLevelChange(SlotIndex, delta);
+        PacketSender.SendSpellPropertiesChange(SlotIndex, delta);
     }
 
 
@@ -271,11 +272,11 @@ public partial class SpellItem : SlotItem
             Icon.RenderColor.A = 255;
         }
         // Actualiza nombre y nivel si el hechizo está asignado
-        _nameLabel.Text = $"{spell.Name} Lv.{spellSlots[SlotIndex].Level}";
-        SpellLevel = spellSlots[SlotIndex].Level;
+        _nameLabel.Text = $"{spell.Name} Lv.{spellSlots[SlotIndex].Properties.Level}";
+        SpellProperties = spellSlots[SlotIndex].Properties;
 
-        _levelUpButton.IsDisabled = !(Globals.Me.SpellPoints > 0 && SpellLevel < Options.Instance.Player.MaxSpellLevel);
-        _levelDownButton.IsDisabled = !(SpellLevel > 1);
+        _levelUpButton.IsDisabled = !(Globals.Me.SpellPoints > 0 && SpellProperties.Level < Options.Instance.Player.MaxSpellLevel);
+        _levelDownButton.IsDisabled = !(SpellProperties.Level > 1);
 
         if (Path.GetFileName(Icon.Texture?.Name) != spell.Icon)
         {

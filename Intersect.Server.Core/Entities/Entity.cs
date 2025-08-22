@@ -1871,7 +1871,8 @@ public abstract partial class Entity : IEntity
             }
         }
 
-        var spellLevel = (this as Player)?.GetSpellLevel(spellDescriptor.Id);
+        var spellProperties = (this as Player)?.GetSpellProperties(spellDescriptor.Id);
+        var spellLevel = spellProperties?.Level ?? 0;
         var damageHealth = SpellMath.Scale(spellDescriptor.Combat.VitalDiff[(int)Vital.Health], spellLevel);
         var damageMana = SpellMath.Scale(spellDescriptor.Combat.VitalDiff[(int)Vital.Mana], spellLevel);
 

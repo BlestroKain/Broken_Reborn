@@ -148,7 +148,8 @@ public partial class DamageOverTimeEffect
             aliveAnimations.Add(animation);
         }
 
-        var level = (Attacker as Player)?.GetSpellLevel(SpellDescriptor.Id);
+        var properties = (Attacker as Player)?.GetSpellProperties(SpellDescriptor.Id);
+        var level = properties?.Level ?? 0;
         var damageHealth = SpellMath.Scale(SpellDescriptor.Combat.VitalDiff[(int)Vital.Health], level);
         var damageMana = SpellMath.Scale(SpellDescriptor.Combat.VitalDiff[(int)Vital.Mana], level);
 

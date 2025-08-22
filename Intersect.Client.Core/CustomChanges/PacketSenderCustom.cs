@@ -86,9 +86,9 @@ public static partial class PacketSender
         Network.SendPacket(new TakeMailPacket(mailID));
     }
 
-    public static void SendSpellLevelChange(int slotIndex, int delta)
+    public static void SendSpellPropertiesChange(int slotIndex, int delta)
     {
-        var packet = new SpellLevelChangePacket
+        var packet = new SpellPropertiesChangePacket
         {
             SpellSlot = slotIndex,
             Delta = delta

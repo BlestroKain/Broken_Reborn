@@ -18,6 +18,7 @@ using Intersect.Config;
 using Intersect.Framework.Core.GameObjects.Maps.Attributes;
 using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
+using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Framework.Core.GameObjects.Quests;
 using Intersect.Framework.Core.GameObjects.Variables;
 using Intersect.GameObjects;
@@ -5555,8 +5556,8 @@ public partial class Player : Entity
     public PlayerSpell? GetPlayerSpell(Guid spellId) =>
         Spells.Select(s => s.PlayerSpell).FirstOrDefault(ps => ps != null && ps.SpellId == spellId);
 
-    public int GetSpellLevel(Guid spellId) =>
-        Spells.FirstOrDefault(s => s.SpellId == spellId)?.Level ?? 0;
+    public SpellProperties? GetSpellProperties(Guid spellId) =>
+        Spells.FirstOrDefault(s => s.SpellId == spellId)?.Properties;
 
     public bool TryLevelUpSpell(Guid spellId)
     {
@@ -5567,10 +5568,10 @@ public partial class Player : Entity
         if (SpellPoints <= 0)
             return false;
 
-        if (pspell.Level >= 5)
+        if (pspell.Properties.Level >= 5)
             return false;
 
-        pspell.Level++;
+        pspell.Properties.Level++;
         SpellPoints--;
         SpellPointsChanged = true;
         return true;
@@ -5869,8 +5870,9 @@ public partial class Player : Entity
         {
             return;
         }
-        var spellLevel = pspell.Level;
-        _ = spellLevel;
+        var spellProperties = pspell.Properties;
+        var spellLevel = spellProperties.Level;
+        _ = spellProperties;
 
         if (!CanCastSpell(spellDescriptor, target, true, softRetargetOnSelfCast, out var spellCastFailureReason))
         {

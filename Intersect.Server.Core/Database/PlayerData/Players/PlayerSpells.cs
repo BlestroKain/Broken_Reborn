@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
+using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Server.Entities;
 using Newtonsoft.Json;
 
@@ -12,7 +13,23 @@ public partial class PlayerSpell : IPlayerOwned
 
     public Guid SpellId { get; set; }
 
-    public int Level { get; set; } = 1;
+    [NotMapped]
+    public SpellProperties Properties { get; set; } = new();
+
+    [Column(nameof(Properties))]
+    [JsonIgnore]
+    public string SpellPropertiesJson
+    {
+        get => JsonConvert.SerializeObject(Properties);
+        set => Properties = JsonConvert.DeserializeObject<SpellProperties>(value ?? string.Empty) ?? new();
+    }
+
+    [NotMapped]
+    public int Level
+    {
+        get => Properties.Level;
+        set => Properties.Level = value;
+    }
 
     public int SpellPointsSpent { get; set; } = 0;
 

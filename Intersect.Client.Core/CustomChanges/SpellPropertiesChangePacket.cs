@@ -3,12 +3,12 @@ using MessagePack;
 namespace Intersect.Network.Packets.Client
 {
     [MessagePackObject]
-    public partial class SpellLevelChangePacket : IntersectPacket
+    public partial class SpellPropertiesChangePacket : IntersectPacket
     {
         // Constructor sin parámetros requerido por MessagePack
-        public SpellLevelChangePacket() { }
+        public SpellPropertiesChangePacket() { }
 
-        public SpellLevelChangePacket(int spellSlot, int delta)
+        public SpellPropertiesChangePacket(int spellSlot, int delta)
         {
             SpellSlot = spellSlot;
             Delta = delta;
@@ -21,4 +21,3 @@ namespace Intersect.Network.Packets.Client
         public int Delta { get; set; } // +1 para subir, -1 para bajar
     }
 }
-

@@ -1308,7 +1308,7 @@ public static partial class PacketSender
         var spells = new SpellUpdatePacket[Options.Instance.Player.MaxSpells];
         for (var i = 0; i < Options.Instance.Player.MaxSpells; i++)
         {
-            spells[i] = new SpellUpdatePacket(i, player.Spells[i].SpellId);
+            spells[i] = new SpellUpdatePacket(i, player.Spells[i].SpellId, player.Spells[i].Level);
         }
 
         player.SendPacket(new SpellsPacket(spells));
@@ -1322,7 +1322,7 @@ public static partial class PacketSender
             return;
         }
 
-        player.SendPacket(new SpellUpdatePacket(slot, player.Spells[slot].SpellId));
+        player.SendPacket(new SpellUpdatePacket(slot, player.Spells[slot].SpellId, player.Spells[slot].Level));
     }
 
     //EquipmentPacket

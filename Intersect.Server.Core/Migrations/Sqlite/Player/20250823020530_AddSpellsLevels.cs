@@ -50,6 +50,11 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.Sql(
+                @"INSERT INTO PlayerSpell (Id, SpellId, Properties, SpellPointsSpent, PlayerId)
+                  SELECT Id, PlayerSpellId, Properties, 0, PlayerId FROM Player_Spells;
+                  UPDATE Player_Spells SET PlayerSpellId = Id;");
+
             migrationBuilder.CreateIndex(
                 name: "IX_Player_Spells_PlayerSpellId",
                 table: "Player_Spells",
@@ -75,6 +80,12 @@ namespace Intersect.Server.Migrations.Sqlite.Player
             migrationBuilder.DropForeignKey(
                 name: "FK_Player_Spells_PlayerSpell_PlayerSpellId",
                 table: "Player_Spells");
+
+            migrationBuilder.Sql(
+                @"UPDATE Player_Spells
+                   SET PlayerSpellId = (
+                       SELECT SpellId FROM PlayerSpell WHERE PlayerSpell.Id = Player_Spells.PlayerSpellId
+                   );");
 
             migrationBuilder.DropTable(
                 name: "PlayerSpell");

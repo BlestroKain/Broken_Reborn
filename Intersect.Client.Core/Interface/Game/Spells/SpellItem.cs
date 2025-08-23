@@ -57,7 +57,7 @@ public partial class SpellItem : SlotItem
         };
         _cooldownLabel.SetPosition(0, 4); // parte superior del ícono
 
-        _nameLabel = new Label(this)
+        _nameLabel = new Label(this,"NameLabel")
         {
             AutoSizeToContents = true,
             FontSize = 10,
@@ -69,7 +69,7 @@ public partial class SpellItem : SlotItem
         _nameLabel.SetPosition(0, 48);
        
         // Botón de subir nivel
-        _levelUpButton = new Button(this)
+        _levelUpButton = new Button(this, "ButtonMax")
         {
             Text = "+",
             FontSize = 10,
@@ -81,7 +81,7 @@ public partial class SpellItem : SlotItem
         _levelUpButton.SetSize(20, 20);
        
         // Botón de bajar nivel
-        _levelDownButton = new Button(this)
+        _levelDownButton = new Button(this,"ButtonMin")
         {
             Text = "-",
             FontSize = 10,
@@ -272,11 +272,13 @@ public partial class SpellItem : SlotItem
             Icon.RenderColor.A = 255;
         }
         // Actualiza nombre y nivel si el hechizo está asignado
-        _nameLabel.Text = $"{spell.Name} Lv.{spellSlots[SlotIndex].Properties.Level}";
-        SpellProperties = spellSlots[SlotIndex].Properties;
+        var properties = spellSlots[SlotIndex].Properties ?? new SpellProperties();
+        spellSlots[SlotIndex].Properties = properties;
+        _nameLabel.Text = $"{spell.Name} Lv.{properties.Level}";
+        SpellProperties = properties;
 
-        _levelUpButton.IsDisabled = !(Globals.Me.SpellPoints > 0 && SpellProperties.Level < Options.Instance.Player.MaxSpellLevel);
-        _levelDownButton.IsDisabled = !(SpellProperties.Level > 1);
+        _levelUpButton.IsDisabled = !(Globals.Me.SpellPoints > 0 && properties.Level < Options.Instance.Player.MaxSpellLevel);
+        _levelDownButton.IsDisabled = !(properties.Level > 1);
 
         if (Path.GetFileName(Icon.Texture?.Name) != spell.Icon)
         {

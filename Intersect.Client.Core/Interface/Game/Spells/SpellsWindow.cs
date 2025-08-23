@@ -1,10 +1,14 @@
 using Intersect.Client.Core;
+using Intersect.Client.Framework.Content;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.General;
 using Intersect.Client.Localization;
 using Intersect.Client.Utilities;
+using Intersect.GameObjects;
+using Intersect.Utilities;
+using System.Text;
 
 namespace Intersect.Client.Interface.Game.Spells;
 
@@ -16,29 +20,76 @@ public partial class SpellsWindow : Window
     private readonly ContextMenu _contextMenu;
     private readonly Label _lblSpellPoints;
 
+    // Panel de detalle
+    private readonly ImagePanel _detailPanel;
+    private readonly ImagePanel _iconPanel;
+    private readonly Label _nameLabel;
+    private readonly Label _levelLabel;
+    private readonly Label _descLabel;
+
+    private int _selectedSlot = -1;
+
     public SpellsWindow(Canvas gameCanvas) : base(gameCanvas, Strings.Spells.Title, false, nameof(SpellsWindow))
     {
-        DisableResizing();
-
         Alignment = [Alignments.Bottom, Alignments.Right];
-        MinimumSize = new Point(340, 400);
+        MinimumSize = new Point(560, 400);
         Margin = new Margin(0, 0, 15, 60);
         IsVisibleInTree = false;
         IsResizable = false;
         IsClosable = true;
 
-        // Scrollable spell list
-        _slotContainer = new ScrollControl(this)
+        // LISTA IZQUIERDA
+        _slotContainer = new ScrollControl(this, "SpellsContainer")
         {
-            Dock = Pos.Top,
-            Margin = Margin.Two,
-          
+            Dock = Pos.Left,
+            Width = 240,
             OverflowX = OverflowBehavior.Hidden,
             OverflowY = OverflowBehavior.Scroll,
+            Margin = new Margin(6, 6, 4, 6),
         };
-        _slotContainer.SetSize (330, 320);
-        // Context Menu for spells
-        _contextMenu = new ContextMenu(gameCanvas)
+        _slotContainer.SetSize(240, 340);
+        _slotContainer.SetPosition(6, 6);
+
+        // PANEL DETALLE DERECHA
+        _detailPanel = new ImagePanel(this, "DetailPanel")
+        {
+            Dock = Pos.Fill,
+            Margin = new Margin(4, 6, 6, 30),
+            IsVisibleInParent = false,
+        };
+        _detailPanel.SetSize(300, 340);
+        _detailPanel.SetPosition(250, 6);
+
+        _iconPanel = new ImagePanel(_detailPanel, "SpellIcon");
+        _iconPanel.SetBounds(8, 8, 48, 48);
+
+        _nameLabel = new Label(_detailPanel, "SpellName")
+        {
+            FontName = "sourcesansproblack",
+            FontSize = 14,
+        };
+        _nameLabel.SetSize(200, 20);
+        _nameLabel.SetPosition(64, 8);
+
+        _levelLabel = new Label(_detailPanel, "SpellLevel")
+        {
+            FontName = "sourcesansproblack",
+            FontSize = 10,
+        };
+        _levelLabel.SetSize(200, 16);
+        _levelLabel.SetPosition(64, 30);
+
+        _descLabel = new Label(_detailPanel, "SpellDesc")
+        {
+            FontName = "sourcesansproblack",
+            FontSize = 10,
+            AutoSizeToContents = true,
+        };
+        _descLabel.SetSize(270, 200); // Altura flexible si tienes auto scroll más adelante
+        _descLabel.SetPosition(8, 70);
+
+        // CONTEXT MENU
+        _contextMenu = new ContextMenu(gameCanvas, "SpellContextMenu")
         {
             IsVisibleInParent = false,
             IconMarginDisabled = true,
@@ -46,14 +97,17 @@ public partial class SpellsWindow : Window
             ItemFontSize = 10,
         };
 
-        // Label for remaining spell points
-        _lblSpellPoints = new Label(this)
+        // PUNTOS
+        _lblSpellPoints = new Label(this, "LblSpellPoints")
         {
             Dock = Pos.Bottom,
-            Padding = Padding.Five,
+            Padding = new Padding(6),
             AutoSizeToContents = true,
             Text = "Puntos de hechizo: 0",
         };
+        _lblSpellPoints.SetSize(200, 18); // ancho arbitrario, no afecta por auto-size
+        _lblSpellPoints.SetPosition(10, 360); // justo abajo
+
         LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
     }
 
@@ -61,6 +115,7 @@ public partial class SpellsWindow : Window
     {
         LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
         InitItemContainer();
+        Refresh();
     }
 
     private void InitItemContainer()
@@ -68,11 +123,25 @@ public partial class SpellsWindow : Window
         Items.Clear();
         _slotContainer.DeleteAllChildren();
 
-        for (var i = 0; i < Options.Instance.Player.MaxSpells; i++)
+        var max = Options.Instance.Player.MaxSpells;
+        for (var i = 0; i < max; i++)
         {
-            var spellItem = new SpellItem(this, _slotContainer, i, _contextMenu);
-            Items.Add(spellItem);
+            var item = new SpellItem(this, _slotContainer, i, _contextMenu);
+            // layout vertical sencillo
+            var y = 4 + i * 44; // alto de fila
+            item.SetBounds(4, y, _slotContainer.Width - 8, 40);
+            Items.Add(item);
         }
+
+        // MUY IMPORTANTE: inner size para scroll!
+        var innerH = 4 + max * 44;
+        _slotContainer.SetInnerSize(_slotContainer.Width, innerH);
+    }
+
+    public void SelectSlot(int slotIndex)
+    {
+        _selectedSlot = slotIndex;
+        UpdateDetails();
     }
 
     public void Update()
@@ -80,22 +149,90 @@ public partial class SpellsWindow : Window
         if (!IsVisibleInTree)
             return;
 
-        _lblSpellPoints.Text = $"Puntos de hechizo: {Globals.Me.SpellPoints}";
+        _lblSpellPoints.Text = $"Puntos de hechizo: {Globals.Me?.SpellPoints ?? 0}";
 
         var slotCount = Math.Min(Items.Count, Options.Instance.Player.MaxSpells);
         for (var i = 0; i < slotCount; i++)
-        {
             Items[i].Update();
+
+        // Si no hay selección, intenta seleccionar la primera con Spell asignado
+        if (_selectedSlot < 0)
+        {
+            var me = Globals.Me;
+            var spells = me?.Spells;
+            if (spells != null)
+            {
+                for (var i = 0; i < Math.Min(spells.Length, Items.Count); i++)
+                {
+                    if (spells[i].Id != Guid.Empty)
+                    {
+                        _selectedSlot = i;
+                        break;
+                    }
+                }
+            }
         }
+
+        UpdateDetails();
     }
 
     public void Refresh()
     {
-        var slotCount = Math.Min(Items.Count, Options.Instance.Player.MaxSpells);
-        for (var i = 0; i < slotCount; i++)
+        // Re-layaout por si cambió la resolución o MaxSpells
+        InitItemContainer();
+        UpdateDetails();
+    }
+
+    private void UpdateDetails()
+    {
+        var me = Globals.Me;
+        var spells = me?.Spells;
+
+        if (me == null || spells == null || _selectedSlot < 0 || _selectedSlot >= spells.Length)
         {
-            Items[i].Update();
+            _detailPanel.IsVisibleInParent = false;
+            return;
         }
+
+        var id = spells[_selectedSlot].Id;
+        var level = spells[_selectedSlot].Level;
+
+        if (id == Guid.Empty || !SpellDescriptor.TryGet(id, out var desc))
+        {
+            _detailPanel.IsVisibleInParent = false;
+            return;
+        }
+
+        _detailPanel.IsVisibleInParent = true;
+
+        // Icono
+        var tex = GameContentManager.Current.GetTexture(TextureType.Spell, desc.Icon);
+        if (tex != null)
+        {
+            _iconPanel.Texture = tex;
+            _iconPanel.IsVisibleInParent = true;
+        }
+        else
+        {
+            _iconPanel.IsVisibleInParent = false;
+        }
+
+        // Nombre y nivel
+        _nameLabel.Text = desc.Name;
+        _levelLabel.Text = Strings.EntityBox.Level.ToString(level);
+
+        // Descripción/estadísticas básicas
+        var sb = new StringBuilder();
+        if (!string.IsNullOrWhiteSpace(desc.Description))
+            sb.AppendLine(desc.Description);
+
+        // Ejemplo rápido de tiempos (si tienes SpellMath/Efectivo, úsalo aquí)
+        if (desc.CooldownDuration > 0)
+            sb.AppendLine($"{Strings.SpellDescription.Cooldown} {TimeSpan.FromMilliseconds(desc.CooldownDuration).WithSuffix()}");
+        if (desc.CastDuration > 0)
+            sb.AppendLine($"{Strings.SpellDescription.CastTime} {TimeSpan.FromMilliseconds(desc.CastDuration).WithSuffix()}");
+
+        _descLabel.Text = sb.ToString().Trim();
     }
 
     public override void Hide()

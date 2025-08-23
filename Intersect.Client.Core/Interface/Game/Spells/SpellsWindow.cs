@@ -28,6 +28,10 @@ public partial class SpellsWindow : Window
     private readonly Label _descLabel;
 
     private int _selectedSlot = -1;
+    private int _lastSpellCount;
+    private int _lastSpellPoints;
+    private int _lastMaxSpells;
+    private bool _needsDetailsUpdate;
 
     public SpellsWindow(Canvas gameCanvas) : base(gameCanvas, Strings.Spells.Title, false, nameof(SpellsWindow))
     {
@@ -109,6 +113,10 @@ public partial class SpellsWindow : Window
         _lblSpellPoints.SetPosition(10, 360); // justo abajo
 
         LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+        _lastSpellCount = -1;
+        _lastSpellPoints = -1;
+        _lastMaxSpells = -1;
+        _needsDetailsUpdate = true;
     }
 
     protected override void EnsureInitialized()
@@ -124,24 +132,43 @@ public partial class SpellsWindow : Window
         _slotContainer.DeleteAllChildren();
 
         var max = Options.Instance.Player.MaxSpells;
+        const int slotHeight = 40;
         for (var i = 0; i < max; i++)
         {
             var item = new SpellItem(this, _slotContainer, i, _contextMenu);
-            // layout vertical sencillo
-            var y = 4 + i * 44; // alto de fila
-            item.SetBounds(4, y, _slotContainer.Width - 8, 40);
+            var y = 4 + i * slotHeight;
+            item.SetBounds(4, y, _slotContainer.Width - 8, slotHeight - 4);
             Items.Add(item);
         }
 
-        // MUY IMPORTANTE: inner size para scroll!
-        var innerH = 4 + max * 44;
+        var innerH = 4 + max * slotHeight;
         _slotContainer.SetInnerSize(_slotContainer.Width, innerH);
+
+        if (_selectedSlot >= Items.Count)
+        {
+            _selectedSlot = -1;
+        }
+
+        if (_selectedSlot >= 0 && _selectedSlot < Items.Count)
+        {
+            Items[_selectedSlot].SetSelected(true);
+        }
     }
 
     public void SelectSlot(int slotIndex)
     {
+        if (_selectedSlot == slotIndex)
+        {
+            return;
+        }
+
         _selectedSlot = slotIndex;
-        UpdateDetails();
+        for (var i = 0; i < Items.Count; i++)
+        {
+            Items[i].SetSelected(i == _selectedSlot);
+        }
+
+        _needsDetailsUpdate = true;
     }
 
     public void Update()
@@ -149,17 +176,33 @@ public partial class SpellsWindow : Window
         if (!IsVisibleInTree)
             return;
 
-        _lblSpellPoints.Text = $"Puntos de hechizo: {Globals.Me?.SpellPoints ?? 0}";
+        var me = Globals.Me;
+        var spells = me?.Spells;
+        var spellCount = spells?.Length ?? 0;
+        var maxSpells = Options.Instance.Player.MaxSpells;
 
-        var slotCount = Math.Min(Items.Count, Options.Instance.Player.MaxSpells);
+        if (spellCount != _lastSpellCount || maxSpells != _lastMaxSpells)
+        {
+            InitItemContainer();
+            _lastSpellCount = spellCount;
+            _lastMaxSpells = maxSpells;
+            _needsDetailsUpdate = true;
+        }
+
+        var spellPoints = me?.SpellPoints ?? 0;
+        if (spellPoints != _lastSpellPoints)
+        {
+            _lblSpellPoints.Text = $"Puntos de hechizo: {spellPoints}";
+            _lastSpellPoints = spellPoints;
+            _needsDetailsUpdate = true;
+        }
+
+        var slotCount = Math.Min(Items.Count, maxSpells);
         for (var i = 0; i < slotCount; i++)
             Items[i].Update();
 
-        // Si no hay selección, intenta seleccionar la primera con Spell asignado
         if (_selectedSlot < 0)
         {
-            var me = Globals.Me;
-            var spells = me?.Spells;
             if (spells != null)
             {
                 for (var i = 0; i < Math.Min(spells.Length, Items.Count); i++)
@@ -167,20 +210,26 @@ public partial class SpellsWindow : Window
                     if (spells[i].Id != Guid.Empty)
                     {
                         _selectedSlot = i;
+                        Items[i].SetSelected(true);
+                        _needsDetailsUpdate = true;
                         break;
                     }
                 }
             }
         }
 
-        UpdateDetails();
+        if (_needsDetailsUpdate)
+        {
+            UpdateDetails();
+            _needsDetailsUpdate = false;
+        }
     }
 
     public void Refresh()
     {
         // Re-layaout por si cambió la resolución o MaxSpells
         InitItemContainer();
-        UpdateDetails();
+        _needsDetailsUpdate = true;
     }
 
     private void UpdateDetails()

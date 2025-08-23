@@ -4,6 +4,7 @@ using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
+using Intersect.Client.Framework.Gwen.Control.Layout;
 using Intersect.Client.Framework.Gwen.DragDrop;
 using Intersect.Client.Framework.Gwen.Input;
 using Intersect.Client.Framework.Input;
@@ -23,9 +24,12 @@ public partial class SpellItem : SlotItem
     // Controls
     private readonly Label _cooldownLabel;
     private readonly SpellsWindow _spellWindow;
+    private readonly Table _layout;
     private readonly Label _nameLabel;
+    private readonly Label _levelLabel;
     private readonly Button _levelUpButton;
     private readonly Button _levelDownButton;
+    private readonly Button _removeButton;
 
     public SpellProperties SpellProperties { get; private set; } = new();
     // Context Menu Handling
@@ -39,14 +43,26 @@ public partial class SpellItem : SlotItem
         _spellWindow = spellWindow;
         TextureFilename = "spellitem.png";
 
+        SetSize(500, 60);
+
+        _layout = new Table(this, "Layout") { ColumnCount = 6, Dock = Pos.Fill };
+        _layout.SetColumnWidth(0, 64); // icon
+        _layout.SetColumnWidth(1, 220); // name
+        _layout.SetColumnWidth(2, 80); // level
+        _layout.SetColumnWidth(3, 40); // +
+        _layout.SetColumnWidth(4, 40); // -
+        _layout.SetColumnWidth(5, 40); // remove
+
+        var row = _layout.AddRow();
+
         Icon.HoverEnter += Icon_HoverEnter;
         Icon.HoverLeave += Icon_HoverLeave;
         Icon.Clicked += Icon_Clicked;
         Icon.DoubleClicked += Icon_DoubleClicked;
-        Icon.SetSize(64, 64);
-        Icon.SetPosition(0, 0);
+        Icon.SetSize(48, 48);
+        row.SetCellContents(0, Icon, enableMouseInput: true);
 
-        _cooldownLabel = new Label(this, "CooldownLabel")
+        _cooldownLabel = new Label(Icon, "CooldownLabel")
         {
             IsVisibleInParent = false,
             FontName = "sourcesansproblack",
@@ -58,45 +74,60 @@ public partial class SpellItem : SlotItem
         };
         _cooldownLabel.SetPosition(0, 4); // parte superior del ícono
 
-        _nameLabel = new Label(this,"NameLabel")
+        _nameLabel = new Label(this, "NameLabel")
         {
-            AutoSizeToContents = true,
             FontSize = 10,
             FontName = "sourcesansproblack",
             TextColor = Color.White,
-
+            Alignment = [Alignments.Left, Alignments.CenterV],
         };
-        _nameLabel.SetSize(120, 16);
-        _nameLabel.SetPosition(0, 48);
-       
+        row.SetCellContents(1, _nameLabel);
+
+        _levelLabel = new Label(this, "LevelLabel")
+        {
+            FontSize = 10,
+            FontName = "sourcesansproblack",
+            Alignment = [Alignments.Center],
+            TextColor = Color.White,
+        };
+        row.SetCellContents(2, _levelLabel);
+
         // Botón de subir nivel
         _levelUpButton = new Button(this, "ButtonMax")
         {
             Text = "+",
             FontSize = 10,
             FontName = "sourcesansproblack",
-           
-      
         };
+        _levelUpButton.SetToolTipText("Subir nivel");
         _levelUpButton.Clicked += (_, _) => RequestLevelChange(+1);
-        _levelUpButton.SetSize(20, 20);
-       
+        row.SetCellContents(3, _levelUpButton, enableMouseInput: true);
+
         // Botón de bajar nivel
-        _levelDownButton = new Button(this,"ButtonMin")
+        _levelDownButton = new Button(this, "ButtonMin")
         {
             Text = "-",
             FontSize = 10,
             FontName = "sourcesansproblack",
-           
-         
         };
-        _levelDownButton.SetSize(20, 20);
-        _levelUpButton.SetPosition(34, 66);    // al lado derecho del nombre
-        _levelDownButton.SetPosition(10, 66);  // al lado izquierdo del nombre
-
+        _levelDownButton.SetToolTipText("Bajar nivel");
         _levelDownButton.Clicked += (_, _) => RequestLevelChange(-1);
-    
-    LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+        row.SetCellContents(4, _levelDownButton, enableMouseInput: true);
+
+        // Botón para olvidar hechizo
+        _removeButton = new Button(this, "ButtonRemove")
+        {
+            Text = "X",
+            FontSize = 10,
+            FontName = "sourcesansproblack",
+        };
+        _removeButton.SetToolTipText("Quitar hechizo");
+        _removeButton.Clicked += (_, _) => Globals.Me?.TryForgetSpell(SlotIndex);
+        row.SetCellContents(5, _removeButton, enableMouseInput: true);
+
+        Clicked += (_, _) => _spellWindow.SelectSlot(SlotIndex);
+
+        LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
 
         contextMenu.ClearChildren();
         _levelUpMenuItem = contextMenu.AddItem(Strings.SpellContextMenu.LevelUp.ToString());
@@ -108,6 +139,29 @@ public partial class SpellItem : SlotItem
 
     private void RequestLevelChange(int delta)
     {
+        if (Globals.Me?.Spells is not { Length: > 0 } spellSlots)
+        {
+            return;
+        }
+
+        var slot = spellSlots[SlotIndex];
+        var level = slot.Properties?.Level ?? 1;
+
+        if (delta > 0)
+        {
+            if (Globals.Me.SpellPoints <= 0 || level >= Options.Instance.Player.MaxSpellLevel)
+            {
+                return;
+            }
+        }
+        else if (delta < 0)
+        {
+            if (level <= 1)
+            {
+                return;
+            }
+        }
+
         PacketSender.SendSpellPropertiesChange(SlotIndex, delta);
     }
 
@@ -261,9 +315,11 @@ public partial class SpellItem : SlotItem
             Icon.Texture = null;
             _cooldownLabel.Hide();
             _nameLabel.Text = Strings.Spells.EmptySlot.ToString();
+            _levelLabel.Text = string.Empty;
             SetToolTipText(Strings.Spells.EmptySlot.ToString());
             _levelUpButton.IsVisibleInParent = false;
             _levelDownButton.IsVisibleInParent = false;
+            _removeButton.IsVisibleInParent = false;
             return;
         }
 
@@ -281,14 +337,16 @@ public partial class SpellItem : SlotItem
 
         var properties = slot.Properties ?? new SpellProperties();
         slot.Properties = properties;
-        _nameLabel.Text = $"{spell.Name} Lv.{properties.Level}";
+        _nameLabel.Text = spell.Name;
+        _levelLabel.Text = $"Nivel {properties.Level}";
         SpellProperties = properties;
         SetToolTipText(spell.Name);
 
-        _levelUpButton.IsDisabled = !(Globals.Me.SpellPoints > 0 && properties.Level < Options.Instance.Player.MaxSpellLevel);
-        _levelDownButton.IsDisabled = !(properties.Level > 1);
-        _levelUpButton.IsVisibleInParent = true;
-        _levelDownButton.IsVisibleInParent = true;
+        var canLevelUp = Globals.Me.SpellPoints > 0 && properties.Level < Options.Instance.Player.MaxSpellLevel;
+        var canLevelDown = properties.Level > 1;
+        _levelUpButton.IsVisibleInParent = canLevelUp;
+        _levelDownButton.IsVisibleInParent = canLevelDown;
+        _removeButton.IsVisibleInParent = !spell.Bound;
 
         if (Path.GetFileName(Icon.Texture?.Name) != spell.Icon)
         {

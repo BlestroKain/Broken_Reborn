@@ -32,6 +32,8 @@ namespace Intersect.Editor.Forms.Editors
         {
             components = new System.ComponentModel.Container();
             var resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmSpell));
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             pnlContainer = new Panel();
             grpGeneral = new DarkGroupBox();
             cmbCastSprite = new DarkComboBox();
@@ -84,6 +86,10 @@ namespace Intersect.Editor.Forms.Editors
             nudCastRange = new DarkNumericUpDown();
             lblProjectile = new Label();
             cmbProjectile = new DarkComboBox();
+            grpUpgrades = new DarkGroupBox();
+            dgvUpgrades = new System.Windows.Forms.DataGridView();
+            upgradeKeyColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            upgradeValueColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             grpCombat = new DarkGroupBox();
             grpStats = new DarkGroupBox();
             label3 = new Label();
@@ -207,6 +213,8 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)nudHPCost).BeginInit();
             grpRequirements.SuspendLayout();
             grpTargetInfo.SuspendLayout();
+            grpUpgrades.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dgvUpgrades).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudDuration).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudHitRadius).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudCastRange).BeginInit();
@@ -258,6 +266,7 @@ namespace Intersect.Editor.Forms.Editors
             pnlContainer.Controls.Add(grpSpellCost);
             pnlContainer.Controls.Add(grpRequirements);
             pnlContainer.Controls.Add(grpTargetInfo);
+            pnlContainer.Controls.Add(grpUpgrades);
             pnlContainer.Controls.Add(grpCombat);
             pnlContainer.Controls.Add(grpEvent);
             pnlContainer.Controls.Add(grpSummon);
@@ -1002,9 +1011,62 @@ namespace Intersect.Editor.Forms.Editors
             cmbProjectile.TextPadding = new Padding(2);
             cmbProjectile.Visible = false;
             cmbProjectile.SelectedIndexChanged += cmbProjectile_SelectedIndexChanged;
-            // 
+            //
+            // grpUpgrades
+            //
+            grpUpgrades.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
+            grpUpgrades.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+            grpUpgrades.Controls.Add(dgvUpgrades);
+            grpUpgrades.ForeColor = System.Drawing.Color.Gainsboro;
+            grpUpgrades.Location = new System.Drawing.Point(334, 611);
+            grpUpgrades.Margin = new Padding(4, 3, 4, 3);
+            grpUpgrades.Name = "grpUpgrades";
+            grpUpgrades.Padding = new Padding(4, 3, 4, 3);
+            grpUpgrades.Size = new Size(262, 154);
+            grpUpgrades.TabIndex = 37;
+            grpUpgrades.TabStop = false;
+            grpUpgrades.Text = "Custom Upgrades";
+            //
+            // dgvUpgrades
+            //
+            dgvUpgrades.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            dgvUpgrades.BackgroundColor = System.Drawing.Color.FromArgb(45, 45, 48);
+            dgvUpgrades.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
+            dgvUpgrades.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
+            dataGridViewCellStyle1.ForeColor = System.Drawing.Color.Gainsboro;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            dgvUpgrades.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dgvUpgrades.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            dgvUpgrades.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] { upgradeKeyColumn, upgradeValueColumn });
+            dgvUpgrades.EnableHeadersVisualStyles = false;
+            dgvUpgrades.Location = new System.Drawing.Point(7, 22);
+            dgvUpgrades.MultiSelect = false;
+            dgvUpgrades.Name = "dgvUpgrades";
+            dgvUpgrades.RowHeadersVisible = false;
+            dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(60, 63, 65);
+            dgvUpgrades.RowsDefaultCellStyle = dataGridViewCellStyle2;
+            dgvUpgrades.Size = new Size(246, 122);
+            dgvUpgrades.TabIndex = 0;
+            dgvUpgrades.CellValidating += dgvUpgrades_CellValidating;
+            //
+            // upgradeKeyColumn
+            //
+            upgradeKeyColumn.HeaderText = "Key";
+            upgradeKeyColumn.Name = "upgradeKeyColumn";
+            upgradeKeyColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            //
+            // upgradeValueColumn
+            //
+            upgradeValueColumn.HeaderText = "Value";
+            upgradeValueColumn.Name = "upgradeValueColumn";
+            upgradeValueColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            //
             // grpCombat
-            // 
+            //
             grpCombat.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
             grpCombat.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
             grpCombat.Controls.Add(grpStats);
@@ -2536,6 +2598,9 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)picSpell).EndInit();
             grpSpellCost.ResumeLayout(false);
             grpSpellCost.PerformLayout();
+            grpUpgrades.ResumeLayout(false);
+            grpUpgrades.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)dgvUpgrades).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudCooldownDuration).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudCastDuration).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudMpCost).EndInit();
@@ -2624,6 +2689,10 @@ namespace Intersect.Editor.Forms.Editors
         private System.Windows.Forms.Label lblTargetType;
         private DarkGroupBox grpWarp;
         private DarkGroupBox grpSpellCost;
+        private DarkGroupBox grpUpgrades;
+        private System.Windows.Forms.DataGridView dgvUpgrades;
+        private System.Windows.Forms.DataGridViewTextBoxColumn upgradeKeyColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn upgradeValueColumn;
         private System.Windows.Forms.Label lblMPCost;
         private System.Windows.Forms.Label lblHPCost;
         private System.Windows.Forms.Label lblDesc;

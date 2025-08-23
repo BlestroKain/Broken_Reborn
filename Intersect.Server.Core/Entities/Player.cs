@@ -5602,9 +5602,18 @@ public partial class Player : Entity
             return false;
         }
 
-        if (SpellDescriptor.Get(spell.SpellId) == null)
+        var descriptor = SpellDescriptor.Get(spell.SpellId);
+        if (descriptor == null)
         {
             return false;
+        }
+
+        if (spell.Properties == null || spell.Properties.CustomUpgrades.Count == 0)
+        {
+            if (descriptor.Properties != null)
+            {
+                spell.Properties = new SpellProperties(descriptor.Properties);
+            }
         }
 
         for (var i = 0; i < Options.Instance.Player.MaxSpells; i++)

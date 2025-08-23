@@ -10,10 +10,23 @@ public partial class Spell
         Properties = new SpellProperties();
     }
 
-    public Spell(Guid spellId)
+    public Spell(Guid spellId, SpellProperties properties = null)
     {
         SpellId = spellId;
-        Properties = new SpellProperties();
+
+        var descriptor = SpellDescriptor.Get(spellId);
+        if (properties != null)
+        {
+            Properties = new SpellProperties(properties);
+        }
+        else if (descriptor?.Properties != null)
+        {
+            Properties = new SpellProperties(descriptor.Properties);
+        }
+        else
+        {
+            Properties = new SpellProperties();
+        }
     }
 
     public Guid SpellId { get; set; }

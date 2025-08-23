@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using Intersect.Collections.Slotting;
 using Intersect.Framework.Core.GameObjects.Spells;
+using Intersect.GameObjects;
 using Intersect.Server.Entities;
 using Newtonsoft.Json;
 
@@ -76,7 +77,16 @@ public partial class PlayerSpell : ISlot, IPlayerOwned
         }
 
         SpellId = spell.SpellId;
-        Properties = new SpellProperties(spell.Properties);
+        var descriptor = SpellDescriptor.Get(spell.SpellId);
+        var sourceProperties = spell.Properties;
+
+        if ((sourceProperties == null || sourceProperties.CustomUpgrades.Count == 0) &&
+            descriptor?.Properties != null)
+        {
+            sourceProperties = descriptor.Properties;
+        }
+
+        Properties = new SpellProperties(sourceProperties);
     }
 
     public void Set(PlayerSpell slot)

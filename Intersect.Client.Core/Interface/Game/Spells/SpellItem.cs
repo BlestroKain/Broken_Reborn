@@ -29,8 +29,9 @@ public partial class SpellItem : SlotItem
 
     public SpellProperties SpellProperties { get; private set; } = new();
     // Context Menu Handling
-    private readonly MenuItem _useSpellMenuItem;
+    private readonly MenuItem _levelUpMenuItem;
     private readonly MenuItem _forgetSpellMenuItem;
+    private bool _selected;
 
     public SpellItem(SpellsWindow spellWindow, Base parent, int index, ContextMenu contextMenu)
         : base(parent, nameof(SpellItem), index, contextMenu)
@@ -63,9 +64,9 @@ public partial class SpellItem : SlotItem
             FontSize = 10,
             FontName = "sourcesansproblack",
             TextColor = Color.White,
-             
+
         };
-        _nameLabel.SetSize(64, 16);
+        _nameLabel.SetSize(120, 16);
         _nameLabel.SetPosition(0, 48);
        
         // Botón de subir nivel
@@ -98,8 +99,8 @@ public partial class SpellItem : SlotItem
     LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
 
         contextMenu.ClearChildren();
-        _useSpellMenuItem = contextMenu.AddItem(Strings.SpellContextMenu.Cast.ToString());
-        _useSpellMenuItem.Clicked += _useSpellMenuItem_Clicked;
+        _levelUpMenuItem = contextMenu.AddItem(Strings.SpellContextMenu.LevelUp.ToString());
+        _levelUpMenuItem.Clicked += (_, _) => RequestLevelChange(+1);
         _forgetSpellMenuItem = contextMenu.AddItem(Strings.SpellContextMenu.Forget.ToString());
         _forgetSpellMenuItem.Clicked += _forgetSpellMenuItem_Clicked;
         contextMenu.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
@@ -129,11 +130,13 @@ public partial class SpellItem : SlotItem
             return;
         }
 
-        // Add our use spell option.
-        contextMenu.AddChild(_useSpellMenuItem);
-        _useSpellMenuItem.SetText(Strings.SpellContextMenu.Cast.ToString(spell.Name));
+        if (Globals.Me.SpellPoints > 0 &&
+            (spellSlots[SlotIndex].Properties?.Level ?? 1) < Options.Instance.Player.MaxSpellLevel)
+        {
+            contextMenu.AddChild(_levelUpMenuItem);
+            _levelUpMenuItem.SetText(Strings.SpellContextMenu.LevelUp.ToString(spell.Name));
+        }
 
-        // If this spell is not bound, allow users to forget it!
         if (!spell.Bound)
         {
             contextMenu.AddChild(_forgetSpellMenuItem);
@@ -141,11 +144,6 @@ public partial class SpellItem : SlotItem
         }
 
         base.OnContextMenuOpening(contextMenu);
-    }
-
-    private void _useSpellMenuItem_Clicked(Base sender, MouseButtonState arguments)
-    {
-        Globals.Me?.TryUseSpell(SlotIndex);
     }
 
     private void _forgetSpellMenuItem_Clicked(Base sender, MouseButtonState arguments)
@@ -194,6 +192,10 @@ public partial class SpellItem : SlotItem
             {
                 Globals.Me?.TryForgetSpell(SlotIndex);
             }
+        }
+        else if (arguments.MouseButton is MouseButton.Left)
+        {
+            _spellWindow.SelectSlot(SlotIndex);
         }
     }
 
@@ -252,11 +254,16 @@ public partial class SpellItem : SlotItem
             return;
         }
 
-        if (!SpellDescriptor.TryGet(spellSlots[SlotIndex].Id, out var spell))
+        var slot = spellSlots[SlotIndex];
+        if (!SpellDescriptor.TryGet(slot.Id, out var spell))
         {
             Icon.Hide();
             Icon.Texture = null;
             _cooldownLabel.Hide();
+            _nameLabel.Text = Strings.Spells.EmptySlot.ToString();
+            SetToolTipText(Strings.Spells.EmptySlot.ToString());
+            _levelUpButton.IsVisibleInParent = false;
+            _levelDownButton.IsVisibleInParent = false;
             return;
         }
 
@@ -271,14 +278,17 @@ public partial class SpellItem : SlotItem
         {
             Icon.RenderColor.A = 255;
         }
-        // Actualiza nombre y nivel si el hechizo está asignado
-        var properties = spellSlots[SlotIndex].Properties ?? new SpellProperties();
-        spellSlots[SlotIndex].Properties = properties;
+
+        var properties = slot.Properties ?? new SpellProperties();
+        slot.Properties = properties;
         _nameLabel.Text = $"{spell.Name} Lv.{properties.Level}";
         SpellProperties = properties;
+        SetToolTipText(spell.Name);
 
         _levelUpButton.IsDisabled = !(Globals.Me.SpellPoints > 0 && properties.Level < Options.Instance.Player.MaxSpellLevel);
         _levelDownButton.IsDisabled = !(properties.Level > 1);
+        _levelUpButton.IsVisibleInParent = true;
+        _levelDownButton.IsVisibleInParent = true;
 
         if (Path.GetFileName(Icon.Texture?.Name) != spell.Icon)
         {
@@ -298,5 +308,11 @@ public partial class SpellItem : SlotItem
                 }
             }
         }
+    }
+
+    public void SetSelected(bool selected)
+    {
+        _selected = selected;
+        RenderColor = selected ? new Color(70, 70, 120, 255) : Color.White;
     }
 }

@@ -91,7 +91,31 @@ public partial class SpellSlot : ISlot, IPlayerOwned
 
     public void Set(Spell spell)
     {
-        SpellId = spell.SpellId;
+        if (spell == null || spell.SpellId == Guid.Empty)
+        {
+            PlayerSpell = null;
+            PlayerSpellId = Guid.Empty;
+            _spellId = Guid.Empty;
+            Properties = new SpellProperties();
+            return;
+        }
+
+        if (PlayerSpell == null)
+        {
+            PlayerSpell = new PlayerSpell
+            {
+                SpellId = spell.SpellId,
+                Properties = new SpellProperties(spell.Properties),
+                PlayerId = PlayerId
+            };
+            PlayerSpellId = PlayerSpell.Id;
+        }
+        else
+        {
+            PlayerSpell.SpellId = spell.SpellId;
+            PlayerSpell.Properties = new SpellProperties(spell.Properties);
+        }
+
         Properties = new SpellProperties(spell.Properties);
     }
 

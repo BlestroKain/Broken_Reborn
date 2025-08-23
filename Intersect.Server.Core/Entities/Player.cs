@@ -18,6 +18,7 @@ using Intersect.Config;
 using Intersect.Framework.Core.GameObjects.Maps.Attributes;
 using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
+using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Framework.Core.GameObjects.Quests;
 using Intersect.Framework.Core.GameObjects.Variables;
 using Intersect.GameObjects;
@@ -84,6 +85,11 @@ public partial class Player : Entity
     public long Exp { get; set; }
 
     public int StatPoints { get; set; }
+
+    public int SpellPoints { get; set; } = 0;
+
+    [NotMapped]
+    public bool SpellPointsChanged { get; set; }
 
     [Column("Equipment"), JsonIgnore]
     public string EquipmentJson
@@ -1131,6 +1137,25 @@ public partial class Player : Entity
             pkt.GuildSymbolB = Guild.SymbolB;
 
         }
+
+        if (forPlayer == this)
+        {
+            pkt.SpellPoints = SpellPoints;
+            var spells = new SpellUpdatePacket[Options.Instance.Player.MaxSpells];
+            for (var i = 0; i < Options.Instance.Player.MaxSpells; i++)
+            {
+                var slot = Spells[i];
+                spells[i] = new SpellUpdatePacket(
+                    i,
+                    slot.SpellId,
+                    slot.Level,
+                    slot.Properties,
+                    slot.SpellPointsSpent
+                );
+            }
+
+            pkt.Spells = spells;
+        }
         return pkt;
     }
 
@@ -1205,6 +1230,8 @@ public partial class Player : Entity
         PacketSender.SendEntityDie(this);
         Respawn();
         PacketSender.SendInventory(this);
+        PacketSender.SendPlayerSpells(this);
+        PacketSender.SendSpellPoints(this);
     }
 
     public override void ProcessRegen()
@@ -1384,6 +1411,9 @@ public partial class Player : Entity
 
                 StartCommonEventsWithTrigger(CommonEventTrigger.LevelUp);
                 PacketSender.SendActionMsg(this, Strings.Combat.LevelUp, CustomColors.Combat.LevelUp);
+                SpellPoints++;
+                PacketSender.SendSpellPoints(this);
+                SpellPointsChanged = true;
             }
         }
         else if (amount < 0)
@@ -1759,6 +1789,7 @@ public partial class Player : Entity
     public override void TryAttack(
         Entity target,
         SpellDescriptor spellDescriptor,
+        SpellProperties? spellProperties = null,
         bool onHitTrigger = false,
         bool trapTrigger = false
     )
@@ -1768,7 +1799,7 @@ public partial class Player : Entity
             return;
         }
 
-        base.TryAttack(target, spellDescriptor, onHitTrigger, trapTrigger);
+        base.TryAttack(target, spellDescriptor, spellProperties, onHitTrigger, trapTrigger);
     }
 
     /// <summary>
@@ -5541,6 +5572,31 @@ public partial class Player : Entity
     }
 
     //Spells
+
+    public PlayerSpell? GetPlayerSpell(Guid spellId) =>
+        Spells.FirstOrDefault(s => s.SpellId == spellId);
+
+    public SpellProperties? GetSpellProperties(Guid spellId) =>
+        Spells.FirstOrDefault(s => s.SpellId == spellId)?.Properties;
+
+    public bool TryLevelUpSpell(Guid spellId)
+    {
+        var pspell = GetPlayerSpell(spellId);
+        if (pspell == null)
+            return false;
+
+        if (SpellPoints <= 0)
+            return false;
+
+        if (pspell.Properties.Level >= 5)
+            return false;
+
+        pspell.Properties.Level++;
+        SpellPoints--;
+        SpellPointsChanged = true;
+        return true;
+    }
+
     public bool TryTeachSpell(Spell spell, bool sendUpdate = true)
     {
         if (spell == null || spell.SpellId == Guid.Empty)
@@ -5553,9 +5609,18 @@ public partial class Player : Entity
             return false;
         }
 
-        if (SpellDescriptor.Get(spell.SpellId) == null)
+        var descriptor = SpellDescriptor.Get(spell.SpellId);
+        if (descriptor == null)
         {
             return false;
+        }
+
+        if (spell.Properties == null || spell.Properties.CustomUpgrades.Count == 0)
+        {
+            if (descriptor.Properties != null)
+            {
+                spell.Properties = new SpellProperties(descriptor.Properties);
+            }
         }
 
         for (var i = 0; i < Options.Instance.Player.MaxSpells; i++)
@@ -5563,6 +5628,7 @@ public partial class Player : Entity
             if (Spells[i].SpellId == Guid.Empty)
             {
                 Spells[i].Set(spell);
+                Spells[i].PlayerId = Id;
                 if (sendUpdate)
                 {
                     PacketSender.SendPlayerSpellUpdate(this, i);
@@ -5636,7 +5702,7 @@ public partial class Player : Entity
 
     public bool TryForgetSpell(Spell spell, bool sendUpdate = true)
     {
-        Spell slot = null;
+        PlayerSpell slot = null;
         var slotIndex = -1;
 
         for (var index = 0; index < Spells.Count; ++index)
@@ -5821,12 +5887,21 @@ public partial class Player : Entity
 
     public void UseSpell(int spellSlot, Entity target, bool softRetargetOnSelfCast)
     {
-        var spellDescriptorId = Spells[spellSlot].SpellId;
-        Target = target;
-        if (!SpellDescriptor.TryGet(spellDescriptorId, out var spellDescriptor))
+        var slot = Spells[spellSlot];
+        var pspell = slot;
+        if (pspell == null)
         {
             return;
         }
+
+        Target = target;
+        var spellDescriptor = SpellDescriptor.Get(pspell.SpellId);
+        if (spellDescriptor == null)
+        {
+            return;
+        }
+        var spellProperties = pspell.Properties;
+        CastSpellProperties = spellProperties;
 
         if (!CanCastSpell(spellDescriptor, target, true, softRetargetOnSelfCast, out var spellCastFailureReason))
         {
@@ -5888,7 +5963,8 @@ public partial class Player : Entity
 
         if (CastTime == 0)
         {
-            CastTime = Timing.Global.Milliseconds + spellDescriptor.CastDuration;
+            var castDuration = spellDescriptor.GetEffectiveCastDuration(spellProperties);
+            CastTime = Timing.Global.Milliseconds + castDuration;
 
             //Remove stealth status.
             foreach (var status in CachedStatuses)
@@ -5926,7 +6002,7 @@ public partial class Player : Entity
             //Tell the client we are channeling the spell
             if (IsCasting)
             {
-                PacketSender.SendEntityCastTime(this, spellDescriptorId);
+                PacketSender.SendEntityCastTime(this, pspell.SpellId);
             }
         }
         else
@@ -7702,17 +7778,20 @@ public partial class Player : Entity
             return;
         }
 
+        var properties = GetSpellProperties(spell.Id);
+        var cooldownDuration = spell.GetEffectiveCooldownDuration(properties);
+
         // Are we dealing with a cooldown group?
         if (spell.CooldownGroup.Trim().Length > 0)
         {
             // Yes, so handle it!
-            UpdateCooldownGroup(GameObjectType.Spell, spell.CooldownGroup, spell.CooldownDuration, spell.IgnoreCooldownReduction);
+            UpdateCooldownGroup(GameObjectType.Spell, spell.CooldownGroup, cooldownDuration, spell.IgnoreCooldownReduction);
         }
         else
         {
             // No, handle singular cooldown as normal.
             var cooldownReduction = 1 - (spell.IgnoreCooldownReduction ? 0 : GetEquipmentBonusEffect(ItemEffect.CooldownReduction) / 100f);
-            AssignSpellCooldown(spell.Id, Timing.Global.MillisecondsUtc + (long)(spell.CooldownDuration * cooldownReduction));
+            AssignSpellCooldown(spell.Id, Timing.Global.MillisecondsUtc + (long)(cooldownDuration * cooldownReduction));
             PacketSender.SendSpellCooldown(this, spell.Id);
         }
     }
@@ -7777,7 +7856,9 @@ public partial class Player : Entity
             // Get our highest cooldown value from all available options.
             matchedCooldowntime = Math.Max(
                 matchingItems.Length > 0 ? matchingItems.Max(i => i.Cooldown) : 0,
-                matchingSpells.Length > 0 ? matchingSpells.Max(i => i.CooldownDuration) : 0);
+                matchingSpells.Length > 0
+                    ? matchingSpells.Max(i => i.GetEffectiveCooldownDuration(GetSpellProperties(i.Id)))
+                    : 0);
         }
 
         // Set the cooldown for all items matching this cooldown group.
@@ -7803,8 +7884,10 @@ public partial class Player : Entity
         {
             foreach (var spell in matchingSpells)
             {
-                // Do we have to match our cooldown times, or do we use each individual item cooldown?
-                var tempCooldown = Options.Instance.Combat.MatchGroupCooldowns ? matchedCooldowntime : spell.CooldownDuration;
+                var spellProps = GetSpellProperties(spell.Id);
+                var tempCooldown = Options.Instance.Combat.MatchGroupCooldowns
+                    ? matchedCooldowntime
+                    : spell.GetEffectiveCooldownDuration(spellProps);
 
                 // Asign it! Assuming our cooldown isn't already going...
                 if (!SpellCooldowns.ContainsKey(spell.Id) || SpellCooldowns[spell.Id] < Timing.Global.MillisecondsUtc)

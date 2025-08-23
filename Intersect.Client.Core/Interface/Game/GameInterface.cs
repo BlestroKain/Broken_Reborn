@@ -24,6 +24,7 @@ using Intersect.Enums;
 using Intersect.GameObjects;
 using Microsoft.Extensions.Logging;
 using Intersect.Framework.Core.GameObjects.Items;
+using Intersect.Client.Interface.Game.Spells;
 
 namespace Intersect.Client.Interface.Game;
 
@@ -429,6 +430,8 @@ public partial class GameInterface : MutableInterface
     }
 
     public bool IsAdminWindowOpen => !mAdminWindow?.IsHidden ?? false;
+
+    public SpellsWindow SpellsWindow { get;  set; }
 
     public void AdminWindowSelectName(string playerName)
     {

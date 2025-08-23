@@ -1,9 +1,11 @@
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Animations;
 using Intersect.Framework.Core.GameObjects.Conditions;
 using Intersect.Framework.Core.GameObjects.Events;
 using Intersect.Framework.Core.GameObjects.Items;
+using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Models;
 using Intersect.Utilities;
 using Newtonsoft.Json;
@@ -177,4 +179,156 @@ public partial class SpellDescriptor : DatabaseObject<SpellDescriptor>, IFoldera
     }
 
     public Guid SummonNpcId { get; set; } = Guid.Empty;
+    [NotMapped]
+    public SpellProperties Properties { get; set; }
+
+    [NotMapped]
+    public Dictionary<int, SpellProperties> LevelUpgrades { get; set; } = new();
+
+    [JsonIgnore]
+    [Column("LevelUpgrades")]
+    public string LevelUpgradesJson
+    {
+        get => JsonConvert.SerializeObject(LevelUpgrades);
+        set => LevelUpgrades =
+            JsonConvert.DeserializeObject<Dictionary<int, SpellProperties>>(value ?? string.Empty) ?? new();
+    }
+
+    public SpellProperties BuildEffectiveProperties(int level, SpellProperties? runtime = null)
+    {
+        var effective = new SpellProperties { Level = level };
+
+        if (LevelUpgrades != null)
+        {
+            for (var l = 1; l <= level; l++)
+            {
+                if (!LevelUpgrades.TryGetValue(l, out var props) || props?.CustomUpgrades == null)
+                {
+                    continue;
+                }
+
+                foreach (var kv in props.CustomUpgrades)
+                {
+                    var key = kv.Key;
+                    var val = kv.Value;
+
+                    if (!SpellUpgradeKeys.IsValid(key))
+                    {
+                        continue;
+                    }
+
+                    if (IsOverride(key))
+                    {
+                        effective.CustomUpgrades[key] = val;
+                    }
+                    else
+                    {
+                        effective.CustomUpgrades[key] =
+                            effective.CustomUpgrades.TryGetValue(key, out var curr) ? curr + val : val;
+                    }
+                }
+            }
+        }
+
+        if (runtime?.CustomUpgrades != null)
+        {
+            foreach (var kv in runtime.CustomUpgrades)
+            {
+                var key = kv.Key;
+                var val = kv.Value;
+
+                if (!SpellUpgradeKeys.IsValid(key))
+                {
+                    continue;
+                }
+
+                if (IsOverride(key))
+                {
+                    effective.CustomUpgrades[key] = val;
+                }
+                else
+                {
+                    effective.CustomUpgrades[key] =
+                        effective.CustomUpgrades.TryGetValue(key, out var curr) ? curr + val : val;
+                }
+            }
+        }
+
+        return effective;
+    }
+
+    private static bool IsOverride(string key) =>
+        key.EndsWith("Set", StringComparison.OrdinalIgnoreCase) ||
+        key.StartsWith("set.", StringComparison.OrdinalIgnoreCase);
+
+    public SpellProperties GetPropertiesForLevel(int level)
+    {
+        var result = new SpellProperties { Level = level };
+        if (LevelUpgrades == null)
+        {
+            return result;
+        }
+
+        for (var i = 1; i <= level; i++)
+        {
+            if (!LevelUpgrades.TryGetValue(i, out var upgrade) || upgrade?.CustomUpgrades == null)
+            {
+                continue;
+            }
+
+            foreach (var kv in upgrade.CustomUpgrades)
+            {
+                if (result.CustomUpgrades.TryGetValue(kv.Key, out var current))
+                {
+                    result.CustomUpgrades[kv.Key] = current + kv.Value;
+                }
+                else
+                {
+                    result.CustomUpgrades[kv.Key] = kv.Value;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public int GetEffectiveCastDuration(SpellProperties props)
+    {
+        var value = CastDuration;
+        if (props?.CustomUpgrades != null &&
+            props.CustomUpgrades.TryGetValue(SpellUpgradeKeys.CastDuration, out var upgrade))
+        {
+            value += upgrade;
+        }
+
+        return value;
+    }
+
+    public int GetEffectiveCooldownDuration(SpellProperties props)
+    {
+        var value = CooldownDuration;
+        if (props?.CustomUpgrades != null &&
+            props.CustomUpgrades.TryGetValue(SpellUpgradeKeys.CooldownDuration, out var upgrade))
+        {
+            value += upgrade;
+        }
+
+        return value;
+    }
+
+    public long GetEffectiveVitalCost(Vital vital, SpellProperties props)
+    {
+        var value = _vitalCost[(int)vital];
+
+        if (props?.CustomUpgrades != null)
+        {
+            var key = SpellUpgradeKeys.VitalCost.GetKey(vital);
+            if (key != null && props.CustomUpgrades.TryGetValue(key, out var upgrade))
+            {
+                value += upgrade;
+            }
+        }
+
+        return value;
+    }
 }

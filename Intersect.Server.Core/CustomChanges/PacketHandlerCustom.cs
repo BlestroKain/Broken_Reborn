@@ -14,6 +14,8 @@ using Intersect.Server.Localization;
 using Intersect.Server.Maps;
 using Intersect.Utilities;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Collections;
 using System.Diagnostics;
 using System.Text;
 using Intersect.Core;
@@ -22,6 +24,7 @@ using Intersect.Framework.Core.GameObjects.Crafting;
 using Intersect.Framework.Core.GameObjects.Events;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Maps;
+using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.Security;
 using Intersect.Network.Packets.Server;
@@ -480,6 +483,9 @@ internal sealed partial class PacketHandler
         if (spellSlot.SpellId == Guid.Empty)
             return;
 
+        // Cargar el descriptor del hechizo
+        var spellDescriptor = SpellDescriptor.Get(spellSlot.SpellId);
+
         // ¡Olvídate de SpellDescriptor.Levelable y MaxLevel!
         var currentLevel = spellSlot.Properties.Level;
         var newLevel = currentLevel + packet.Delta;
@@ -505,6 +511,56 @@ internal sealed partial class PacketHandler
 
         spellSlot.Properties.Level = newLevel;
         player.ConsumeSpellPoints(packet.Delta);
+
+        // Fusionar upgrades definidos para este nivel
+        if (spellDescriptor != null)
+        {
+            SpellProperties levelProperties = null;
+            var rawProps = spellDescriptor.GetType().GetProperty("Properties")?.GetValue(spellDescriptor);
+
+            if (rawProps is IEnumerable<SpellProperties> propsEnumerable)
+            {
+                foreach (var props in propsEnumerable)
+                {
+                    if (props != null && props.Level == newLevel)
+                    {
+                        levelProperties = props;
+                        break;
+                    }
+                }
+            }
+            else if (rawProps is IDictionary dict && dict.Contains(newLevel))
+            {
+                if (dict[newLevel] is SpellProperties sp)
+                {
+                    levelProperties = sp;
+                }
+                else if (dict[newLevel] is IDictionary upgradesDict)
+                {
+                    spellSlot.Properties.CustomUpgrades ??= new Dictionary<string, int>();
+                    foreach (DictionaryEntry entry in upgradesDict)
+                    {
+                        if (entry.Key is string key && entry.Value is int val)
+                        {
+                            spellSlot.Properties.CustomUpgrades[key] = val;
+                        }
+                    }
+                }
+            }
+            else if (rawProps is SpellProperties singleProps && singleProps.Level == newLevel)
+            {
+                levelProperties = singleProps;
+            }
+
+            if (levelProperties != null)
+            {
+                spellSlot.Properties.CustomUpgrades ??= new Dictionary<string, int>();
+                foreach (var kv in levelProperties.CustomUpgrades)
+                {
+                    spellSlot.Properties.CustomUpgrades[kv.Key] = kv.Value;
+                }
+            }
+        }
 
         using (var context = DbInterface.CreatePlayerContext(readOnly: false))
         {

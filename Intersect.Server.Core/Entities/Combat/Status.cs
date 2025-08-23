@@ -108,7 +108,7 @@ public partial class Status
             {
                 var properties = (attacker as Player)?.GetSpellProperties(spell.Id);
                 var level = properties?.Level ?? 0;
-                long vitalDiff = Math.Abs(SpellMath.Scale(spell.Combat.VitalDiff[(int)vital], level));
+                long vitalDiff = Math.Abs(SpellMath.Scale(spell.Combat.GetEffectiveVitalDiff(vital, properties), level));
 
                 // If the user did not configure for this vital to have a mana shield, ignore it
                 if (vitalDiff == 0 && vital == Vital.Mana)
@@ -117,7 +117,8 @@ public partial class Status
                 }
 
                 var shieldAmount = Formulas.CalculateDamage(
-                    vitalDiff, (DamageType)spell.Combat.DamageType, (Enums.Stat)spell.Combat.ScalingStat, spell.Combat.Scaling, 1.0, attacker, en, level
+                    vitalDiff, (DamageType)spell.Combat.DamageType, (Enums.Stat)spell.Combat.ScalingStat,
+                    spell.Combat.GetEffectiveScaling(properties), 1.0, attacker, en, level
                 );
 
                 Shield[(int)vital] = Math.Abs(shieldAmount);

@@ -4,6 +4,7 @@ using Intersect.Enums;
 using Intersect.Framework.Core;
 using Intersect.GameObjects;
 using Intersect.Utilities;
+using Intersect.Server.General;
 using Microsoft.Extensions.Logging;
 
 namespace Intersect.Server.Entities.Combat;
@@ -147,14 +148,16 @@ public partial class DamageOverTimeEffect
             aliveAnimations.Add(animation);
         }
 
-        var damageHealth = SpellDescriptor.Combat.VitalDiff[(int)Vital.Health];
-        var damageMana = SpellDescriptor.Combat.VitalDiff[(int)Vital.Mana];
+        var properties = (Attacker as Player)?.GetSpellProperties(SpellDescriptor.Id);
+        var level = properties?.Level ?? 0;
+        var damageHealth = SpellMath.Scale(SpellDescriptor.Combat.VitalDiff[(int)Vital.Health], level);
+        var damageMana = SpellMath.Scale(SpellDescriptor.Combat.VitalDiff[(int)Vital.Mana], level);
 
         Attacker?.Attack(
             Target, damageHealth, damageMana,
             (DamageType)SpellDescriptor.Combat.DamageType, (Enums.Stat)SpellDescriptor.Combat.ScalingStat,
             SpellDescriptor.Combat.Scaling, SpellDescriptor.Combat.CritChance, SpellDescriptor.Combat.CritMultiplier, deadAnimations,
-            aliveAnimations, false
+            aliveAnimations, false, level
         );
 
         mInterval = Timing.Global.Milliseconds + SpellDescriptor.Combat.HotDotInterval;

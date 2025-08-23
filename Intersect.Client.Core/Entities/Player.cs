@@ -145,6 +145,8 @@ public partial class Player : Entity, IPlayer
 
     public int StatPoints { get; set; } = 0;
 
+    public int SpellPoints { get; set; } = 0;
+
     public EntityBox? TargetBox { get; set; }
 
     public PlayerStatusWindow? StatusWindow { get; set; }

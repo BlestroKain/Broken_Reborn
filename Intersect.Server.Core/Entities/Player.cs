@@ -18,6 +18,7 @@ using Intersect.Config;
 using Intersect.Framework.Core.GameObjects.Maps.Attributes;
 using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
+using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Framework.Core.GameObjects.Quests;
 using Intersect.Framework.Core.GameObjects.Variables;
 using Intersect.GameObjects;
@@ -84,6 +85,11 @@ public partial class Player : Entity
     public long Exp { get; set; }
 
     public int StatPoints { get; set; }
+
+    public int SpellPoints { get; set; } = 0;
+
+    [NotMapped]
+    public bool SpellPointsChanged { get; set; }
 
     [Column("Equipment"), JsonIgnore]
     public string EquipmentJson
@@ -1205,6 +1211,8 @@ public partial class Player : Entity
         PacketSender.SendEntityDie(this);
         Respawn();
         PacketSender.SendInventory(this);
+        PacketSender.SendPlayerSpells(this);
+        PacketSender.SendSpellPoints(this);
     }
 
     public override void ProcessRegen()
@@ -1384,6 +1392,9 @@ public partial class Player : Entity
 
                 StartCommonEventsWithTrigger(CommonEventTrigger.LevelUp);
                 PacketSender.SendActionMsg(this, Strings.Combat.LevelUp, CustomColors.Combat.LevelUp);
+                SpellPoints++;
+                PacketSender.SendSpellPoints(this);
+                SpellPointsChanged = true;
             }
         }
         else if (amount < 0)
@@ -5541,6 +5552,31 @@ public partial class Player : Entity
     }
 
     //Spells
+
+    public PlayerSpell? GetPlayerSpell(Guid spellId) =>
+        Spells.Select(s => s.PlayerSpell).FirstOrDefault(ps => ps != null && ps.SpellId == spellId);
+
+    public SpellProperties? GetSpellProperties(Guid spellId) =>
+        Spells.FirstOrDefault(s => s.SpellId == spellId)?.Properties;
+
+    public bool TryLevelUpSpell(Guid spellId)
+    {
+        var pspell = GetPlayerSpell(spellId);
+        if (pspell == null)
+            return false;
+
+        if (SpellPoints <= 0)
+            return false;
+
+        if (pspell.Properties.Level >= 5)
+            return false;
+
+        pspell.Properties.Level++;
+        SpellPoints--;
+        SpellPointsChanged = true;
+        return true;
+    }
+
     public bool TryTeachSpell(Spell spell, bool sendUpdate = true)
     {
         if (spell == null || spell.SpellId == Guid.Empty)
@@ -5636,7 +5672,7 @@ public partial class Player : Entity
 
     public bool TryForgetSpell(Spell spell, bool sendUpdate = true)
     {
-        Spell slot = null;
+        SpellSlot slot = null;
         var slotIndex = -1;
 
         for (var index = 0; index < Spells.Count; ++index)
@@ -5821,12 +5857,22 @@ public partial class Player : Entity
 
     public void UseSpell(int spellSlot, Entity target, bool softRetargetOnSelfCast)
     {
-        var spellDescriptorId = Spells[spellSlot].SpellId;
-        Target = target;
-        if (!SpellDescriptor.TryGet(spellDescriptorId, out var spellDescriptor))
+        var slot = Spells[spellSlot];
+        var pspell = slot.PlayerSpell;
+        if (pspell == null)
         {
             return;
         }
+
+        Target = target;
+        var spellDescriptor = SpellDescriptor.Get(pspell.SpellId);
+        if (spellDescriptor == null)
+        {
+            return;
+        }
+        var spellProperties = pspell.Properties;
+        var spellLevel = spellProperties.Level;
+        _ = spellProperties;
 
         if (!CanCastSpell(spellDescriptor, target, true, softRetargetOnSelfCast, out var spellCastFailureReason))
         {
@@ -5926,7 +5972,7 @@ public partial class Player : Entity
             //Tell the client we are channeling the spell
             if (IsCasting)
             {
-                PacketSender.SendEntityCastTime(this, spellDescriptorId);
+                PacketSender.SendEntityCastTime(this, pspell.SpellId);
             }
         }
         else

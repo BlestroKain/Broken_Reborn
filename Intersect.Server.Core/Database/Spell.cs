@@ -1,19 +1,19 @@
-using System.ComponentModel.DataAnnotations.Schema;
+using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.GameObjects;
-
-namespace Intersect.Server.Database;
-
+using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations.Schema;
 
 public partial class Spell
 {
-
     public Spell()
     {
+        Properties = new SpellProperties();
     }
 
     public Spell(Guid spellId)
     {
         SpellId = spellId;
+        Properties = new SpellProperties();
     }
 
     public Guid SpellId { get; set; }
@@ -21,21 +21,34 @@ public partial class Spell
     [NotMapped]
     public string SpellName => SpellDescriptor.GetName(SpellId);
 
+    [NotMapped]
+    public SpellDescriptor Descriptor => SpellDescriptor.Get(SpellId);
+
+    [NotMapped]
+    public SpellProperties Properties { get; set; } = new();
+
+    [Column(nameof(Properties))]
+    [JsonIgnore]
+    public string SpellPropertiesJson
+    {
+        get => JsonConvert.SerializeObject(Properties);
+        set => Properties = JsonConvert.DeserializeObject<SpellProperties>(value ?? string.Empty) ?? new();
+    }
+
     public static Spell None => new Spell(Guid.Empty);
 
     public Spell Clone()
     {
-        var newSpell = new Spell()
+        return new Spell
         {
-            SpellId = SpellId
+            SpellId = this.SpellId,
+            Properties = new SpellProperties(this.Properties)
         };
-
-        return newSpell;
     }
 
     public virtual void Set(Spell spell)
     {
         SpellId = spell.SpellId;
+        Properties = new SpellProperties(spell.Properties);
     }
-
 }

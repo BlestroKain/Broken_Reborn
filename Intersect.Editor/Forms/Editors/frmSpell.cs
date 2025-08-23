@@ -11,8 +11,10 @@ using Intersect.Framework.Core.GameObjects.Events;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Maps.MapList;
 using Intersect.Framework.Core.GameObjects.NPCs;
+using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.GameObjects;
 using Intersect.Utilities;
+using System.Windows.Forms;
 using Graphics = System.Drawing.Graphics;
 
 namespace Intersect.Editor.Forms.Editors;
@@ -49,6 +51,7 @@ public partial class FrmSpell : EditorForm
     }
     private void AssignEditorItem(Guid id)
     {
+        SaveUpgradesFromGrid();
         mEditorItem = SpellDescriptor.Get(id);
         UpdateEditor();
     }
@@ -81,6 +84,7 @@ public partial class FrmSpell : EditorForm
 
     private void btnSave_Click(object sender, EventArgs e)
     {
+        SaveUpgradesFromGrid();
         //Send Changed items
         foreach (var item in mChanged)
         {
@@ -322,6 +326,13 @@ public partial class FrmSpell : EditorForm
 
             txtCannotCast.Text = mEditorItem.CannotCastMessage;
 
+            mEditorItem.Properties ??= new SpellProperties();
+            dgvUpgrades.Rows.Clear();
+            foreach (var kv in mEditorItem.Properties.CustomUpgrades)
+            {
+                dgvUpgrades.Rows.Add(kv.Key, kv.Value);
+            }
+
             UpdateSpellTypePanels();
             if (mChanged.IndexOf(mEditorItem) == -1)
             {
@@ -337,6 +348,40 @@ public partial class FrmSpell : EditorForm
         var hasItem = mEditorItem != null;
         UpdateEditorButtons(hasItem);
         UpdateToolStripItems();
+    }
+
+    private void SaveUpgradesFromGrid()
+    {
+        if (mEditorItem == null)
+        {
+            return;
+        }
+
+        mEditorItem.Properties ??= new SpellProperties();
+
+        dgvUpgrades.EndEdit();
+        mEditorItem.Properties.CustomUpgrades.Clear();
+
+        foreach (DataGridViewRow row in dgvUpgrades.Rows)
+        {
+            if (row.IsNewRow)
+            {
+                continue;
+            }
+
+            var key = row.Cells[0].Value?.ToString();
+            var valueObj = row.Cells[1].Value;
+
+            if (string.IsNullOrWhiteSpace(key) || !SpellUpgradeKeys.IsValid(key))
+            {
+                continue;
+            }
+
+            if (int.TryParse(valueObj?.ToString(), out var value))
+            {
+                mEditorItem.Properties.CustomUpgrades[key] = value;
+            }
+        }
     }
 
     private void UpdateSpellTypePanels()
@@ -1002,6 +1047,19 @@ public partial class FrmSpell : EditorForm
     private void txtCannotCast_TextChanged(object sender, EventArgs e)
     {
         mEditorItem.CannotCastMessage = txtCannotCast.Text;
+    }
+
+    private void dgvUpgrades_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
+    {
+        if (e.ColumnIndex == 0)
+        {
+            var key = e.FormattedValue?.ToString()?.Trim();
+            if (!string.IsNullOrEmpty(key) && !SpellUpgradeKeys.IsValid(key))
+            {
+                DarkMessageBox.ShowError("Invalid upgrade key.", "Error");
+                e.Cancel = true;
+            }
+        }
     }
 
     #region "Item List - Folders, Searching, Sorting, Etc"

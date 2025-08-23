@@ -8,6 +8,7 @@ using Intersect.Client.Localization;
 using Intersect.Client.Utilities;
 using Intersect.GameObjects;
 using Intersect.Utilities;
+using System.Collections;
 using System.Text;
 
 namespace Intersect.Client.Interface.Game.Spells;
@@ -25,6 +26,7 @@ public partial class SpellsWindow : Window
     private readonly ImagePanel _iconPanel;
     private readonly Label _nameLabel;
     private readonly Label _levelLabel;
+    private readonly ScrollControl _descScroll;
     private readonly Label _descLabel;
 
     private int _selectedSlot = -1;
@@ -53,6 +55,7 @@ public partial class SpellsWindow : Window
         };
         _slotContainer.SetSize(240, 340);
         _slotContainer.SetPosition(6, 6);
+        _slotContainer.EnableScroll(false, true);
 
         // PANEL DETALLE DERECHA
         _detailPanel = new ImagePanel(this, "DetailPanel")
@@ -71,6 +74,7 @@ public partial class SpellsWindow : Window
         {
             FontName = "sourcesansproblack",
             FontSize = 14,
+            TextColor = Color.White,
         };
         _nameLabel.SetSize(200, 20);
         _nameLabel.SetPosition(64, 8);
@@ -79,18 +83,26 @@ public partial class SpellsWindow : Window
         {
             FontName = "sourcesansproblack",
             FontSize = 10,
+            TextColor = Color.Yellow,
         };
         _levelLabel.SetSize(200, 16);
         _levelLabel.SetPosition(64, 30);
 
-        _descLabel = new Label(_detailPanel, "SpellDesc")
+        _descScroll = new ScrollControl(_detailPanel, "SpellDescScroll")
+        {
+            OverflowY = OverflowBehavior.Scroll,
+            OverflowX = OverflowBehavior.Hidden,
+        };
+        _descScroll.EnableScroll(false, true);
+        _descScroll.SetBounds(8, 70, 270, 200);
+
+        _descLabel = new Label(_descScroll, "SpellDesc")
         {
             FontName = "sourcesansproblack",
             FontSize = 10,
             AutoSizeToContents = true,
         };
-        _descLabel.SetSize(270, 200); // Altura flexible si tienes auto scroll más adelante
-        _descLabel.SetPosition(8, 70);
+        _descLabel.SetPosition(0, 0);
 
         // CONTEXT MENU
         _contextMenu = new ContextMenu(gameCanvas, "SpellContextMenu")
@@ -273,15 +285,66 @@ public partial class SpellsWindow : Window
         // Descripción/estadísticas básicas
         var sb = new StringBuilder();
         if (!string.IsNullOrWhiteSpace(desc.Description))
+        {
             sb.AppendLine(desc.Description);
+        }
 
-        // Ejemplo rápido de tiempos (si tienes SpellMath/Efectivo, úsalo aquí)
         if (desc.CooldownDuration > 0)
+        {
             sb.AppendLine($"{Strings.SpellDescription.Cooldown} {TimeSpan.FromMilliseconds(desc.CooldownDuration).WithSuffix()}");
+        }
+
         if (desc.CastDuration > 0)
+        {
             sb.AppendLine($"{Strings.SpellDescription.CastTime} {TimeSpan.FromMilliseconds(desc.CastDuration).WithSuffix()}");
+        }
+
+        // Detalles por nivel si existen
+        var progressionProp = desc.GetType().GetProperty("Progression");
+        if (progressionProp?.GetValue(desc) is IList progression &&
+            level >= 0 && progression.Count > level && progression[level] != null)
+        {
+            var progressData = progression[level];
+            var descProp = progressData.GetType().GetProperty("Description");
+            var levelDesc = descProp?.GetValue(progressData) as string;
+            if (!string.IsNullOrWhiteSpace(levelDesc))
+            {
+                if (sb.Length > 0)
+                {
+                    sb.AppendLine();
+                }
+
+                sb.AppendLine($"Nivel {level + 1}:");
+                sb.AppendLine(levelDesc);
+            }
+        }
+
+        if (level < Options.Instance.Player.MaxSpellLevel)
+        {
+            sb.AppendLine();
+            sb.AppendLine($"Costo para subir al nivel {level + 1}: {level} punto(s) de hechizo");
+        }
 
         _descLabel.Text = sb.ToString().Trim();
+        _descLabel.Width = _descScroll.Width - _descScroll.VerticalScrollBar.Width;
+        _descLabel.SizeToContents();
+        _descScroll.SetInnerSize(_descScroll.Width, _descLabel.Height);
+
+        // Tooltip para próxima progresión
+        var tooltip = string.Empty;
+        if (progressionProp?.GetValue(desc) is IList progressionList &&
+            progressionList.Count > level + 1 && progressionList[level + 1] != null)
+        {
+            var nextData = progressionList[level + 1];
+            var descNextProp = nextData.GetType().GetProperty("Description");
+            var nextDesc = descNextProp?.GetValue(nextData) as string;
+            if (!string.IsNullOrWhiteSpace(nextDesc))
+            {
+                tooltip = $"Nivel {level + 2}: {nextDesc}";
+            }
+        }
+
+        _levelLabel.SetToolTipText(tooltip);
     }
 
     public override void Hide()

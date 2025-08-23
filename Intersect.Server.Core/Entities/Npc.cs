@@ -128,7 +128,7 @@ public partial class Npc : Entity
         var spellSlot = 0;
         for (var I = 0; I < Descriptor.Spells.Count; I++)
         {
-            var slot = new SpellSlot(spellSlot);
+            var slot = new PlayerSpell(spellSlot);
             slot.Set(new Spell(Descriptor.Spells[I]));
             Spells.Add(slot);
             spellSlot++;

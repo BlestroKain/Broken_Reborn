@@ -68,4 +68,10 @@ public partial class PlayerEntityPacket : EntityPacket
 
     [Key(40)]
     public byte GuildBackgroundB { get; set; }
+
+    [Key(41)]
+    public SpellUpdatePacket[] Spells { get; set; }
+
+    [Key(42)]
+    public int SpellPoints { get; set; }
 }

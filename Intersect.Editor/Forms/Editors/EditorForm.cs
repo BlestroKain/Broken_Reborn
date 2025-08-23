@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using DarkUI.Controls;
 using Intersect.Editor.Core;
 using Intersect.Editor.Networking;
@@ -18,8 +19,12 @@ public partial class EditorForm : Form
 
     protected EditorForm()
     {
-        Icon = Program.Icon;
+        if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
+        {
+            return;    // Evita ejecutar código que depende del runtime
+        }
 
+        Icon = Program.Icon;
         ApplyHooks();
     }
 

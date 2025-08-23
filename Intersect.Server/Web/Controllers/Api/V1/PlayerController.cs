@@ -506,7 +506,7 @@ namespace Intersect.Server.Web.Controllers.Api.V1
         [HttpGet("{lookupKey:LookupKey}/spells")]
         [ProducesResponseType(typeof(StatusMessageResponseBody), (int)HttpStatusCode.BadRequest, ContentTypes.Json)]
         [ProducesResponseType(typeof(StatusMessageResponseBody), (int)HttpStatusCode.NotFound, ContentTypes.Json)]
-        [ProducesResponseType(typeof(IEnumerable<SpellSlot>), (int)HttpStatusCode.OK, ContentTypes.Json)]
+        [ProducesResponseType(typeof(IEnumerable<PlayerSpell>), (int)HttpStatusCode.OK, ContentTypes.Json)]
         public IActionResult SpellsList(LookupKey lookupKey)
         {
             if (lookupKey.IsInvalid)

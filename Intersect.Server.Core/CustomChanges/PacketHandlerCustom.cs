@@ -13,6 +13,7 @@ using Intersect.Server.General;
 using Intersect.Server.Localization;
 using Intersect.Server.Maps;
 using Intersect.Utilities;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections;
@@ -488,29 +489,40 @@ internal sealed partial class PacketHandler
 
         // ¡Olvídate de SpellDescriptor.Levelable y MaxLevel!
         var currentLevel = spellSlot.Properties.Level;
-        var newLevel = currentLevel + packet.Delta;
+        var delta = packet.Delta;
 
-        var maxLevel = Options.Instance.Player.MaxSpellLevel;
-        if (newLevel < 1 || newLevel > maxLevel)
-            return;
-
-        if (packet.Delta > 0)
+        if (delta > 0)
         {
-            if (player.SpellPoints < packet.Delta)
+            if (player.SpellPoints < delta)
             {
                 return;
             }
         }
-        else if (packet.Delta < 0)
+        else if (delta < 0)
         {
             if (currentLevel <= 1)
             {
                 return;
             }
+
+            var refundable = Math.Min(-delta, spellSlot.SpellPointsSpent);
+            refundable = Math.Min(refundable, currentLevel - 1);
+            if (refundable <= 0)
+            {
+                return;
+            }
+
+            delta = -refundable;
         }
 
+        var newLevel = currentLevel + delta;
+        var maxLevel = Options.Instance.Player.MaxSpellLevel;
+        if (newLevel < 1 || newLevel > maxLevel)
+            return;
+
         spellSlot.Properties.Level = newLevel;
-        player.ConsumeSpellPoints(packet.Delta);
+        spellSlot.SpellPointsSpent += delta;
+        player.ConsumeSpellPoints(delta);
 
         // Fusionar upgrades definidos para este nivel
         if (spellDescriptor != null)

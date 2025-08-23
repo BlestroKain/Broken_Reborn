@@ -4,6 +4,7 @@ using Intersect.Enums;
 using Intersect.Framework.Core;
 using Intersect.GameObjects;
 using Intersect.Utilities;
+using Intersect.Server.General;
 using Microsoft.Extensions.Logging;
 
 namespace Intersect.Server.Entities.Combat;
@@ -87,9 +88,13 @@ public partial class DamageOverTimeEffect
         }
         
 
-        mInterval = Timing.Global.Milliseconds + SpellDescriptor.Combat.HotDotInterval;
+        var properties = SpellMath.Scale(spellDescriptor, (attacker as Player)?.GetSpellProperties(spellDescriptor.Id));
+        var interval = spellDescriptor.Combat.GetEffectiveHotDotInterval(properties);
+        var duration = spellDescriptor.Combat.GetEffectiveDuration(properties);
+
+        mInterval = Timing.Global.Milliseconds + interval;
         // Subtract 1 since the first tick always occurs when the spell is cast.
-        Count = (SpellDescriptor.Combat.Duration + SpellDescriptor.Combat.HotDotInterval - 1) / SpellDescriptor.Combat.HotDotInterval;
+        Count = (duration + interval - 1) / interval;
     }
 
     public Entity Target { get; }
@@ -147,17 +152,23 @@ public partial class DamageOverTimeEffect
             aliveAnimations.Add(animation);
         }
 
-        var damageHealth = SpellDescriptor.Combat.VitalDiff[(int)Vital.Health];
-        var damageMana = SpellDescriptor.Combat.VitalDiff[(int)Vital.Mana];
+        var properties = SpellMath.Scale(SpellDescriptor, (Attacker as Player)?.GetSpellProperties(SpellDescriptor.Id));
+        var level = properties.Level;
+        var damageHealth = SpellDescriptor.Combat.GetEffectiveVitalDiff(Vital.Health, properties);
+        var damageMana = SpellDescriptor.Combat.GetEffectiveVitalDiff(Vital.Mana, properties);
 
         Attacker?.Attack(
             Target, damageHealth, damageMana,
             (DamageType)SpellDescriptor.Combat.DamageType, (Enums.Stat)SpellDescriptor.Combat.ScalingStat,
-            SpellDescriptor.Combat.Scaling, SpellDescriptor.Combat.CritChance, SpellDescriptor.Combat.CritMultiplier, deadAnimations,
-            aliveAnimations, false
+            SpellDescriptor.Combat.GetEffectiveScaling(properties),
+            SpellDescriptor.Combat.GetEffectiveCritChance(properties),
+            SpellDescriptor.Combat.GetEffectiveCritMultiplier(properties),
+            deadAnimations,
+            aliveAnimations, false, level
         );
 
-        mInterval = Timing.Global.Milliseconds + SpellDescriptor.Combat.HotDotInterval;
+        var interval = SpellDescriptor.Combat.GetEffectiveHotDotInterval(properties);
+        mInterval = Timing.Global.Milliseconds + interval;
         Count--;
     }
 

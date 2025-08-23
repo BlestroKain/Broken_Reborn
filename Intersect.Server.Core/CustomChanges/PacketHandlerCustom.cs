@@ -13,7 +13,10 @@ using Intersect.Server.General;
 using Intersect.Server.Localization;
 using Intersect.Server.Maps;
 using Intersect.Utilities;
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Collections;
 using System.Diagnostics;
 using System.Text;
 using Intersect.Core;
@@ -22,6 +25,7 @@ using Intersect.Framework.Core.GameObjects.Crafting;
 using Intersect.Framework.Core.GameObjects.Events;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Maps;
+using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.Security;
 using Intersect.Network.Packets.Server;
@@ -467,6 +471,118 @@ internal sealed partial class PacketHandler
         PacketSender.SendOpenMailBox(player);
     }
 
+    public void HandlePacket(Client client, SpellPropertiesChangePacket packet)
+    {
+        var player = client?.Entity;
+        if (player == null)
+            return;
+
+        if (packet.SpellSlot < 0 || packet.SpellSlot >= player.Spells.Count)
+            return;
+
+        var spellSlot = player.Spells[packet.SpellSlot];
+        if (spellSlot.SpellId == Guid.Empty)
+            return;
+
+        // Cargar el descriptor del hechizo
+        var spellDescriptor = SpellDescriptor.Get(spellSlot.SpellId);
+
+        // ¡Olvídate de SpellDescriptor.Levelable y MaxLevel!
+        var currentLevel = spellSlot.Properties.Level;
+        var delta = packet.Delta;
+
+        if (delta > 0)
+        {
+            if (player.SpellPoints < delta)
+            {
+                return;
+            }
+        }
+        else if (delta < 0)
+        {
+            if (currentLevel <= 1)
+            {
+                return;
+            }
+
+            var refundable = Math.Min(-delta, spellSlot.SpellPointsSpent);
+            refundable = Math.Min(refundable, currentLevel - 1);
+            if (refundable <= 0)
+            {
+                return;
+            }
+
+            delta = -refundable;
+        }
+
+        var newLevel = currentLevel + delta;
+        var maxLevel = Options.Instance.Player.MaxSpellLevel;
+        if (newLevel < 1 || newLevel > maxLevel)
+            return;
+
+        spellSlot.Properties.Level = newLevel;
+        spellSlot.SpellPointsSpent += delta;
+        player.ConsumeSpellPoints(delta);
+
+        // Fusionar upgrades definidos para este nivel
+        if (spellDescriptor != null)
+        {
+            SpellProperties levelProperties = null;
+            var rawProps = spellDescriptor.GetType().GetProperty("Properties")?.GetValue(spellDescriptor);
+
+            if (rawProps is IEnumerable<SpellProperties> propsEnumerable)
+            {
+                foreach (var props in propsEnumerable)
+                {
+                    if (props != null && props.Level == newLevel)
+                    {
+                        levelProperties = props;
+                        break;
+                    }
+                }
+            }
+            else if (rawProps is IDictionary dict && dict.Contains(newLevel))
+            {
+                if (dict[newLevel] is SpellProperties sp)
+                {
+                    levelProperties = sp;
+                }
+                else if (dict[newLevel] is IDictionary upgradesDict)
+                {
+                    spellSlot.Properties.CustomUpgrades ??= new Dictionary<string, int>();
+                    foreach (DictionaryEntry entry in upgradesDict)
+                    {
+                        if (entry.Key is string key && entry.Value is int val)
+                        {
+                            spellSlot.Properties.CustomUpgrades[key] = val;
+                        }
+                    }
+                }
+            }
+            else if (rawProps is SpellProperties singleProps && singleProps.Level == newLevel)
+            {
+                levelProperties = singleProps;
+            }
+
+            if (levelProperties != null)
+            {
+                spellSlot.Properties.CustomUpgrades ??= new Dictionary<string, int>();
+                foreach (var kv in levelProperties.CustomUpgrades)
+                {
+                    spellSlot.Properties.CustomUpgrades[kv.Key] = kv.Value;
+                }
+            }
+        }
+
+        using (var context = DbInterface.CreatePlayerContext(readOnly: false))
+        {
+            context.Update(spellSlot);
+            context.SaveChanges();
+        }
+
+        PacketSender.SendPlayerSpells(player);
+        PacketSender.SendSpellPoints(player);
+    }
 
 
 }

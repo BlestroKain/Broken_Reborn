@@ -5672,7 +5672,7 @@ public partial class Player : Entity
 
     public bool TryForgetSpell(Spell spell, bool sendUpdate = true)
     {
-        Spell slot = null;
+        SpellSlot slot = null;
         var slotIndex = -1;
 
         for (var index = 0; index < Spells.Count; ++index)

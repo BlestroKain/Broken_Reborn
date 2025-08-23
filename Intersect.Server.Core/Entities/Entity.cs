@@ -163,9 +163,9 @@ public abstract partial class Entity : IEntity
 
     //Spells
     [JsonIgnore]
-    public virtual SlotList<SpellSlot> Spells { get; set; } = new(
+    public virtual SlotList<PlayerSpell> Spells { get; set; } = new(
         Options.Instance.Player.MaxSpells,
-        SpellSlot.Create
+        PlayerSpell.Create
     );
 
     [JsonIgnore, Column(nameof(NameColor))]

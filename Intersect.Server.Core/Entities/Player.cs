@@ -5567,7 +5567,7 @@ public partial class Player : Entity
     //Spells
 
     public PlayerSpell? GetPlayerSpell(Guid spellId) =>
-        Spells.Select(s => s.PlayerSpell).FirstOrDefault(ps => ps != null && ps.SpellId == spellId);
+        Spells.FirstOrDefault(s => s.SpellId == spellId);
 
     public SpellProperties? GetSpellProperties(Guid spellId) =>
         Spells.FirstOrDefault(s => s.SpellId == spellId)?.Properties;
@@ -5612,10 +5612,7 @@ public partial class Player : Entity
             if (Spells[i].SpellId == Guid.Empty)
             {
                 Spells[i].Set(spell);
-                if (Spells[i].PlayerSpell != null)
-                {
-                    Spells[i].PlayerSpell.PlayerId = Id;
-                }
+                Spells[i].PlayerId = Id;
                 if (sendUpdate)
                 {
                     PacketSender.SendPlayerSpellUpdate(this, i);
@@ -5689,7 +5686,7 @@ public partial class Player : Entity
 
     public bool TryForgetSpell(Spell spell, bool sendUpdate = true)
     {
-        SpellSlot slot = null;
+        PlayerSpell slot = null;
         var slotIndex = -1;
 
         for (var index = 0; index < Spells.Count; ++index)
@@ -5875,7 +5872,7 @@ public partial class Player : Entity
     public void UseSpell(int spellSlot, Entity target, bool softRetargetOnSelfCast)
     {
         var slot = Spells[spellSlot];
-        var pspell = slot.PlayerSpell;
+        var pspell = slot;
         if (pspell == null)
         {
             return;

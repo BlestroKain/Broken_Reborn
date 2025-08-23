@@ -477,7 +477,7 @@ internal sealed partial class PacketHandler
             return;
 
         var spellSlot = player.Spells[packet.SpellSlot];
-        if (spellSlot.PlayerSpellId == Guid.Empty)
+        if (spellSlot.SpellId == Guid.Empty)
             return;
 
         // ¡Olvídate de SpellDescriptor.Levelable y MaxLevel!

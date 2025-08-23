@@ -5612,6 +5612,10 @@ public partial class Player : Entity
             if (Spells[i].SpellId == Guid.Empty)
             {
                 Spells[i].Set(spell);
+                if (Spells[i].PlayerSpell != null)
+                {
+                    Spells[i].PlayerSpell.PlayerId = Id;
+                }
                 if (sendUpdate)
                 {
                     PacketSender.SendPlayerSpellUpdate(this, i);

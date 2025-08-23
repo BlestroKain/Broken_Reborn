@@ -137,6 +137,12 @@ namespace Intersect.Client.Interface.Game.Spells
 
         private void InitItemContainer()
         {
+            // Track padding and slot sizes so we can calculate the inner height for scrolling later.
+            var xPadding = 0;
+            var yPadding = 0;
+            var slotWidth = 0;
+            var slotHeight = 0;
+
             for (var i = 0; i < Options.MaxPlayerSkills; i++)
             {
                 Items.Add(new SpellItem(this, i));
@@ -145,20 +151,32 @@ namespace Intersect.Client.Interface.Game.Spells
 
                 Items[i].Container.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
 
-                var xPadding = Items[i].Container.Margin.Left + Items[i].Container.Margin.Right;
-                var yPadding = Items[i].Container.Margin.Top + Items[i].Container.Margin.Bottom;
+                xPadding = Items[i].Container.Margin.Left + Items[i].Container.Margin.Right;
+                yPadding = Items[i].Container.Margin.Top + Items[i].Container.Margin.Bottom;
+                slotWidth = Items[i].Container.Width + xPadding;
+                slotHeight = Items[i].Container.Height + yPadding;
+
                 Items[i]
                     .Container.SetPosition(
                         i %
-                        (mItemContainer.Width / (Items[i].Container.Width + xPadding)) *
-                        (Items[i].Container.Width + xPadding) +
+                        (mItemContainer.Width / slotWidth) *
+                        slotWidth +
                         xPadding,
                         i /
-                        (mItemContainer.Width / (Items[i].Container.Width + xPadding)) *
-                        (Items[i].Container.Height + yPadding) +
+                        (mItemContainer.Width / slotWidth) *
+                        slotHeight +
                         yPadding
                     );
             }
+
+            // Calculate the inner height of the scroll container so all slots are accessible.
+            var perRow = Math.Max(1, mItemContainer.Width / Math.Max(1, slotWidth));
+            var rows = (int)Math.Ceiling(Items.Count / (float)perRow);
+            var innerH = 4 + rows * Math.Max(1, slotHeight);
+            mItemContainer.SetInnerSize(mItemContainer.Width, innerH);
+
+            // Ensure the vertical scrollbar is enabled when needed.
+            mItemContainer.EnableScroll(false, true);
         }
 
         public void Show()

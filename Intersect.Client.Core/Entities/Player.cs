@@ -407,6 +407,30 @@ public partial class Player : Entity, IPlayer
             }
         }
 
+        SpellPoints = playerPacket.SpellPoints;
+        if (playerPacket.Spells != null)
+        {
+            foreach (var spell in playerPacket.Spells)
+            {
+                if (spell == null)
+                {
+                    continue;
+                }
+
+                if (spell.Slot < 0 || spell.Slot >= Spells.Length)
+                {
+                    continue;
+                }
+
+                Spells[spell.Slot].Load(spell.SpellId, spell.Level);
+            }
+
+            if (this == Globals.Me)
+            {
+                Interface.Interface.EnqueueInGame(ui => ui.SpellsWindow?.Refresh());
+            }
+        }
+
         if (this == Globals.Me && TargetBox == null && Interface.Interface.HasInGameUI)
         {
             TargetBox = new EntityBox(Interface.Interface.GameUi.GameCanvas, EntityType.Player, null);

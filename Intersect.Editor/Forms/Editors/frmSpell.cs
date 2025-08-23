@@ -33,6 +33,9 @@ public partial class FrmSpell : EditorForm
 
     private List<string> mKnownCooldownGroups = new List<string>();
 
+    private int mUpgradeLevel = 1;
+    private bool mLoadingLevels;
+
     public FrmSpell()
     {
         ApplyHooks();
@@ -326,12 +329,17 @@ public partial class FrmSpell : EditorForm
 
             txtCannotCast.Text = mEditorItem.CannotCastMessage;
 
-            mEditorItem.Properties ??= new SpellProperties();
-            dgvUpgrades.Rows.Clear();
-            foreach (var kv in mEditorItem.Properties.CustomUpgrades)
+            mLoadingLevels = true;
+            cmbUpgradeLevel.Items.Clear();
+            for (var i = 1; i <= Options.Instance.Player.MaxLevel; i++)
             {
-                dgvUpgrades.Rows.Add(kv.Key, kv.Value);
+                cmbUpgradeLevel.Items.Add(i.ToString());
             }
+
+            cmbUpgradeLevel.SelectedIndex = 0;
+            mUpgradeLevel = 1;
+            mLoadingLevels = false;
+            LoadUpgradesForLevel();
 
             UpdateSpellTypePanels();
             if (mChanged.IndexOf(mEditorItem) == -1)
@@ -357,10 +365,16 @@ public partial class FrmSpell : EditorForm
             return;
         }
 
-        mEditorItem.Properties ??= new SpellProperties();
+        mEditorItem.LevelUpgrades ??= new Dictionary<int, SpellProperties>();
 
         dgvUpgrades.EndEdit();
-        mEditorItem.Properties.CustomUpgrades.Clear();
+
+        if (!mEditorItem.LevelUpgrades.TryGetValue(mUpgradeLevel, out var props) || props == null)
+        {
+            props = new SpellProperties { Level = mUpgradeLevel };
+        }
+
+        props.CustomUpgrades.Clear();
 
         foreach (DataGridViewRow row in dgvUpgrades.Rows)
         {
@@ -379,9 +393,43 @@ public partial class FrmSpell : EditorForm
 
             if (int.TryParse(valueObj?.ToString(), out var value))
             {
-                mEditorItem.Properties.CustomUpgrades[key] = value;
+                props.CustomUpgrades[key] = value;
             }
         }
+
+        mEditorItem.LevelUpgrades[mUpgradeLevel] = props;
+    }
+
+    private void LoadUpgradesForLevel()
+    {
+        if (mEditorItem == null)
+        {
+            return;
+        }
+
+        dgvUpgrades.Rows.Clear();
+
+        if (mEditorItem.LevelUpgrades != null &&
+            mEditorItem.LevelUpgrades.TryGetValue(mUpgradeLevel, out var props) &&
+            props?.CustomUpgrades != null)
+        {
+            foreach (var kv in props.CustomUpgrades)
+            {
+                dgvUpgrades.Rows.Add(kv.Key, kv.Value);
+            }
+        }
+    }
+
+    private void cmbUpgradeLevel_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (mLoadingLevels)
+        {
+            return;
+        }
+
+        SaveUpgradesFromGrid();
+        mUpgradeLevel = cmbUpgradeLevel.SelectedIndex + 1;
+        LoadUpgradesForLevel();
     }
 
     private void UpdateSpellTypePanels()

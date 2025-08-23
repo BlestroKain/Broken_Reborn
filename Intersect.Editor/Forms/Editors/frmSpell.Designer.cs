@@ -87,6 +87,8 @@ namespace Intersect.Editor.Forms.Editors
             lblProjectile = new Label();
             cmbProjectile = new DarkComboBox();
             grpUpgrades = new DarkGroupBox();
+            cmbUpgradeLevel = new DarkComboBox();
+            lblUpgradeLevel = new Label();
             dgvUpgrades = new DataGridView();
             upgradeKeyColumn = new DataGridViewTextBoxColumn();
             upgradeValueColumn = new DataGridViewTextBoxColumn();
@@ -1016,6 +1018,8 @@ namespace Intersect.Editor.Forms.Editors
             // 
             grpUpgrades.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
             grpUpgrades.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+            grpUpgrades.Controls.Add(cmbUpgradeLevel);
+            grpUpgrades.Controls.Add(lblUpgradeLevel);
             grpUpgrades.Controls.Add(dgvUpgrades);
             grpUpgrades.ForeColor = System.Drawing.Color.Gainsboro;
             grpUpgrades.Location = new System.Drawing.Point(334, 611);
@@ -1026,9 +1030,30 @@ namespace Intersect.Editor.Forms.Editors
             grpUpgrades.TabIndex = 37;
             grpUpgrades.TabStop = false;
             grpUpgrades.Text = "Custom Upgrades";
-            // 
+            //
+            // lblUpgradeLevel
+            //
+            lblUpgradeLevel.AutoSize = true;
+            lblUpgradeLevel.Location = new System.Drawing.Point(7, 23);
+            lblUpgradeLevel.Name = "lblUpgradeLevel";
+            lblUpgradeLevel.Size = new Size(35, 15);
+            lblUpgradeLevel.TabIndex = 1;
+            lblUpgradeLevel.Text = "Level";
+            //
+            // cmbUpgradeLevel
+            //
+            cmbUpgradeLevel.DrawMode = DrawMode.OwnerDrawVariable;
+            cmbUpgradeLevel.FormattingEnabled = true;
+            cmbUpgradeLevel.Location = new System.Drawing.Point(52, 20);
+            cmbUpgradeLevel.Name = "cmbUpgradeLevel";
+            cmbUpgradeLevel.Size = new Size(63, 23);
+            cmbUpgradeLevel.TabIndex = 2;
+            cmbUpgradeLevel.Text = null;
+            cmbUpgradeLevel.TextPadding = new Padding(2);
+            cmbUpgradeLevel.SelectedIndexChanged += cmbUpgradeLevel_SelectedIndexChanged;
+            //
             // dgvUpgrades
-            // 
+            //
             dgvUpgrades.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvUpgrades.BackgroundColor = System.Drawing.Color.FromArgb(45, 45, 48);
             dgvUpgrades.CellBorderStyle = DataGridViewCellBorderStyle.None;
@@ -1043,14 +1068,14 @@ namespace Intersect.Editor.Forms.Editors
             dgvUpgrades.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             dgvUpgrades.Columns.AddRange(new DataGridViewColumn[] { upgradeKeyColumn, upgradeValueColumn });
             dgvUpgrades.EnableHeadersVisualStyles = false;
-            dgvUpgrades.Location = new System.Drawing.Point(7, 22);
+            dgvUpgrades.Location = new System.Drawing.Point(7, 49);
             dgvUpgrades.MultiSelect = false;
             dgvUpgrades.Name = "dgvUpgrades";
             dgvUpgrades.RowHeadersVisible = false;
             dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(60, 63, 65);
             dgvUpgrades.RowsDefaultCellStyle = dataGridViewCellStyle2;
-            dgvUpgrades.Size = new Size(246, 122);
-            dgvUpgrades.TabIndex = 0;
+            dgvUpgrades.Size = new Size(246, 95);
+            dgvUpgrades.TabIndex = 3;
             dgvUpgrades.CellValidating += dgvUpgrades_CellValidating;
             // 
             // upgradeKeyColumn
@@ -2610,6 +2635,7 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)nudHitRadius).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudCastRange).EndInit();
             grpUpgrades.ResumeLayout(false);
+            grpUpgrades.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)dgvUpgrades).EndInit();
             grpCombat.ResumeLayout(false);
             grpStats.ResumeLayout(false);
@@ -2689,6 +2715,8 @@ namespace Intersect.Editor.Forms.Editors
         private DarkGroupBox grpWarp;
         private DarkGroupBox grpSpellCost;
         private DarkGroupBox grpUpgrades;
+        private DarkComboBox cmbUpgradeLevel;
+        private System.Windows.Forms.Label lblUpgradeLevel;
         private System.Windows.Forms.DataGridView dgvUpgrades;
         private System.Windows.Forms.DataGridViewTextBoxColumn upgradeKeyColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn upgradeValueColumn;

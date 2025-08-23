@@ -8,6 +8,7 @@ using Intersect.Client.Localization;
 using Intersect.Client.Utilities;
 using Intersect.GameObjects;
 using Intersect.Utilities;
+using Intersect.Enums;
 using System.Text;
 
 namespace Intersect.Client.Interface.Game.Spells;
@@ -25,7 +26,9 @@ public partial class SpellsWindow : Window
     private readonly ImagePanel _iconPanel;
     private readonly Label _nameLabel;
     private readonly Label _levelLabel;
-    private readonly Label _descLabel;
+    private readonly Label _costLabel;
+    private readonly RichLabel _conditionsLabel;
+    private readonly RichLabel _descLabel;
 
     private int _selectedSlot = -1;
     private int _lastSpellCount;
@@ -36,7 +39,7 @@ public partial class SpellsWindow : Window
     public SpellsWindow(Canvas gameCanvas) : base(gameCanvas, Strings.Spells.Title, false, nameof(SpellsWindow))
     {
         Alignment = [Alignments.Bottom, Alignments.Right];
-        MinimumSize = new Point(560, 400);
+        MinimumSize = new Point(840, 400);
         Margin = new Margin(0, 0, 15, 60);
         IsVisibleInTree = false;
         IsResizable = false;
@@ -46,12 +49,12 @@ public partial class SpellsWindow : Window
         _slotContainer = new ScrollControl(this, "SpellsContainer")
         {
             Dock = Pos.Left,
-            Width = 240,
+            Width = 500,
             OverflowX = OverflowBehavior.Hidden,
             OverflowY = OverflowBehavior.Scroll,
             Margin = new Margin(6, 6, 4, 6),
         };
-        _slotContainer.SetSize(240, 340);
+        _slotContainer.SetSize(500, 340);
         _slotContainer.SetPosition(6, 6);
 
         // PANEL DETALLE DERECHA
@@ -62,7 +65,7 @@ public partial class SpellsWindow : Window
             IsVisibleInParent = false,
         };
         _detailPanel.SetSize(300, 340);
-        _detailPanel.SetPosition(250, 6);
+        _detailPanel.SetPosition(520, 6);
 
         _iconPanel = new ImagePanel(_detailPanel, "SpellIcon");
         _iconPanel.SetBounds(8, 8, 48, 48);
@@ -83,14 +86,26 @@ public partial class SpellsWindow : Window
         _levelLabel.SetSize(200, 16);
         _levelLabel.SetPosition(64, 30);
 
-        _descLabel = new Label(_detailPanel, "SpellDesc")
+        _costLabel = new Label(_detailPanel, "SpellCost")
         {
             FontName = "sourcesansproblack",
             FontSize = 10,
-            AutoSizeToContents = true,
         };
-        _descLabel.SetSize(270, 200); // Altura flexible si tienes auto scroll más adelante
-        _descLabel.SetPosition(8, 70);
+        _costLabel.SetBounds(8, 70, 270, 16);
+
+        _conditionsLabel = new RichLabel(_detailPanel, "SpellConditions")
+        {
+            FontName = "sourcesansproblack",
+            FontSize = 10,
+        };
+        _conditionsLabel.SetBounds(8, 90, 270, 60);
+
+        _descLabel = new RichLabel(_detailPanel, "SpellDesc")
+        {
+            FontName = "sourcesansproblack",
+            FontSize = 10,
+        };
+        _descLabel.SetBounds(8, 160, 270, 160);
 
         // CONTEXT MENU
         _contextMenu = new ContextMenu(gameCanvas, "SpellContextMenu")
@@ -107,7 +122,7 @@ public partial class SpellsWindow : Window
             Dock = Pos.Bottom,
             Padding = new Padding(6),
             AutoSizeToContents = true,
-            Text = "Puntos de hechizo: 0",
+            Text = "Capital de puntos: 0",
         };
         _lblSpellPoints.SetSize(200, 18); // ancho arbitrario, no afecta por auto-size
         _lblSpellPoints.SetPosition(10, 360); // justo abajo
@@ -132,7 +147,7 @@ public partial class SpellsWindow : Window
         _slotContainer.DeleteAllChildren();
 
         var max = Options.Instance.Player.MaxSpells;
-        const int slotHeight = 92;
+        const int slotHeight = 60;
         for (var i = 0; i < max; i++)
         {
             var item = new SpellItem(this, _slotContainer, i, _contextMenu);
@@ -192,7 +207,7 @@ public partial class SpellsWindow : Window
         var spellPoints = me?.SpellPoints ?? 0;
         if (spellPoints != _lastSpellPoints)
         {
-            _lblSpellPoints.Text = $"Puntos de hechizo: {spellPoints}";
+            _lblSpellPoints.Text = $"Capital de puntos: {spellPoints}";
             _lastSpellPoints = spellPoints;
             _needsDetailsUpdate = true;
         }
@@ -270,18 +285,28 @@ public partial class SpellsWindow : Window
         _nameLabel.Text = desc.Name;
         _levelLabel.Text = Strings.EntityBox.Level.ToString(level);
 
-        // Descripción/estadísticas básicas
-        var sb = new StringBuilder();
-        if (!string.IsNullOrWhiteSpace(desc.Description))
-            sb.AppendLine(desc.Description);
-
-        // Ejemplo rápido de tiempos (si tienes SpellMath/Efectivo, úsalo aquí)
+        // Costos
+        var costSb = new StringBuilder();
+        for (var i = 0; i < Enum.GetValues<Vital>().Length; i++)
+        {
+            var cost = desc.VitalCost[i];
+            if (cost > 0)
+            {
+                costSb.Append($"{Strings.SpellDescription.VitalCosts[i]} {cost} ");
+            }
+        }
         if (desc.CooldownDuration > 0)
-            sb.AppendLine($"{Strings.SpellDescription.Cooldown} {TimeSpan.FromMilliseconds(desc.CooldownDuration).WithSuffix()}");
-        if (desc.CastDuration > 0)
-            sb.AppendLine($"{Strings.SpellDescription.CastTime} {TimeSpan.FromMilliseconds(desc.CastDuration).WithSuffix()}");
+        {
+            costSb.Append($"{Strings.SpellDescription.Cooldown} {TimeSpan.FromMilliseconds(desc.CooldownDuration).WithSuffix()} ");
+        }
+        _costLabel.Text = costSb.ToString().Trim();
 
-        _descLabel.Text = sb.ToString().Trim();
+        // Condiciones
+        var cond = desc.CastingRequirements?.Data();
+        _conditionsLabel.Text = string.IsNullOrWhiteSpace(cond) ? "Sin condiciones" : cond;
+
+        // Descripción
+        _descLabel.Text = desc.Description ?? string.Empty;
     }
 
     public override void Hide()

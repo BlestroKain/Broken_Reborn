@@ -1188,6 +1188,10 @@ namespace Intersect.Server.Migrations.MySql.Game
                         .HasColumnType("longtext")
                         .HasColumnName("VitalCost");
 
+                    b.Property<string>("LevelUpgradesJson")
+                        .HasColumnType("longtext")
+                        .HasColumnName("LevelUpgrades");
+
                     b.HasKey("Id");
 
                     b.ToTable("Spells");

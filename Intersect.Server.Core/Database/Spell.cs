@@ -35,6 +35,18 @@ public partial class Spell
         set => Properties = JsonConvert.DeserializeObject<SpellProperties>(value ?? string.Empty) ?? new();
     }
 
+    [NotMapped]
+    public Dictionary<int, SpellProperties> LevelUpgrades { get; set; } = new();
+
+    [Column(nameof(LevelUpgrades))]
+    [JsonIgnore]
+    public string LevelUpgradesJson
+    {
+        get => JsonConvert.SerializeObject(LevelUpgrades);
+        set => LevelUpgrades =
+            JsonConvert.DeserializeObject<Dictionary<int, SpellProperties>>(value ?? string.Empty) ?? new();
+    }
+
     public static Spell None => new Spell(Guid.Empty);
 
     public Spell Clone()
@@ -42,7 +54,8 @@ public partial class Spell
         return new Spell
         {
             SpellId = this.SpellId,
-            Properties = new SpellProperties(this.Properties)
+            Properties = new SpellProperties(this.Properties),
+            LevelUpgrades = this.LevelUpgrades.ToDictionary(kv => kv.Key, kv => new SpellProperties(kv.Value))
         };
     }
 
@@ -50,5 +63,6 @@ public partial class Spell
     {
         SpellId = spell.SpellId;
         Properties = new SpellProperties(spell.Properties);
+        LevelUpgrades = spell.LevelUpgrades.ToDictionary(kv => kv.Key, kv => new SpellProperties(kv.Value));
     }
 }

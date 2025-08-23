@@ -115,8 +115,6 @@ public static partial class PacketSender
             player.LoginWarp();
 
             SendEntityDataTo(client.Entity, player);
-            SendPlayerSpells(player);
-            SendSpellPoints(player);
 
             //Search for login activated events and run them
             player.StartCommonEventsWithTrigger(CommonEventTrigger.Login);
@@ -429,9 +427,7 @@ public static partial class PacketSender
         {
             SendExperience(player);
             SendInventory(player);
-            SendPlayerSpells(player);
             SendPointsTo(player);
-            SendSpellPoints(player);
             SendHotbarSlots(player);
             SendQuestsProgress(player);
             SendItemCooldowns(player);

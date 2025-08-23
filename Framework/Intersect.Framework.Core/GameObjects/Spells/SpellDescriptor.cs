@@ -178,6 +178,8 @@ public partial class SpellDescriptor : DatabaseObject<SpellDescriptor>, IFoldera
     }
 
     public Guid SummonNpcId { get; set; } = Guid.Empty;
+    [NotMapped]
+    public SpellProperties Properties { get; set; }
 
     public int GetEffectiveCastDuration(SpellProperties props)
     {

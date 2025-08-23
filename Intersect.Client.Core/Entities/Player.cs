@@ -1468,7 +1468,7 @@ public partial class Player : Entity, IPlayer
             return;
         }
 
-        if (spellDescriptor.CastDuration > 0)
+        if (spellDescriptor.GetEffectiveCastDuration(spell.Properties) > 0)
         {
             if (Options.Instance.Combat.MovementCancelsCast && Globals.Me?.IsMoving == true)
             {

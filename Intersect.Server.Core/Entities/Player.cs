@@ -5947,7 +5947,8 @@ public partial class Player : Entity
 
         if (CastTime == 0)
         {
-            CastTime = Timing.Global.Milliseconds + spellDescriptor.CastDuration;
+            var castDuration = spellDescriptor.GetEffectiveCastDuration(spellProperties);
+            CastTime = Timing.Global.Milliseconds + castDuration;
 
             //Remove stealth status.
             foreach (var status in CachedStatuses)
@@ -7761,17 +7762,20 @@ public partial class Player : Entity
             return;
         }
 
+        var properties = GetSpellProperties(spell.Id);
+        var cooldownDuration = spell.GetEffectiveCooldownDuration(properties);
+
         // Are we dealing with a cooldown group?
         if (spell.CooldownGroup.Trim().Length > 0)
         {
             // Yes, so handle it!
-            UpdateCooldownGroup(GameObjectType.Spell, spell.CooldownGroup, spell.CooldownDuration, spell.IgnoreCooldownReduction);
+            UpdateCooldownGroup(GameObjectType.Spell, spell.CooldownGroup, cooldownDuration, spell.IgnoreCooldownReduction);
         }
         else
         {
             // No, handle singular cooldown as normal.
             var cooldownReduction = 1 - (spell.IgnoreCooldownReduction ? 0 : GetEquipmentBonusEffect(ItemEffect.CooldownReduction) / 100f);
-            AssignSpellCooldown(spell.Id, Timing.Global.MillisecondsUtc + (long)(spell.CooldownDuration * cooldownReduction));
+            AssignSpellCooldown(spell.Id, Timing.Global.MillisecondsUtc + (long)(cooldownDuration * cooldownReduction));
             PacketSender.SendSpellCooldown(this, spell.Id);
         }
     }
@@ -7836,7 +7840,9 @@ public partial class Player : Entity
             // Get our highest cooldown value from all available options.
             matchedCooldowntime = Math.Max(
                 matchingItems.Length > 0 ? matchingItems.Max(i => i.Cooldown) : 0,
-                matchingSpells.Length > 0 ? matchingSpells.Max(i => i.CooldownDuration) : 0);
+                matchingSpells.Length > 0
+                    ? matchingSpells.Max(i => i.GetEffectiveCooldownDuration(GetSpellProperties(i.Id)))
+                    : 0);
         }
 
         // Set the cooldown for all items matching this cooldown group.
@@ -7862,8 +7868,10 @@ public partial class Player : Entity
         {
             foreach (var spell in matchingSpells)
             {
-                // Do we have to match our cooldown times, or do we use each individual item cooldown?
-                var tempCooldown = Options.Instance.Combat.MatchGroupCooldowns ? matchedCooldowntime : spell.CooldownDuration;
+                var spellProps = GetSpellProperties(spell.Id);
+                var tempCooldown = Options.Instance.Combat.MatchGroupCooldowns
+                    ? matchedCooldowntime
+                    : spell.GetEffectiveCooldownDuration(spellProps);
 
                 // Asign it! Assuming our cooldown isn't already going...
                 if (!SpellCooldowns.ContainsKey(spell.Id) || SpellCooldowns[spell.Id] < Timing.Global.MillisecondsUtc)

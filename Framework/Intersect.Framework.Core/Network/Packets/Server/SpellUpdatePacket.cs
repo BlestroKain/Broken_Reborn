@@ -1,5 +1,7 @@
 ﻿using MessagePack;
 
+using Intersect.Framework.Core.GameObjects.Spells;
+
 namespace Intersect.Network.Packets.Server;
 
 [MessagePackObject]
@@ -10,11 +12,12 @@ public partial class SpellUpdatePacket : IntersectPacket
     {
     }
 
-    public SpellUpdatePacket(int slot, Guid spellId, int level)
+    public SpellUpdatePacket(int slot, Guid spellId, int level, SpellProperties? properties = null)
     {
         Slot = slot;
         SpellId = spellId;
         Level = level;
+        Properties = properties;
     }
 
     [Key(0)]
@@ -25,5 +28,8 @@ public partial class SpellUpdatePacket : IntersectPacket
 
     [Key(2)]
     public int Level { get; set; }
+
+    [Key(3)]
+    public SpellProperties? Properties { get; set; }
 
 }

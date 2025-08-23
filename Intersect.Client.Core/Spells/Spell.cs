@@ -22,11 +22,11 @@ public partial class Spell
         return newSpell;
     }
 
-    public void Load(Guid spellId, int level)
+    public void Load(Guid spellId, SpellProperties? properties)
     {
         Id = spellId;
-        Level = level;
-        Properties ??= new SpellProperties();
+        Properties = properties ?? new SpellProperties();
+        Level = Properties.Level;
     }
 
 }

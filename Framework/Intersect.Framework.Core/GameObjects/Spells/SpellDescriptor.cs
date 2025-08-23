@@ -181,6 +181,49 @@ public partial class SpellDescriptor : DatabaseObject<SpellDescriptor>, IFoldera
     [NotMapped]
     public SpellProperties Properties { get; set; }
 
+    [NotMapped]
+    public Dictionary<int, SpellProperties> LevelUpgrades { get; set; } = new();
+
+    [JsonIgnore]
+    [Column("LevelUpgrades")]
+    public string LevelUpgradesJson
+    {
+        get => JsonConvert.SerializeObject(LevelUpgrades);
+        set => LevelUpgrades =
+            JsonConvert.DeserializeObject<Dictionary<int, SpellProperties>>(value ?? string.Empty) ?? new();
+    }
+
+    public SpellProperties GetPropertiesForLevel(int level)
+    {
+        var result = new SpellProperties { Level = level };
+        if (LevelUpgrades == null)
+        {
+            return result;
+        }
+
+        for (var i = 1; i <= level; i++)
+        {
+            if (!LevelUpgrades.TryGetValue(i, out var upgrade) || upgrade?.CustomUpgrades == null)
+            {
+                continue;
+            }
+
+            foreach (var kv in upgrade.CustomUpgrades)
+            {
+                if (result.CustomUpgrades.TryGetValue(kv.Key, out var current))
+                {
+                    result.CustomUpgrades[kv.Key] = current + kv.Value;
+                }
+                else
+                {
+                    result.CustomUpgrades[kv.Key] = kv.Value;
+                }
+            }
+        }
+
+        return result;
+    }
+
     public int GetEffectiveCastDuration(SpellProperties props)
     {
         var value = CastDuration;

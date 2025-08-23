@@ -1179,6 +1179,10 @@ namespace Intersect.Server.Migrations.Sqlite.Game
                         .HasColumnType("TEXT")
                         .HasColumnName("VitalCost");
 
+                    b.Property<string>("LevelUpgradesJson")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("LevelUpgrades");
+
                     b.HasKey("Id");
 
                     b.ToTable("Spells");

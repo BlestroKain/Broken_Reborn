@@ -1384,7 +1384,7 @@ internal sealed partial class PacketHandler
             HandlePacket(spl);
         }
 
-        Interface.Interface.GameUi.SpellsWindow?.Refresh();
+        Interface.Interface.EnqueueInGame(ui => ui.SpellsWindow?.Refresh());
     }
 
     //SpellUpdatePacket
@@ -1393,7 +1393,7 @@ internal sealed partial class PacketHandler
         if (Globals.Me != null)
         {
             Globals.Me.Spells[packet.Slot].Load(packet.SpellId, packet.Level);
-            Interface.Interface.GameUi.SpellsWindow?.Update();
+            Interface.Interface.EnqueueInGame(ui => ui.SpellsWindow?.Update());
         }
     }
 

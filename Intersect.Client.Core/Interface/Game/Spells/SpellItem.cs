@@ -272,11 +272,13 @@ public partial class SpellItem : SlotItem
             Icon.RenderColor.A = 255;
         }
         // Actualiza nombre y nivel si el hechizo está asignado
-        _nameLabel.Text = $"{spell.Name} Lv.{spellSlots[SlotIndex].Properties.Level}";
-        SpellProperties = spellSlots[SlotIndex].Properties;
+        var properties = spellSlots[SlotIndex].Properties ?? new SpellProperties();
+        spellSlots[SlotIndex].Properties = properties;
+        _nameLabel.Text = $"{spell.Name} Lv.{properties.Level}";
+        SpellProperties = properties;
 
-        _levelUpButton.IsDisabled = !(Globals.Me.SpellPoints > 0 && SpellProperties.Level < Options.Instance.Player.MaxSpellLevel);
-        _levelDownButton.IsDisabled = !(SpellProperties.Level > 1);
+        _levelUpButton.IsDisabled = !(Globals.Me.SpellPoints > 0 && properties.Level < Options.Instance.Player.MaxSpellLevel);
+        _levelDownButton.IsDisabled = !(properties.Level > 1);
 
         if (Path.GetFileName(Icon.Texture?.Name) != spell.Icon)
         {

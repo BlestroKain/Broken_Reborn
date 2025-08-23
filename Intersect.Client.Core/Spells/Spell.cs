@@ -7,8 +7,8 @@ public partial class Spell
 {
 
     public Guid Id { get; set; }
-    public int Level { get;  set; }
-    public SpellProperties Properties { get;  set; }
+    public int Level { get; set; }
+    public SpellProperties Properties { get; set; } = new();
 
     public Spell Clone()
     {
@@ -16,6 +16,7 @@ public partial class Spell
         {
             Id = Id,
             Level = Level,
+            Properties = new SpellProperties(Properties),
         };
 
         return newSpell;
@@ -25,6 +26,7 @@ public partial class Spell
     {
         Id = spellId;
         Level = level;
+        Properties ??= new SpellProperties();
     }
 
 }

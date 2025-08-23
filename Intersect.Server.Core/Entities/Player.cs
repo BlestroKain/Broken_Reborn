@@ -1137,6 +1137,19 @@ public partial class Player : Entity
             pkt.GuildSymbolB = Guild.SymbolB;
 
         }
+
+        if (forPlayer == this)
+        {
+            pkt.SpellPoints = SpellPoints;
+            var spells = new SpellUpdatePacket[Options.Instance.Player.MaxSpells];
+            for (var i = 0; i < Options.Instance.Player.MaxSpells; i++)
+            {
+                var slot = Spells[i];
+                spells[i] = new SpellUpdatePacket(i, slot.SpellId, slot.Level);
+            }
+
+            pkt.Spells = spells;
+        }
         return pkt;
     }
 

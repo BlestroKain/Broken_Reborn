@@ -4,6 +4,7 @@ using Intersect.Framework.Core.GameObjects.Animations;
 using Intersect.Framework.Core.GameObjects.Conditions;
 using Intersect.Framework.Core.GameObjects.Events;
 using Intersect.Framework.Core.GameObjects.Items;
+using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Models;
 using Intersect.Utilities;
 using Newtonsoft.Json;
@@ -177,4 +178,46 @@ public partial class SpellDescriptor : DatabaseObject<SpellDescriptor>, IFoldera
     }
 
     public Guid SummonNpcId { get; set; } = Guid.Empty;
+    [NotMapped]
+    public SpellProperties Properties { get; set; }
+
+    public int GetEffectiveCastDuration(SpellProperties props)
+    {
+        var value = CastDuration;
+        if (props?.CustomUpgrades != null &&
+            props.CustomUpgrades.TryGetValue(SpellUpgradeKeys.CastDuration, out var upgrade))
+        {
+            value += upgrade;
+        }
+
+        return value;
+    }
+
+    public int GetEffectiveCooldownDuration(SpellProperties props)
+    {
+        var value = CooldownDuration;
+        if (props?.CustomUpgrades != null &&
+            props.CustomUpgrades.TryGetValue(SpellUpgradeKeys.CooldownDuration, out var upgrade))
+        {
+            value += upgrade;
+        }
+
+        return value;
+    }
+
+    public long GetEffectiveVitalCost(Vital vital, SpellProperties props)
+    {
+        var value = _vitalCost[(int)vital];
+
+        if (props?.CustomUpgrades != null)
+        {
+            var key = SpellUpgradeKeys.VitalCost.GetKey(vital);
+            if (key != null && props.CustomUpgrades.TryGetValue(key, out var upgrade))
+            {
+                value += upgrade;
+            }
+        }
+
+        return value;
+    }
 }

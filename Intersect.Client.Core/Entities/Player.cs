@@ -145,6 +145,8 @@ public partial class Player : Entity, IPlayer
 
     public int StatPoints { get; set; } = 0;
 
+    public int SpellPoints { get; set; } = 0;
+
     public EntityBox? TargetBox { get; set; }
 
     public PlayerStatusWindow? StatusWindow { get; set; }
@@ -402,6 +404,30 @@ public partial class Player : Entity, IPlayer
             else if (playerPacket.Equipment.ItemIds != null)
             {
                 Equipment = playerPacket.Equipment.ItemIds;
+            }
+        }
+
+        SpellPoints = playerPacket.SpellPoints;
+        if (playerPacket.Spells != null)
+        {
+            foreach (var spell in playerPacket.Spells)
+            {
+                if (spell == null)
+                {
+                    continue;
+                }
+
+                if (spell.Slot < 0 || spell.Slot >= Spells.Length)
+                {
+                    continue;
+                }
+
+                Spells[spell.Slot].Load(spell.SpellId, spell.Level);
+            }
+
+            if (this == Globals.Me)
+            {
+                Interface.Interface.EnqueueInGame(ui => ui.SpellsWindow?.Refresh());
             }
         }
 
@@ -1442,7 +1468,7 @@ public partial class Player : Entity, IPlayer
             return;
         }
 
-        if (spellDescriptor.CastDuration > 0)
+        if (spellDescriptor.GetEffectiveCastDuration(spell.Properties) > 0)
         {
             if (Options.Instance.Combat.MovementCancelsCast && Globals.Me?.IsMoving == true)
             {

@@ -427,7 +427,6 @@ public static partial class PacketSender
         {
             SendExperience(player);
             SendInventory(player);
-            SendPlayerSpells(player);
             SendPointsTo(player);
             SendHotbarSlots(player);
             SendQuestsProgress(player);
@@ -1307,7 +1306,7 @@ public static partial class PacketSender
         var spells = new SpellUpdatePacket[Options.Instance.Player.MaxSpells];
         for (var i = 0; i < Options.Instance.Player.MaxSpells; i++)
         {
-            spells[i] = new SpellUpdatePacket(i, player.Spells[i].SpellId);
+            spells[i] = new SpellUpdatePacket(i, player.Spells[i].SpellId, player.Spells[i].Level);
         }
 
         player.SendPacket(new SpellsPacket(spells));
@@ -1321,7 +1320,7 @@ public static partial class PacketSender
             return;
         }
 
-        player.SendPacket(new SpellUpdatePacket(slot, player.Spells[slot].SpellId));
+        player.SendPacket(new SpellUpdatePacket(slot, player.Spells[slot].SpellId, player.Spells[slot].Level));
     }
 
     //EquipmentPacket
@@ -1382,6 +1381,18 @@ public static partial class PacketSender
     public static void SendPointsTo(Player player)
     {
         player.SendPacket(new StatPointsPacket(player.StatPoints), TransmissionMode.Any);
+    }
+
+    //SpellPointsPacket
+    public static void SendSpellPoints(Player player)
+    {
+        if (!player.SpellPointsChanged)
+        {
+            return;
+        }
+
+        player.SpellPointsChanged = false;
+        player.SendPacket(new UpdateSpellPointsPacket(player.SpellPoints), TransmissionMode.Any);
     }
 
     //HotbarPacket

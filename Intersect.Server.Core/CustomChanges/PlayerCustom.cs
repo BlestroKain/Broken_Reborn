@@ -273,6 +273,17 @@ namespace Intersect.Server.Entities
             PacketSender.SendOpenSendMail(this);
         }
 
+        public bool HasEnoughSpellPoints(int delta)
+        {
+            return delta <= 0 || SpellPoints >= delta;
+        }
+
+        public void ConsumeSpellPoints(int delta)
+        {
+            SpellPoints -= delta;
+            SpellPointsChanged = true;
+        }
+
         public bool HasPermissionToTrade()
         {
             return Level >= 10; //Nivel minimo para comerciar

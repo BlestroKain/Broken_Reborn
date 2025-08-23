@@ -33,6 +33,8 @@ using Intersect.Framework.Core.GameObjects.Maps.MapList;
 using Intersect.Framework.Core.Security;
 using Intersect.Localization;
 using Microsoft.Extensions.Logging;
+using System.Linq;
+using Intersect.Framework.Core.GameObjects.Spells;
 
 namespace Intersect.Client.Networking;
 
@@ -1383,6 +1385,8 @@ internal sealed partial class PacketHandler
         {
             HandlePacket(spl);
         }
+
+        Interface.Interface.EnqueueInGame(ui => ui.SpellsWindow?.Refresh());
     }
 
     //SpellUpdatePacket
@@ -1390,7 +1394,8 @@ internal sealed partial class PacketHandler
     {
         if (Globals.Me != null)
         {
-            Globals.Me.Spells[packet.Slot].Load(packet.SpellId);
+            Globals.Me.Spells[packet.Slot].Load(packet.SpellId, packet.Level);
+            Interface.Interface.EnqueueInGame(ui => ui.SpellsWindow?.Update());
         }
     }
 
@@ -1421,6 +1426,16 @@ internal sealed partial class PacketHandler
         if (Globals.Me != null)
         {
             Globals.Me.StatPoints = packet.Points;
+        }
+    }
+
+    //UpdateSpellPointsPacket
+    public void HandlePacket(IPacketSender packetSender, UpdateSpellPointsPacket packet)
+    {
+        if (Globals.Me != null)
+        {
+            Globals.Me.SpellPoints = packet.SpellPoints;
+            Interface.Interface.GameUi.SpellsWindow?.Refresh();
         }
     }
 
@@ -1462,7 +1477,16 @@ internal sealed partial class PacketHandler
         var spellId = packet.SpellId;
         if (SpellDescriptor.Get(spellId) != null && Globals.Entities.ContainsKey(entityId))
         {
-            Globals.Entities[entityId].CastTime = Timing.Global.Milliseconds + SpellDescriptor.Get(spellId).CastDuration;
+            var descriptor = SpellDescriptor.Get(spellId);
+            SpellProperties? props = null;
+            if (Globals.Entities[entityId] is Player player)
+            {
+                var spell = player.Spells.FirstOrDefault(s => s.Id == spellId);
+                props = spell?.Properties;
+            }
+
+            Globals.Entities[entityId].CastTime =
+                Timing.Global.Milliseconds + descriptor.GetEffectiveCastDuration(props);
             Globals.Entities[entityId].SpellCast = spellId;
         }
     }

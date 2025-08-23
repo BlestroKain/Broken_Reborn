@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
 using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Animations;
 using Intersect.Framework.Core.GameObjects.Conditions;
@@ -122,6 +123,18 @@ public partial class SpellDescriptor : DatabaseObject<SpellDescriptor>, IFoldera
     public string CannotCastMessage { get; set; } = string.Empty;
 
     public string CastSpriteOverride { get; set; }
+
+    public List<SpellProgressionRow> Progression { get; set; } = new();
+
+    public SpellProgressionRow GetProgressionLevel(int level)
+    {
+        if (level <= 0 || level > Progression.Count)
+        {
+            return null;
+        }
+
+        return Progression[level - 1];
+    }
 
     //Combat Info
     public SpellCombatDescriptor Combat { get; set; } = new();

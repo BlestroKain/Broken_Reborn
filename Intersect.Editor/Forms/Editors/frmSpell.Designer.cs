@@ -33,6 +33,8 @@ namespace Intersect.Editor.Forms.Editors
             components = new System.ComponentModel.Container();
             var dataGridViewCellStyle1 = new DataGridViewCellStyle();
             var dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            var dataGridViewCellStyle3 = new DataGridViewCellStyle();
+            var dataGridViewCellStyle4 = new DataGridViewCellStyle();
             var resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmSpell));
             pnlContainer = new Panel();
             grpGeneral = new DarkGroupBox();
@@ -65,6 +67,16 @@ namespace Intersect.Editor.Forms.Editors
             lblCooldownGroup = new Label();
             nudCooldownDuration = new DarkNumericUpDown();
             nudCastDuration = new DarkNumericUpDown();
+            cmbLevel = new DarkComboBox();
+            btnAddLevel = new DarkButton();
+            btnRemoveLevel = new DarkButton();
+            nudHpDelta = new DarkNumericUpDown();
+            nudMpDelta = new DarkNumericUpDown();
+            nudCastDelta = new DarkNumericUpDown();
+            nudCooldownDelta = new DarkNumericUpDown();
+            dgvLevelUpgrades = new DataGridView();
+            levelUpgradeKeyColumn = new DataGridViewTextBoxColumn();
+            levelUpgradeValueColumn = new DataGridViewTextBoxColumn();
             nudMpCost = new DarkNumericUpDown();
             nudHPCost = new DarkNumericUpDown();
             lblMPCost = new Label();
@@ -211,6 +223,7 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)nudCastDuration).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudMpCost).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudHPCost).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)dgvLevelUpgrades).BeginInit();
             grpRequirements.SuspendLayout();
             grpTargetInfo.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)nudDuration).BeginInit();
@@ -623,6 +636,14 @@ namespace Intersect.Editor.Forms.Editors
             grpSpellCost.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
             grpSpellCost.Controls.Add(chkIgnoreCdr);
             grpSpellCost.Controls.Add(chkIgnoreGlobalCooldown);
+            grpSpellCost.Controls.Add(btnAddLevel);
+            grpSpellCost.Controls.Add(btnRemoveLevel);
+            grpSpellCost.Controls.Add(cmbLevel);
+            grpSpellCost.Controls.Add(nudHpDelta);
+            grpSpellCost.Controls.Add(nudMpDelta);
+            grpSpellCost.Controls.Add(nudCastDelta);
+            grpSpellCost.Controls.Add(nudCooldownDelta);
+            grpSpellCost.Controls.Add(dgvLevelUpgrades);
             grpSpellCost.Controls.Add(btnAddCooldownGroup);
             grpSpellCost.Controls.Add(cmbCooldownGroup);
             grpSpellCost.Controls.Add(lblCooldownGroup);
@@ -639,7 +660,7 @@ namespace Intersect.Editor.Forms.Editors
             grpSpellCost.Margin = new Padding(4, 3, 4, 3);
             grpSpellCost.Name = "grpSpellCost";
             grpSpellCost.Padding = new Padding(4, 3, 4, 3);
-            grpSpellCost.Size = new Size(262, 322);
+            grpSpellCost.Size = new Size(262, 470);
             grpSpellCost.TabIndex = 36;
             grpSpellCost.TabStop = false;
             grpSpellCost.Text = "Spell Cost:";
@@ -647,7 +668,7 @@ namespace Intersect.Editor.Forms.Editors
             // chkIgnoreCdr
             // 
             chkIgnoreCdr.AutoSize = true;
-            chkIgnoreCdr.Location = new System.Drawing.Point(16, 290);
+            chkIgnoreCdr.Location = new System.Drawing.Point(16, 449);
             chkIgnoreCdr.Margin = new Padding(4, 3, 4, 3);
             chkIgnoreCdr.Name = "chkIgnoreCdr";
             chkIgnoreCdr.Size = new Size(180, 19);
@@ -658,7 +679,7 @@ namespace Intersect.Editor.Forms.Editors
             // chkIgnoreGlobalCooldown
             // 
             chkIgnoreGlobalCooldown.AutoSize = true;
-            chkIgnoreGlobalCooldown.Location = new System.Drawing.Point(16, 263);
+            chkIgnoreGlobalCooldown.Location = new System.Drawing.Point(16, 424);
             chkIgnoreGlobalCooldown.Margin = new Padding(4, 3, 4, 3);
             chkIgnoreGlobalCooldown.Name = "chkIgnoreGlobalCooldown";
             chkIgnoreGlobalCooldown.Size = new Size(160, 19);
@@ -676,9 +697,142 @@ namespace Intersect.Editor.Forms.Editors
             btnAddCooldownGroup.TabIndex = 55;
             btnAddCooldownGroup.Text = "+";
             btnAddCooldownGroup.Click += btnAddCooldownGroup_Click;
-            // 
+            //
+            // cmbLevel
+            //
+            cmbLevel.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            cmbLevel.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+            cmbLevel.BorderStyle = ButtonBorderStyle.Solid;
+            cmbLevel.ButtonColor = System.Drawing.Color.FromArgb(43, 43, 43);
+            cmbLevel.DrawDropdownHoverOutline = false;
+            cmbLevel.DrawFocusRectangle = false;
+            cmbLevel.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbLevel.FlatStyle = FlatStyle.Flat;
+            cmbLevel.ForeColor = System.Drawing.Color.Gainsboro;
+            cmbLevel.FormattingEnabled = true;
+            cmbLevel.Location = new System.Drawing.Point(16, 256);
+            cmbLevel.Margin = new Padding(4, 3, 4, 3);
+            cmbLevel.Name = "cmbLevel";
+            cmbLevel.Size = new Size(120, 24);
+            cmbLevel.TabIndex = 58;
+            cmbLevel.Text = null;
+            cmbLevel.TextPadding = new Padding(2);
+            cmbLevel.SelectedIndexChanged += cmbLevel_SelectedIndexChanged;
+            //
+            // btnAddLevel
+            //
+            btnAddLevel.Location = new System.Drawing.Point(142, 256);
+            btnAddLevel.Margin = new Padding(4, 3, 4, 3);
+            btnAddLevel.Name = "btnAddLevel";
+            btnAddLevel.Padding = new Padding(6);
+            btnAddLevel.Size = new Size(21, 24);
+            btnAddLevel.TabIndex = 59;
+            btnAddLevel.Text = "+";
+            btnAddLevel.Click += btnAddLevel_Click;
+            //
+            // btnRemoveLevel
+            //
+            btnRemoveLevel.Location = new System.Drawing.Point(170, 256);
+            btnRemoveLevel.Margin = new Padding(4, 3, 4, 3);
+            btnRemoveLevel.Name = "btnRemoveLevel";
+            btnRemoveLevel.Padding = new Padding(6);
+            btnRemoveLevel.Size = new Size(21, 24);
+            btnRemoveLevel.TabIndex = 60;
+            btnRemoveLevel.Text = "-";
+            btnRemoveLevel.Click += btnRemoveLevel_Click;
+            //
+            // nudHpDelta
+            //
+            nudHpDelta.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            nudHpDelta.ForeColor = System.Drawing.Color.Gainsboro;
+            nudHpDelta.Location = new System.Drawing.Point(16, 290);
+            nudHpDelta.Margin = new Padding(4, 3, 4, 3);
+            nudHpDelta.Maximum = new decimal(new int[] { 10000, 0, 0, 0 });
+            nudHpDelta.Minimum = new decimal(new int[] { 10000, 0, 0, int.MinValue });
+            nudHpDelta.Name = "nudHpDelta";
+            nudHpDelta.Size = new Size(55, 23);
+            nudHpDelta.TabIndex = 61;
+            //
+            // nudMpDelta
+            //
+            nudMpDelta.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            nudMpDelta.ForeColor = System.Drawing.Color.Gainsboro;
+            nudMpDelta.Location = new System.Drawing.Point(76, 290);
+            nudMpDelta.Margin = new Padding(4, 3, 4, 3);
+            nudMpDelta.Maximum = new decimal(new int[] { 10000, 0, 0, 0 });
+            nudMpDelta.Minimum = new decimal(new int[] { 10000, 0, 0, int.MinValue });
+            nudMpDelta.Name = "nudMpDelta";
+            nudMpDelta.Size = new Size(55, 23);
+            nudMpDelta.TabIndex = 62;
+            //
+            // nudCastDelta
+            //
+            nudCastDelta.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            nudCastDelta.ForeColor = System.Drawing.Color.Gainsboro;
+            nudCastDelta.Location = new System.Drawing.Point(136, 290);
+            nudCastDelta.Margin = new Padding(4, 3, 4, 3);
+            nudCastDelta.Maximum = new decimal(new int[] { -100, 49, 0, 0 });
+            nudCastDelta.Name = "nudCastDelta";
+            nudCastDelta.Size = new Size(55, 23);
+            nudCastDelta.TabIndex = 63;
+            //
+            // nudCooldownDelta
+            //
+            nudCooldownDelta.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            nudCooldownDelta.ForeColor = System.Drawing.Color.Gainsboro;
+            nudCooldownDelta.Location = new System.Drawing.Point(196, 290);
+            nudCooldownDelta.Margin = new Padding(4, 3, 4, 3);
+            nudCooldownDelta.Maximum = new decimal(new int[] { -100, 49, 0, 0 });
+            nudCooldownDelta.Name = "nudCooldownDelta";
+            nudCooldownDelta.Size = new Size(55, 23);
+            nudCooldownDelta.TabIndex = 64;
+            //
+            // dgvLevelUpgrades
+            //
+            dgvLevelUpgrades.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvLevelUpgrades.BackgroundColor = System.Drawing.Color.FromArgb(45, 45, 48);
+            dgvLevelUpgrades.CellBorderStyle = DataGridViewCellBorderStyle.None;
+            dgvLevelUpgrades.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
+            dataGridViewCellStyle3.Font = new Font("Microsoft Sans Serif", 8F);
+            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.Color.FromArgb(68, 68, 68);
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.True;
+            dgvLevelUpgrades.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            dgvLevelUpgrades.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            dgvLevelUpgrades.Columns.AddRange(new DataGridViewColumn[] { levelUpgradeKeyColumn, levelUpgradeValueColumn });
+            dgvLevelUpgrades.EnableHeadersVisualStyles = false;
+            dgvLevelUpgrades.Location = new System.Drawing.Point(7, 318);
+            dgvLevelUpgrades.MultiSelect = false;
+            dgvLevelUpgrades.Name = "dgvLevelUpgrades";
+            dgvLevelUpgrades.RowHeadersVisible = false;
+            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            dataGridViewCellStyle4.Font = new Font("Microsoft Sans Serif", 8F);
+            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.Color.FromArgb(0, 122, 204);
+            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.False;
+            dgvLevelUpgrades.RowsDefaultCellStyle = dataGridViewCellStyle4;
+            dgvLevelUpgrades.Size = new Size(246, 100);
+            dgvLevelUpgrades.TabIndex = 65;
+            dgvLevelUpgrades.CellValidating += dgvLevelUpgrades_CellValidating;
+            dgvLevelUpgrades.EditingControlShowing += dgvLevelUpgrades_EditingControlShowing;
+            //
+            // levelUpgradeKeyColumn
+            //
+            levelUpgradeKeyColumn.HeaderText = "Key";
+            levelUpgradeKeyColumn.Name = "levelUpgradeKeyColumn";
+            //
+            // levelUpgradeValueColumn
+            //
+            levelUpgradeValueColumn.HeaderText = "Value";
+            levelUpgradeValueColumn.Name = "levelUpgradeValueColumn";
+            //
             // cmbCooldownGroup
-            // 
+            //
             cmbCooldownGroup.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
             cmbCooldownGroup.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
             cmbCooldownGroup.BorderStyle = ButtonBorderStyle.Solid;
@@ -1052,6 +1206,7 @@ namespace Intersect.Editor.Forms.Editors
             dgvUpgrades.Size = new Size(246, 122);
             dgvUpgrades.TabIndex = 0;
             dgvUpgrades.CellValidating += dgvUpgrades_CellValidating;
+            dgvUpgrades.EditingControlShowing += dgvUpgrades_EditingControlShowing;
             // 
             // upgradeKeyColumn
             // 
@@ -2598,6 +2753,10 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)picSpell).EndInit();
             grpSpellCost.ResumeLayout(false);
             grpSpellCost.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)nudCooldownDelta).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudCastDelta).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudMpDelta).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudHpDelta).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudCooldownDuration).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudCastDuration).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudMpCost).EndInit();
@@ -2611,6 +2770,7 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)nudCastRange).EndInit();
             grpUpgrades.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dgvUpgrades).EndInit();
+            ((System.ComponentModel.ISupportInitialize)dgvLevelUpgrades).EndInit();
             grpCombat.ResumeLayout(false);
             grpStats.ResumeLayout(false);
             grpStats.PerformLayout();
@@ -2688,10 +2848,20 @@ namespace Intersect.Editor.Forms.Editors
         private System.Windows.Forms.Label lblTargetType;
         private DarkGroupBox grpWarp;
         private DarkGroupBox grpSpellCost;
+        private DarkComboBox cmbLevel;
+        private DarkButton btnAddLevel;
+        private DarkButton btnRemoveLevel;
+        private DarkNumericUpDown nudHpDelta;
+        private DarkNumericUpDown nudMpDelta;
+        private DarkNumericUpDown nudCastDelta;
+        private DarkNumericUpDown nudCooldownDelta;
         private DarkGroupBox grpUpgrades;
         private System.Windows.Forms.DataGridView dgvUpgrades;
+        private System.Windows.Forms.DataGridView dgvLevelUpgrades;
         private System.Windows.Forms.DataGridViewTextBoxColumn upgradeKeyColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn upgradeValueColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn levelUpgradeKeyColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn levelUpgradeValueColumn;
         private System.Windows.Forms.Label lblMPCost;
         private System.Windows.Forms.Label lblHPCost;
         private System.Windows.Forms.Label lblDesc;

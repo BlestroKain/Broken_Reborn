@@ -14,6 +14,8 @@ using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.GameObjects;
 using Intersect.Utilities;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Forms;
 using Graphics = System.Drawing.Graphics;
 
@@ -33,6 +35,8 @@ public partial class FrmSpell : EditorForm
 
     private List<string> mKnownCooldownGroups = new List<string>();
 
+    private int mLastSelectedLevel = 1;
+
     public FrmSpell()
     {
         ApplyHooks();
@@ -51,6 +55,7 @@ public partial class FrmSpell : EditorForm
     }
     private void AssignEditorItem(Guid id)
     {
+        ReadDeltasIntoModel();
         SaveUpgradesFromGrid();
         mEditorItem = SpellDescriptor.Get(id);
         UpdateEditor();
@@ -84,6 +89,7 @@ public partial class FrmSpell : EditorForm
 
     private void btnSave_Click(object sender, EventArgs e)
     {
+        ReadDeltasIntoModel();
         SaveUpgradesFromGrid();
         //Send Changed items
         foreach (var item in mChanged)
@@ -287,6 +293,154 @@ public partial class FrmSpell : EditorForm
         btnCancel.Text = Strings.SpellEditor.cancel;
     }
 
+    private int SelectedLevel => cmbLevel.SelectedIndex + 1;
+
+    private void InitLevelSelector()
+    {
+        cmbLevel.Items.Clear();
+        var count = mEditorItem?.Progression.Count ?? 0;
+        for (var i = 0; i < count; ++i)
+        {
+            cmbLevel.Items.Add((i + 1).ToString());
+        }
+
+        if (cmbLevel.Items.Count == 0)
+        {
+            cmbLevel.Items.Add("1");
+            if (mEditorItem != null && mEditorItem.Progression.Count == 0)
+            {
+                mEditorItem.Progression.Add(new SpellProgressionRow());
+            }
+        }
+
+        cmbLevel.SelectedIndex = 0;
+    }
+
+    private void PopulateDeltas()
+    {
+        if (mEditorItem == null)
+        {
+            nudHpDelta.Value = 0;
+            nudMpDelta.Value = 0;
+            nudCastDelta.Value = 0;
+            nudCooldownDelta.Value = 0;
+            dgvLevelUpgrades.Rows.Clear();
+            return;
+        }
+
+        var row = mEditorItem.GetProgressionLevel(SelectedLevel) ?? new SpellProgressionRow();
+        nudHpDelta.Value = row.VitalCostDeltas[(int)Vital.Health];
+        nudMpDelta.Value = row.VitalCostDeltas[(int)Vital.Mana];
+        nudCastDelta.Value = row.CastTimeDeltaMs;
+        nudCooldownDelta.Value = row.CooldownDeltaMs;
+        dgvLevelUpgrades.Rows.Clear();
+        foreach (var kv in row.CustomUpgradeDeltas)
+        {
+            dgvLevelUpgrades.Rows.Add(kv.Key, kv.Value);
+        }
+    }
+
+    private void ReadDeltasIntoModel(int level)
+    {
+        if (mEditorItem == null)
+        {
+            return;
+        }
+
+        while (mEditorItem.Progression.Count < level)
+        {
+            mEditorItem.Progression.Add(new SpellProgressionRow());
+        }
+
+        var row = mEditorItem.Progression[level - 1];
+        row.VitalCostDeltas[(int)Vital.Health] = (long)nudHpDelta.Value;
+        row.VitalCostDeltas[(int)Vital.Mana] = (long)nudMpDelta.Value;
+        row.CastTimeDeltaMs = (int)nudCastDelta.Value;
+        row.CooldownDeltaMs = (int)nudCooldownDelta.Value;
+        row.CustomUpgradeDeltas.Clear();
+        dgvLevelUpgrades.EndEdit();
+        foreach (DataGridViewRow dgRow in dgvLevelUpgrades.Rows)
+        {
+            if (dgRow.IsNewRow)
+            {
+                continue;
+            }
+
+            var key = dgRow.Cells[0].Value?.ToString();
+            var valueObj = dgRow.Cells[1].Value;
+            if (string.IsNullOrWhiteSpace(key) || !SpellUpgradeKeys.IsValid(key))
+            {
+                continue;
+            }
+
+            if (int.TryParse(valueObj?.ToString(), out var value))
+            {
+                row.CustomUpgradeDeltas[key] = value;
+            }
+        }
+    }
+
+    private void ReadDeltasIntoModel() => ReadDeltasIntoModel(SelectedLevel);
+
+    private void cmbLevel_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (mEditorItem == null)
+        {
+            return;
+        }
+
+        ReadDeltasIntoModel(mLastSelectedLevel);
+        mLastSelectedLevel = SelectedLevel;
+        PopulateDeltas();
+    }
+
+    private void btnAddLevel_Click(object sender, EventArgs e)
+    {
+        if (mEditorItem == null)
+        {
+            return;
+        }
+
+        ReadDeltasIntoModel();
+        mEditorItem.Progression.Add(new SpellProgressionRow());
+        InitLevelSelector();
+        cmbLevel.SelectedIndex = mEditorItem.Progression.Count - 1;
+        mLastSelectedLevel = SelectedLevel;
+        PopulateDeltas();
+    }
+
+    private void btnRemoveLevel_Click(object sender, EventArgs e)
+    {
+        if (mEditorItem == null)
+        {
+            return;
+        }
+
+        if (mEditorItem.Progression.Count == 0)
+        {
+            return;
+        }
+
+        var index = SelectedLevel - 1;
+        if (index >= 0 && index < mEditorItem.Progression.Count)
+        {
+            mEditorItem.Progression.RemoveAt(index);
+            if (mEditorItem.Progression.Count == 0)
+            {
+                mEditorItem.Progression.Add(new SpellProgressionRow());
+            }
+        }
+
+        InitLevelSelector();
+        if (index >= mEditorItem.Progression.Count)
+        {
+            cmbLevel.SelectedIndex = mEditorItem.Progression.Count - 1;
+        }
+
+        mLastSelectedLevel = SelectedLevel;
+        PopulateDeltas();
+    }
+
     private void UpdateEditor()
     {
         if (mEditorItem != null)
@@ -325,6 +479,10 @@ public partial class FrmSpell : EditorForm
             nudMpCost.Value = mEditorItem.VitalCost[(int)Vital.Mana];
 
             txtCannotCast.Text = mEditorItem.CannotCastMessage;
+
+            InitLevelSelector();
+            PopulateDeltas();
+            mLastSelectedLevel = SelectedLevel;
 
             mEditorItem.Properties ??= new SpellProperties();
             dgvUpgrades.Rows.Clear();
@@ -1059,6 +1217,43 @@ public partial class FrmSpell : EditorForm
                 DarkMessageBox.ShowError("Invalid upgrade key.", "Error");
                 e.Cancel = true;
             }
+        }
+    }
+
+    private void dgvUpgrades_EditingControlShowing(object sender, DataGridViewEditingControlShowingEventArgs e)
+    {
+        if (dgvUpgrades.CurrentCell?.ColumnIndex == 0 && e.Control is TextBox tb)
+        {
+            tb.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+            tb.AutoCompleteSource = AutoCompleteSource.CustomSource;
+            var source = new AutoCompleteStringCollection();
+            source.AddRange(SpellUpgradeKeys.All.ToArray());
+            tb.AutoCompleteCustomSource = source;
+        }
+    }
+
+    private void dgvLevelUpgrades_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
+    {
+        if (e.ColumnIndex == 0)
+        {
+            var key = e.FormattedValue?.ToString()?.Trim();
+            if (!string.IsNullOrEmpty(key) && !SpellUpgradeKeys.IsValid(key))
+            {
+                DarkMessageBox.ShowError("Invalid upgrade key.", "Error");
+                e.Cancel = true;
+            }
+        }
+    }
+
+    private void dgvLevelUpgrades_EditingControlShowing(object sender, DataGridViewEditingControlShowingEventArgs e)
+    {
+        if (dgvLevelUpgrades.CurrentCell?.ColumnIndex == 0 && e.Control is TextBox tb)
+        {
+            tb.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+            tb.AutoCompleteSource = AutoCompleteSource.CustomSource;
+            var source = new AutoCompleteStringCollection();
+            source.AddRange(SpellUpgradeKeys.All.ToArray());
+            tb.AutoCompleteCustomSource = source;
         }
     }
 

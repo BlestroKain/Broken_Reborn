@@ -33,7 +33,7 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
 
     public DbSet<Quest> Player_Quests { get; set; }
 
-    public DbSet<SpellSlot> Player_Spells { get; set; }
+    public DbSet<PlayerSpell> Player_Spells { get; set; }
 
     public DbSet<PlayerVariable> Player_Variables { get; set; }
 

@@ -10,6 +10,7 @@ using Intersect.Framework.Core.GameObjects.Events;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Framework.Core.GameObjects.Maps.Attributes;
+using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.GameObjects;
 using Intersect.Network.Packets.Server;
 using Intersect.Server.Database;
@@ -162,9 +163,9 @@ public abstract partial class Entity : IEntity
 
     //Spells
     [JsonIgnore]
-    public virtual SlotList<SpellSlot> Spells { get; set; } = new(
+    public virtual SlotList<PlayerSpell> Spells { get; set; } = new(
         Options.Instance.Player.MaxSpells,
-        SpellSlot.Create
+        PlayerSpell.Create
     );
 
     [JsonIgnore, Column(nameof(NameColor))]
@@ -418,7 +419,9 @@ public abstract partial class Entity : IEntity
             return;
         }
 
-        SpellCooldowns[Spells[spellSlot].SpellId] = Timing.Global.MillisecondsUtc + spellDescriptor.CooldownDuration;
+        var props = Spells[spellSlot].Properties;
+        SpellCooldowns[Spells[spellSlot].SpellId] =
+            Timing.Global.MillisecondsUtc + spellDescriptor.GetEffectiveCooldownDuration(props);
     }
 
     /// <summary>
@@ -1663,7 +1666,8 @@ public abstract partial class Entity : IEntity
             var s = projectile.Spell;
             if (s != null)
             {
-                HandleAoESpell(projectile.SpellId, s.Combat.HitRadius, target.MapId, target.X, target.Y, null);
+                var props = (this as Player)?.GetSpellProperties(s.Id);
+                HandleAoESpell(projectile.SpellId, s.Combat.GetEffectiveHitRadius(props), target.MapId, target.X, target.Y, null);
             }
 
             //Check that the npc has not been destroyed by the splash spell
@@ -1847,40 +1851,47 @@ public abstract partial class Entity : IEntity
             deadAnimations.Add(new KeyValuePair<Guid, Direction>(spellDescriptor.HitAnimationId, Direction.Up));
             aliveAnimations.Add(new KeyValuePair<Guid, Direction>(spellDescriptor.HitAnimationId, Direction.Up));
         }
-
+        var spellProperties=new SpellProperties();
+        var duration = spellDescriptor.Combat.GetEffectiveDuration(spellProperties);
         var statBuffTime = -1;
-        var expireTime = Timing.Global.Milliseconds + spellDescriptor.Combat.Duration;
+        var expireTime = Timing.Global.Milliseconds + duration;
         for (var i = 0; i < Enum.GetValues<Stat>().Length; i++)
         {
             target.Stat[i]
                 .AddBuff(
-                    new Buff(spellDescriptor, spellDescriptor.Combat.StatDiff[i], spellDescriptor.Combat.PercentageStatDiff[i], expireTime)
+                    new Buff(spellDescriptor,
+                        spellDescriptor.Combat.GetEffectiveStatDiff((Stat)i, spellProperties),
+                        spellDescriptor.Combat.PercentageStatDiff[i], expireTime)
                 );
 
-            if (spellDescriptor.Combat.StatDiff[i] != 0 || spellDescriptor.Combat.PercentageStatDiff[i] != 0)
+            if (spellDescriptor.Combat.GetEffectiveStatDiff((Stat)i, spellProperties) != 0 ||
+                spellDescriptor.Combat.PercentageStatDiff[i] != 0)
             {
-                statBuffTime = spellDescriptor.Combat.Duration;
+                statBuffTime = duration;
             }
         }
 
         if (statBuffTime == -1)
         {
-            if (spellDescriptor.Combat.HoTDoT && spellDescriptor.Combat.HotDotInterval > 0)
+            if (spellDescriptor.Combat.HoTDoT && spellDescriptor.Combat.GetEffectiveHotDotInterval(spellProperties) > 0)
             {
-                statBuffTime = spellDescriptor.Combat.Duration;
+                statBuffTime = duration;
             }
         }
 
-        var damageHealth = spellDescriptor.Combat.VitalDiff[(int)Vital.Health];
-        var damageMana = spellDescriptor.Combat.VitalDiff[(int)Vital.Mana];
+        var spellLevel = spellProperties?.Level ?? 0;
+        var damageHealth = SpellMath.Scale(spellDescriptor.Combat.GetEffectiveVitalDiff(Vital.Health, spellProperties), spellLevel);
+        var damageMana = SpellMath.Scale(spellDescriptor.Combat.GetEffectiveVitalDiff(Vital.Mana, spellProperties), spellLevel);
 
         if ((spellDescriptor.Combat.Effect != SpellEffect.OnHit || onHitTrigger) &&
             spellDescriptor.Combat.Effect != SpellEffect.Shield)
         {
             Attack(
                 target, damageHealth, damageMana, (DamageType)spellDescriptor.Combat.DamageType,
-                (Stat)spellDescriptor.Combat.ScalingStat, spellDescriptor.Combat.Scaling, spellDescriptor.Combat.CritChance,
-                spellDescriptor.Combat.CritMultiplier, deadAnimations, aliveAnimations, false
+                (Stat)spellDescriptor.Combat.ScalingStat,
+                spellDescriptor.Combat.GetEffectiveScaling(spellProperties),
+                spellDescriptor.Combat.GetEffectiveCritChance(spellProperties),
+                spellDescriptor.Combat.GetEffectiveCritMultiplier(spellProperties), deadAnimations, aliveAnimations, false, spellLevel
             );
         }
 
@@ -1900,7 +1911,7 @@ public abstract partial class Entity : IEntity
                 {
                     // Else, apply the status
                     new Status(
-                        target, this, spellDescriptor, spellDescriptor.Combat.Effect, spellDescriptor.Combat.Duration,
+                        target, this, spellDescriptor, spellDescriptor.Combat.Effect, duration,
                         spellDescriptor.Combat.TransformSprite
                     );
 
@@ -2066,7 +2077,8 @@ public abstract partial class Entity : IEntity
         double critMultiplier,
         List<KeyValuePair<Guid, Direction>> deadAnimations = null,
         List<KeyValuePair<Guid, Direction>> aliveAnimations = null,
-        bool isAutoAttack = false
+        bool isAutoAttack = false,
+        int? spellLevel = null
     )
     {
         var damagingAttack = baseDamage > 0;
@@ -2096,7 +2108,7 @@ public abstract partial class Entity : IEntity
         if (!(enemy is Resource))
         {
             baseDamage = Formulas.CalculateDamage(
-            baseDamage, damageType, scalingStat, scaling, critMultiplier, this, enemy
+            baseDamage, damageType, scalingStat, scaling, critMultiplier, this, enemy, spellLevel
         );
         }
 
@@ -2221,7 +2233,7 @@ public abstract partial class Entity : IEntity
         if (secondaryDamage != 0)
         {
             secondaryDamage = Formulas.CalculateDamage(
-                secondaryDamage, damageType, scalingStat, scaling, critMultiplier, this, enemy
+                secondaryDamage, damageType, scalingStat, scaling, critMultiplier, this, enemy, spellLevel
             );
 
             if (secondaryDamage < 0 && secondaryDamagingAttack)
@@ -2415,16 +2427,18 @@ public abstract partial class Entity : IEntity
             return false;
         }
 
+        var spellProperties = (this as Player)?.GetSpellProperties(spell.Id);
+
         // Do we meet the vital requirements?
         if (checkVitalReqs)
         {
-            if (spell.VitalCost[(int)Vital.Mana] > GetVital(Vital.Mana))
+            if (spell.GetEffectiveVitalCost(Vital.Mana, spellProperties) > GetVital(Vital.Mana))
             {
                 reason = SpellCastFailureReason.InsufficientMP;
                 return false;
             }
 
-            if (spell.VitalCost[(int)Vital.Health] >= GetVital(Vital.Health))
+            if (spell.GetEffectiveVitalCost(Vital.Health, spellProperties) >= GetVital(Vital.Health))
             {
                 reason = SpellCastFailureReason.InsufficientHP;
                 return false;
@@ -2493,7 +2507,8 @@ public abstract partial class Entity : IEntity
         //Check for range of a single target spell
         if (singleTargetSpell && target != this)
         {
-            if (!InRangeOf(target, spell.Combat.CastRange))
+            var castRange = spell.Combat.GetEffectiveCastRange(spellProperties);
+            if (!InRangeOf(target, castRange))
             {
                 reason = SpellCastFailureReason.OutOfRange;
                 return false;
@@ -2517,22 +2532,25 @@ public abstract partial class Entity : IEntity
             return;
         }
 
-        if (spellBase.VitalCost[(int)Vital.Mana] > 0)
+        var spellProperties = (this as Player)?.GetSpellProperties(spellId);
+        var manaCost = spellBase.GetEffectiveVitalCost(Vital.Mana, spellProperties);
+        if (manaCost > 0)
         {
-            SubVital(Vital.Mana, spellBase.VitalCost[(int)Vital.Mana]);
+            SubVital(Vital.Mana, manaCost);
         }
         else
         {
-            AddVital(Vital.Mana, -spellBase.VitalCost[(int)Vital.Mana]);
+            AddVital(Vital.Mana, -manaCost);
         }
 
-        if (spellBase.VitalCost[(int)Vital.Health] > 0)
+        var healthCost = spellBase.GetEffectiveVitalCost(Vital.Health, spellProperties);
+        if (healthCost > 0)
         {
-            SubVital(Vital.Health, spellBase.VitalCost[(int)Vital.Health]);
+            SubVital(Vital.Health, healthCost);
         }
         else
         {
-            AddVital(Vital.Health, -spellBase.VitalCost[(int)Vital.Health]);
+            AddVital(Vital.Health, -healthCost);
         }
 
         try
@@ -2580,9 +2598,10 @@ public abstract partial class Entity : IEntity
 
                             if (spellBase.Combat.HitRadius > 0) //Single target spells with AoE hit radius'
                             {
+                                var hitRadius = spellBase.Combat.GetEffectiveHitRadius(spellProperties);
                                 HandleAoESpell(
                                     spellId,
-                                    spellBase.Combat.HitRadius,
+                                    hitRadius,
                                     CastTarget.MapId,
                                     CastTarget.X,
                                     CastTarget.Y,
@@ -2596,7 +2615,7 @@ public abstract partial class Entity : IEntity
 
                             break;
                         case SpellTargetType.AoE:
-                            HandleAoESpell(spellId, spellBase.Combat.HitRadius, MapId, X, Y, null);
+                            HandleAoESpell(spellId, spellBase.Combat.GetEffectiveHitRadius(spellProperties), MapId, X, Y, null);
 
                             break;
                         case SpellTargetType.Projectile:
@@ -2629,10 +2648,10 @@ public abstract partial class Entity : IEntity
                                     this,
                                     spellBase,
                                     SpellEffect.OnHit,
-                                    spellBase.Combat.OnHitDuration,
+                                    spellBase.Combat.GetEffectiveOnHitDuration(spellProperties),
                                     spellBase.Combat.TransformSprite
                                 );
-
+                                
                                 PacketSender.SendActionMsg(
                                     this,
                                     Strings.Combat.Status[(int)spellBase.Combat.Effect],
@@ -2668,7 +2687,8 @@ public abstract partial class Entity : IEntity
                 case SpellType.WarpTo:
                     if (CastTarget != null)
                     {
-                        HandleAoESpell(spellId, spellBase.Combat.CastRange, MapId, X, Y, CastTarget);
+                        var castRange = spellBase.Combat.GetEffectiveCastRange(spellProperties);
+                        HandleAoESpell(spellId, castRange, MapId, X, Y, CastTarget);
                     }
 
                     break;
@@ -2676,7 +2696,7 @@ public abstract partial class Entity : IEntity
                     PacketSender.SendActionMsg(this, Strings.Combat.Dash, CustomColors.Combat.Dash);
                     var dash = new Dash(
                         this,
-                        spellBase.Combat.CastRange,
+                        spellBase.Combat.GetEffectiveCastRange(spellProperties),
                         Dir,
                         Convert.ToBoolean(spellBase.Dash.IgnoreMapBlocks),
                         Convert.ToBoolean(spellBase.Dash.IgnoreActiveResources),

@@ -1145,7 +1145,12 @@ public partial class Player : Entity
             for (var i = 0; i < Options.Instance.Player.MaxSpells; i++)
             {
                 var slot = Spells[i];
-                spells[i] = new SpellUpdatePacket(i, slot.SpellId, slot.Level);
+                spells[i] = new SpellUpdatePacket(
+                    i,
+                    slot.SpellId,
+                    slot.Level,
+                    slot.Properties
+                );
             }
 
             pkt.Spells = spells;

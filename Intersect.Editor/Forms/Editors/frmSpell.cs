@@ -11,8 +11,10 @@ using Intersect.Framework.Core.GameObjects.Events;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Maps.MapList;
 using Intersect.Framework.Core.GameObjects.NPCs;
+using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.GameObjects;
 using Intersect.Utilities;
+using System.Windows.Forms;
 using Graphics = System.Drawing.Graphics;
 
 namespace Intersect.Editor.Forms.Editors;
@@ -30,6 +32,9 @@ public partial class FrmSpell : EditorForm
     private List<string> mKnownFolders = new List<string>();
 
     private List<string> mKnownCooldownGroups = new List<string>();
+
+    private int mUpgradeLevel = 1;
+    private bool mLoadingLevels;
 
     public FrmSpell()
     {
@@ -49,6 +54,7 @@ public partial class FrmSpell : EditorForm
     }
     private void AssignEditorItem(Guid id)
     {
+        SaveUpgradesFromGrid();
         mEditorItem = SpellDescriptor.Get(id);
         UpdateEditor();
     }
@@ -81,6 +87,7 @@ public partial class FrmSpell : EditorForm
 
     private void btnSave_Click(object sender, EventArgs e)
     {
+        SaveUpgradesFromGrid();
         //Send Changed items
         foreach (var item in mChanged)
         {
@@ -322,6 +329,18 @@ public partial class FrmSpell : EditorForm
 
             txtCannotCast.Text = mEditorItem.CannotCastMessage;
 
+            mLoadingLevels = true;
+            cmbUpgradeLevel.Items.Clear();
+            for (var i = 1; i <= Options.Instance.Player.MaxLevel; i++)
+            {
+                cmbUpgradeLevel.Items.Add(i.ToString());
+            }
+
+            cmbUpgradeLevel.SelectedIndex = 0;
+            mUpgradeLevel = 1;
+            mLoadingLevels = false;
+            LoadUpgradesForLevel();
+
             UpdateSpellTypePanels();
             if (mChanged.IndexOf(mEditorItem) == -1)
             {
@@ -337,6 +356,80 @@ public partial class FrmSpell : EditorForm
         var hasItem = mEditorItem != null;
         UpdateEditorButtons(hasItem);
         UpdateToolStripItems();
+    }
+
+    private void SaveUpgradesFromGrid()
+    {
+        if (mEditorItem == null)
+        {
+            return;
+        }
+
+        mEditorItem.LevelUpgrades ??= new Dictionary<int, SpellProperties>();
+
+        dgvUpgrades.EndEdit();
+
+        if (!mEditorItem.LevelUpgrades.TryGetValue(mUpgradeLevel, out var props) || props == null)
+        {
+            props = new SpellProperties { Level = mUpgradeLevel };
+        }
+
+        props.CustomUpgrades.Clear();
+
+        foreach (DataGridViewRow row in dgvUpgrades.Rows)
+        {
+            if (row.IsNewRow)
+            {
+                continue;
+            }
+
+            var key = row.Cells[0].Value?.ToString();
+            var valueObj = row.Cells[1].Value;
+
+            if (string.IsNullOrWhiteSpace(key) || !SpellUpgradeKeys.IsValid(key))
+            {
+                continue;
+            }
+
+            if (int.TryParse(valueObj?.ToString(), out var value))
+            {
+                props.CustomUpgrades[key] = value;
+            }
+        }
+
+        mEditorItem.LevelUpgrades[mUpgradeLevel] = props;
+    }
+
+    private void LoadUpgradesForLevel()
+    {
+        if (mEditorItem == null)
+        {
+            return;
+        }
+
+        dgvUpgrades.Rows.Clear();
+
+        if (mEditorItem.LevelUpgrades != null &&
+            mEditorItem.LevelUpgrades.TryGetValue(mUpgradeLevel, out var props) &&
+            props?.CustomUpgrades != null)
+        {
+            foreach (var kv in props.CustomUpgrades)
+            {
+                dgvUpgrades.Rows.Add(kv.Key, kv.Value);
+            }
+        }
+    }
+
+    private void cmbUpgradeLevel_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (mLoadingLevels)
+        {
+            return;
+        }
+
+        SaveUpgradesFromGrid();
+        mUpgradeLevel = cmbUpgradeLevel.SelectedIndex + 1;
+        LoadUpgradesForLevel();
     }
 
     private void UpdateSpellTypePanels()
@@ -1002,6 +1095,19 @@ public partial class FrmSpell : EditorForm
     private void txtCannotCast_TextChanged(object sender, EventArgs e)
     {
         mEditorItem.CannotCastMessage = txtCannotCast.Text;
+    }
+
+    private void dgvUpgrades_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
+    {
+        if (e.ColumnIndex == 0)
+        {
+            var key = e.FormattedValue?.ToString()?.Trim();
+            if (!string.IsNullOrEmpty(key) && !SpellUpgradeKeys.IsValid(key))
+            {
+                DarkMessageBox.ShowError("Invalid upgrade key.", "Error");
+                e.Cancel = true;
+            }
+        }
     }
 
     #region "Item List - Folders, Searching, Sorting, Etc"

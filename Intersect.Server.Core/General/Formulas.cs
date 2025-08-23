@@ -52,7 +52,8 @@ public partial class Formulas
         int scaling,
         double critMultiplier,
         Entity attacker,
-        Entity victim
+        Entity victim,
+        int? attackerLevel = null
     )
     {
         if (_formulas == null)
@@ -110,7 +111,7 @@ public partial class Formulas
             expression.Parameters["A_Speed"] = attacker.Stat[(int)Stat.Agility].Value();
             expression.Parameters["A_AbilityPwr"] = attacker.Stat[(int)Stat.Intelligence].Value();
             expression.Parameters["A_MagicResist"] = attacker.Stat[(int)Stat.Vitality].Value();
-            expression.Parameters["A_Level"] = attacker.Level;
+            expression.Parameters["A_Level"] = attackerLevel ?? attacker.Level;
             expression.Parameters["V_Attack"] = victim.Stat[(int)Stat.Attack].Value();
             expression.Parameters["V_Defense"] = victim.Stat[(int)Stat.Defense].Value();
             // Use agility in place of speed for combat calculations

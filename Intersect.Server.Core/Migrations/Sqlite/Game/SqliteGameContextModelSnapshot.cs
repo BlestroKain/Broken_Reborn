@@ -393,7 +393,17 @@ namespace Intersect.Server.Migrations.Sqlite.Game
 
                     b.HasKey("Id");
 
+                    b.HasIndex("SetId");
+
                     b.ToTable("Items");
+                });
+
+            modelBuilder.Entity("Intersect.Framework.Core.GameObjects.Items.ItemDescriptor", b =>
+                {
+                    b.HasOne("Intersect.GameObjects.SetDescriptor", "Set")
+                        .WithMany()
+                        .HasForeignKey("SetId")
+                        .OnDelete(DeleteBehavior.SetDefault);
                 });
 
             modelBuilder.Entity("Intersect.Framework.Core.GameObjects.Mapping.Tilesets.TilesetDescriptor", b =>

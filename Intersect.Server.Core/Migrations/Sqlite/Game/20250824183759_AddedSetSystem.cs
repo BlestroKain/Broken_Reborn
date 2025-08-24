@@ -39,11 +39,34 @@ namespace Intersect.Server.Migrations.Sqlite.Game
                 {
                     table.PrimaryKey("PK_Sets", x => x.Id);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Items_Set",
+                table: "Items",
+                column: "Set");
+
+            // When a set is deleted, items referencing it should become unset.
+            // Use SET DEFAULT so the Set column reverts to Guid.Empty instead of restricting the delete.
+            migrationBuilder.AddForeignKey(
+                name: "FK_Items_Sets_Set",
+                table: "Items",
+                column: "Set",
+                principalTable: "Sets",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.SetDefault);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_Items_Sets_Set",
+                table: "Items");
+
+            migrationBuilder.DropIndex(
+                name: "IX_Items_Set",
+                table: "Items");
+
             migrationBuilder.DropTable(
                 name: "Sets");
 

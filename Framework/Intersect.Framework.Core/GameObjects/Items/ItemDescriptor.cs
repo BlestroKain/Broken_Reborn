@@ -170,6 +170,26 @@ public partial class ItemDescriptor : DatabaseObject<ItemDescriptor>, IFolderabl
         set => EventId = value?.Id ?? Guid.Empty;
     }
 
+    [Column("Set")]
+    [JsonProperty]
+    public Guid SetId { get; set; }
+
+    [NotMapped]
+    [JsonIgnore]
+    public SetBase Set
+    {
+        get => SetBase.Get(SetId);
+        set => SetId = value?.Id ?? Guid.Empty;
+    }
+
+    [Column("SetName")]
+    [JsonProperty]
+    public string SetName { get; set; } = string.Empty;
+
+    [Column("SetDescription")]
+    [JsonProperty]
+    public string SetDescription { get; set; } = string.Empty;
+
     public string Description { get; set; } = string.Empty;
 
     public string FemalePaperdoll { get; set; } = string.Empty;
@@ -487,6 +507,10 @@ public partial class ItemDescriptor : DatabaseObject<ItemDescriptor>, IFolderabl
         Consumable = new ConsumableData();
         Effects = [];
         Color = new Color(255, 255, 255, 255);
+        if (ItemType != ItemType.Equipment)
+        {
+            SetId = Guid.Empty;
+        }
     }
 
     // Verifica si el ítem puede ser encantado (solo si es de tipo Equipment)

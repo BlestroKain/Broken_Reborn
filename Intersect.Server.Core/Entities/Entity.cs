@@ -294,6 +294,9 @@ public abstract partial class Entity : IEntity
     public object EntityLock = new object();
 
     [NotMapped, JsonIgnore]
+    public Guid DeathAnimation { get; set; } = Guid.Empty;
+
+    [NotMapped, JsonIgnore]
     public bool VitalsUpdated
     {
         get => !GetVitals().SequenceEqual(mOldVitals) || !GetMaxVitals().SequenceEqual(mOldMaxVitals);
@@ -3103,12 +3106,51 @@ public abstract partial class Entity : IEntity
                (Options.Instance.Map.EnableDiagonalMovement && xDiff == 1 && yDiff == 1);
     }
 
+    protected void PlayDeathAnimation()
+    {
+        if (DeathAnimation != Guid.Empty)
+        {
+            PacketSender.SendAnimationToProximity(
+                DeathAnimation,
+                -1,
+                Id,
+                MapId,
+                X,
+                Y,
+                Direction.Up,
+                MapInstanceId
+            );
+        }
+
+        if (this is Player)
+        {
+            if (Guid.TryParse(Options.PlayerDeathAnimationId, out var animId))
+            {
+                PacketSender.SendAnimationToProximity(
+                    animId,
+                    -1,
+                    Id,
+                    MapId,
+                    X,
+                    Y,
+                    Direction.Up,
+                    MapInstanceId
+                );
+            }
+        }
+    }
+
     //Spawning/Dying
     public virtual void Die(bool dropItems = true, Entity killer = null)
     {
         if (IsDead || Items == null)
         {
             return;
+        }
+
+        if (this is not Player)
+        {
+            PlayDeathAnimation();
         }
 
         // Run events and other things.

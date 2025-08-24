@@ -113,6 +113,8 @@ namespace Intersect.Editor.Forms.Editors
             lblCritChance = new Label();
             cmbAttackAnimation = new DarkComboBox();
             lblAttackAnimation = new Label();
+            cmbDeathAnimation = new DarkComboBox();
+            lblDeathAnimation = new Label();
             lblDamage = new Label();
             grpCommonEvents = new DarkGroupBox();
             cmbOnDeathEventParty = new DarkComboBox();
@@ -1066,6 +1068,8 @@ namespace Intersect.Editor.Forms.Editors
             grpCombat.Controls.Add(lblCritChance);
             grpCombat.Controls.Add(cmbAttackAnimation);
             grpCombat.Controls.Add(lblAttackAnimation);
+            grpCombat.Controls.Add(cmbDeathAnimation);
+            grpCombat.Controls.Add(lblDeathAnimation);
             grpCombat.Controls.Add(lblDamage);
             grpCombat.ForeColor = System.Drawing.Color.Gainsboro;
             grpCombat.Location = new System.Drawing.Point(536, 6);
@@ -1298,9 +1302,41 @@ namespace Intersect.Editor.Forms.Editors
             lblCritChance.Size = new Size(93, 15);
             lblCritChance.TabIndex = 52;
             lblCritChance.Text = "Crit Chance (%):";
-            // 
+            //
+            // cmbDeathAnimation
+            //
+            cmbDeathAnimation.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            cmbDeathAnimation.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+            cmbDeathAnimation.BorderStyle = ButtonBorderStyle.Solid;
+            cmbDeathAnimation.ButtonColor = System.Drawing.Color.FromArgb(43, 43, 43);
+            cmbDeathAnimation.DrawDropdownHoverOutline = false;
+            cmbDeathAnimation.DrawFocusRectangle = false;
+            cmbDeathAnimation.DrawMode = DrawMode.OwnerDrawFixed;
+            cmbDeathAnimation.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbDeathAnimation.FlatStyle = FlatStyle.Flat;
+            cmbDeathAnimation.ForeColor = System.Drawing.Color.Gainsboro;
+            cmbDeathAnimation.FormattingEnabled = true;
+            cmbDeathAnimation.Location = new System.Drawing.Point(14, 306);
+            cmbDeathAnimation.Margin = new Padding(4, 3, 4, 3);
+            cmbDeathAnimation.Name = "cmbDeathAnimation";
+            cmbDeathAnimation.Size = new Size(276, 24);
+            cmbDeathAnimation.TabIndex = 49;
+            cmbDeathAnimation.Text = null;
+            cmbDeathAnimation.TextPadding = new Padding(2);
+            cmbDeathAnimation.SelectedIndexChanged += cmbDeathAnimation_SelectedIndexChanged;
+            //
+            // lblDeathAnimation
+            //
+            lblDeathAnimation.AutoSize = true;
+            lblDeathAnimation.Location = new System.Drawing.Point(10, 289);
+            lblDeathAnimation.Margin = new Padding(4, 0, 4, 0);
+            lblDeathAnimation.Name = "lblDeathAnimation";
+            lblDeathAnimation.Size = new Size(99, 15);
+            lblDeathAnimation.TabIndex = 48;
+            lblDeathAnimation.Text = "Death Animation:";
+            //
             // cmbAttackAnimation
-            // 
+            //
             cmbAttackAnimation.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
             cmbAttackAnimation.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
             cmbAttackAnimation.BorderStyle = ButtonBorderStyle.Solid;
@@ -2477,6 +2513,8 @@ namespace Intersect.Editor.Forms.Editors
         private System.Windows.Forms.Label lblCritChance;
         private DarkComboBox cmbAttackAnimation;
         private System.Windows.Forms.Label lblAttackAnimation;
+        private DarkComboBox cmbDeathAnimation;
+        private System.Windows.Forms.Label lblDeathAnimation;
         private System.Windows.Forms.Label lblDamage;
         private DarkComboBox cmbHostileNPC;
         private DarkComboBox cmbSpell;

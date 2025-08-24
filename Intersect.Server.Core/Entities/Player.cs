@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
@@ -156,6 +157,24 @@ public partial class Player : Entity
             return equippedItems;
         }
     }
+
+    [NotMapped, JsonIgnore]
+    private readonly int[] mEquipmentFlatStats = new int[Enum.GetValues<Stat>().Length];
+
+    [NotMapped, JsonIgnore]
+    private readonly int[] mEquipmentPercentStats = new int[Enum.GetValues<Stat>().Length];
+
+    [NotMapped, JsonIgnore]
+    private readonly long[] mEquipmentFlatVitals = new long[Enum.GetValues<Vital>().Length];
+
+    [NotMapped, JsonIgnore]
+    private readonly int[] mEquipmentPercentVitals = new int[Enum.GetValues<Vital>().Length];
+
+    [NotMapped, JsonIgnore]
+    private readonly long[] mEquipmentVitalRegen = new long[Enum.GetValues<Vital>().Length];
+
+    [NotMapped, JsonIgnore]
+    private readonly Dictionary<ItemEffect, int> mEquipmentBonusEffects = new();
 
 
     public DateTime? LastOnline { get; set; }
@@ -1284,48 +1303,7 @@ public partial class Player : Entity
 
     public override long GetMaxVital(int vital)
     {
-        var classDescriptor = ClassDescriptor.Get(this.ClassId);
-        long classVital = 20;
-        if (classDescriptor != null)
-        {
-            if (classDescriptor.IncreasePercentage)
-            {
-                classVital = (long)(classDescriptor.BaseVital[vital] *
-                                    Math.Pow(1 + (double)classDescriptor.VitalIncrease[vital] / 100, Level - 1));
-            }
-            else
-            {
-                classVital = classDescriptor.BaseVital[vital] + classDescriptor.VitalIncrease[vital] * (Level - 1);
-            }
-        }
-
-        var baseVital = classVital;
-
-        // Loop through equipment and see if any items grant vital buffs
-        foreach (var item in EquippedItems.ToArray())
-        {
-            if (ItemDescriptor.TryGet(item.ItemId, out var descriptor))
-            {
-                classVital += descriptor.VitalsGiven[vital] + item.Properties?.VitalModifiers?[(int)vital] ?? 0 + descriptor.PercentageVitalsGiven[vital] * baseVital / 100;
-            }
-        }
-
-        var setBonuses = GetSetBonuses();
-        classVital += setBonuses.vitals[vital] + setBonuses.percentVitals[vital] * baseVital / 100;
-
-        //Must have at least 1 hp and no less than 0 mp
-        if (vital == (int)Vital.Health)
-        {
-            classVital = Math.Max(classVital, 1);
-        }
-        else if (vital == (int)Vital.Mana)
-        {
-            classVital = Math.Max(classVital, 0);
-        }
-
-        classVital += CalculateVitalStatBonus((Vital)vital);
-
-        return classVital;
+        return base.GetMaxVital(vital);
     }
 
     public override long GetMaxVital(Vital vital)
@@ -2055,31 +2033,124 @@ public partial class Player : Entity
     /// <returns>Returns a <see cref="Tuple"/> containing the Flat stats on Item1, and Percentage stats on Item2</returns>
     public Tuple<int, int> GetItemStatBuffs(Stat statType)
     {
-        var flatStats = 0;
-        var percentageStats = 0;
+        return new Tuple<int, int>(mEquipmentFlatStats[(int)statType], mEquipmentPercentStats[(int)statType]);
+    }
 
-        //Add up player equipment values
-        foreach (var equippedItem in EquippedItems)
+    private void ApplySetBonuses()
+    {
+        Array.Clear(mEquipmentFlatStats, 0, mEquipmentFlatStats.Length);
+        Array.Clear(mEquipmentPercentStats, 0, mEquipmentPercentStats.Length);
+        Array.Clear(mEquipmentFlatVitals, 0, mEquipmentFlatVitals.Length);
+        Array.Clear(mEquipmentPercentVitals, 0, mEquipmentPercentVitals.Length);
+        Array.Clear(mEquipmentVitalRegen, 0, mEquipmentVitalRegen.Length);
+        mEquipmentBonusEffects.Clear();
+
+        foreach (var item in EquippedItems)
         {
-            var descriptor = equippedItem.Descriptor;
-            if (descriptor != null)
+            var descriptor = item.Descriptor;
+            if (descriptor == null)
             {
-                flatStats += descriptor.StatsGiven[(int)statType];
+                continue;
+            }
 
-                if (equippedItem.Properties.StatModifiers != null)
+            for (var i = 0; i < mEquipmentFlatStats.Length; i++)
+            {
+                mEquipmentFlatStats[i] += descriptor.StatsGiven[i];
+                if (item.Properties?.StatModifiers != null)
                 {
-                    flatStats += equippedItem.Properties.StatModifiers[(int)statType];
+                    mEquipmentFlatStats[i] += item.Properties.StatModifiers[i];
+                }
+                mEquipmentPercentStats[i] += descriptor.PercentageStatsGiven[i];
+            }
+
+            for (var i = 0; i < mEquipmentFlatVitals.Length; i++)
+            {
+                mEquipmentFlatVitals[i] += descriptor.VitalsGiven[i];
+                if (item.Properties?.VitalModifiers != null)
+                {
+                    mEquipmentFlatVitals[i] += item.Properties.VitalModifiers[i];
+                }
+                mEquipmentPercentVitals[i] += descriptor.PercentageVitalsGiven[i];
+                mEquipmentVitalRegen[i] += descriptor.VitalsRegen[i];
+            }
+
+            foreach (var effect in descriptor.EffectsEnabled)
+            {
+                var percentage = descriptor.GetEffectPercentage(effect);
+                if (percentage == 0)
+                {
+                    continue;
                 }
 
-                percentageStats += descriptor.PercentageStatsGiven[(int)statType];
+                if (mEquipmentBonusEffects.ContainsKey(effect))
+                {
+                    mEquipmentBonusEffects[effect] += percentage;
+                }
+                else
+                {
+                    mEquipmentBonusEffects.Add(effect, percentage);
+                }
             }
         }
 
         var setBonuses = GetSetBonuses();
-        flatStats += setBonuses.stats[(int)statType];
-        percentageStats += setBonuses.percentStats[(int)statType];
+        for (var i = 0; i < mEquipmentFlatStats.Length; i++)
+        {
+            mEquipmentFlatStats[i] += setBonuses.stats[i];
+            mEquipmentPercentStats[i] += setBonuses.percentStats[i];
+        }
 
-        return new Tuple<int, int>(flatStats, percentageStats);
+        for (var i = 0; i < mEquipmentFlatVitals.Length; i++)
+        {
+            mEquipmentFlatVitals[i] += setBonuses.vitals[i];
+            mEquipmentPercentVitals[i] += setBonuses.percentVitals[i];
+            mEquipmentVitalRegen[i] += setBonuses.vitalsRegen[i];
+        }
+
+        foreach (var effect in setBonuses.effects)
+        {
+            if (mEquipmentBonusEffects.ContainsKey(effect.Type))
+            {
+                mEquipmentBonusEffects[effect.Type] += effect.Percentage;
+            }
+            else
+            {
+                mEquipmentBonusEffects.Add(effect.Type, effect.Percentage);
+            }
+        }
+
+        for (var vitalIndex = 0; vitalIndex < Enum.GetValues<Vital>().Length; vitalIndex++)
+        {
+            var classDescriptor = ClassDescriptor.Get(ClassId);
+            long classVital = 20;
+            if (classDescriptor != null)
+            {
+                if (classDescriptor.IncreasePercentage)
+                {
+                    classVital = (long)(classDescriptor.BaseVital[vitalIndex] *
+                                        Math.Pow(1 + (double)classDescriptor.VitalIncrease[vitalIndex] / 100, Level - 1));
+                }
+                else
+                {
+                    classVital = classDescriptor.BaseVital[vitalIndex] + classDescriptor.VitalIncrease[vitalIndex] * (Level - 1);
+                }
+            }
+
+            var total = classVital + mEquipmentFlatVitals[vitalIndex];
+            total = (long)Math.Ceiling(total + total * (mEquipmentPercentVitals[vitalIndex] / 100f));
+
+            if (vitalIndex == (int)Vital.Health)
+            {
+                total = Math.Max(total, 1);
+            }
+            else if (vitalIndex == (int)Vital.Mana)
+            {
+                total = Math.Max(total, 0);
+            }
+
+            total += CalculateVitalStatBonus((Vital)vitalIndex);
+            SetMaxVital(vitalIndex, total);
+        }
     }
 
     public void RecalculateStatsAndPoints()
@@ -2139,6 +2210,8 @@ public partial class Player : Entity
                 }
             }
         }
+
+        ApplySetBonuses();
     }
 
     //Warping
@@ -4073,35 +4146,12 @@ public partial class Player : Entity
     /// <returns></returns>
     public int GetEquipmentBonusEffect(ItemEffect effect)
     {
-        var value = 0;
-
-        foreach (var item in EquippedItems)
-        {
-            if (!item.Descriptor.EffectsEnabled.Contains(effect))
-            {
-                continue;
-            }
-            value += item.Descriptor.GetEffectPercentage(effect);
-        }
-
-        var setBonuses = GetSetBonuses();
-        value += setBonuses.effects.Where(e => e.Type == effect).Sum(e => e.Percentage);
-
-        return value;
+        return mEquipmentBonusEffects.TryGetValue(effect, out var value) ? value : 0;
     }
 
     public long GetEquipmentVitalRegen(Vital vital)
     {
-        long regen = 0;
-
-        foreach (var item in EquippedItems)
-        {
-            regen += item.Descriptor.VitalsRegen[(int)vital];
-        }
-        var setBonuses = GetSetBonuses();
-        regen += setBonuses.vitalsRegen[(int)vital];
-
-        return regen;
+        return mEquipmentVitalRegen[(int)vital];
     }
 
     //Shop
@@ -6285,6 +6335,7 @@ public partial class Player : Entity
 
     public void ProcessEquipmentUpdated(bool sendPackets, bool ignoreEvents = false)
     {
+        ApplySetBonuses();
         FixVitals();
         if (!ignoreEvents)
         {

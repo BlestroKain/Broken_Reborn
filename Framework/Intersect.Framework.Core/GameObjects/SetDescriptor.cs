@@ -3,6 +3,7 @@ using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.GameObjects;
 using Intersect.Models;
 using Intersect.Utilities;
+using Intersect.Collections;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -116,11 +117,11 @@ public partial class SetDescriptor : DatabaseObject<SetDescriptor>, IFolderable
 
     public void Validate()
     {
-        Stats ??= new int[Enum.GetValues<Stat>().Length];
-        PercentageStats ??= new int[Enum.GetValues<Stat>().Length];
-        Vitals ??= new long[Enum.GetValues<Vital>().Length];
-        VitalsRegen ??= new long[Enum.GetValues<Vital>().Length];
-        PercentageVitals ??= new int[Enum.GetValues<Vital>().Length];
+        Stats = ArrayExtensions.EnsureLen(Stats, Enum.GetValues<Stat>().Length);
+        PercentageStats = ArrayExtensions.EnsureLen(PercentageStats, Enum.GetValues<Stat>().Length);
+        Vitals = ArrayExtensions.EnsureLen(Vitals, Enum.GetValues<Vital>().Length);
+        VitalsRegen = ArrayExtensions.EnsureLen(VitalsRegen, Enum.GetValues<Vital>().Length);
+        PercentageVitals = ArrayExtensions.EnsureLen(PercentageVitals, Enum.GetValues<Vital>().Length);
         Effects ??= new List<EffectData>();
 
         // (Opcional) limpiar ItemIds que ya no coinciden

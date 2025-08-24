@@ -1,3 +1,4 @@
+using Intersect.GameObjects;
 using Intersect.Framework.Core.GameObjects.Spells;
 
 namespace Intersect.Server.General;

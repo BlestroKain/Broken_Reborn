@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Animations;
 using Intersect.Framework.Core.GameObjects.Conditions;
@@ -222,6 +223,23 @@ public partial class SpellDescriptor : DatabaseObject<SpellDescriptor>, IFoldera
         }
 
         return result;
+    }
+
+    public Dictionary<int, SpellProperties> GetLevelProgressions(int maxLevel)
+    {
+        var progressions = new Dictionary<int, SpellProperties>();
+        for (var i = 1; i <= maxLevel; i++)
+        {
+            progressions[i] = GetPropertiesForLevel(i);
+        }
+
+        return progressions;
+    }
+
+    public Dictionary<int, SpellProperties> GetLevelProgressions()
+    {
+        var maxLevel = LevelUpgrades.Keys.DefaultIfEmpty(0).Max();
+        return GetLevelProgressions(maxLevel);
     }
 
     public int GetEffectiveCastDuration(SpellProperties props)

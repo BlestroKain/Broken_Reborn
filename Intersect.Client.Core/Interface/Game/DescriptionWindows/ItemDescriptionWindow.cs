@@ -4,8 +4,11 @@ using Intersect.Client.General;
 using Intersect.Client.Localization;
 using Intersect.Core;
 using Intersect.Framework.Core.GameObjects.Items;
+using Intersect.GameObjects;
 using Intersect.GameObjects.Ranges;
 using Intersect.Utilities;
+using System.Linq;
+using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen.Input;
@@ -225,9 +228,11 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
             return;
         }
 
+        var equippedCount = set.ItemIds.Count(PlayerHasSetItem);
+
         AddDivider();
         var desc = AddDescription();
-        desc.AddText(set.Name, CustomColors.ItemDesc.Primary);
+        desc.AddText($"{set.Name} ({equippedCount}/{set.ItemIds.Count})", CustomColors.ItemDesc.Primary);
         if (!string.IsNullOrWhiteSpace(set.Description))
         {
             desc.AddLineBreak();
@@ -257,6 +262,107 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
         }
 
         container.SetSize(x, 32);
+
+        if (set.BonusTiers.Count > 0)
+        {
+            var bonuses = AddDescription();
+            var first = true;
+            foreach (var tier in set.BonusTiers.OrderBy(t => t.Key))
+            {
+                if (!tier.Value.HasBonuses)
+                {
+                    continue;
+                }
+
+                var color = equippedCount >= tier.Key ? CustomColors.ItemDesc.Primary : CustomColors.ItemDesc.Muted;
+                if (!first)
+                {
+                    bonuses.AddLineBreak();
+                }
+                first = false;
+
+                bonuses.AddText($"{tier.Key} pieces:", color);
+                foreach (var line in GetSetBonusLines(tier.Value))
+                {
+                    bonuses.AddLineBreak();
+                    bonuses.AddText($"  {line}", color);
+                }
+            }
+        }
+    }
+
+    private static IEnumerable<string> GetSetBonusLines(SetBonusTier tier)
+    {
+        var lines = new List<string>();
+
+        for (var i = 0; i < tier.Stats.Length && i < Strings.ItemDescription.Stats.Count; i++)
+        {
+            var val = tier.Stats[i];
+            var percent = tier.PercentageStats.Length > i ? tier.PercentageStats[i] : 0;
+            if (val != 0 || percent != 0)
+            {
+                Strings.ItemDescription.Stats.TryGetValue(i, out var label);
+                var parts = new List<string>();
+                if (val != 0)
+                {
+                    parts.Add($"{(val > 0 ? "+" : string.Empty)}{val}");
+                }
+                if (percent != 0)
+                {
+                    parts.Add(Strings.ItemDescription.Percentage.ToString(percent));
+                }
+
+                lines.Add($"{label} {string.Join(" ", parts)}".Trim());
+            }
+        }
+
+        for (var i = 0; i < tier.Vitals.Length && i < Strings.ItemDescription.Vitals.Count; i++)
+        {
+            var val = tier.Vitals[i];
+            var percent = tier.PercentageVitals.Length > i ? tier.PercentageVitals[i] : 0;
+            if (val != 0 || percent != 0)
+            {
+                Strings.ItemDescription.Vitals.TryGetValue(i, out var label);
+                var parts = new List<string>();
+                if (val != 0)
+                {
+                    parts.Add($"{(val > 0 ? "+" : string.Empty)}{val}");
+                }
+                if (percent != 0)
+                {
+                    parts.Add(Strings.ItemDescription.Percentage.ToString(percent));
+                }
+
+                lines.Add($"{label} {string.Join(" ", parts)}".Trim());
+            }
+        }
+
+        for (var i = 0; i < tier.VitalsRegen.Length && i < Strings.ItemDescription.VitalsRegen.Count; i++)
+        {
+            var val = tier.VitalsRegen[i];
+            if (val != 0)
+            {
+                Strings.ItemDescription.VitalsRegen.TryGetValue(i, out var label);
+                lines.Add($"{label} {(val > 0 ? "+" : string.Empty)}{val}".Trim());
+            }
+        }
+
+        foreach (var effect in tier.Effects)
+        {
+            if (effect.Type == ItemEffect.None || effect.Percentage == 0)
+            {
+                continue;
+            }
+
+            if (!Strings.ItemDescription.BonusEffects.TryGetValue((int)effect.Type, out var effectLabel))
+            {
+                continue;
+            }
+
+            lines.Add($"{effectLabel} {Strings.ItemDescription.Percentage.ToString(effect.Percentage)}");
+        }
+
+        return lines;
     }
 
     protected void SetupHeader()

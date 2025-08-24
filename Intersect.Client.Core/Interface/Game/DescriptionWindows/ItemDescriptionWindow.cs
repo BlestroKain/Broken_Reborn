@@ -1,3 +1,4 @@
+using Intersect;
 using Intersect.Enums;
 using Intersect.Client.General;
 using Intersect.Client.Localization;
@@ -146,6 +147,12 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
                 break;
         }
 
+        // If this item belongs to a set, display the set progress.
+        if (_itemDescriptor.SetId != Guid.Empty)
+        {
+            SetupSetInfo();
+        }
+
         // Set up additional information such as amounts and shop values.
         SetupExtraInfo();
 
@@ -178,6 +185,73 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
         }
 
         rows.SizeToChildren(true, true);
+    }
+
+    private static bool PlayerHasSetItem(Guid itemId)
+    {
+        if (Globals.Me is not { } player)
+        {
+            return false;
+        }
+
+        foreach (var slots in player.MyEquipment.Values)
+        {
+            foreach (var slot in slots)
+            {
+                if (slot >= 0 && slot < player.Inventory.Length)
+                {
+                    var inv = player.Inventory[slot];
+                    if (inv != null && inv.ItemId == itemId)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    protected void SetupSetInfo()
+    {
+        if (_itemDescriptor?.SetId == Guid.Empty)
+        {
+            return;
+        }
+
+        var set = _itemDescriptor.Set;
+        if (set == null || set.ItemIds.Count == 0)
+        {
+            return;
+        }
+
+        AddDivider();
+        var desc = AddDescription();
+        desc.AddText(_itemDescriptor.SetName, CustomColors.ItemDesc.Primary);
+
+        var container = AddComponent(new ComponentBase(this, "SetItemsContainer"));
+        int x = 0;
+        foreach (var id in set.ItemIds)
+        {
+            if (!ItemDescriptor.TryGet(id, out var setDesc) || setDesc == null)
+            {
+                continue;
+            }
+
+            var comp = new SetItemComponent(container, $"SetItem_{id}");
+            var tex = GameContentManager.Current.GetTexture(Framework.Content.TextureType.Item, setDesc.Icon);
+            if (tex != null)
+            {
+                comp.SetIcon(tex, setDesc.Color);
+            }
+
+            comp.SetStatus(PlayerHasSetItem(id));
+            comp.SetPosition(x, 0);
+            comp.SizeToChildren(true, true);
+            x += comp.Width + 4;
+        }
+
+        container.SetSize(x, 32);
     }
 
     protected void SetupHeader()

@@ -176,6 +176,27 @@ public partial class Player : Entity
     [NotMapped, JsonIgnore]
     private readonly Dictionary<ItemEffect, int> mEquipmentBonusEffects = new();
 
+    [NotMapped, JsonIgnore]
+    private readonly int[] mSetBonusStats = new int[Enum.GetValues<Stat>().Length];
+
+    [NotMapped, JsonIgnore]
+    private readonly int[] mSetBonusPercentStats = new int[Enum.GetValues<Stat>().Length];
+
+    [NotMapped, JsonIgnore]
+    private readonly long[] mSetBonusVitals = new long[Enum.GetValues<Vital>().Length];
+
+    [NotMapped, JsonIgnore]
+    private readonly long[] mSetBonusVitalsRegen = new long[Enum.GetValues<Vital>().Length];
+
+    [NotMapped, JsonIgnore]
+    private readonly int[] mSetBonusPercentVitals = new int[Enum.GetValues<Vital>().Length];
+
+    [NotMapped, JsonIgnore]
+    private List<EffectData> mSetBonusEffects = new();
+
+    [NotMapped, JsonIgnore]
+    private int mSetBonusHash;
+
 
     public DateTime? LastOnline { get; set; }
 

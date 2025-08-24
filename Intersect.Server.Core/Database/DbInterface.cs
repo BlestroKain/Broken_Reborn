@@ -21,6 +21,7 @@ using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.GameObjects.Resources;
 using Intersect.Framework.Core.GameObjects.Variables;
+using Intersect.Framework.Core.GameObjects;
 using Intersect.Framework.Reflection;
 using Intersect.GameObjects;
 using Intersect.Models;
@@ -720,6 +721,10 @@ public static partial class DbInterface
                 ItemDescriptor.Lookup.Clear();
 
                 break;
+            case GameObjectType.Set:
+                SetBase.Lookup.Clear();
+
+                break;
             case GameObjectType.Npc:
                 NPCDescriptor.Lookup.Clear();
 
@@ -818,6 +823,13 @@ public static partial class DbInterface
                         foreach (var itm in loadedItems)
                         {
                             ItemDescriptor.Lookup.Set(itm.Id, itm);
+                        }
+
+                        break;
+                    case GameObjectType.Set:
+                        foreach (var set in context.Sets)
+                        {
+                            SetBase.Lookup.Set(set.Id, set);
                         }
 
                         break;

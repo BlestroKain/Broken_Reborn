@@ -18,6 +18,7 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
         _spellDescriptor = SpellDescriptor.Get(spellId);
         var spell = Globals.Me?.Spells.FirstOrDefault(s => s.Id == spellId);
         _spellProperties = spell?.Properties;
+
         SetupDescriptionWindow();
 
         if (itemDecriptionContainer != default)

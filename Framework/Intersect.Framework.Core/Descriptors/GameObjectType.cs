@@ -74,5 +74,5 @@ public enum GameObjectType
     UserVariable,
 
     [GameObjectInfo(typeof(SetBase), "sets")]
-    Set,
+    Sets,
 }

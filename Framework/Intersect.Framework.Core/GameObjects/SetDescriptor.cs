@@ -125,15 +125,16 @@ public partial class SetDescriptor : DatabaseObject<SetDescriptor>, IFolderable
         ItemIds = ItemIds.Where(id => ItemDescriptor.Get(id)?.SetId == Id).ToList();
     }
 
-    public (int[] stats, int[] percentStats, long[] vitals, int[] percentVitals, List<EffectData> effects) GetBonuses(float ratio)
+    public (int[] stats, int[] percentStats, long[] vitals, long[] vitalsRegen, int[] percentVitals, List<EffectData> effects) GetBonuses(float ratio)
     {
         var scaledStats = Stats.Select(v => (int)(v * ratio)).ToArray();
         var scaledPercentStats = PercentageStats.Select(v => (int)(v * ratio)).ToArray();
         var scaledVitals = Vitals.Select(v => (long)(v * ratio)).ToArray();
+        var scaledVitalsRegen = VitalsRegen.Select(v => (long)(v * ratio)).ToArray();
         var scaledPercentVitals = PercentageVitals.Select(v => (int)(v * ratio)).ToArray();
         var scaledEffects = Effects.Select(e => new EffectData(e.Type, (int)(e.Percentage * ratio))).ToList();
 
-        return (scaledStats, scaledPercentStats, scaledVitals, scaledPercentVitals, scaledEffects);
+        return (scaledStats, scaledPercentStats, scaledVitals, scaledVitalsRegen, scaledPercentVitals, scaledEffects);
     }
 
     [NotMapped, JsonIgnore]

@@ -15,6 +15,7 @@ using Intersect.Configuration;
 using Intersect.GameObjects;
 using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Utilities;
+using System.Text;
 
 namespace Intersect.Client.Interface.Game.Spells;
 
@@ -282,7 +283,7 @@ public partial class SpellItem : SlotItem
         var properties = slot.Properties ?? new SpellProperties();
         slot.Properties = properties;
         var level = properties.Level;
-        _nameLabel.Text = $"{spell.Name} ({Strings.EntityBox.Level.ToString(level)})";
+        _nameLabel.Text = $"{spell.Name}";
         SpellProperties = properties;
         SetToolTipText(spell.Name);
 

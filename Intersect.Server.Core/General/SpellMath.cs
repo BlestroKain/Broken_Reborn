@@ -1,5 +1,5 @@
 using Intersect.Framework.Core.GameObjects.Spells;
-
+using Intersect.GameObjects;
 namespace Intersect.Server.General;
 
 public static class SpellMath

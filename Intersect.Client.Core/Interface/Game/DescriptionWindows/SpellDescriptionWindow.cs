@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Intersect.Enums;
 using Intersect.GameObjects;
 using Intersect.Client.Localization;
@@ -12,12 +15,22 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
 {
     private SpellDescriptor? _spellDescriptor;
     private SpellProperties? _spellProperties;
+    private SpellProperties? _effectiveProps;
 
     public void Show(Guid spellId, ItemDescriptionWindow? itemDecriptionContainer = default)
     {
         _spellDescriptor = SpellDescriptor.Get(spellId);
         var spell = Globals.Me?.Spells.FirstOrDefault(s => s.Id == spellId);
         _spellProperties = spell?.Properties;
+
+        if (_spellDescriptor != null && _spellProperties != null)
+        {
+            _effectiveProps = _spellDescriptor.BuildEffectiveProperties(_spellProperties.Level, _spellProperties);
+        }
+        else
+        {
+            _effectiveProps = null;
+        }
 
         SetupDescriptionWindow();
 
@@ -78,8 +91,7 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
 
         // Set up bind info, if applicable.
         SetupExtraInfo();
-
-
+   
         // Resize the container, correct the display and position our window.
         FinalizeWindow();
     }
@@ -118,7 +130,7 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
                     Strings.SpellDescription.TargetTypes[(int)_spellDescriptor.Combat.TargetType]
                         .ToString(
                             proj?.Range ?? 0,
-                            _spellDescriptor.Combat.GetEffectiveHitRadius(_spellProperties)
+                            _spellDescriptor.Combat.GetEffectiveHitRadius(_effectiveProps)
                         ),
                     Color.White
                 );
@@ -128,8 +140,8 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
                 header.SetDescription(
                     Strings.SpellDescription.TargetTypes[(int)_spellDescriptor.Combat.TargetType]
                         .ToString(
-                            _spellDescriptor.Combat.GetEffectiveCastRange(_spellProperties),
-                            _spellDescriptor.Combat.GetEffectiveHitRadius(_spellProperties)
+                            _spellDescriptor.Combat.GetEffectiveCastRange(_effectiveProps),
+                            _spellDescriptor.Combat.GetEffectiveHitRadius(_effectiveProps)
                         ),
                     Color.White
                 );
@@ -172,7 +184,7 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
 
         // Add cast time
         var castTime = Strings.SpellDescription.Instant;
-        var castDuration = _spellDescriptor.GetEffectiveCastDuration(_spellProperties);
+        var castDuration = _spellDescriptor.GetEffectiveCastDuration(_effectiveProps);
         if (castDuration > 0)
         {
             castTime = TimeSpan.FromMilliseconds(castDuration).WithSuffix();
@@ -182,7 +194,7 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
         // Add Vital Costs
         for (var i = 0; i < Enum.GetValues<Vital>().Length; i++)
         {
-            var cost = _spellDescriptor.GetEffectiveVitalCost((Vital)i, _spellProperties);
+            var cost = _spellDescriptor.GetEffectiveVitalCost((Vital)i, _effectiveProps);
             if (cost != 0)
             {
                 rows.AddKeyValueRow(Strings.SpellDescription.VitalCosts[i], cost.ToString());
@@ -190,7 +202,7 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
         }
 
         // Add Cooldown time
-        var cooldown = _spellDescriptor.GetEffectiveCooldownDuration(_spellProperties);
+        var cooldown = _spellDescriptor.GetEffectiveCooldownDuration(_effectiveProps);
         if (cooldown > 0)
         {
             rows.AddKeyValueRow(Strings.SpellDescription.Cooldown, TimeSpan.FromMilliseconds(cooldown).WithSuffix());
@@ -252,7 +264,7 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
         var isDamage = false;
         for (var i = 0; i < Enum.GetValues<Vital>().Length; i++)
         {
-            var diff = _spellDescriptor.Combat.GetEffectiveVitalDiff((Vital)i, _spellProperties);
+            var diff = _spellDescriptor.Combat.GetEffectiveVitalDiff((Vital)i, _effectiveProps);
             if (diff < 0)
             {
                 rows.AddKeyValueRow(Strings.SpellDescription.VitalRecovery[i], Math.Abs(diff).ToString());
@@ -269,7 +281,7 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
         Strings.SpellDescription.DamageTypes.TryGetValue(_spellDescriptor.Combat.DamageType, out var damageType);
         rows.AddKeyValueRow(Strings.SpellDescription.DamageType, damageType);
 
-        var scaling = _spellDescriptor.Combat.GetEffectiveScaling(_spellProperties);
+        var scaling = _spellDescriptor.Combat.GetEffectiveScaling(_effectiveProps);
         if (scaling > 0)
         {
             Strings.SpellDescription.Stats.TryGetValue(_spellDescriptor.Combat.ScalingStat, out var stat);
@@ -278,11 +290,11 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
         }
 
         // Crit Chance
-        var critChance = _spellDescriptor.Combat.GetEffectiveCritChance(_spellProperties);
+        var critChance = _spellDescriptor.Combat.GetEffectiveCritChance(_effectiveProps);
         if (critChance > 0)
         {
             rows.AddKeyValueRow(Strings.SpellDescription.CritChance, Strings.SpellDescription.Percentage.ToString(critChance));
-            rows.AddKeyValueRow(Strings.SpellDescription.CritMultiplier, Strings.SpellDescription.Multiplier.ToString(_spellDescriptor.Combat.GetEffectiveCritMultiplier(_spellProperties)));
+            rows.AddKeyValueRow(Strings.SpellDescription.CritMultiplier, Strings.SpellDescription.Multiplier.ToString(_spellDescriptor.Combat.GetEffectiveCritMultiplier(_effectiveProps)));
         }
 
         var showDuration = false;
@@ -291,7 +303,7 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
         for (var i = 0; i < Enum.GetValues<Stat>().Length; i++)
         {
             Tuple<string, string> data = null;
-            var statDiff = _spellDescriptor.Combat.GetEffectiveStatDiff((Stat)i, _spellProperties);
+            var statDiff = _spellDescriptor.Combat.GetEffectiveStatDiff((Stat)i, _effectiveProps);
             if (statDiff != 0 && _spellDescriptor.Combat.PercentageStatDiff[i] != 0)
             {
                 data = new Tuple<string, string>(Strings.SpellDescription.StatCounts[i], Strings.SpellDescription.RegularAndPercentage.ToString(statDiff, _spellDescriptor.Combat.PercentageStatDiff[i]));
@@ -333,7 +345,7 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
             {
                 rows.AddKeyValueRow(Strings.SpellDescription.DoT, string.Empty);
             }
-            rows.AddKeyValueRow(Strings.SpellDescription.Tick, TimeSpan.FromMilliseconds(_spellDescriptor.Combat.GetEffectiveHotDotInterval(_spellProperties)).WithSuffix());
+            rows.AddKeyValueRow(Strings.SpellDescription.Tick, TimeSpan.FromMilliseconds(_spellDescriptor.Combat.GetEffectiveHotDotInterval(_effectiveProps)).WithSuffix());
         }
 
         // Handle effect display.
@@ -347,7 +359,7 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
         // Show Stat Buff / Effect / HoT / DoT duration.
         if (showDuration)
         {
-            rows.AddKeyValueRow(Strings.SpellDescription.Duration, TimeSpan.FromMilliseconds(_spellDescriptor.Combat.GetEffectiveDuration(_spellProperties)).WithSuffix("0.#"));
+            rows.AddKeyValueRow(Strings.SpellDescription.Duration, TimeSpan.FromMilliseconds(_spellDescriptor.Combat.GetEffectiveDuration(_effectiveProps)).WithSuffix("0.#"));
         }
 
         // Resize and position the container.
@@ -368,7 +380,7 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
         var rows = AddRowContainer();
 
         // Dash Distance Information.
-        rows.AddKeyValueRow(Strings.SpellDescription.Distance, Strings.SpellDescription.Tiles.ToString(_spellDescriptor.Combat.GetEffectiveCastRange(_spellProperties)));
+        rows.AddKeyValueRow(Strings.SpellDescription.Distance, Strings.SpellDescription.Tiles.ToString(_spellDescriptor.Combat.GetEffectiveCastRange(_effectiveProps)));
 
         // Ignore map blocks?
         if (_spellDescriptor.Dash.IgnoreMapBlocks)
@@ -397,6 +409,12 @@ public partial class SpellDescriptionWindow() : DescriptionWindowBase(Interface.
         // Resize and position the container.
         rows.SizeToChildren(true, true);
     }
+
+ 
+
+    private static bool IsOverride(string key) =>
+        key.EndsWith("Set", StringComparison.OrdinalIgnoreCase) ||
+        key.StartsWith("set.", StringComparison.OrdinalIgnoreCase);
 
     protected void SetupExtraInfo()
     {

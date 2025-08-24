@@ -87,7 +87,7 @@ public partial class FrmSpell : EditorForm
             {
                 Text = key,
                 AutoSize = true,
-                Location = new Point(0, 5)
+                Location = new System.Drawing.Point(0, 5)
             };
 
             var nud = new DarkNumericUpDown
@@ -95,7 +95,7 @@ public partial class FrmSpell : EditorForm
                 Minimum = int.MinValue,
                 Maximum = int.MaxValue,
                 Width = 80,
-                Location = new Point(row.Width - 85, 0)
+                Location = new System.Drawing.Point(row.Width - 85, 0)
             };
 
             row.Controls.Add(lbl);

@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Animations;
@@ -192,6 +193,73 @@ public partial class SpellDescriptor : DatabaseObject<SpellDescriptor>, IFoldera
         set => LevelUpgrades =
             JsonConvert.DeserializeObject<Dictionary<int, SpellProperties>>(value ?? string.Empty) ?? new();
     }
+
+    public SpellProperties BuildEffectiveProperties(int level, SpellProperties? runtime = null)
+    {
+        var effective = new SpellProperties { Level = level };
+
+        if (LevelUpgrades != null)
+        {
+            for (var l = 1; l <= level; l++)
+            {
+                if (!LevelUpgrades.TryGetValue(l, out var props) || props?.CustomUpgrades == null)
+                {
+                    continue;
+                }
+
+                foreach (var kv in props.CustomUpgrades)
+                {
+                    var key = kv.Key;
+                    var val = kv.Value;
+
+                    if (!SpellUpgradeKeys.IsValid(key))
+                    {
+                        continue;
+                    }
+
+                    if (IsOverride(key))
+                    {
+                        effective.CustomUpgrades[key] = val;
+                    }
+                    else
+                    {
+                        effective.CustomUpgrades[key] =
+                            effective.CustomUpgrades.TryGetValue(key, out var curr) ? curr + val : val;
+                    }
+                }
+            }
+        }
+
+        if (runtime?.CustomUpgrades != null)
+        {
+            foreach (var kv in runtime.CustomUpgrades)
+            {
+                var key = kv.Key;
+                var val = kv.Value;
+
+                if (!SpellUpgradeKeys.IsValid(key))
+                {
+                    continue;
+                }
+
+                if (IsOverride(key))
+                {
+                    effective.CustomUpgrades[key] = val;
+                }
+                else
+                {
+                    effective.CustomUpgrades[key] =
+                        effective.CustomUpgrades.TryGetValue(key, out var curr) ? curr + val : val;
+                }
+            }
+        }
+
+        return effective;
+    }
+
+    private static bool IsOverride(string key) =>
+        key.EndsWith("Set", StringComparison.OrdinalIgnoreCase) ||
+        key.StartsWith("set.", StringComparison.OrdinalIgnoreCase);
 
     public SpellProperties GetPropertiesForLevel(int level)
     {

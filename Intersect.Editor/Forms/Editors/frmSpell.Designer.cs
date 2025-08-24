@@ -1026,34 +1026,43 @@ namespace Intersect.Editor.Forms.Editors
             grpUpgrades.Margin = new Padding(4, 3, 4, 3);
             grpUpgrades.Name = "grpUpgrades";
             grpUpgrades.Padding = new Padding(4, 3, 4, 3);
-            grpUpgrades.Size = new Size(262, 154);
+            grpUpgrades.Size = new Size(262, 280);
             grpUpgrades.TabIndex = 37;
             grpUpgrades.TabStop = false;
             grpUpgrades.Text = "Custom Upgrades";
-            //
-            // lblUpgradeLevel
-            //
-            lblUpgradeLevel.AutoSize = true;
-            lblUpgradeLevel.Location = new System.Drawing.Point(7, 23);
-            lblUpgradeLevel.Name = "lblUpgradeLevel";
-            lblUpgradeLevel.Size = new Size(35, 15);
-            lblUpgradeLevel.TabIndex = 1;
-            lblUpgradeLevel.Text = "Level";
-            //
+            // 
             // cmbUpgradeLevel
-            //
+            // 
+            cmbUpgradeLevel.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            cmbUpgradeLevel.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+            cmbUpgradeLevel.BorderStyle = ButtonBorderStyle.Solid;
+            cmbUpgradeLevel.ButtonColor = System.Drawing.Color.FromArgb(43, 43, 43);
+            cmbUpgradeLevel.DrawDropdownHoverOutline = false;
+            cmbUpgradeLevel.DrawFocusRectangle = false;
             cmbUpgradeLevel.DrawMode = DrawMode.OwnerDrawVariable;
+            cmbUpgradeLevel.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbUpgradeLevel.FlatStyle = FlatStyle.Flat;
+            cmbUpgradeLevel.ForeColor = System.Drawing.Color.Gainsboro;
             cmbUpgradeLevel.FormattingEnabled = true;
             cmbUpgradeLevel.Location = new System.Drawing.Point(52, 20);
             cmbUpgradeLevel.Name = "cmbUpgradeLevel";
-            cmbUpgradeLevel.Size = new Size(63, 23);
+            cmbUpgradeLevel.Size = new Size(63, 24);
             cmbUpgradeLevel.TabIndex = 2;
             cmbUpgradeLevel.Text = null;
             cmbUpgradeLevel.TextPadding = new Padding(2);
             cmbUpgradeLevel.SelectedIndexChanged += cmbUpgradeLevel_SelectedIndexChanged;
-            //
+            // 
+            // lblUpgradeLevel
+            // 
+            lblUpgradeLevel.AutoSize = true;
+            lblUpgradeLevel.Location = new System.Drawing.Point(7, 23);
+            lblUpgradeLevel.Name = "lblUpgradeLevel";
+            lblUpgradeLevel.Size = new Size(34, 15);
+            lblUpgradeLevel.TabIndex = 1;
+            lblUpgradeLevel.Text = "Level";
+            // 
             // dgvUpgrades
-            //
+            // 
             dgvUpgrades.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvUpgrades.BackgroundColor = System.Drawing.Color.FromArgb(45, 45, 48);
             dgvUpgrades.CellBorderStyle = DataGridViewCellBorderStyle.None;
@@ -1074,7 +1083,7 @@ namespace Intersect.Editor.Forms.Editors
             dgvUpgrades.RowHeadersVisible = false;
             dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(60, 63, 65);
             dgvUpgrades.RowsDefaultCellStyle = dataGridViewCellStyle2;
-            dgvUpgrades.Size = new Size(246, 95);
+            dgvUpgrades.Size = new Size(246, 225);
             dgvUpgrades.TabIndex = 3;
             dgvUpgrades.CellValidating += dgvUpgrades_CellValidating;
             // 

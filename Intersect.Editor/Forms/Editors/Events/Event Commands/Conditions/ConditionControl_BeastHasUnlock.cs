@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Intersect.Framework.Core.GameObjects.Conditions.ConditionMetadata;
 using Intersect.Framework.Core.GameObjects.NPCs;
 
@@ -14,14 +15,14 @@ public partial class ConditionControl_BeastHasUnlock : UserControl
     public void SetupFormValues(BeastHasUnlockCondition condition)
     {
         cmbNpc.SelectedIndex = NPCDescriptor.ListIndex(condition.NpcId);
-        cmbUnlock.SelectedIndex = (int)condition.Unlock;
+        cmbUnlock.SelectedItem = condition.Unlock;
         nudValue.Value = condition.Value;
     }
 
     public void SaveFormValues(BeastHasUnlockCondition condition)
     {
         condition.NpcId = NPCDescriptor.IdFromList(cmbNpc.SelectedIndex);
-        condition.Unlock = (BestiaryUnlock)cmbUnlock.SelectedIndex;
+        condition.Unlock = (BestiaryUnlock)cmbUnlock.SelectedItem;
         condition.Value = (int)nudValue.Value;
     }
 
@@ -30,7 +31,7 @@ public partial class ConditionControl_BeastHasUnlock : UserControl
         cmbNpc.Items.Clear();
         cmbNpc.Items.AddRange(NPCDescriptor.Names);
         cmbUnlock.Items.Clear();
-        cmbUnlock.Items.AddRange(Enum.GetNames<BestiaryUnlock>());
+        cmbUnlock.Items.AddRange(Enum.GetValues<BestiaryUnlock>().Cast<object>().ToArray());
         if (cmbNpc.Items.Count > 0 && cmbNpc.SelectedIndex < 0)
         {
             cmbNpc.SelectedIndex = 0;

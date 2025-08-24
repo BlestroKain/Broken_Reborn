@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Linq;
 using System.Windows.Forms;
 using DarkUI.Controls;
 using DarkUI.Forms;
@@ -140,8 +141,9 @@ public partial class FrmNpc : EditorForm
 
         lstBestiary.DataSource = _bestiaryUnlocks;
         lstBestiary.DisplayMember = nameof(NotifiableBestiaryUnlock.DisplayName);
-            cmbBestiary.Items.Clear();
-        cmbBestiary.Items.AddRange(Enum.GetNames<BestiaryUnlock>());
+
+        cmbBestiary.Items.Clear();
+        cmbBestiary.Items.AddRange(Enum.GetValues<BestiaryUnlock>().Cast<object>().ToArray());
         if (cmbBestiary.Items.Count > 0)
         {
             cmbBestiary.SelectedIndex = 0;
@@ -903,7 +905,7 @@ public partial class FrmNpc : EditorForm
         }
 
         var entry = _bestiaryUnlocks[lstBestiary.SelectedIndex];
-        cmbBestiary.SelectedIndex = (int)entry.UnlockType;
+        cmbBestiary.SelectedItem = entry.UnlockType;
         nudBestiaryAmount.Value = entry.Amount;
     }
 
@@ -915,7 +917,7 @@ public partial class FrmNpc : EditorForm
         }
 
         var selectedUnlock = _bestiaryUnlocks[lstBestiary.SelectedIndex];
-        var newType = (BestiaryUnlock)cmbBestiary.SelectedIndex;
+        var newType = (BestiaryUnlock)cmbBestiary.SelectedItem;
 
         if (selectedUnlock.UnlockType == newType)
         {
@@ -927,7 +929,7 @@ public partial class FrmNpc : EditorForm
         if (alreadyExists)
         {
             MessageBox.Show("Este tipo de desbloqueo ya está en la lista.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            cmbBestiary.SelectedIndex = (int)selectedUnlock.UnlockType; // Revertir selección
+            cmbBestiary.SelectedItem = selectedUnlock.UnlockType; // Revertir selección
             return;
         }
 
@@ -958,7 +960,7 @@ public partial class FrmNpc : EditorForm
 
     private void btnBestiaryAdd_Click(object sender, EventArgs e)
     {
-        var unlockType = (BestiaryUnlock)cmbBestiary.SelectedIndex;
+        var unlockType = (BestiaryUnlock)cmbBestiary.SelectedItem;
         var amount = (int)nudBestiaryAmount.Value;
 
         // Se agrega a la lista visual sin restricciones

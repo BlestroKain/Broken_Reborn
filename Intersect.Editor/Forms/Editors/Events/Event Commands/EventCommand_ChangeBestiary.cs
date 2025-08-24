@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Intersect.Editor.Localization;
 using Intersect.Framework.Core.GameObjects.Events.Commands;
 using Intersect.Framework.Core.GameObjects.NPCs;
@@ -17,11 +18,11 @@ public partial class EventCommandChangeBestiary : UserControl
         _eventEditor = editor;
 
         cmbNpc.Items.AddRange(NPCDescriptor.Names);
-        cmbUnlock.Items.AddRange(Enum.GetNames<BestiaryUnlock>());
+        cmbUnlock.Items.AddRange(Enum.GetValues<BestiaryUnlock>().Cast<object>().ToArray());
         cmbOperation.Items.AddRange(new object[] { Strings.EventChangeBestiary.add, Strings.EventChangeBestiary.remove });
 
         cmbNpc.SelectedIndex = NPCDescriptor.ListIndex(_command.NpcId);
-        cmbUnlock.SelectedIndex = (int)_command.UnlockType;
+        cmbUnlock.SelectedItem = _command.UnlockType;
         cmbOperation.SelectedIndex = _command.Add ? 0 : 1;
         nudAmount.Value = _command.Amount;
 
@@ -42,7 +43,7 @@ public partial class EventCommandChangeBestiary : UserControl
     private void btnSave_Click(object sender, EventArgs e)
     {
         _command.NpcId = NPCDescriptor.IdFromList(cmbNpc.SelectedIndex);
-        _command.UnlockType = (BestiaryUnlock)cmbUnlock.SelectedIndex;
+        _command.UnlockType = (BestiaryUnlock)cmbUnlock.SelectedItem;
         _command.Add = cmbOperation.SelectedIndex == 0;
         _command.Amount = (int)nudAmount.Value;
         _eventEditor.FinishCommandEdit();

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Intersect.Framework.Core.GameObjects.Conditions.ConditionMetadata;
 using Intersect.Framework.Core.GameObjects.NPCs;
 
@@ -13,20 +14,20 @@ public partial class ConditionControl_BeastsCompleted : UserControl
 
     public void SetupFormValues(BeastsCompletedCondition condition)
     {
-        cmbUnlock.SelectedIndex = (int)condition.Unlock;
+        cmbUnlock.SelectedItem = condition.Unlock;
         nudCount.Value = condition.Count;
     }
 
     public void SaveFormValues(BeastsCompletedCondition condition)
     {
-        condition.Unlock = (BestiaryUnlock)cmbUnlock.SelectedIndex;
+        condition.Unlock = (BestiaryUnlock)cmbUnlock.SelectedItem;
         condition.Count = (int)nudCount.Value;
     }
 
     public new void Show()
     {
         cmbUnlock.Items.Clear();
-        cmbUnlock.Items.AddRange(Enum.GetNames<BestiaryUnlock>());
+        cmbUnlock.Items.AddRange(Enum.GetValues<BestiaryUnlock>().Cast<object>().ToArray());
         if (cmbUnlock.Items.Count > 0 && cmbUnlock.SelectedIndex < 0)
         {
             cmbUnlock.SelectedIndex = 0;

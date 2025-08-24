@@ -337,17 +337,9 @@ namespace Intersect.Server.Migrations.Sqlite.Game
                     b.Property<int>("ScalingStat")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("SetDescription")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("SetDescription");
-
                     b.Property<Guid>("SetId")
                         .HasColumnType("TEXT")
                         .HasColumnName("Set");
-
-                    b.Property<string>("SetName")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("SetName");
 
                     b.Property<bool>("SingleUse")
                         .HasColumnType("INTEGER")
@@ -1089,6 +1081,9 @@ namespace Intersect.Server.Migrations.Sqlite.Game
                         .HasColumnName("ItemIds");
 
                     b.Property<string>("Name")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PercentageStatsJson")

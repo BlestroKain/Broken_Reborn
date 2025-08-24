@@ -28,6 +28,8 @@ public partial class SetDescriptor : DatabaseObject<SetDescriptor>, IFolderable
 
     public string Name { get; set; } = "New Set";
 
+    public string Description { get; set; } = string.Empty;
+
     [NotMapped]
     public List<Guid> ItemIds { get; set; } = new();
 
@@ -164,4 +166,6 @@ public partial class SetDescriptor : DatabaseObject<SetDescriptor>, IFolderable
     public ItemEffect[] EffectsEnabled => Effects.Select(effect => effect.Type).ToArray();
 
     public static string GetName(Guid id) => Get(id)?.Name ?? "???";
+
+    public static string GetDescription(Guid id) => Get(id)?.Description ?? string.Empty;
 }

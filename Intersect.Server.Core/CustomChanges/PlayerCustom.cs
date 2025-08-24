@@ -290,30 +290,27 @@ namespace Intersect.Server.Entities
             foreach (var grp in sets)
             {
                 var set = SetDescriptor.Get(grp.Key);
-                if (set == null || !set.HasBonuses())
+                if (set == null || !set.HasBonuses)
                 {
                     continue;
                 }
 
                 var ratio = (float)grp.Count() / Math.Max(1, set.ItemIds.Count);
-                var (s, ps, v, pv, eff) = set.GetBonuses();
+                var (s, ps, v, pv, eff) = set.GetBonuses(ratio);
 
                 for (var i = 0; i < stats.Length; i++)
                 {
-                    stats[i] += (int)(s[i] * ratio);
-                    percentStats[i] += (int)(ps[i] * ratio);
+                    stats[i] += s[i];
+                    percentStats[i] += ps[i];
                 }
 
                 for (var i = 0; i < vitals.Length; i++)
                 {
-                    vitals[i] += (long)(v[i] * ratio);
-                    percentVitals[i] += (int)(pv[i] * ratio);
+                    vitals[i] += v[i];
+                    percentVitals[i] += pv[i];
                 }
 
-                foreach (var e in eff)
-                {
-                    effects.Add(new EffectData(e.Type, (int)(e.Percentage * ratio)));
-                }
+                effects.AddRange(eff);
             }
 
             return (stats, percentStats, vitals, percentVitals, effects);

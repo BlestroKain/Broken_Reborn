@@ -9,8 +9,10 @@ using Intersect.Client.Utilities;
 using Intersect.GameObjects;
 using Intersect.Utilities;
 using Intersect.Framework.Core.GameObjects.Spells;
+using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
+using Intersect.Client.Interface.Game.DescriptionWindows;
 
 namespace Intersect.Client.Interface.Game.Spells;
 
@@ -24,12 +26,10 @@ public partial class SpellsWindow : Window
     private Base _innerSlotPanel;
 
     // Panel de detalle
-    private readonly ImagePanel _detailPanel;
-    private readonly ImagePanel _iconPanel;
-    private readonly Label _nameLabel;
-    private readonly Label _levelLabel;
-    private readonly ScrollControl _descScroll;
-    private readonly Label _descLabel;
+    private ScrollControl _detailsScroll;
+    private Base _levelTabs;
+    private SpellPreviewWindow _previewWin;
+    private int _previewLevel;
 
     private int _selectedSlot = -1;
     private int _lastSpellCount;
@@ -60,51 +60,23 @@ public partial class SpellsWindow : Window
         _slotContainer.EnableScroll(false, true);
 
         // PANEL DETALLE DERECHA
-        _detailPanel = new ImagePanel(this, "DetailPanel")
+        _levelTabs = new Base(this)
         {
-            Dock = Pos.Fill,
-            Margin = new Margin(4, 6, 6, 30),
             IsVisibleInParent = false,
         };
-        _detailPanel.SetSize(300, 340);
-        _detailPanel.SetPosition(250, 6);
+        _levelTabs.SetPosition(250, 6);
+        _levelTabs.SetSize(300, 20);
 
-        _iconPanel = new ImagePanel(_detailPanel, "SpellIcon");
-        _iconPanel.SetBounds(8, 8, 48, 48);
-
-        _nameLabel = new Label(_detailPanel, "SpellName")
+        _detailsScroll = new ScrollControl(this)
         {
-            FontName = "sourcesansproblack",
-            FontSize = 14,
-            TextColor = Color.White,
+            AutoHideBars = true,
+            IsVisibleInParent = false,
         };
-        _nameLabel.SetSize(200, 20);
-        _nameLabel.SetPosition(64, 8);
+        _detailsScroll.EnableScroll(false, true);
+        _detailsScroll.SetPosition(250, 30);
+        _detailsScroll.SetSize(300, 316);
 
-        _levelLabel = new Label(_detailPanel, "SpellLevel")
-        {
-            FontName = "sourcesansproblack",
-            FontSize = 10,
-            TextColor = Color.Yellow,
-        };
-        _levelLabel.SetSize(200, 16);
-        _levelLabel.SetPosition(64, 30);
-
-        _descScroll = new ScrollControl(_detailPanel, "SpellDescScroll")
-        {
-            OverflowY = OverflowBehavior.Scroll,
-            OverflowX = OverflowBehavior.Hidden,
-        };
-        _descScroll.EnableScroll(false, true);
-        _descScroll.SetBounds(8, 70, 270, 200);
-
-        _descLabel = new Label(_descScroll, "SpellDesc")
-        {
-            FontName = "sourcesansproblack",
-            FontSize = 10,
-            AutoSizeToContents = true,
-        };
-        _descLabel.SetPosition(0, 0);
+        _previewWin = new SpellPreviewWindow(_detailsScroll);
 
         // CONTEXT MENU
         _contextMenu = new ContextMenu(gameCanvas, "SpellContextMenu")
@@ -273,117 +245,80 @@ public partial class SpellsWindow : Window
 
         if (me == null || spells == null || _selectedSlot < 0 || _selectedSlot >= spells.Length)
         {
-            _detailPanel.IsVisibleInParent = false;
+            _detailsScroll.IsVisibleInParent = false;
+            _levelTabs.IsVisibleInParent = false;
             return;
         }
 
         var id = spells[_selectedSlot].Id;
-        var level = spells[_selectedSlot].Level;
-
-        if (id == Guid.Empty || !SpellDescriptor.TryGet(id, out var desc))
+        if (id == Guid.Empty)
         {
-            _detailPanel.IsVisibleInParent = false;
+            _detailsScroll.IsVisibleInParent = false;
+            _levelTabs.IsVisibleInParent = false;
             return;
         }
 
-        _detailPanel.IsVisibleInParent = true;
+        _detailsScroll.IsVisibleInParent = true;
+        _levelTabs.IsVisibleInParent = true;
 
-        // Icono
-        var tex = GameContentManager.Current.GetTexture(TextureType.Spell, desc.Icon);
-        if (tex != null)
-        {
-            _iconPanel.Texture = tex;
-            _iconPanel.IsVisibleInParent = true;
-        }
-        else
-        {
-            _iconPanel.IsVisibleInParent = false;
-        }
+        OnSelectSpell(id);
+    }
 
-        // Nombre y nivel
-        _nameLabel.Text = desc.Name;
-        _levelLabel.Text = Strings.EntityBox.Level.ToString(level);
-
-        // Descripción/estadísticas básicas
-        var sb = new StringBuilder();
-        if (!string.IsNullOrWhiteSpace(desc.Description))
+    private void BuildLevelTabs(SpellDescriptor desc, int currentLevel)
+    {
+        foreach (var c in _levelTabs.Children.ToArray())
         {
-            sb.AppendLine(desc.Description);
+            c.Dispose();
         }
 
-        if (desc.CooldownDuration > 0)
-        {
-            sb.AppendLine($"{Strings.SpellDescription.Cooldown} {TimeSpan.FromMilliseconds(desc.CooldownDuration).WithSuffix()}");
-        }
+        var max = Options.Instance.Player.MaxSpellLevel;
+        var x = 0;
 
-        if (desc.CastDuration > 0)
+        for (int l = 1; l <= max; l++)
         {
-            sb.AppendLine($"{Strings.SpellDescription.CastTime} {TimeSpan.FromMilliseconds(desc.CastDuration).WithSuffix()}");
-        }
+            var btn = new Button(_levelTabs) { Text = l.ToString() };
+            btn.SetPosition(x, 0);
+            btn.SetSize(24, 20);
+            x += 26;
 
-        // Detalles por nivel usando LevelUpgrades y CustomUpgrades
-        var currentProps = desc.GetPropertiesForLevel(level);
-        if (desc.LevelUpgrades.TryGetValue(level, out var levelUpgrades) &&
-            levelUpgrades?.CustomUpgrades?.Count > 0)
-        {
-            if (sb.Length > 0)
+            if (l == currentLevel)
             {
-                sb.AppendLine();
+                btn.TextColor = new Color(30, 200, 90, 255);
+            }
+            if (l > currentLevel)
+            {
+                btn.TextColor = new Color(170, 170, 170, 255);
             }
 
-            sb.AppendLine($"Nivel {level}:");
-            foreach (var kv in levelUpgrades.CustomUpgrades)
+            var level = l;
+            btn.Clicked += (_, __) =>
             {
-                sb.AppendLine($"{kv.Key}: {kv.Value}");
-            }
+                _previewLevel = level;
+                _previewWin.ShowPreview(desc.Id, _previewLevel);
+                _detailsScroll.SetInnerSize(_previewWin.Width, _previewWin.Height);
+                _detailsScroll.UpdateScrollBars();
+            };
         }
 
-        SpellProperties? nextProps = null;
-        if (level < Options.Instance.Player.MaxSpellLevel &&
-            desc.LevelUpgrades.TryGetValue(level + 1, out var nextLevelUpgrades))
+        _levelTabs.SizeToChildren(true, true);
+        _levelTabs.Invalidate();
+    }
+
+    private void OnSelectSpell(Guid spellId)
+    {
+        var desc = SpellDescriptor.Get(spellId);
+        if (desc == null)
         {
-            nextProps = desc.GetPropertiesForLevel(level + 1);
-
-            if (nextLevelUpgrades.CustomUpgrades.Count > 0)
-            {
-                sb.AppendLine();
-                sb.AppendLine($"Nivel {level + 1}:");
-                foreach (var kv in nextLevelUpgrades.CustomUpgrades)
-                {
-                    sb.AppendLine($"{kv.Key}: {kv.Value}");
-                }
-            }
-
-            sb.AppendLine();
-            sb.AppendLine($"Costo para subir al nivel {level + 1}: {level} punto(s) de hechizo");
+            return;
         }
 
-        _descLabel.Text = sb.ToString().Trim();
-        _descLabel.Width = _descScroll.Width - _descScroll.VerticalScrollBar.Width;
-        _descLabel.SizeToContents();
-        _descScroll.SetInnerSize(_descScroll.Width, _descLabel.Height);
+        var currentLevel = Globals.Me?.Spells.FirstOrDefault(s => s.Id == spellId)?.Properties?.Level ?? 1;
 
-        // Tooltip para próxima progresión basada en diferencias
-        var tooltip = string.Empty;
-        if (nextProps != null)
-        {
-            var tooltipSb = new StringBuilder();
-            tooltipSb.AppendLine($"Nivel {level + 1}:");
-            foreach (var kv in nextProps.CustomUpgrades)
-            {
-                var currentVal = currentProps.CustomUpgrades.TryGetValue(kv.Key, out var val) ? val : 0;
-                var diff = kv.Value - currentVal;
-                if (diff != 0)
-                {
-                    tooltipSb.AppendLine($"{kv.Key}: {(diff >= 0 ? "+" : string.Empty)}{diff}");
-                }
-            }
-
-            tooltipSb.AppendLine($"Costo: {level} punto(s) de hechizo");
-            tooltip = tooltipSb.ToString().Trim();
-        }
-
-        _levelLabel.SetToolTipText(tooltip);
+        BuildLevelTabs(desc, currentLevel);
+        _previewLevel = currentLevel;
+        _previewWin.ShowPreview(spellId, _previewLevel);
+        _detailsScroll.SetInnerSize(_previewWin.Width, _previewWin.Height);
+        _detailsScroll.UpdateScrollBars();
     }
 
     public override void Hide()

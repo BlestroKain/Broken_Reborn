@@ -4098,6 +4098,8 @@ public partial class Player : Entity
         {
             regen += item.Descriptor.VitalsRegen[(int)vital];
         }
+        var setBonuses = GetSetBonuses();
+        regen += setBonuses.vitalsRegen[(int)vital];
 
         return regen;
     }

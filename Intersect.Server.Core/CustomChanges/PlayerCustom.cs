@@ -275,11 +275,12 @@ namespace Intersect.Server.Entities
             PacketSender.SendOpenSendMail(this);
         }
 
-        public (int[] stats, int[] percentStats, long[] vitals, int[] percentVitals, List<EffectData> effects) GetSetBonuses()
+        public (int[] stats, int[] percentStats, long[] vitals, long[] vitalsRegen, int[] percentVitals, List<EffectData> effects) GetSetBonuses()
         {
             var stats = new int[Enum.GetValues<Stat>().Length];
             var percentStats = new int[Enum.GetValues<Stat>().Length];
             var vitals = new long[Enum.GetValues<Vital>().Length];
+            var vitalsRegen = new long[Enum.GetValues<Vital>().Length];
             var percentVitals = new int[Enum.GetValues<Vital>().Length];
             var effects = new List<EffectData>();
 
@@ -296,7 +297,7 @@ namespace Intersect.Server.Entities
                 }
 
                 var ratio = (float)grp.Count() / Math.Max(1, set.ItemIds.Count);
-                var (s, ps, v, pv, eff) = set.GetBonuses(ratio);
+                var (s, ps, v, vr, pv, eff) = set.GetBonuses(ratio);
 
                 for (var i = 0; i < stats.Length; i++)
                 {
@@ -307,13 +308,14 @@ namespace Intersect.Server.Entities
                 for (var i = 0; i < vitals.Length; i++)
                 {
                     vitals[i] += v[i];
+                    vitalsRegen[i] += vr[i];
                     percentVitals[i] += pv[i];
                 }
 
                 effects.AddRange(eff);
             }
 
-            return (stats, percentStats, vitals, percentVitals, effects);
+            return (stats, percentStats, vitals, vitalsRegen, percentVitals, effects);
         }
 
         public bool HasEnoughSpellPoints(int delta)

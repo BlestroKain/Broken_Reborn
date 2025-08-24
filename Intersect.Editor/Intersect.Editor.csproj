@@ -483,6 +483,12 @@
     <Compile Update="Forms\Editors\frmSpell.Designer.cs">
       <DependentUpon>frmSpell.cs</DependentUpon>
     </Compile>
+    <Compile Update="Forms\Editors\frmSets.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\Editors\frmSets.Designer.cs">
+      <DependentUpon>frmSets.cs</DependentUpon>
+    </Compile>
     <Compile Update="Forms\Editors\frmVariable.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -593,6 +599,9 @@
     </EmbeddedResource>
     <EmbeddedResource Update="Forms\Editors\frmSpell.resx">
       <DependentUpon>frmSpell.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Forms\Editors\frmSets.resx">
+      <DependentUpon>frmSets.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Update="Forms\Editors\frmVariable.resx">
       <DependentUpon>frmVariable.cs</DependentUpon>

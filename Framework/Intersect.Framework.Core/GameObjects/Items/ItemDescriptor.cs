@@ -170,6 +170,22 @@ public partial class ItemDescriptor : DatabaseObject<ItemDescriptor>, IFolderabl
         set => EventId = value?.Id ?? Guid.Empty;
     }
 
+    /// <summary>
+    /// Identifier of the set this item belongs to.
+    /// The database relationship uses <c>ON DELETE SET DEFAULT</c>,
+    /// so removing a set automatically resets this value to <see cref="Guid.Empty"/>.
+    /// </summary>
+    [Column("Set")]
+    [JsonProperty]
+    public Guid SetId { get; set; }
+
+    [NotMapped]
+    [JsonIgnore]
+    public SetDescriptor Set
+    {
+        get => SetDescriptor.Get(SetId);
+        set => SetId = value?.Id ?? Guid.Empty;
+    }
     public string Description { get; set; } = string.Empty;
 
     public string FemalePaperdoll { get; set; } = string.Empty;
@@ -487,6 +503,10 @@ public partial class ItemDescriptor : DatabaseObject<ItemDescriptor>, IFolderabl
         Consumable = new ConsumableData();
         Effects = [];
         Color = new Color(255, 255, 255, 255);
+        if (ItemType != ItemType.Equipment)
+        {
+            SetId = Guid.Empty;
+        }
     }
 
     // Verifica si el ítem puede ser encantado (solo si es de tipo Equipment)

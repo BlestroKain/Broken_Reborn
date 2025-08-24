@@ -76,20 +76,21 @@ public partial class EquipmentItem
         {
             return;
         }
+        var player = (mCharacterWindow as CharacterWindow)?.DisplayedPlayer;
+        if (player == null || player != Globals.Me)
+        {
+            return;
+        }
 
         if (ClientConfiguration.Instance.EnableContextMenus)
         {
             var window = Interface.GameUi.GameMenu.GetInventoryWindow();
-            if (window != null)
+            if (window != null && Globals.Me.MyEquipment.TryGetValue(mYindex, out var equippedList) && equippedList.Count > 0)
             {
-                // Obtenemos la lista del slot del equipo
-                if (Globals.Me.MyEquipment.TryGetValue(mYindex, out var equippedList) && equippedList.Count > 0)
+                var invSlot = equippedList[0];
+                if (invSlot >= 0 && invSlot < Options.Instance.Player.MaxInventory)
                 {
-                    var invSlot = equippedList[0]; // Tomamos el primer ítem equipado
-                    if (invSlot >= 0 && invSlot < Options.Instance.Player.MaxInventory)
-                    {
-                        window.OpenContextMenu(invSlot);
-                    }
+                    window.OpenContextMenu(invSlot);
                 }
             }
         }

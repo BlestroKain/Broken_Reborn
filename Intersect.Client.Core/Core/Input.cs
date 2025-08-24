@@ -1,3 +1,4 @@
+using System;
 using Intersect.Admin.Actions;
 using Intersect.Client.Entities;
 using Intersect.Client.Framework.GenericClasses;
@@ -305,7 +306,16 @@ public static partial class Input
                             break;
 
                         case Control.OpenCharacterInfo:
-                            Interface.Interface.GameUi.GameMenu?.ToggleCharacterWindow();
+                            if (Globals.Me != null && Globals.Me.TargetId != Guid.Empty &&
+                                Globals.Entities.TryGetValue(Globals.Me.TargetId, out var target) &&
+                                target is Player player && player != Globals.Me)
+                            {
+                                Interface.Interface.GameUi.GameMenu?.ToggleCharacterWindow(player);
+                            }
+                            else
+                            {
+                                Interface.Interface.GameUi.GameMenu?.ToggleCharacterWindow();
+                            }
                             break;
 
                         case Control.OpenParties:

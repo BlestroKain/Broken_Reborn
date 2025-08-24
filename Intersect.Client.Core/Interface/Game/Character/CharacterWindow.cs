@@ -1,4 +1,5 @@
 using Intersect.Client.Core;
+using Intersect.Client.Entities;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
@@ -81,8 +82,12 @@ public partial class CharacterWindow:Window
     Label mSpeedBuff;
     Label mDamageBuff;
     Label mCureBuff;
-    
-    ClassDescriptor mPlayer;
+
+    private Player? _player;
+
+    ClassDescriptor mClassDescriptor;
+
+    public Player? DisplayedPlayer => _player ?? Globals.Me;
 
     long HpRegenAmount;
 
@@ -266,6 +271,11 @@ public partial class CharacterWindow:Window
        LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
     }
 
+    public void SetPlayer(Player? player)
+    {
+        _player = player;
+    }
+
     //Update Button Event Handlers
     void _addMagicResistBtn_Clicked(Base sender, MouseButtonState arguments)
     {
@@ -295,20 +305,21 @@ public partial class CharacterWindow:Window
     //Methods
     public void Update()
     {
-        if (this.IsHidden || Globals.Me is null)
+        var player = DisplayedPlayer;
+        if (IsHidden || player is null)
         {
             return;
         }
 
-        mCharacterName.Text = Globals.Me.Name;
+        mCharacterName.Text = player.Name;
         mCharacterLevelAndClass.Text = Strings.Character.LevelAndClass.ToString(
-            Globals.Me.Level, ClassDescriptor.GetName(Globals.Me.Class)
+            player.Level, ClassDescriptor.GetName(player.Class)
         );
 
         //Load Portrait
         //UNCOMMENT THIS LINE IF YOU'D RATHER HAVE A FACE HERE IGameTexture faceTex = Globals.ContentManager.GetTexture(Framework.Content.TextureType.Face, Globals.Me.Face);
         var entityTex = Globals.ContentManager.GetTexture(
-            Framework.Content.TextureType.Entity, Globals.Me.Sprite
+            Framework.Content.TextureType.Entity, player.Sprite
         );
 
         /* UNCOMMENT THIS BLOCK IF YOU"D RATHER HAVE A FACE HERE if (Globals.Me.Face != "" && Globals.Me.Face != _currentSprite && faceTex != null)
@@ -324,7 +335,7 @@ public partial class CharacterWindow:Window
              }
          }
          else */
-        if (!string.IsNullOrWhiteSpace(Globals.Me.Sprite) && Globals.Me.Sprite != mCurrentSprite && entityTex != null)
+        if (!string.IsNullOrWhiteSpace(player.Sprite) && player.Sprite != mCurrentSprite && entityTex != null)
         {
             for (var z = 0; z < Options.Instance.Equipment.Paperdoll.Directions[1].Count; z++)
             {
@@ -334,7 +345,7 @@ public partial class CharacterWindow:Window
 
                 if (slotIndex > -1)
                 {
-                    var equipment = Globals.Me.MyEquipment;
+                    var equipment = player.MyEquipment;
 
                     // Intentar obtener la lista de ítems equipados en este slot
                     if (equipment.TryGetValue(slotIndex, out var equippedList) && equippedList.Count > 0)
@@ -342,11 +353,11 @@ public partial class CharacterWindow:Window
                         var inventoryIndex = equippedList[0]; // Tomamos el primero para mostrar
                         if (inventoryIndex >= 0 && inventoryIndex < Options.Instance.Player.MaxInventory)
                         {
-                            var itemNum = Globals.Me.Inventory[inventoryIndex].ItemId;
+                            var itemNum = player.Inventory[inventoryIndex].ItemId;
 
                             if (ItemDescriptor.TryGet(itemNum, out var itemDescriptor))
                             {
-                                paperdoll = Globals.Me.Gender == 0
+                                paperdoll = player.Gender == 0
                                     ? itemDescriptor.MalePaperdoll
                                     : itemDescriptor.FemalePaperdoll;
 
@@ -361,7 +372,7 @@ public partial class CharacterWindow:Window
                     PaperdollPanels[z].Texture = entityTex;
                     PaperdollPanels[z].SetTextureRect(0, 0, entityTex.Width / Options.Instance.Sprites.NormalFrames, entityTex.Height / Options.Instance.Sprites.Directions);
                     PaperdollPanels[z].SizeToContents();
-                    PaperdollPanels[z].RenderColor = Globals.Me.Color;
+                    PaperdollPanels[z].RenderColor = player.Color;
                     Align.Center(PaperdollPanels[z]);
                 }
 
@@ -389,7 +400,7 @@ public partial class CharacterWindow:Window
             }
         }
 
-        else if (Globals.Me.Sprite != mCurrentSprite && Globals.Me.Face != mCurrentSprite)
+        else if (player.Sprite != mCurrentSprite && player.Face != mCurrentSprite)
         {
             mCharacterPortrait.IsHidden = true;
             for (var i = 0; i < Options.Instance.Equipment.Slots.Count; i++)
@@ -401,80 +412,81 @@ public partial class CharacterWindow:Window
         mAttackLabel.SetText(
             Strings.Character.StatLabelValue.ToString(
                 Strings.Combat.Stats[Stat.Attack],
-                Globals.Me.Stat[(int)Stat.Attack]
+                player.Stat[(int)Stat.Attack]
             )
         );
 
         mAbilityPwrLabel.SetText(
             Strings.Character.StatLabelValue.ToString(
                 Strings.Combat.Stats[Stat.Intelligence],
-                Globals.Me.Stat[(int)Stat.Intelligence]
+                player.Stat[(int)Stat.Intelligence]
             )
         );
 
         mDefenseLabel.SetText(
             Strings.Character.StatLabelValue.ToString(
                 Strings.Combat.Stats[Stat.Defense],
-                Globals.Me.Stat[(int)Stat.Defense]
+                player.Stat[(int)Stat.Defense]
             )
         );
 
         mMagicRstLabel.SetText(
             Strings.Character.StatLabelValue.ToString(
                 Strings.Combat.Stats[Stat.Vitality],
-                Globals.Me.Stat[(int)Stat.Vitality]
+                player.Stat[(int)Stat.Vitality]
             )
         );
 
         mSpeedLabel.SetText(
             Strings.Character.StatLabelValue.ToString(
                 Strings.Combat.Stats[Stat.Speed],
-                Globals.Me.Stat[(int)Stat.Speed]
+                player.Stat[(int)Stat.Speed]
             )
         );
         mAgilityLabel.SetText(
     Strings.Character.StatLabelValue.ToString(
         Strings.Combat.Stats[Stat.Agility],
-        Globals.Me.Stat[(int)Stat.Agility]
+        player.Stat[(int)Stat.Agility]
     )
 );
 
         mDamageLabel.SetText(
             Strings.Character.StatLabelValue.ToString(
                 Strings.Combat.Stats[Stat.Damages],
-                Globals.Me.Stat[(int)Stat.Damages]
+                player.Stat[(int)Stat.Damages]
             )
         );
 
         mCureLabel.SetText(
             Strings.Character.StatLabelValue.ToString(
                 Strings.Combat.Stats[Stat.Cures],
-                Globals.Me.Stat[(int)Stat.Cures]
+                player.Stat[(int)Stat.Cures]
             )
         );
-        mPointsLabel.SetText(Strings.Character.Points.ToString(Globals.Me.StatPoints));
-        mAddAbilityPwrBtn.IsHidden = Globals.Me.StatPoints == 0 ||
-                                     Globals.Me.Stat[(int) Stat.Intelligence] == Options.Instance.Player.MaxStat;
+        mPointsLabel.SetText(Strings.Character.Points.ToString(player.StatPoints));
+        mAddAbilityPwrBtn.IsHidden = player.StatPoints == 0 ||
+                                     player.Stat[(int) Stat.Intelligence] == Options.Instance.Player.MaxStat;
 
         mAddAttackBtn.IsHidden =
-            Globals.Me.StatPoints == 0 || Globals.Me.Stat[(int) Stat.Attack] == Options.Instance.Player.MaxStat;
+            player.StatPoints == 0 || player.Stat[(int) Stat.Attack] == Options.Instance.Player.MaxStat;
 
-        mAddDefenseBtn.IsHidden = Globals.Me.StatPoints == 0 ||
-                                  Globals.Me.Stat[(int) Stat.Defense] == Options.Instance.Player.MaxStat;
+        mAddDefenseBtn.IsHidden = player.StatPoints == 0 ||
+                                  player.Stat[(int) Stat.Defense] == Options.Instance.Player.MaxStat;
 
-        mAddMagicResistBtn.IsHidden = Globals.Me.StatPoints == 0 ||
-                                      Globals.Me.Stat[(int) Stat.Vitality] == Options.Instance.Player.MaxStat;
+        mAddMagicResistBtn.IsHidden = player.StatPoints == 0 ||
+                                      player.Stat[(int) Stat.Vitality] == Options.Instance.Player.MaxStat;
 
         mAddAgilityBtn.IsHidden =
-            Globals.Me.StatPoints == 0 || Globals.Me.Stat[(int) Stat.Agility] == Options.Instance.Player.MaxStat;
+            player.StatPoints == 0 || player.Stat[(int) Stat.Agility] == Options.Instance.Player.MaxStat;
 
         UpdateExtraBuffs();
-        UpdateEquippedItems();
+        UpdateEquippedItems(true);
     }
 
     private void UpdateEquippedItems(bool updateExtraBuffs = false)
     {
-        if (Globals.Me is not { } player)
+        var player = DisplayedPlayer;
+        if (player is null)
         {
             return;
         }
@@ -484,49 +496,70 @@ public partial class CharacterWindow:Window
         {
             var slot = Options.Instance.Equipment.EquipmentSlots[slotIndex];
 
-            var itemSlots = player.MyEquipment.GetValueOrDefault(slotIndex);
-            if (itemSlots == null)
+            if (player == Globals.Me)
             {
-                itemSlots = new List<int>();
-            }
-
-            for (var i = 0; i < slot.MaxItems; i++)
-            {
-                if (itemIndex >= Items.Count)
-                    break;
-
-                var itemIds = new List<Guid>();
-                var props = new List<ItemProperties>();
-
-                if (i < itemSlots.Count && itemSlots[i] >= 0 && itemSlots[i] < Options.Instance.Player.MaxInventory)
+                var itemSlots = player.MyEquipment.GetValueOrDefault(slotIndex) ?? new List<int>();
+                for (var i = 0; i < slot.MaxItems; i++)
                 {
-                    var invItem = player.Inventory[itemSlots[i]];
-                    if (invItem.ItemId != Guid.Empty)
+                    if (itemIndex >= Items.Count)
+                        break;
+
+                    var itemIds = new List<Guid>();
+                    var props = new List<ItemProperties>();
+
+                    if (i < itemSlots.Count && itemSlots[i] >= 0 && itemSlots[i] < Options.Instance.Player.MaxInventory)
                     {
-                        itemIds.Add(invItem.ItemId);
-                        props.Add(invItem.ItemProperties);
-                        if (updateExtraBuffs)
+                        var invItem = player.Inventory[itemSlots[i]];
+                        if (invItem.ItemId != Guid.Empty)
                         {
-                            UpdateExtraBuffs(invItem.ItemId);
+                            itemIds.Add(invItem.ItemId);
+                            props.Add(invItem.ItemProperties);
+                            if (updateExtraBuffs)
+                            {
+                                UpdateExtraBuffs(invItem.ItemId);
+                            }
                         }
                     }
-                }
 
-                Items[itemIndex].Update(itemIds, props);
-                itemIndex++;
+                    Items[itemIndex].Update(itemIds, props);
+                    itemIndex++;
+                }
+            }
+            else
+            {
+                var equippedIds = player.Equipment.GetValueOrDefault(slotIndex) ?? new List<Guid>();
+                for (var i = 0; i < slot.MaxItems; i++)
+                {
+                    if (itemIndex >= Items.Count)
+                        break;
+
+                    var itemIds = new List<Guid>();
+                    if (i < equippedIds.Count && equippedIds[i] != Guid.Empty)
+                    {
+                        itemIds.Add(equippedIds[i]);
+                        if (updateExtraBuffs)
+                        {
+                            UpdateExtraBuffs(equippedIds[i]);
+                        }
+                    }
+
+                    Items[itemIndex].Update(itemIds, new List<ItemProperties>());
+                    itemIndex++;
+                }
             }
         }
     }
 
     public void UpdateExtraBuffs()
     {
-        mPlayer = ClassDescriptor.Get(Globals.Me?.Class ?? Guid.Empty);
+        var player = DisplayedPlayer;
+        mClassDescriptor = ClassDescriptor.Get(player?.Class ?? Guid.Empty);
 
-        if (mPlayer != null)
+        if (mClassDescriptor != null)
         {
-            HpRegenAmount = mPlayer.VitalRegen[(int)Vital.Health];
+            HpRegenAmount = mClassDescriptor.VitalRegen[(int)Vital.Health];
             mHpRegen.SetText(Strings.Character.HealthRegen.ToString(HpRegenAmount));
-            ManaRegenAmount = mPlayer.VitalRegen[(int)Vital.Mana];
+            ManaRegenAmount = mClassDescriptor.VitalRegen[(int)Vital.Mana];
             mManaRegen.SetText(Strings.Character.ManaRegen.ToString(ManaRegenAmount));
         }
 
@@ -543,20 +576,24 @@ public partial class CharacterWindow:Window
         mTenacity.SetText(Strings.Character.Tenacity.ToString(0));
         mCooldownReduction.SetText(Strings.Character.CooldownReduction.ToString(0));
         mManaSteal.SetText(Strings.Character.Manasteal.ToString(0));
-        mAttackSpeed.SetText(Strings.Character.AttackSpeed.ToString(Globals.Me.CalculateAttackTime() / 1000f));
 
-        mSpeedBuff.SetText(Strings.Character.StatLabelValue.ToString(
-            Strings.Combat.Stats[Stat.Speed],
-            Globals.Me.Stat[(int)Stat.Speed]
-        ));
-        mDamageBuff.SetText(Strings.Character.StatLabelValue.ToString(
-            Strings.Combat.Stats[Stat.Damages],
-            Globals.Me.Stat[(int)Stat.Damages]
-        ));
-        mCureBuff.SetText(Strings.Character.StatLabelValue.ToString(
-            Strings.Combat.Stats[Stat.Cures],
-            Globals.Me.Stat[(int)Stat.Cures]
-        ));
+        if (player != null)
+        {
+            mAttackSpeed.SetText(Strings.Character.AttackSpeed.ToString(player.CalculateAttackTime() / 1000f));
+
+            mSpeedBuff.SetText(Strings.Character.StatLabelValue.ToString(
+                Strings.Combat.Stats[Stat.Speed],
+                player.Stat[(int)Stat.Speed]
+            ));
+            mDamageBuff.SetText(Strings.Character.StatLabelValue.ToString(
+                Strings.Combat.Stats[Stat.Damages],
+                player.Stat[(int)Stat.Damages]
+            ));
+            mCureBuff.SetText(Strings.Character.StatLabelValue.ToString(
+                Strings.Combat.Stats[Stat.Cures],
+                player.Stat[(int)Stat.Cures]
+            ));
+        }
     }
 
     /// <summary>

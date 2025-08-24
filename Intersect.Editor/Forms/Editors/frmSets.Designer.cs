@@ -84,6 +84,7 @@ partial class frmSets
         btnRemove = new DarkUI.Controls.DarkButton();
         btnAdd = new DarkUI.Controls.DarkButton();
         lblItemSet = new Label();
+        lblTierCount = new Label();
         lstItems = new ListBox();
         grpGeneral = new DarkUI.Controls.DarkGroupBox();
         btnAddFolder = new DarkUI.Controls.DarkButton();
@@ -800,7 +801,7 @@ partial class frmSets
         btnAdd.Click += btnAdd_Click;
         // 
         // lblItemSet
-        // 
+        //
         lblItemSet.AutoSize = true;
         lblItemSet.Location = new System.Drawing.Point(9, 222);
         lblItemSet.Margin = new Padding(4, 0, 4, 0);
@@ -808,6 +809,9 @@ partial class frmSets
         lblItemSet.Size = new Size(34, 15);
         lblItemSet.TabIndex = 31;
         lblItemSet.Text = "Item:";
+        //
+        // lblTierCount
+        //
         // 
         // lstItems
         // 
@@ -1087,6 +1091,16 @@ partial class frmSets
         grpEffects.TabIndex = 60;
         grpEffects.TabStop = false;
         grpEffects.Text = "Bonus Effects";
+        //
+        // lblTierCount
+        //
+        lblTierCount.AutoSize = true;
+        lblTierCount.Location = new System.Drawing.Point(243, 446);
+        lblTierCount.Margin = new Padding(4, 0, 4, 0);
+        lblTierCount.Name = "lblTierCount";
+        lblTierCount.Size = new Size(130, 15);
+        lblTierCount.TabIndex = 50;
+        lblTierCount.Text = "Defined/Equipped: 0/0";
         // 
         // lstBonusEffects
         // 
@@ -1314,6 +1328,7 @@ partial class frmSets
         Controls.Add(grpEffects);
         Controls.Add(grpVitalBonuses);
         Controls.Add(grpItemsSets);
+        Controls.Add(lblTierCount);
         Controls.Add(btnCancel);
         Controls.Add(grpGeneral);
         Controls.Add(grpRegen);
@@ -1377,6 +1392,7 @@ partial class frmSets
     private DarkUI.Controls.DarkButton btnRemove;
     private DarkUI.Controls.DarkButton btnAdd;
     private Label lblItemSet;
+    private Label lblTierCount;
     private ListBox lstItems;
     private DarkUI.Controls.DarkGroupBox grpGeneral;
     private DarkUI.Controls.DarkButton btnAddFolder;

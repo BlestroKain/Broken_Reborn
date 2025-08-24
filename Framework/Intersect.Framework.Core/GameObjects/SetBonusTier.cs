@@ -4,6 +4,7 @@ using Intersect.Collections;
 using Newtonsoft.Json;
 using System;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace Intersect.GameObjects;
 
@@ -20,6 +21,9 @@ public class SetBonusTier
     public int[] PercentageVitals { get; set; } = new int[Enum.GetValues<Vital>().Length];
 
     public List<EffectData> Effects { get; set; } = new();
+
+    [OnDeserialized]
+    internal void OnDeserializedMethod(StreamingContext context) => Validate();
 
     public void Validate()
     {

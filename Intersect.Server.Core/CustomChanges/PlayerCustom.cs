@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects;
 using Intersect.Framework.Core.GameObjects.Items;
+using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.GameObjects;
 using Intersect.Server.Database;
 using Intersect.Server.Database.PlayerData.Players;

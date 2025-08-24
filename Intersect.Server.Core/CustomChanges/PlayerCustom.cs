@@ -6,7 +6,9 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Intersect.Enums;
+using Intersect.Framework.Core.GameObjects;
 using Intersect.Framework.Core.GameObjects.Items;
+using Intersect.GameObjects;
 using Intersect.Server.Database;
 using Intersect.Server.Database.PlayerData.Players;
 using Intersect.Server.Networking;
@@ -271,6 +273,50 @@ namespace Intersect.Server.Entities
         {
             InMailBox = true;
             PacketSender.SendOpenSendMail(this);
+        }
+
+        public (int[] stats, int[] percentStats, long[] vitals, int[] percentVitals, List<EffectData> effects) GetSetBonuses()
+        {
+            var stats = new int[Enum.GetValues<Stat>().Length];
+            var percentStats = new int[Enum.GetValues<Stat>().Length];
+            var vitals = new long[Enum.GetValues<Vital>().Length];
+            var percentVitals = new int[Enum.GetValues<Vital>().Length];
+            var effects = new List<EffectData>();
+
+            var sets = EquippedItems
+                .Where(i => i.Descriptor?.SetId != Guid.Empty)
+                .GroupBy(i => i.Descriptor.SetId);
+
+            foreach (var grp in sets)
+            {
+                var set = SetDescriptor.Get(grp.Key);
+                if (set == null || !set.HasBonuses())
+                {
+                    continue;
+                }
+
+                var ratio = (float)grp.Count() / Math.Max(1, set.ItemIds.Count);
+                var (s, ps, v, pv, eff) = set.GetBonuses();
+
+                for (var i = 0; i < stats.Length; i++)
+                {
+                    stats[i] += (int)(s[i] * ratio);
+                    percentStats[i] += (int)(ps[i] * ratio);
+                }
+
+                for (var i = 0; i < vitals.Length; i++)
+                {
+                    vitals[i] += (long)(v[i] * ratio);
+                    percentVitals[i] += (int)(pv[i] * ratio);
+                }
+
+                foreach (var e in eff)
+                {
+                    effects.Add(new EffectData(e.Type, (int)(e.Percentage * ratio)));
+                }
+            }
+
+            return (stats, percentStats, vitals, percentVitals, effects);
         }
 
         public bool HasEnoughSpellPoints(int delta)

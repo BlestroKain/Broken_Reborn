@@ -88,7 +88,7 @@ public partial class DamageOverTimeEffect
         }
         
 
-        var properties = (attacker as Player)?.GetSpellProperties(spellDescriptor.Id);
+        var properties = SpellMath.Scale(spellDescriptor, (attacker as Player)?.GetSpellProperties(spellDescriptor.Id));
         var interval = spellDescriptor.Combat.GetEffectiveHotDotInterval(properties);
         var duration = spellDescriptor.Combat.GetEffectiveDuration(properties);
 
@@ -152,10 +152,10 @@ public partial class DamageOverTimeEffect
             aliveAnimations.Add(animation);
         }
 
-        var properties = (Attacker as Player)?.GetSpellProperties(SpellDescriptor.Id);
-        var level = properties?.Level ?? 0;
-        var damageHealth = SpellMath.Scale(SpellDescriptor.Combat.GetEffectiveVitalDiff(Vital.Health, properties), level);
-        var damageMana = SpellMath.Scale(SpellDescriptor.Combat.GetEffectiveVitalDiff(Vital.Mana, properties), level);
+        var properties = SpellMath.Scale(SpellDescriptor, (Attacker as Player)?.GetSpellProperties(SpellDescriptor.Id));
+        var level = properties.Level;
+        var damageHealth = SpellDescriptor.Combat.GetEffectiveVitalDiff(Vital.Health, properties);
+        var damageMana = SpellDescriptor.Combat.GetEffectiveVitalDiff(Vital.Mana, properties);
 
         Attacker?.Attack(
             Target, damageHealth, damageMana,

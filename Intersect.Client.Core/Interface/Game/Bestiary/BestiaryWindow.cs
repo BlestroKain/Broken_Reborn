@@ -55,16 +55,18 @@ public sealed class BestiaryWindow : Window
         LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
 
         BestiaryController.InitializeAllBeasts();
-        BestiaryController.OnUnlockGained += (npcId, _) =>
-        {
-            RefreshTilesState();
-            if (_selectedNpcId == npcId)
-            {
-                ShowNpcDetails(npcId);
-            }
-        };
+        BestiaryController.OnUnlockGained += OnUnlockGained;
 
         BuildTiles();
+    }
+
+    private void OnUnlockGained(Guid npcId, BestiaryUnlock _)
+    {
+        RefreshTilesState();
+        if (_selectedNpcId == npcId)
+        {
+            ShowNpcDetails(npcId);
+        }
     }
 
     private void BuildTiles()
@@ -326,6 +328,12 @@ public sealed class BestiaryWindow : Window
         lbl.SizeToContents();
         yOffset += lbl.Height + 4;
       
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        BestiaryController.OnUnlockGained -= OnUnlockGained;
+        base.Dispose(disposing);
     }
 
     internal void Update()

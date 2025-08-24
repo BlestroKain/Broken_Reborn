@@ -3,6 +3,7 @@ using Intersect.Framework.Core.GameObjects.Animations;
 using Intersect.Framework.Core.GameObjects.Crafting;
 using Intersect.Framework.Core.GameObjects.Events;
 using Intersect.Framework.Core.GameObjects.Items;
+using Intersect.Framework.Core.GameObjects;
 using Intersect.Framework.Core.GameObjects.Mapping.Tilesets;
 using Intersect.Framework.Core.GameObjects.Maps.MapList;
 using Intersect.Framework.Core.GameObjects.NPCs;
@@ -40,6 +41,8 @@ public abstract partial class GameContext : IntersectDbContext<GameContext>, IGa
 
     //Items
     public DbSet<ItemDescriptor> Items { get; set; }
+
+    public DbSet<SetBase> Sets { get; set; }
 
     //Equipment Properties of Items
     public DbSet<EquipmentProperties> Items_EquipmentProperties { get; set; }

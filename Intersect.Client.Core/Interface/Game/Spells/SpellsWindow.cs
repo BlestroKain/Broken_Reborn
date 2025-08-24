@@ -15,6 +15,7 @@ using System.Linq;
 using Intersect.Client.Interface.Game.DescriptionWindows;
 using Intersect.Client.Interface;
 
+
 namespace Intersect.Client.Interface.Game.Spells;
 
 public partial class SpellsWindow : Window
@@ -30,6 +31,7 @@ public partial class SpellsWindow : Window
     private ScrollControl _detailsScroll;
     private Base _levelTabs;
     private SpellPreviewWindow? _previewWin;
+
     private int _previewLevel;
 
     private int _selectedSlot = -1;
@@ -294,11 +296,6 @@ public partial class SpellsWindow : Window
             var level = l;
             btn.Clicked += (_, __) =>
             {
-                if (_previewWin == null)
-                {
-                    return;
-                }
-
                 _previewLevel = level;
                 _previewWin.ShowPreview(desc.Id, _previewLevel);
                 _detailsScroll.SetInnerSize(_previewWin.Width, _previewWin.Height);

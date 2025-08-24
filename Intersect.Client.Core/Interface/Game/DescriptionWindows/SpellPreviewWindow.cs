@@ -52,7 +52,7 @@ public class SpellPreviewWindow : SpellDescriptionWindow
         base.Show();
     }
 
-    protected override void SetupHeader()
+    protected void SetupHeader()
     {
         var desc = (SpellDescriptor?)DescField?.GetValue(this);
         if (desc == null)
@@ -76,6 +76,7 @@ public class SpellPreviewWindow : SpellDescriptionWindow
             ? $"Nivel necesario: {_previewLevel}"
             : $"Nivel {_previewLevel}";
         var color = _previewLevel > _currentLevel ? new Color(170, 170, 170, 255) : Color.White;
+
         header.SetDescription(text, color);
 
         header.SizeToChildren(true, false);

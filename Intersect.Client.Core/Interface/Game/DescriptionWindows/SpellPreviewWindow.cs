@@ -72,8 +72,11 @@ public class SpellPreviewWindow : SpellDescriptionWindow
         Strings.SpellDescription.SpellTypes.TryGetValue((int)desc.SpellType, out var spellType);
         header.SetSubtitle(spellType, Color.White);
 
-        var text = _previewLevel > _currentLevel ? $"Required Level: {_previewLevel}" : $"Level {_previewLevel}";
-        var color = _previewLevel > _currentLevel ? new Color(170,170,170,255) : Color.White;
+        var text = _previewLevel > _currentLevel
+            ? $"Nivel necesario: {_previewLevel}"
+            : $"Nivel {_previewLevel}";
+        var color = _previewLevel > _currentLevel ? new Color(170, 170, 170, 255) : Color.White;
+
         header.SetDescription(text, color);
 
         header.SizeToChildren(true, false);

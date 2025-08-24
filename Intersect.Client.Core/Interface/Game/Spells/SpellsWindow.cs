@@ -13,6 +13,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Intersect.Client.Interface.Game.DescriptionWindows;
+using Intersect.Client.Interface;
+
 
 namespace Intersect.Client.Interface.Game.Spells;
 
@@ -28,7 +30,8 @@ public partial class SpellsWindow : Window
     // Panel de detalle
     private ScrollControl _detailsScroll;
     private Base _levelTabs;
-    private SpellPreviewWindow _previewWin;
+    private SpellPreviewWindow? _previewWin;
+
     private int _previewLevel;
 
     private int _selectedSlot = -1;
@@ -76,7 +79,7 @@ public partial class SpellsWindow : Window
         _detailsScroll.SetPosition(250, 30);
         _detailsScroll.SetSize(300, 316);
 
-        _previewWin = new SpellPreviewWindow(_detailsScroll);
+        Interface.EnqueueInGame(() => _previewWin = new SpellPreviewWindow(_detailsScroll));
 
         // CONTEXT MENU
         _contextMenu = new ContextMenu(gameCanvas, "SpellContextMenu")
@@ -315,6 +318,12 @@ public partial class SpellsWindow : Window
         var currentLevel = Globals.Me?.Spells.FirstOrDefault(s => s.Id == spellId)?.Properties?.Level ?? 1;
 
         BuildLevelTabs(desc, currentLevel);
+
+        if (_previewWin == null)
+        {
+            return;
+        }
+
         _previewLevel = currentLevel;
         _previewWin.ShowPreview(spellId, _previewLevel);
         _detailsScroll.SetInnerSize(_previewWin.Width, _previewWin.Height);

@@ -227,7 +227,12 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
 
         AddDivider();
         var desc = AddDescription();
-        desc.AddText(_itemDescriptor.SetName, CustomColors.ItemDesc.Primary);
+        desc.AddText(set.Name, CustomColors.ItemDesc.Primary);
+        if (!string.IsNullOrWhiteSpace(set.Description))
+        {
+            desc.AddLineBreak();
+            desc.AddText(set.Description, CustomColors.ItemDesc.Muted);
+        }
 
         var container = AddComponent(new ComponentBase(this, "SetItemsContainer"));
         int x = 0;

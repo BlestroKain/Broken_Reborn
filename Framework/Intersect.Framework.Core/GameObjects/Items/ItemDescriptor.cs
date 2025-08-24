@@ -181,15 +181,6 @@ public partial class ItemDescriptor : DatabaseObject<ItemDescriptor>, IFolderabl
         get => SetDescriptor.Get(SetId);
         set => SetId = value?.Id ?? Guid.Empty;
     }
-
-    [Column("SetName")]
-    [JsonProperty]
-    public string SetName { get; set; } = string.Empty;
-
-    [Column("SetDescription")]
-    [JsonProperty]
-    public string SetDescription { get; set; } = string.Empty;
-
     public string Description { get; set; } = string.Empty;
 
     public string FemalePaperdoll { get; set; } = string.Empty;

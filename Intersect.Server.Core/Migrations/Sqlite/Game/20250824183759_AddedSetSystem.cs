@@ -18,24 +18,13 @@ namespace Intersect.Server.Migrations.Sqlite.Game
                 nullable: false,
                 defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
 
-            migrationBuilder.AddColumn<string>(
-                name: "SetDescription",
-                table: "Items",
-                type: "TEXT",
-                nullable: true);
-
-            migrationBuilder.AddColumn<string>(
-                name: "SetName",
-                table: "Items",
-                type: "TEXT",
-                nullable: true);
-
             migrationBuilder.CreateTable(
                 name: "Sets",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: true),
+                    Description = table.Column<string>(type: "TEXT", nullable: true),
                     ItemIds = table.Column<string>(type: "TEXT", nullable: true),
                     VitalsGiven = table.Column<string>(type: "TEXT", nullable: true),
                     VitalsRegen = table.Column<string>(type: "TEXT", nullable: true),
@@ -60,14 +49,6 @@ namespace Intersect.Server.Migrations.Sqlite.Game
 
             migrationBuilder.DropColumn(
                 name: "Set",
-                table: "Items");
-
-            migrationBuilder.DropColumn(
-                name: "SetDescription",
-                table: "Items");
-
-            migrationBuilder.DropColumn(
-                name: "SetName",
                 table: "Items");
         }
     }

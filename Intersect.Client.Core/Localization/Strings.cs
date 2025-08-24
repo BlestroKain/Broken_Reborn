@@ -2879,6 +2879,9 @@ If you are sure you want to hand over your guild enter '\c{{#ff8080}}{02}\c{{}}'
         public static LocalizedString Instant = @"Instant";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Level = @"Level:";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString Multiplier = @"{00}x";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

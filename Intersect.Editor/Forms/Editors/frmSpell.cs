@@ -14,7 +14,9 @@ using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.GameObjects;
 using Intersect.Utilities;
+using System.Drawing;
 using System.Windows.Forms;
+using System.Collections.Generic;
 using Graphics = System.Drawing.Graphics;
 
 namespace Intersect.Editor.Forms.Editors;
@@ -36,6 +38,9 @@ public partial class FrmSpell : EditorForm
     private int mUpgradeLevel = 1;
     private bool mLoadingLevels;
 
+    private readonly Dictionary<string, DarkNumericUpDown> mUpgradeControls = new();
+    private FlowLayoutPanel mUpgradePanel;
+
     public FrmSpell()
     {
         ApplyHooks();
@@ -51,6 +56,53 @@ public partial class FrmSpell : EditorForm
         }
 
         lstGameObjects.Init(UpdateToolStripItems, AssignEditorItem, toolStripItemNew_Click, toolStripItemCopy_Click, toolStripItemUndo_Click, toolStripItemPaste_Click, toolStripItemDelete_Click);
+
+        InitUpgradeControls();
+    }
+
+    private void InitUpgradeControls()
+    {
+        mUpgradePanel = new FlowLayoutPanel
+        {
+            Location = dgvUpgrades.Location,
+            Size = dgvUpgrades.Size,
+            FlowDirection = FlowDirection.TopDown,
+            WrapContents = false,
+            AutoScroll = true
+        };
+
+        grpUpgrades.Controls.Remove(dgvUpgrades);
+        dgvUpgrades.Dispose();
+        grpUpgrades.Controls.Add(mUpgradePanel);
+
+        foreach (var key in SpellUpgradeKeys.All)
+        {
+            var row = new Panel
+            {
+                Width = mUpgradePanel.ClientSize.Width - 25,
+                Height = 25
+            };
+
+            var lbl = new Label
+            {
+                Text = key,
+                AutoSize = true,
+                Location = new Point(0, 5)
+            };
+
+            var nud = new DarkNumericUpDown
+            {
+                Minimum = int.MinValue,
+                Maximum = int.MaxValue,
+                Width = 80,
+                Location = new Point(row.Width - 85, 0)
+            };
+
+            row.Controls.Add(lbl);
+            row.Controls.Add(nud);
+            mUpgradePanel.Controls.Add(row);
+            mUpgradeControls[key] = nud;
+        }
     }
     private void AssignEditorItem(Guid id)
     {
@@ -331,7 +383,7 @@ public partial class FrmSpell : EditorForm
 
             mLoadingLevels = true;
             cmbUpgradeLevel.Items.Clear();
-            for (var i = 1; i <= Options.Instance.Player.MaxLevel; i++)
+            for (var i = 1; i <= Options.Instance.Player.MaxSpellLevel; i++)
             {
                 cmbUpgradeLevel.Items.Add(i.ToString());
             }
@@ -365,9 +417,12 @@ public partial class FrmSpell : EditorForm
             return;
         }
 
-        mEditorItem.LevelUpgrades ??= new Dictionary<int, SpellProperties>();
+        if (mUpgradeLevel < 1 || mUpgradeLevel > Options.Instance.Player.MaxSpellLevel)
+        {
+            return;
+        }
 
-        dgvUpgrades.EndEdit();
+        mEditorItem.LevelUpgrades ??= new Dictionary<int, SpellProperties>();
 
         if (!mEditorItem.LevelUpgrades.TryGetValue(mUpgradeLevel, out var props) || props == null)
         {
@@ -376,24 +431,12 @@ public partial class FrmSpell : EditorForm
 
         props.CustomUpgrades.Clear();
 
-        foreach (DataGridViewRow row in dgvUpgrades.Rows)
+        foreach (var kv in mUpgradeControls)
         {
-            if (row.IsNewRow)
+            var value = (int)kv.Value.Value;
+            if (value != 0)
             {
-                continue;
-            }
-
-            var key = row.Cells[0].Value?.ToString();
-            var valueObj = row.Cells[1].Value;
-
-            if (string.IsNullOrWhiteSpace(key) || !SpellUpgradeKeys.IsValid(key))
-            {
-                continue;
-            }
-
-            if (int.TryParse(valueObj?.ToString(), out var value))
-            {
-                props.CustomUpgrades[key] = value;
+                props.CustomUpgrades[kv.Key] = value;
             }
         }
 
@@ -407,7 +450,15 @@ public partial class FrmSpell : EditorForm
             return;
         }
 
-        dgvUpgrades.Rows.Clear();
+        foreach (var control in mUpgradeControls.Values)
+        {
+            control.Value = 0;
+        }
+
+        if (mUpgradeLevel < 1 || mUpgradeLevel > Options.Instance.Player.MaxSpellLevel)
+        {
+            return;
+        }
 
         if (mEditorItem.LevelUpgrades != null &&
             mEditorItem.LevelUpgrades.TryGetValue(mUpgradeLevel, out var props) &&
@@ -415,7 +466,10 @@ public partial class FrmSpell : EditorForm
         {
             foreach (var kv in props.CustomUpgrades)
             {
-                dgvUpgrades.Rows.Add(kv.Key, kv.Value);
+                if (mUpgradeControls.TryGetValue(kv.Key, out var control))
+                {
+                    control.Value = kv.Value;
+                }
             }
         }
     }

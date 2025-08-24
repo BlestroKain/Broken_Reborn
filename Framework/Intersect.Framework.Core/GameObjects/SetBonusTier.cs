@@ -48,7 +48,9 @@ public class SetBonusTier
             Vitals.ToArray(),
             VitalsRegen.ToArray(),
             PercentageVitals.ToArray(),
-            Effects.Select(e => new EffectData(e.Type, e.Percentage)).ToList()
+            Effects
+                .Select(e => new EffectData(e.Type, e.Percentage, e.IsPassive, e.Stacking))
+                .ToList()
         );
     }
 

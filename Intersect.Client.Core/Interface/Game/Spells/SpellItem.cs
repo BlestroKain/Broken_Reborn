@@ -281,14 +281,45 @@ public partial class SpellItem : SlotItem
 
         var properties = slot.Properties ?? new SpellProperties();
         slot.Properties = properties;
-        _nameLabel.Text = $"{spell.Name}";
+        var level = properties.Level;
+        _nameLabel.Text = $"{spell.Name} ({Strings.EntityBox.Level.ToString(level)})";
         SpellProperties = properties;
         SetToolTipText(spell.Name);
 
-        _levelUpButton.IsDisabled = !(Globals.Me.SpellPoints > 0 && properties.Level < Options.Instance.Player.MaxSpellLevel);
-        _levelDownButton.IsDisabled = !(properties.Level > 1);
+        _levelUpButton.IsDisabled = level >= Options.Instance.Player.MaxSpellLevel || Globals.Me.SpellPoints <= 0;
+        _levelDownButton.IsDisabled = level <= 1;
         _levelUpButton.IsVisibleInParent = true;
         _levelDownButton.IsVisibleInParent = true;
+
+        // Tooltip for next level summary
+        var tooltip = string.Empty;
+        if (level < Options.Instance.Player.MaxSpellLevel &&
+            SpellDescriptor.TryGet(slot.Id, out var desc) &&
+            desc.LevelUpgrades.TryGetValue(level + 1, out var nextLevelUpgrades))
+        {
+            var nextProps = desc.GetPropertiesForLevel(level + 1);
+            var currentProps = desc.GetPropertiesForLevel(level);
+            if (nextProps != null)
+            {
+                var tooltipSb = new StringBuilder();
+                tooltipSb.AppendLine($"Nivel {level + 1}:");
+
+                foreach (var kv in nextProps.CustomUpgrades)
+                {
+                    var currentVal = currentProps.CustomUpgrades.TryGetValue(kv.Key, out var val) ? val : 0;
+                    var diff = kv.Value - currentVal;
+                    if (diff != 0)
+                    {
+                        tooltipSb.AppendLine($"{kv.Key}: {(diff >= 0 ? "+" : string.Empty)}{diff}");
+                    }
+                }
+
+                tooltipSb.AppendLine($"Costo: {level} punto(s) de hechizo");
+                tooltip = tooltipSb.ToString().Trim();
+            }
+        }
+
+        _levelUpButton.SetToolTipText(tooltip);
 
         if (Path.GetFileName(Icon.Texture?.Name) != spell.Icon)
         {

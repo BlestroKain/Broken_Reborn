@@ -1386,7 +1386,11 @@ internal sealed partial class PacketHandler
             HandlePacket(spl);
         }
 
-        Interface.Interface.EnqueueInGame(ui => ui.SpellsWindow?.Refresh());
+        Interface.Interface.EnqueueInGame(ui =>
+        {
+            ui.SpellsWindow?.Refresh();
+            ui.SpellsWindow?.Update();
+        });
     }
 
     //SpellUpdatePacket

@@ -297,8 +297,7 @@ namespace Intersect.Server.Entities
                     continue;
                 }
 
-                var ratio = (float)grp.Count() / Math.Max(1, set.ItemIds.Count);
-                var (s, ps, v, vr, pv, eff) = set.GetBonuses(ratio);
+                var (s, ps, v, vr, pv, eff) = set.GetBonuses(grp.Count());
 
                 for (var i = 0; i < stats.Length; i++)
                 {

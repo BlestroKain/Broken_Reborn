@@ -277,45 +277,74 @@ namespace Intersect.Server.Entities
 
         public (int[] stats, int[] percentStats, long[] vitals, long[] vitalsRegen, int[] percentVitals, List<EffectData> effects) GetSetBonuses()
         {
-            var stats = new int[Enum.GetValues<Stat>().Length];
-            var percentStats = new int[Enum.GetValues<Stat>().Length];
-            var vitals = new long[Enum.GetValues<Vital>().Length];
-            var vitalsRegen = new long[Enum.GetValues<Vital>().Length];
-            var percentVitals = new int[Enum.GetValues<Vital>().Length];
-            var effects = new List<EffectData>();
-
-            var sets = EquippedItems
-                .Where(i => i.Descriptor?.SetId != Guid.Empty)
-                .GroupBy(i => i.Descriptor.SetId)
-                .OrderBy(g => SetDescriptor.Get(g.Key)?.Name);
-
-            foreach (var grp in sets)
+            KeyValuePair<int, List<int>>[] equipmentSnapshot;
+            lock (Equipment)
             {
-                var set = SetDescriptor.Get(grp.Key);
-                if (set == null || !set.HasBonuses)
-                {
-                    continue;
-                }
-
-                var (s, ps, v, vr, pv, eff) = set.GetBonuses(grp.Count());
-
-                for (var i = 0; i < stats.Length; i++)
-                {
-                    stats[i] += s[i];
-                    percentStats[i] += ps[i];
-                }
-
-                for (var i = 0; i < vitals.Length; i++)
-                {
-                    vitals[i] += v[i];
-                    vitalsRegen[i] += vr[i];
-                    percentVitals[i] += pv[i];
-                }
-
-                effects.AddRange(eff);
+                equipmentSnapshot = Equipment
+                    .Select(kvp => new KeyValuePair<int, List<int>>(kvp.Key, kvp.Value.ToList()))
+                    .ToArray();
             }
 
-            return (stats, percentStats, vitals, vitalsRegen, percentVitals, effects);
+            var items = new List<Item>();
+            var hash = 0;
+
+            foreach (var kvp in equipmentSnapshot)
+            {
+                foreach (var slot in kvp.Value)
+                {
+                    if (!TryGetItemAt(slot, out var item) || item?.Descriptor?.SetId == Guid.Empty)
+                    {
+                        continue;
+                    }
+
+                    hash ^= kvp.Key ^ item.Descriptor.SetId.GetHashCode();
+                    items.Add(item);
+                }
+            }
+
+            if (hash != mSetBonusHash)
+            {
+                Array.Clear(mSetBonusStats, 0, mSetBonusStats.Length);
+                Array.Clear(mSetBonusPercentStats, 0, mSetBonusPercentStats.Length);
+                Array.Clear(mSetBonusVitals, 0, mSetBonusVitals.Length);
+                Array.Clear(mSetBonusVitalsRegen, 0, mSetBonusVitalsRegen.Length);
+                Array.Clear(mSetBonusPercentVitals, 0, mSetBonusPercentVitals.Length);
+                mSetBonusEffects = new List<EffectData>();
+
+                var sets = items
+                    .GroupBy(i => i.Descriptor.SetId)
+                    .OrderBy(g => SetDescriptor.Get(g.Key)?.Name);
+
+                foreach (var grp in sets)
+                {
+                    var set = SetDescriptor.Get(grp.Key);
+                    if (set == null || !set.HasBonuses)
+                    {
+                        continue;
+                    }
+
+                    var (s, ps, v, vr, pv, eff) = set.GetBonuses(grp.Count());
+
+                    for (var i = 0; i < mSetBonusStats.Length; i++)
+                    {
+                        mSetBonusStats[i] += s[i];
+                        mSetBonusPercentStats[i] += ps[i];
+                    }
+
+                    for (var i = 0; i < mSetBonusVitals.Length; i++)
+                    {
+                        mSetBonusVitals[i] += v[i];
+                        mSetBonusVitalsRegen[i] += vr[i];
+                        mSetBonusPercentVitals[i] += pv[i];
+                    }
+
+                    mSetBonusEffects.AddRange(eff);
+                }
+
+                mSetBonusHash = hash;
+            }
+
+            return (mSetBonusStats, mSetBonusPercentStats, mSetBonusVitals, mSetBonusVitalsRegen, mSetBonusPercentVitals, mSetBonusEffects);
         }
 
         public static void ApplySetBonuses(Player p)

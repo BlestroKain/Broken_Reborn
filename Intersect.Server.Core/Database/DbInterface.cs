@@ -21,6 +21,7 @@ using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.GameObjects.Resources;
 using Intersect.Framework.Core.GameObjects.Variables;
+using Intersect.Framework.Core.GameObjects;
 using Intersect.Framework.Reflection;
 using Intersect.GameObjects;
 using Intersect.Models;
@@ -720,6 +721,10 @@ public static partial class DbInterface
                 ItemDescriptor.Lookup.Clear();
 
                 break;
+            case GameObjectType.Sets:
+                SetDescriptor.Lookup.Clear();
+
+                break;
             case GameObjectType.Npc:
                 NPCDescriptor.Lookup.Clear();
 
@@ -821,6 +826,7 @@ public static partial class DbInterface
                         }
 
                         break;
+                   
                     case GameObjectType.Npc:
                         foreach (var npc in context.Npcs)
                         {
@@ -932,6 +938,14 @@ public static partial class DbInterface
                         }
 
                         break;
+                    case GameObjectType.Sets:
+                        foreach (var set in context.Sets)
+                        {
+                            SetDescriptor.Lookup.Set(set.Id, set);
+                        }
+
+                        break;
+
                     default:
                         throw new ArgumentOutOfRangeException(nameof(gameObjectType), gameObjectType, null);
                 }
@@ -1181,6 +1195,10 @@ public static partial class DbInterface
                 dbObj = new UserVariableDescriptor(predefinedid);
 
                 break;
+            case GameObjectType.Sets:
+                dbObj = new SetDescriptor(predefinedid);
+
+                break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(gameObjectType), gameObjectType, null);
         }
@@ -1304,6 +1322,11 @@ public static partial class DbInterface
                     case GameObjectType.UserVariable:
                         context.UserVariables.Add((UserVariableDescriptor)dbObj);
                         UserVariableDescriptor.Lookup.Set(dbObj.Id, dbObj);
+
+                        break;
+                    case GameObjectType.Sets:
+                        context.Sets.Add((SetDescriptor)dbObj);
+                        SetDescriptor.Lookup.Set(dbObj.Id, dbObj);
 
                         break;
 
@@ -1444,6 +1467,10 @@ public static partial class DbInterface
                         break;
                     case GameObjectType.UserVariable:
                         context.UserVariables.Remove((UserVariableDescriptor)gameObject);
+
+                        break;
+                    case GameObjectType.Sets:
+                        context.Sets.Remove((SetDescriptor)gameObject);
 
                         break;
                 }
@@ -1603,6 +1630,10 @@ public static partial class DbInterface
                         break;
                     case GameObjectType.UserVariable:
                         context.UserVariables.Update((UserVariableDescriptor)gameObject);
+
+                        break;
+                    case GameObjectType.Sets:
+                        context.Sets.Update((SetDescriptor)gameObject);
 
                         break;
                 }

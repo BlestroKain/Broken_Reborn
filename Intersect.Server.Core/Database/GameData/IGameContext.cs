@@ -2,6 +2,7 @@ using Intersect.Framework.Core.GameObjects.Animations;
 using Intersect.Framework.Core.GameObjects.Crafting;
 using Intersect.Framework.Core.GameObjects.Events;
 using Intersect.Framework.Core.GameObjects.Items;
+using Intersect.Framework.Core.GameObjects;
 using Intersect.Framework.Core.GameObjects.Mapping.Tilesets;
 using Intersect.Framework.Core.GameObjects.Maps.MapList;
 using Intersect.Framework.Core.GameObjects.NPCs;
@@ -27,6 +28,8 @@ public interface IGameContext : IDbContext
     DbSet<EventDescriptor> Events { get; set; }
 
     DbSet<ItemDescriptor> Items { get; set; }
+
+    DbSet<SetDescriptor> Sets { get; set; }
 
     DbSet<EquipmentProperties> Items_EquipmentProperties { get; set; }
 

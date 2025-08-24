@@ -124,6 +124,9 @@ public partial class FrmNpc : EditorForm
         cmbAttackAnimation.Items.Clear();
         cmbAttackAnimation.Items.Add(Strings.General.None);
         cmbAttackAnimation.Items.AddRange(AnimationDescriptor.Names);
+        cmbDeathAnimation.Items.Clear();
+        cmbDeathAnimation.Items.Add(Strings.General.None);
+        cmbDeathAnimation.Items.AddRange(AnimationDescriptor.Names);
         cmbOnDeathEventKiller.Items.Clear();
         cmbOnDeathEventKiller.Items.Add(Strings.General.None);
         cmbOnDeathEventKiller.Items.AddRange(EventDescriptor.Names);
@@ -269,6 +272,7 @@ public partial class FrmNpc : EditorForm
         lblScalingStat.Text = Strings.NpcEditor.scalingstat;
         lblScaling.Text = Strings.NpcEditor.scalingamount;
         lblAttackAnimation.Text = Strings.NpcEditor.attackanimation;
+        lblDeathAnimation.Text = Strings.NpcEditor.deathanimation;
 
         //Searching/Sorting
         btnAlphabetical.ToolTipText = Strings.NpcEditor.sortalphabetically;
@@ -351,6 +355,7 @@ public partial class FrmNpc : EditorForm
             cmbDamageType.SelectedIndex = mEditorItem.DamageType;
             cmbScalingStat.SelectedIndex = mEditorItem.ScalingStat;
             cmbAttackAnimation.SelectedIndex = AnimationDescriptor.ListIndex(mEditorItem.AttackAnimationId) + 1;
+            cmbDeathAnimation.SelectedIndex = AnimationDescriptor.ListIndex(mEditorItem.DeathAnimationId) + 1;
             cmbAttackSpeedModifier.SelectedIndex = mEditorItem.AttackSpeedModifier;
             nudAttackSpeedValue.Value = mEditorItem.AttackSpeedValue;
 
@@ -701,6 +706,12 @@ public partial class FrmNpc : EditorForm
     {
         mEditorItem.AttackAnimation =
             AnimationDescriptor.Get(AnimationDescriptor.IdFromList(cmbAttackAnimation.SelectedIndex - 1));
+    }
+
+    private void cmbDeathAnimation_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        mEditorItem.DeathAnimation =
+            AnimationDescriptor.Get(AnimationDescriptor.IdFromList(cmbDeathAnimation.SelectedIndex - 1));
     }
 
     private void cmbDamageType_SelectedIndexChanged(object sender, EventArgs e)

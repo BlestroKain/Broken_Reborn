@@ -1,4 +1,5 @@
 using Intersect.Client.Core;
+using Intersect.Client.Entities;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
@@ -310,7 +311,7 @@ public partial class MenuContainer : Panel
         mJobsWindow.Hide();
     }
 
-    public void ToggleCharacterWindow()
+    public void ToggleCharacterWindow(Player? player = null)
     {
         if (_characterWindow.IsVisible())
         {
@@ -319,6 +320,7 @@ public partial class MenuContainer : Panel
         else
         {
             HideWindows();
+            _characterWindow.SetPlayer(player);
             _characterWindow.Show();
         }
     }

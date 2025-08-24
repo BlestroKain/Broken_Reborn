@@ -9,6 +9,7 @@ using Intersect.Client.Framework.Gwen.ControlInternal;
 using Intersect.Client.Framework.Gwen.Input;
 using Intersect.Client.Framework.Input;
 using Intersect.Client.General;
+using Intersect.Client.Interface;
 using Intersect.Client.Localization;
 using Intersect.Client.Networking;
 using Intersect.Enums;
@@ -28,6 +29,7 @@ public sealed partial class TargetContextMenu : ContextMenu
     private readonly MenuItem _friendMenuItem;
     private readonly MenuItem _guildMenuItem;
     private readonly MenuItem _privateMessageMenuItem;
+    private readonly MenuItem _inspectMenuItem;
     private readonly Player? _me;
     private IEntity? _entity;
 
@@ -60,6 +62,9 @@ public sealed partial class TargetContextMenu : ContextMenu
 
         _privateMessageMenuItem = AddItem(Strings.EntityContextMenu.PrivateMessage);
         _privateMessageMenuItem.Clicked += privateMessageRequest_Clicked;
+
+        _inspectMenuItem = AddItem(Strings.EntityContextMenu.InspectPlayer);
+        _inspectMenuItem.Clicked += inspect_Clicked;
 
         LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer?.GetResolutionString());
         BuildContextMenu();
@@ -153,17 +158,16 @@ public sealed partial class TargetContextMenu : ContextMenu
         AddChild(_partyMenuItem);
         AddChild(_friendMenuItem);
 
-        if (_entity is Player player)
+        if (_entity is Player player && player != _me)
         {
-            if (player != _me && string.IsNullOrWhiteSpace(player.Guild) && (_me?.GuildRank?.Permissions?.Invite ?? false))
+            AddChild(_inspectMenuItem);
+
+            if (string.IsNullOrWhiteSpace(player.Guild) && (_me?.GuildRank?.Permissions?.Invite ?? false))
             {
                 AddChild(_guildMenuItem);
             }
 
-            if (player != _me)
-            {
-                AddChild(_privateMessageMenuItem);
-            }
+            AddChild(_privateMessageMenuItem);
         }
     }
 
@@ -255,5 +259,15 @@ public sealed partial class TargetContextMenu : ContextMenu
         }
 
         Interface.GameUi.SetChatboxText($"/pm {_entity.Name} ");
+    }
+
+    void inspect_Clicked(Base sender, MouseButtonState arguments)
+    {
+        if (_entity is not Player player || _me == null || player == _me)
+        {
+            return;
+        }
+
+        Interface.GameUi.GameMenu?.ToggleCharacterWindow(player);
     }
 }

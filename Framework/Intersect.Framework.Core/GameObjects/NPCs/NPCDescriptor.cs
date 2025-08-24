@@ -175,6 +175,17 @@ public partial class NPCDescriptor : DatabaseObject<NPCDescriptor>, IFolderable
         set => AttackAnimationId = value?.Id ?? Guid.Empty;
     }
 
+    [Column("DeathAnimation")]
+    public Guid DeathAnimationId { get; set; }
+
+    [NotMapped]
+    [JsonIgnore]
+    public AnimationDescriptor DeathAnimation
+    {
+        get => AnimationDescriptor.Get(DeathAnimationId);
+        set => DeathAnimationId = value?.Id ?? Guid.Empty;
+    }
+
     //Behavior
     public bool Aggressive { get; set; }
 

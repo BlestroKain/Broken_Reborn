@@ -1190,6 +1190,7 @@ public partial class Player : Entity
         CastTarget = null;
 
         //Flag death to the client
+        PlayDeathAnimation();
         PacketSender.SendPlayerDeath(this);
 
         //Event trigger

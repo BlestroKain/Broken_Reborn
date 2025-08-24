@@ -228,6 +228,8 @@ public partial record Options
 
     #endregion Configuration Properties
 
+    public static string PlayerDeathAnimationId => Instance.Combat.PlayerDeathAnimationId;
+
     #region Player Stat Scaling Helpers
 
     public static int VitalityHealthmultiplier => Instance.Player.VitalityHealthmultiplier;

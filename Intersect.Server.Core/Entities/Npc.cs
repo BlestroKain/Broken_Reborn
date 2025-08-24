@@ -153,6 +153,11 @@ public partial class Npc : Entity
 
         Range = (byte)npcDescriptor.SightRange;
         mPathFinder = new Pathfinder(this);
+
+        if (npcDescriptor.DeathAnimationId != Guid.Empty)
+        {
+            DeathAnimation = npcDescriptor.DeathAnimationId;
+        }
     }
 
     public NPCDescriptor Descriptor { get; private set; }

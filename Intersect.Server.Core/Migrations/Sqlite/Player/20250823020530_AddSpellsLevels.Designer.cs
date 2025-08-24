@@ -466,31 +466,6 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.ToTable("Player_MailBox");
                 });
 
-            modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.PlayerSpell", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("PlayerId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("SpellId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("SpellPointsSpent")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("SpellPropertiesJson")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("Properties");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PlayerId");
-
-                    b.ToTable("PlayerSpell");
-                });
 
             modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.PlayerVariable", b =>
                 {
@@ -549,7 +524,7 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.ToTable("Player_Quests");
                 });
 
-            modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.SpellSlot", b =>
+            modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.PlayerSpell", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -558,11 +533,11 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.Property<Guid>("PlayerId")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("PlayerSpellId")
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("Slot")
                         .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("SpellId")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("SpellPropertiesJson")
                         .HasColumnType("TEXT")
@@ -571,8 +546,6 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.HasKey("Id");
 
                     b.HasIndex("PlayerId");
-
-                    b.HasIndex("PlayerSpellId");
 
                     b.ToTable("Player_Spells");
                 });
@@ -991,16 +964,6 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.Navigation("SenderPlayer");
                 });
 
-            modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.PlayerSpell", b =>
-                {
-                    b.HasOne("Intersect.Server.Entities.Player", "Player")
-                        .WithMany()
-                        .HasForeignKey("PlayerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Player");
-                });
 
             modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.PlayerVariable", b =>
                 {
@@ -1024,7 +987,7 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.Navigation("Player");
                 });
 
-            modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.SpellSlot", b =>
+            modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.PlayerSpell", b =>
                 {
                     b.HasOne("Intersect.Server.Entities.Player", "Player")
                         .WithMany("Spells")
@@ -1032,15 +995,7 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Intersect.Server.Database.PlayerData.Players.PlayerSpell", "PlayerSpell")
-                        .WithMany()
-                        .HasForeignKey("PlayerSpellId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Player");
-
-                    b.Navigation("PlayerSpell");
                 });
 
             modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.UserVariable", b =>

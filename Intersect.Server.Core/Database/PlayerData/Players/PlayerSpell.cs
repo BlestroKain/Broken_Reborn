@@ -40,7 +40,7 @@ public partial class PlayerSpell : ISlot, IPlayerOwned
     [JsonIgnore]
     public string SpellPropertiesJson
     {
-        get => JsonConvert.SerializeObject(Properties);
+        get => JsonConvert.SerializeObject(Properties ??= new());
         set => Properties = JsonConvert.DeserializeObject<SpellProperties>(value ?? string.Empty) ?? new();
     }
 

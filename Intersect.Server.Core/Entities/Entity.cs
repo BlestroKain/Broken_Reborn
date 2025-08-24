@@ -271,6 +271,9 @@ public abstract partial class Entity : IEntity
     [NotMapped, JsonIgnore]
     public int SpellCastSlot { get; set; } = 0;
 
+    [NotMapped, JsonIgnore]
+    public SpellProperties? CastSpellProperties { get; set; } = null;
+
     //Status effects
     [NotMapped, JsonIgnore]
     public ConcurrentDictionary<SpellDescriptor, Status> Statuses { get; } = new ConcurrentDictionary<SpellDescriptor, Status>();
@@ -1618,7 +1621,8 @@ public abstract partial class Entity : IEntity
 
         if (parentSpell != null)
         {
-            TryAttack(target, parentSpell);
+            var props = (this as Player)?.GetSpellProperties(parentSpell.Id);
+            TryAttack(target, parentSpell, props);
         }
 
         var targetPlayer = target as Player;
@@ -1768,6 +1772,7 @@ public abstract partial class Entity : IEntity
     public virtual void TryAttack(
         Entity target,
         SpellDescriptor spellDescriptor,
+        SpellProperties? spellProperties = null,
         bool onHitTrigger = false,
         bool trapTrigger = false
     )
@@ -1784,6 +1789,8 @@ public abstract partial class Entity : IEntity
 
         var deadAnimations = new List<KeyValuePair<Guid, Direction>>();
         var aliveAnimations = new List<KeyValuePair<Guid, Direction>>();
+
+        spellProperties = SpellMath.Scale(spellDescriptor, spellProperties);
 
         //Only count safe zones and friendly fire if its a dangerous spell! (If one has been used)
         if (!spellDescriptor.Combat.Friendly &&
@@ -1851,7 +1858,6 @@ public abstract partial class Entity : IEntity
             deadAnimations.Add(new KeyValuePair<Guid, Direction>(spellDescriptor.HitAnimationId, Direction.Up));
             aliveAnimations.Add(new KeyValuePair<Guid, Direction>(spellDescriptor.HitAnimationId, Direction.Up));
         }
-        var spellProperties=new SpellProperties();
         var duration = spellDescriptor.Combat.GetEffectiveDuration(spellProperties);
         var statBuffTime = -1;
         var expireTime = Timing.Global.Milliseconds + duration;
@@ -1879,9 +1885,9 @@ public abstract partial class Entity : IEntity
             }
         }
 
-        var spellLevel = spellProperties?.Level ?? 0;
-        var damageHealth = SpellMath.Scale(spellDescriptor.Combat.GetEffectiveVitalDiff(Vital.Health, spellProperties), spellLevel);
-        var damageMana = SpellMath.Scale(spellDescriptor.Combat.GetEffectiveVitalDiff(Vital.Mana, spellProperties), spellLevel);
+        var spellLevel = spellProperties.Level;
+        var damageHealth = spellDescriptor.Combat.GetEffectiveVitalDiff(Vital.Health, spellProperties);
+        var damageMana = spellDescriptor.Combat.GetEffectiveVitalDiff(Vital.Mana, spellProperties);
 
         if ((spellDescriptor.Combat.Effect != SpellEffect.OnHit || onHitTrigger) &&
             spellDescriptor.Combat.Effect != SpellEffect.Shield)
@@ -2393,7 +2399,7 @@ public abstract partial class Entity : IEntity
             {
                 if (status.Type == SpellEffect.OnHit)
                 {
-                    TryAttack(enemy, status.Spell, true);
+                    TryAttack(enemy, status.Spell, null, true);
                     status.RemoveStatus();
                 }
             }
@@ -2532,8 +2538,10 @@ public abstract partial class Entity : IEntity
             return;
         }
 
-        var spellProperties = (this as Player)?.GetSpellProperties(spellId);
-        var manaCost = spellBase.GetEffectiveVitalCost(Vital.Mana, spellProperties);
+        var spellProperties = CastSpellProperties ?? (this as Player)?.GetSpellProperties(spellId);
+        var scaledProperties = SpellMath.Scale(spellBase, spellProperties);
+
+        var manaCost = spellBase.GetEffectiveVitalCost(Vital.Mana, scaledProperties);
         if (manaCost > 0)
         {
             SubVital(Vital.Mana, manaCost);
@@ -2543,7 +2551,7 @@ public abstract partial class Entity : IEntity
             AddVital(Vital.Mana, -manaCost);
         }
 
-        var healthCost = spellBase.GetEffectiveVitalCost(Vital.Health, spellProperties);
+        var healthCost = spellBase.GetEffectiveVitalCost(Vital.Health, scaledProperties);
         if (healthCost > 0)
         {
             SubVital(Vital.Health, healthCost);
@@ -2578,7 +2586,7 @@ public abstract partial class Entity : IEntity
                                 ); //Target Type 1 will be global entity
                             }
 
-                            TryAttack(this, spellBase);
+                            TryAttack(this, spellBase, scaledProperties);
 
                             break;
                         case SpellTargetType.Single:
@@ -2598,7 +2606,7 @@ public abstract partial class Entity : IEntity
 
                             if (spellBase.Combat.HitRadius > 0) //Single target spells with AoE hit radius'
                             {
-                                var hitRadius = spellBase.Combat.GetEffectiveHitRadius(spellProperties);
+                                var hitRadius = spellBase.Combat.GetEffectiveHitRadius(scaledProperties);
                                 HandleAoESpell(
                                     spellId,
                                     hitRadius,
@@ -2610,12 +2618,12 @@ public abstract partial class Entity : IEntity
                             }
                             else
                             {
-                                TryAttack(CastTarget, spellBase);
+                                TryAttack(CastTarget, spellBase, scaledProperties);
                             }
 
                             break;
                         case SpellTargetType.AoE:
-                            HandleAoESpell(spellId, spellBase.Combat.GetEffectiveHitRadius(spellProperties), MapId, X, Y, null);
+                            HandleAoESpell(spellId, spellBase.Combat.GetEffectiveHitRadius(scaledProperties), MapId, X, Y, null);
 
                             break;
                         case SpellTargetType.Projectile:
@@ -2648,7 +2656,7 @@ public abstract partial class Entity : IEntity
                                     this,
                                     spellBase,
                                     SpellEffect.OnHit,
-                                    spellBase.Combat.GetEffectiveOnHitDuration(spellProperties),
+                                    spellBase.Combat.GetEffectiveOnHitDuration(scaledProperties),
                                     spellBase.Combat.TransformSprite
                                 );
                                 
@@ -2687,7 +2695,7 @@ public abstract partial class Entity : IEntity
                 case SpellType.WarpTo:
                     if (CastTarget != null)
                     {
-                        var castRange = spellBase.Combat.GetEffectiveCastRange(spellProperties);
+                        var castRange = spellBase.Combat.GetEffectiveCastRange(scaledProperties);
                         HandleAoESpell(spellId, castRange, MapId, X, Y, CastTarget);
                     }
 
@@ -2696,7 +2704,7 @@ public abstract partial class Entity : IEntity
                     PacketSender.SendActionMsg(this, Strings.Combat.Dash, CustomColors.Combat.Dash);
                     var dash = new Dash(
                         this,
-                        spellBase.Combat.GetEffectiveCastRange(spellProperties),
+                        spellBase.Combat.GetEffectiveCastRange(scaledProperties),
                         Dir,
                         Convert.ToBoolean(spellBase.Dash.IgnoreMapBlocks),
                         Convert.ToBoolean(spellBase.Dash.IgnoreActiveResources),
@@ -2738,6 +2746,7 @@ public abstract partial class Entity : IEntity
         }
         finally
         {
+            CastSpellProperties = null;
             if (GetVital(Vital.Health) < 1)
             {
                 Die(true, this);
@@ -2757,6 +2766,7 @@ public abstract partial class Entity : IEntity
         var spellBase = SpellDescriptor.Get(spellId);
         if (spellBase != null)
         {
+            var spellProperties = SpellMath.Scale(spellBase, CastSpellProperties ?? (this as Player)?.GetSpellProperties(spellId));
             var startMap = MapController.Get(startMapId);
             foreach (var instance in MapController.GetSurroundingMapInstances(startMapId, MapInstanceId, true))
             {
@@ -2780,7 +2790,7 @@ public abstract partial class Entity : IEntity
                                     }
                                 }
 
-                                TryAttack(entity, spellBase); //Handle damage
+                                TryAttack(entity, spellBase, spellProperties); //Handle damage
                             }
                         }
                     }

@@ -65,7 +65,7 @@ public partial class MapTrapInstance
                     return;
                 }
 
-                Owner.TryAttack(entity, ParentSpell, false, true);
+                Owner.TryAttack(entity, ParentSpell, null, false, true);
                 Triggered = true;
             }
         }

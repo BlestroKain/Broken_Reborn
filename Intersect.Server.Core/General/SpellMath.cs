@@ -1,15 +1,28 @@
-using Intersect.Server.Entities;
+using Intersect.Framework.Core.GameObjects.Spells;
 
 namespace Intersect.Server.General;
 
 public static class SpellMath
 {
-    public static long Scale(long value, int? level = null)
+    public static SpellProperties Scale(SpellDescriptor descriptor, SpellProperties? properties = null)
     {
-        if (level.HasValue && level.Value > 1)
+        var scaled = descriptor.GetPropertiesForLevel(properties?.Level ?? 1);
+
+        if (properties?.CustomUpgrades?.Count > 0)
         {
-            return value * level.Value;
+            foreach (var kv in properties.CustomUpgrades)
+            {
+                if (scaled.CustomUpgrades.ContainsKey(kv.Key))
+                {
+                    scaled.CustomUpgrades[kv.Key] += kv.Value;
+                }
+                else
+                {
+                    scaled.CustomUpgrades[kv.Key] = kv.Value;
+                }
+            }
         }
-        return value;
+
+        return scaled;
     }
 }

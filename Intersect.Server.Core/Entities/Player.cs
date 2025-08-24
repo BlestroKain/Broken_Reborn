@@ -1788,6 +1788,7 @@ public partial class Player : Entity
     public override void TryAttack(
         Entity target,
         SpellDescriptor spellDescriptor,
+        SpellProperties? spellProperties = null,
         bool onHitTrigger = false,
         bool trapTrigger = false
     )
@@ -1797,7 +1798,7 @@ public partial class Player : Entity
             return;
         }
 
-        base.TryAttack(target, spellDescriptor, onHitTrigger, trapTrigger);
+        base.TryAttack(target, spellDescriptor, spellProperties, onHitTrigger, trapTrigger);
     }
 
     /// <summary>
@@ -5899,8 +5900,7 @@ public partial class Player : Entity
             return;
         }
         var spellProperties = pspell.Properties;
-        var spellLevel = spellProperties.Level;
-        _ = spellProperties;
+        CastSpellProperties = spellProperties;
 
         if (!CanCastSpell(spellDescriptor, target, true, softRetargetOnSelfCast, out var spellCastFailureReason))
         {

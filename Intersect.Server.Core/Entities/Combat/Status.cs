@@ -104,11 +104,11 @@ public partial class Status
         // If we're adding a shield, actually add that according to the settings.
         if (type == SpellEffect.Shield)
         {
+            var properties = SpellMath.Scale(spell, (attacker as Player)?.GetSpellProperties(spell.Id));
+            var level = properties.Level;
             foreach (var vital in Enum.GetValues<Vital>())
             {
-                var properties = (attacker as Player)?.GetSpellProperties(spell.Id);
-                var level = properties?.Level ?? 0;
-                long vitalDiff = Math.Abs(SpellMath.Scale(spell.Combat.GetEffectiveVitalDiff(vital, properties), level));
+                long vitalDiff = Math.Abs(spell.Combat.GetEffectiveVitalDiff(vital, properties));
 
                 // If the user did not configure for this vital to have a mana shield, ignore it
                 if (vitalDiff == 0 && vital == Vital.Mana)

@@ -103,6 +103,18 @@ public partial class DescriptionWindowBase : ComponentBase
     }
 
     /// <summary>
+    /// Adds a custom component to the current window.
+    /// </summary>
+    /// <typeparam name="T">Type of the component.</typeparam>
+    /// <param name="component">The component instance to add.</param>
+    /// <returns>Returns the provided component.</returns>
+    protected T AddComponent<T>(T component) where T : ComponentBase
+    {
+        _components.Add(component);
+        return component;
+    }
+
+    /// <summary>
     /// Positions a component correctly on the current window.
     /// </summary>
     /// <param name="component">The <see cref="ComponentBase"/> to place.</param>

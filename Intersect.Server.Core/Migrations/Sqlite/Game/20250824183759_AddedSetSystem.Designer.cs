@@ -3,6 +3,7 @@ using System;
 using Intersect.Server.Database.GameData;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Intersect.Server.Migrations.Sqlite.Game
 {
     [DbContext(typeof(SqliteGameContext))]
-    partial class SqliteGameContextModelSnapshot : ModelSnapshot
+    [Migration("20250824183759_AddedSetSystem")]
+    partial class AddedSetSystem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.11");
@@ -253,8 +256,10 @@ namespace Intersect.Server.Migrations.Sqlite.Game
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("EffectsJson")
+                        .IsRequired()
                         .HasColumnType("TEXT")
-                        .HasColumnName("Effects");
+                        .HasColumnName("Effects")
+                        .HasDefaultValue("[]");
 
                     b.Property<Guid>("EquipmentAnimationId")
                         .HasColumnType("TEXT")
@@ -393,7 +398,17 @@ namespace Intersect.Server.Migrations.Sqlite.Game
 
                     b.HasKey("Id");
 
+                    b.HasIndex("SetId");
+
                     b.ToTable("Items");
+                });
+
+            modelBuilder.Entity("Intersect.Framework.Core.GameObjects.Items.ItemDescriptor", b =>
+                {
+                    b.HasOne("Intersect.GameObjects.SetDescriptor", "Set")
+                        .WithMany()
+                        .HasForeignKey("SetId")
+                        .OnDelete(DeleteBehavior.ClientSetNull);
                 });
 
             modelBuilder.Entity("Intersect.Framework.Core.GameObjects.Mapping.Tilesets.TilesetDescriptor", b =>
@@ -1069,49 +1084,59 @@ namespace Intersect.Server.Migrations.Sqlite.Game
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("BonusTiersJson")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("BonusTiers");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("EffectsJson")
+                        .IsRequired()
                         .HasColumnType("TEXT")
-                        .HasColumnName("Effects");
+                        .HasColumnName("Effects")
+                        .HasDefaultValue("[]");
 
                     b.Property<string>("Folder")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ItemIdsJson")
+                        .IsRequired()
                         .HasColumnType("TEXT")
-                        .HasColumnName("ItemIds");
+                        .HasColumnName("ItemIds")
+                        .HasDefaultValue("[]");
 
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("PercentageStatsJson")
+                        .IsRequired()
                         .HasColumnType("TEXT")
-                        .HasColumnName("PercentageStatsGiven");
+                        .HasColumnName("PercentageStatsGiven")
+                        .HasDefaultValue("[]");
 
                     b.Property<string>("PercentageVitalsJson")
+                        .IsRequired()
                         .HasColumnType("TEXT")
-                        .HasColumnName("PercentageVitalsGiven");
+                        .HasColumnName("PercentageVitalsGiven")
+                        .HasDefaultValue("[]");
 
                     b.Property<string>("StatsJson")
+                        .IsRequired()
                         .HasColumnType("TEXT")
-                        .HasColumnName("StatsGiven");
+                        .HasColumnName("StatsGiven")
+                        .HasDefaultValue("[]");
 
                     b.Property<long>("TimeCreated")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("VitalsJson")
+                        .IsRequired()
                         .HasColumnType("TEXT")
-                        .HasColumnName("VitalsGiven");
+                        .HasColumnName("VitalsGiven")
+                        .HasDefaultValue("[]");
 
                     b.Property<string>("VitalsRegenJson")
+                        .IsRequired()
                         .HasColumnType("TEXT")
-                        .HasColumnName("VitalsRegen");
+                        .HasColumnName("VitalsRegen")
+                        .HasDefaultValue("[]");
 
                     b.HasKey("Id");
 

@@ -63,7 +63,7 @@ namespace Intersect.Plugins.Manifests.Types
         public void AreEqual_StringArray()
         {
             var authors = new Authors(new Author(AuthorName), new Author(AuthorStringNameEmail));
-            Assert.IsTrue(authors.Equals([AuthorName, AuthorStringNameEmail]));
+            Assert.IsTrue(authors.Equals(new[] { AuthorName, AuthorStringNameEmail }));
         }
 
         [Test]

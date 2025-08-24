@@ -1,6 +1,7 @@
 using Intersect.Core;
 using Intersect.Enums;
 using Intersect.Framework.Core;
+using Intersect.Framework.Core.GameObjects;
 using Intersect.Framework.Core.GameObjects.Animations;
 using Intersect.Framework.Core.GameObjects.Crafting;
 using Intersect.Framework.Core.GameObjects.Events;
@@ -25,9 +26,11 @@ using Intersect.Server.Database.PlayerData.Security;
 using Intersect.Server.Entities;
 using Intersect.Server.General;
 using Intersect.Server.Localization;
+using Intersect.Server.Core.Services;
 using Intersect.Server.Maps;
 using Intersect.Server.Notifications;
 using Intersect.Utilities;
+using System.Linq;
 
 namespace Intersect.Server.Networking;
 
@@ -975,6 +978,21 @@ internal sealed partial class NetworkedPacketHandler
                     obj = UserVariableDescriptor.Get(id);
 
                     break;
+                case GameObjectType.Sets:
+                    obj = SetDescriptor.Get(id);
+                    if (obj != null)
+                    {
+                        var hasItems = ItemDescriptor.Lookup.Values
+                            .OfType<ItemDescriptor>()
+                            .Any(item => item.SetId == id);
+                        if (hasItems)
+                        {
+                            PacketSender.SendError(client, Strings.Sets.DeleteSetInUse, Strings.Sets.DeleteSet);
+                            return;
+                        }
+                    }
+
+                    break;
 
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -1004,6 +1022,11 @@ internal sealed partial class NetworkedPacketHandler
                 PacketSender.CacheGameDataPacket();
 
                 PacketSender.SendGameObjectToAll(obj, true);
+
+                if (type == GameObjectType.Sets)
+                {
+                    SetService.NotifyClientsAndClearCaches();
+                }
             }
         }
 
@@ -1107,7 +1130,10 @@ internal sealed partial class NetworkedPacketHandler
                     obj = UserVariableDescriptor.Get(id);
 
                     break;
+                case GameObjectType.Sets:
+                    obj = SetDescriptor.Get(id);
 
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -1191,6 +1217,11 @@ internal sealed partial class NetworkedPacketHandler
                     PacketSender.CacheGameDataPacket();
 
                     PacketSender.SendGameObjectToAll(obj, false);
+
+                    if (type == GameObjectType.Sets)
+                    {
+                        SetService.NotifyClientsAndClearCaches();
+                    }
                 }
 
                 if (type == GameObjectType.Item)

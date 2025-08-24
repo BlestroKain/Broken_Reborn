@@ -8,7 +8,8 @@ using Intersect.Client.Localization;
 using Intersect.Client.Utilities;
 using Intersect.GameObjects;
 using Intersect.Utilities;
-using System.Collections;
+using Intersect.Framework.Core.GameObjects.Spells;
+using System.Collections.Generic;
 using System.Text;
 
 namespace Intersect.Client.Interface.Game.Spells;
@@ -320,28 +321,39 @@ public partial class SpellsWindow : Window
             sb.AppendLine($"{Strings.SpellDescription.CastTime} {TimeSpan.FromMilliseconds(desc.CastDuration).WithSuffix()}");
         }
 
-        // Detalles por nivel si existen
-        var progressionProp = desc.GetType().GetProperty("Progression");
-        if (progressionProp?.GetValue(desc) is IList progression &&
-            level >= 0 && progression.Count > level && progression[level] != null)
+        // Detalles por nivel usando LevelUpgrades y CustomUpgrades
+        var currentProps = desc.GetPropertiesForLevel(level);
+        if (desc.LevelUpgrades.TryGetValue(level, out var levelUpgrades) &&
+            levelUpgrades?.CustomUpgrades?.Count > 0)
         {
-            var progressData = progression[level];
-            var descProp = progressData.GetType().GetProperty("Description");
-            var levelDesc = descProp?.GetValue(progressData) as string;
-            if (!string.IsNullOrWhiteSpace(levelDesc))
+            if (sb.Length > 0)
             {
-                if (sb.Length > 0)
-                {
-                    sb.AppendLine();
-                }
+                sb.AppendLine();
+            }
 
-                sb.AppendLine($"Nivel {level + 1}:");
-                sb.AppendLine(levelDesc);
+            sb.AppendLine($"Nivel {level}:");
+            foreach (var kv in levelUpgrades.CustomUpgrades)
+            {
+                sb.AppendLine($"{kv.Key}: {kv.Value}");
             }
         }
 
-        if (level < Options.Instance.Player.MaxSpellLevel)
+        SpellProperties? nextProps = null;
+        if (level < Options.Instance.Player.MaxSpellLevel &&
+            desc.LevelUpgrades.TryGetValue(level + 1, out var nextLevelUpgrades))
         {
+            nextProps = desc.GetPropertiesForLevel(level + 1);
+
+            if (nextLevelUpgrades.CustomUpgrades.Count > 0)
+            {
+                sb.AppendLine();
+                sb.AppendLine($"Nivel {level + 1}:");
+                foreach (var kv in nextLevelUpgrades.CustomUpgrades)
+                {
+                    sb.AppendLine($"{kv.Key}: {kv.Value}");
+                }
+            }
+
             sb.AppendLine();
             sb.AppendLine($"Costo para subir al nivel {level + 1}: {level} punto(s) de hechizo");
         }
@@ -351,18 +363,24 @@ public partial class SpellsWindow : Window
         _descLabel.SizeToContents();
         _descScroll.SetInnerSize(_descScroll.Width, _descLabel.Height);
 
-        // Tooltip para próxima progresión
+        // Tooltip para próxima progresión basada en diferencias
         var tooltip = string.Empty;
-        if (progressionProp?.GetValue(desc) is IList progressionList &&
-            progressionList.Count > level + 1 && progressionList[level + 1] != null)
+        if (nextProps != null)
         {
-            var nextData = progressionList[level + 1];
-            var descNextProp = nextData.GetType().GetProperty("Description");
-            var nextDesc = descNextProp?.GetValue(nextData) as string;
-            if (!string.IsNullOrWhiteSpace(nextDesc))
+            var tooltipSb = new StringBuilder();
+            tooltipSb.AppendLine($"Nivel {level + 1}:");
+            foreach (var kv in nextProps.CustomUpgrades)
             {
-                tooltip = $"Nivel {level + 2}: {nextDesc}";
+                var currentVal = currentProps.CustomUpgrades.TryGetValue(kv.Key, out var val) ? val : 0;
+                var diff = kv.Value - currentVal;
+                if (diff != 0)
+                {
+                    tooltipSb.AppendLine($"{kv.Key}: {(diff >= 0 ? "+" : string.Empty)}{diff}");
+                }
             }
+
+            tooltipSb.AppendLine($"Costo: {level} punto(s) de hechizo");
+            tooltip = tooltipSb.ToString().Trim();
         }
 
         _levelLabel.SetToolTipText(tooltip);

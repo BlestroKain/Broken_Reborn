@@ -11,6 +11,7 @@ using Intersect.Editor.General;
 using Intersect.Framework.Core.Config;
 using Intersect.Models;
 using Intersect.Framework.Core.GameObjects.Items;
+using System.Linq;
 
 namespace Intersect.Editor.Forms.Editors;
 
@@ -130,9 +131,8 @@ public partial class frmSets : EditorForm
                 mEditorSet.MakeBackup();
             }
         }
-
-
-
+        UpdateTierCountLabel();
+        UpdateSaveButton();
         UpdateToolStripItems();
     }
     private void form_KeyDown(object sender, KeyEventArgs e)
@@ -156,6 +156,31 @@ public partial class frmSets : EditorForm
             lstBonusEffects.Items.Add(GetBonusEffectRow((ItemEffect)idx));
             idx++;
         }
+    }
+
+    private void UpdateSaveButton()
+    {
+        if (mEditorSet == null)
+        {
+            btnSave.Enabled = false;
+            return;
+        }
+
+        var ids = mEditorSet.ItemIds;
+        var hasItems = ids.Count > 0;
+        var hasDuplicates = ids.Count != ids.Distinct().Count;
+        btnSave.Enabled = hasItems && !hasDuplicates;
+    }
+
+    private void UpdateTierCountLabel()
+    {
+        if (mEditorSet == null)
+        {
+            lblTierCount.Text = "Defined/Equipped: 0/0";
+            return;
+        }
+
+        lblTierCount.Text = $"Defined/Equipped: {mEditorSet.BonusTiers.Count}/{mEditorSet.ItemIds.Count}";
     }
     private void btnSave_Click(object sender, EventArgs e)
     {
@@ -201,6 +226,9 @@ public partial class frmSets : EditorForm
 
             cmbItems.SelectedIndex = 0;
         }
+
+        UpdateTierCountLabel();
+        UpdateSaveButton();
     }
 
     private void btnRemove_Click(object sender, EventArgs e)
@@ -217,6 +245,9 @@ public partial class frmSets : EditorForm
             lstItems.Items.Remove(selectedItem);
             mEditorSet.ItemIds.Remove(selectedItem.Id);
         }
+
+        UpdateTierCountLabel();
+        UpdateSaveButton();
     }
 
     private void toolStripItemNew_Click(object sender, EventArgs e)

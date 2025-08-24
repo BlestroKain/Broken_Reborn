@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations.Schema;
 using System;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace Intersect.GameObjects;
 
@@ -26,6 +27,9 @@ public partial class SetDescriptor : DatabaseObject<SetDescriptor>, IFolderable
     {
         Validate();
     }
+
+    [OnDeserialized]
+    internal void OnDeserializedMethod(StreamingContext context) => Validate();
 
 
 

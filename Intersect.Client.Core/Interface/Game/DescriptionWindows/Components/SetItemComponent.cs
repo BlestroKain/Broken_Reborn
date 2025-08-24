@@ -70,6 +70,6 @@ public partial class SetItemComponent : ComponentBase
 
     public override void CorrectWidth()
     {
-        // Do not automatically expand to parent width
+
     }
 }

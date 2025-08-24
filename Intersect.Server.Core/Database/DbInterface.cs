@@ -721,7 +721,7 @@ public static partial class DbInterface
                 ItemDescriptor.Lookup.Clear();
 
                 break;
-            case GameObjectType.Set:
+            case GameObjectType.Sets:
                 SetBase.Lookup.Clear();
 
                 break;
@@ -826,10 +826,6 @@ public static partial class DbInterface
                         }
 
                         break;
-                    case GameObjectType.Set:
-                        foreach (var set in context.Sets)
-                        {
-                            SetBase.Lookup.Set(set.Id, set);
                         }
 
                         break;
@@ -944,6 +940,14 @@ public static partial class DbInterface
                         }
 
                         break;
+                    case GameObjectType.Sets:
+                        foreach (var set in context.Sets)
+                        {
+                            SetBase.Lookup.Set(set.Id, set);
+                        }
+
+                        break;
+
                     default:
                         throw new ArgumentOutOfRangeException(nameof(gameObjectType), gameObjectType, null);
                 }
@@ -1193,6 +1197,10 @@ public static partial class DbInterface
                 dbObj = new UserVariableDescriptor(predefinedid);
 
                 break;
+            case GameObjectType.Sets:
+                dbObj = new SetBase(predefinedid);
+
+                break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(gameObjectType), gameObjectType, null);
         }
@@ -1316,6 +1324,11 @@ public static partial class DbInterface
                     case GameObjectType.UserVariable:
                         context.UserVariables.Add((UserVariableDescriptor)dbObj);
                         UserVariableDescriptor.Lookup.Set(dbObj.Id, dbObj);
+
+                        break;
+                    case GameObjectType.Sets:
+                        context.Sets.Add((SetBase)dbObj);
+                        SetBase.Lookup.Set(dbObj.Id, dbObj);
 
                         break;
 
@@ -1456,6 +1469,10 @@ public static partial class DbInterface
                         break;
                     case GameObjectType.UserVariable:
                         context.UserVariables.Remove((UserVariableDescriptor)gameObject);
+
+                        break;
+                    case GameObjectType.Sets:
+                        context.Sets.Remove((SetBase)gameObject);
 
                         break;
                 }
@@ -1615,6 +1632,10 @@ public static partial class DbInterface
                         break;
                     case GameObjectType.UserVariable:
                         context.UserVariables.Update((UserVariableDescriptor)gameObject);
+
+                        break;
+                    case GameObjectType.Sets:
+                        context.Sets.Update((SetBase)gameObject);
 
                         break;
                 }

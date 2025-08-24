@@ -458,6 +458,12 @@ namespace Intersect.Server.Entities
             }
         }
 
+        public void InvalidateSetBonuses()
+        {
+            mSetBonusHash = -1;
+            ApplySetBonuses(this);
+        }
+
         public bool HasEnoughSpellPoints(int delta)
         {
             return delta <= 0 || SpellPoints >= delta;

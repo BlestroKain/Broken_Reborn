@@ -44,7 +44,7 @@ public partial class Spell
     [JsonIgnore]
     public string SpellPropertiesJson
     {
-        get => JsonConvert.SerializeObject(Properties);
+        get => JsonConvert.SerializeObject(Properties ??= new());
         set => Properties = JsonConvert.DeserializeObject<SpellProperties>(value ?? string.Empty) ?? new();
     }
 
@@ -55,7 +55,7 @@ public partial class Spell
     [JsonIgnore]
     public string LevelUpgradesJson
     {
-        get => JsonConvert.SerializeObject(LevelUpgrades);
+        get => JsonConvert.SerializeObject(LevelUpgrades ??= new());
         set => LevelUpgrades =
             JsonConvert.DeserializeObject<Dictionary<int, SpellProperties>>(value ?? string.Empty) ?? new();
     }

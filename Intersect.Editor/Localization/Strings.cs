@@ -4588,6 +4588,8 @@ Tick timer saved in server config.json.";
 
         public static LocalizedString attackanimation = @"Attack Animation:";
 
+        public static LocalizedString deathanimation = @"Death Animation:";
+
         public static LocalizedString attackonsightconditions = @"Attack Player on Sight";
 
         public static LocalizedString attackspeed = @"Attack Speed";

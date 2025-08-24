@@ -17,6 +17,8 @@ public partial class CombatOptions
 
     public int MinAttackRate { get; set; } = 500; //2 attacks per second
 
+    public string PlayerDeathAnimationId { get; set; } = "95f735e1-0c32-46a8-9a9a-b472a7a3fedd";
+
     //Combat
     public int RegenTime { get; set; } = 3000; //3 seconds
 

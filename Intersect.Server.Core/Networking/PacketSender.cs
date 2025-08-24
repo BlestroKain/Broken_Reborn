@@ -4,6 +4,7 @@ using System.Linq;
 using Intersect.Core;
 using Intersect.Enums;
 using Intersect.Framework.Core;
+using Intersect.Framework.Core.GameObjects;
 using Intersect.Framework.Core.GameObjects.Animations;
 using Intersect.Framework.Core.GameObjects.Crafting;
 using Intersect.Framework.Core.GameObjects.Events;
@@ -1958,6 +1959,13 @@ public static partial class PacketSender
                 break;
             case GameObjectType.UserVariable:
                 foreach (var obj in UserVariableDescriptor.Lookup)
+                {
+                    SendGameObject(client, obj.Value, false, false, packetList);
+                }
+
+                break;
+            case GameObjectType.Set:
+                foreach (var obj in SetBase.Lookup)
                 {
                     SendGameObject(client, obj.Value, false, false, packetList);
                 }

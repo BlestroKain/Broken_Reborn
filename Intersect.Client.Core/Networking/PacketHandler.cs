@@ -1884,6 +1884,8 @@ internal sealed partial class PacketHandler
             case GameObjectType.Event:
                 //Clients don't store event data, im an idiot.
                 break;
+            case GameObjectType.Set:
+                goto default;
             default:
                 var lookup = type.GetLookup();
 

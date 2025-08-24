@@ -391,14 +391,7 @@ namespace Intersect.Server.Entities
 
             foreach (var effect in setBonuses.effects)
             {
-                if (p.mEquipmentBonusEffects.ContainsKey(effect.Type))
-                {
-                    p.mEquipmentBonusEffects[effect.Type] += effect.Percentage;
-                }
-                else
-                {
-                    p.mEquipmentBonusEffects.Add(effect.Type, effect.Percentage);
-                }
+                p.mEquipmentBonusEffects.ApplyEffect(effect);
             }
 
             for (var vitalIndex = 0; vitalIndex < Enum.GetValues<Vital>().Length; vitalIndex++)

@@ -1310,6 +1310,9 @@ public partial class Player : Entity
             }
         }
 
+        var setBonuses = GetSetBonuses();
+        classVital += setBonuses.vitals[vital] + setBonuses.percentVitals[vital] * baseVital / 100;
+
         //Must have at least 1 hp and no less than 0 mp
         if (vital == (int)Vital.Health)
         {
@@ -2071,6 +2074,10 @@ public partial class Player : Entity
                 percentageStats += descriptor.PercentageStatsGiven[(int)statType];
             }
         }
+
+        var setBonuses = GetSetBonuses();
+        flatStats += setBonuses.stats[(int)statType];
+        percentageStats += setBonuses.percentStats[(int)statType];
 
         return new Tuple<int, int>(flatStats, percentageStats);
     }
@@ -4076,6 +4083,9 @@ public partial class Player : Entity
             }
             value += item.Descriptor.GetEffectPercentage(effect);
         }
+
+        var setBonuses = GetSetBonuses();
+        value += setBonuses.effects.Where(e => e.Type == effect).Sum(e => e.Percentage);
 
         return value;
     }

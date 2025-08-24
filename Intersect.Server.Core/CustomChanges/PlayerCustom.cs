@@ -6,7 +6,10 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Intersect.Enums;
+using Intersect.Framework.Core.GameObjects;
 using Intersect.Framework.Core.GameObjects.Items;
+using Intersect.Framework.Core.GameObjects.PlayerClass;
+using Intersect.GameObjects;
 using Intersect.Server.Database;
 using Intersect.Server.Database.PlayerData.Players;
 using Intersect.Server.Networking;
@@ -271,6 +274,198 @@ namespace Intersect.Server.Entities
         {
             InMailBox = true;
             PacketSender.SendOpenSendMail(this);
+        }
+
+        public (int[] stats, int[] percentStats, long[] vitals, long[] vitalsRegen, int[] percentVitals, List<EffectData> effects) GetSetBonuses()
+        {
+            KeyValuePair<int, List<int>>[] equipmentSnapshot;
+            lock (Equipment)
+            {
+                equipmentSnapshot = Equipment
+                    .Select(kvp => new KeyValuePair<int, List<int>>(kvp.Key, kvp.Value.ToList()))
+                    .ToArray();
+            }
+
+            var items = new List<Item>();
+            var hash = 0;
+
+            foreach (var kvp in equipmentSnapshot)
+            {
+                foreach (var slot in kvp.Value)
+                {
+                    if (
+                        !TryGetItemAt(slot, out var item) ||
+                        item?.Descriptor == null ||
+                        item.Descriptor.SetId == Guid.Empty
+                    )
+                    {
+                        continue;
+                    }
+
+                    hash ^= kvp.Key ^ item.Descriptor.SetId.GetHashCode();
+                    items.Add(item);
+                }
+            }
+
+            if (hash != mSetBonusHash)
+            {
+                Array.Clear(mSetBonusStats, 0, mSetBonusStats.Length);
+                Array.Clear(mSetBonusPercentStats, 0, mSetBonusPercentStats.Length);
+                Array.Clear(mSetBonusVitals, 0, mSetBonusVitals.Length);
+                Array.Clear(mSetBonusVitalsRegen, 0, mSetBonusVitalsRegen.Length);
+                Array.Clear(mSetBonusPercentVitals, 0, mSetBonusPercentVitals.Length);
+                mSetBonusEffects = new List<EffectData>();
+
+                var sets = items
+                    .GroupBy(i => i.Descriptor.SetId)
+                    .OrderBy(g => SetDescriptor.Get(g.Key)?.Name);
+
+                foreach (var grp in sets)
+                {
+                    var set = SetDescriptor.Get(grp.Key);
+                    if (set == null || !set.HasBonuses)
+                    {
+                        continue;
+                    }
+
+                    var (s, ps, v, vr, pv, eff) = set.GetBonuses(grp.Count());
+
+                    for (var i = 0; i < mSetBonusStats.Length; i++)
+                    {
+                        mSetBonusStats[i] += s[i];
+                        mSetBonusPercentStats[i] += ps[i];
+                    }
+
+                    for (var i = 0; i < mSetBonusVitals.Length; i++)
+                    {
+                        mSetBonusVitals[i] += v[i];
+                        mSetBonusVitalsRegen[i] += vr[i];
+                        mSetBonusPercentVitals[i] += pv[i];
+                    }
+
+                    mSetBonusEffects.AddRange(eff);
+                }
+
+                mSetBonusHash = hash;
+            }
+
+            return (mSetBonusStats, mSetBonusPercentStats, mSetBonusVitals, mSetBonusVitalsRegen, mSetBonusPercentVitals, mSetBonusEffects);
+        }
+
+        public static void ApplySetBonuses(Player p)
+        {
+            Array.Clear(p.mEquipmentFlatStats, 0, p.mEquipmentFlatStats.Length);
+            Array.Clear(p.mEquipmentPercentStats, 0, p.mEquipmentPercentStats.Length);
+            Array.Clear(p.mEquipmentFlatVitals, 0, p.mEquipmentFlatVitals.Length);
+            Array.Clear(p.mEquipmentPercentVitals, 0, p.mEquipmentPercentVitals.Length);
+            Array.Clear(p.mEquipmentVitalRegen, 0, p.mEquipmentVitalRegen.Length);
+            p.mEquipmentBonusEffects.Clear();
+
+            foreach (var item in p.EquippedItems)
+            {
+                var descriptor = item.Descriptor;
+                if (descriptor == null)
+                {
+                    continue;
+                }
+
+                for (var i = 0; i < p.mEquipmentFlatStats.Length; i++)
+                {
+                    p.mEquipmentFlatStats[i] += descriptor.StatsGiven[i];
+                    if (item.Properties?.StatModifiers != null)
+                    {
+                        p.mEquipmentFlatStats[i] += item.Properties.StatModifiers[i];
+                    }
+                    p.mEquipmentPercentStats[i] += descriptor.PercentageStatsGiven[i];
+                }
+
+                for (var i = 0; i < p.mEquipmentFlatVitals.Length; i++)
+                {
+                    p.mEquipmentFlatVitals[i] += descriptor.VitalsGiven[i];
+                    if (item.Properties?.VitalModifiers != null)
+                    {
+                        p.mEquipmentFlatVitals[i] += item.Properties.VitalModifiers[i];
+                    }
+                    p.mEquipmentPercentVitals[i] += descriptor.PercentageVitalsGiven[i];
+                    p.mEquipmentVitalRegen[i] += descriptor.VitalsRegen[i];
+                }
+
+                foreach (var effect in descriptor.EffectsEnabled)
+                {
+                    var percentage = descriptor.GetEffectPercentage(effect);
+                    if (percentage == 0)
+                    {
+                        continue;
+                    }
+
+                    if (p.mEquipmentBonusEffects.ContainsKey(effect))
+                    {
+                        p.mEquipmentBonusEffects[effect] += percentage;
+                    }
+                    else
+                    {
+                        p.mEquipmentBonusEffects.Add(effect, percentage);
+                    }
+                }
+            }
+
+            var setBonuses = p.GetSetBonuses();
+            for (var i = 0; i < p.mEquipmentFlatStats.Length; i++)
+            {
+                p.mEquipmentFlatStats[i] += setBonuses.stats[i];
+                p.mEquipmentPercentStats[i] += setBonuses.percentStats[i];
+            }
+
+            for (var i = 0; i < p.mEquipmentFlatVitals.Length; i++)
+            {
+                p.mEquipmentFlatVitals[i] += setBonuses.vitals[i];
+                p.mEquipmentPercentVitals[i] += setBonuses.percentVitals[i];
+                p.mEquipmentVitalRegen[i] += setBonuses.vitalsRegen[i];
+            }
+
+            foreach (var effect in setBonuses.effects)
+            {
+                p.mEquipmentBonusEffects.ApplyEffect(effect);
+            }
+
+            for (var vitalIndex = 0; vitalIndex < Enum.GetValues<Vital>().Length; vitalIndex++)
+            {
+                var classDescriptor = ClassDescriptor.Get(p.ClassId);
+                long classVital = 20;
+                if (classDescriptor != null)
+                {
+                    if (classDescriptor.IncreasePercentage)
+                    {
+                        classVital = (long)(classDescriptor.BaseVital[vitalIndex] *
+                                            Math.Pow(1 + (double)classDescriptor.VitalIncrease[vitalIndex] / 100, p.Level - 1));
+                    }
+                    else
+                    {
+                        classVital = classDescriptor.BaseVital[vitalIndex] + classDescriptor.VitalIncrease[vitalIndex] * (p.Level - 1);
+                    }
+                }
+
+                var total = classVital + p.mEquipmentFlatVitals[vitalIndex];
+                total = (long)Math.Ceiling(total + total * (p.mEquipmentPercentVitals[vitalIndex] / 100f));
+
+                if (vitalIndex == (int)Vital.Health)
+                {
+                    total = Math.Max(total, 1);
+                }
+                else if (vitalIndex == (int)Vital.Mana)
+                {
+                    total = Math.Max(total, 0);
+                }
+
+                total += p.CalculateVitalStatBonus((Vital)vitalIndex);
+                p.SetMaxVital(vitalIndex, total);
+            }
+        }
+
+        public void InvalidateSetBonuses()
+        {
+            mSetBonusHash = -1;
+            ApplySetBonuses(this);
         }
 
         public bool HasEnoughSpellPoints(int delta)

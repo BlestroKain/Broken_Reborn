@@ -1,10 +1,14 @@
+using Intersect;
 using Intersect.Enums;
 using Intersect.Client.General;
 using Intersect.Client.Localization;
 using Intersect.Core;
 using Intersect.Framework.Core.GameObjects.Items;
+using Intersect.GameObjects;
 using Intersect.GameObjects.Ranges;
 using Intersect.Utilities;
+using System.Linq;
+using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen.Input;
@@ -146,6 +150,12 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
                 break;
         }
 
+        // If this item belongs to a set, display the set progress.
+        if (_itemDescriptor.SetId != Guid.Empty)
+        {
+            SetupSetInfo();
+        }
+
         // Set up additional information such as amounts and shop values.
         SetupExtraInfo();
 
@@ -178,6 +188,149 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
         }
 
         rows.SizeToChildren(true, true);
+    }
+
+    private static bool PlayerHasSetItem(Guid itemId)
+    {
+        if (Globals.Me is not { } player)
+        {
+            return false;
+        }
+
+        foreach (var slots in player.MyEquipment.Values)
+        {
+            foreach (var slot in slots)
+            {
+                if (slot >= 0 && slot < player.Inventory.Length)
+                {
+                    var inv = player.Inventory[slot];
+                    if (inv != null && inv.ItemId == itemId)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    protected void SetupSetInfo()
+    {
+        if (_itemDescriptor?.SetId == Guid.Empty)
+        {
+            return;
+        }
+
+        var set = _itemDescriptor.Set;
+        if (set == null || set.ItemIds.Count == 0)
+        {
+            return;
+        }
+
+        var equippedCount = set.ItemIds.Count(PlayerHasSetItem);
+
+        AddDivider();
+        var desc = AddDescription();
+        desc.AddText($"{set.Name} ({equippedCount}/{set.ItemIds.Count})", CustomColors.ItemDesc.Primary);
+        if (!string.IsNullOrWhiteSpace(set.Description))
+        {
+            desc.AddLineBreak();
+            desc.AddText(set.Description, CustomColors.ItemDesc.Muted);
+        }
+
+        if (equippedCount > 1 && set.HasBonuses)
+        {
+            var bonusDesc = AddDescription();
+            var bonusRows = new RowContainerComponent(bonusDesc, "SetBonusRows");
+
+            var (stats, percentStats, vitals, vitalsRegen, percentVitals, effects) = set.GetBonuses(equippedCount);
+
+            for (int i = 0; i < stats.Length; i++)
+            {
+                if (stats[i] != 0 || percentStats[i] != 0)
+                {
+                    Strings.ItemDescription.StatCounts.TryGetValue(i, out var statName);
+                    var parts = new List<string>();
+                    if (stats[i] != 0)
+                    {
+                        parts.Add($"{(stats[i] > 0 ? "+" : string.Empty)}{stats[i]}");
+                    }
+                    if (percentStats[i] != 0)
+                    {
+                        parts.Add($"{percentStats[i]}%");
+                    }
+
+                    bonusRows.AddKeyValueRow(statName, string.Join(" / ", parts), Color.Magenta, Color.White);
+                }
+            }
+
+            for (int i = 0; i < vitals.Length; i++)
+            {
+                if (vitals[i] != 0 || percentVitals[i] != 0 || vitalsRegen[i] != 0)
+                {
+                    Strings.ItemDescription.Vitals.TryGetValue(i, out var vitName);
+                    var parts = new List<string>();
+                    if (vitals[i] != 0)
+                    {
+                        parts.Add($"{(vitals[i] > 0 ? "+" : string.Empty)}{vitals[i]}");
+                    }
+                    if (percentVitals[i] != 0)
+                    {
+                        parts.Add($"{percentVitals[i]}%");
+                    }
+                    if (vitalsRegen[i] != 0)
+                    {
+                        parts.Add($"Regen {vitalsRegen[i]}%");
+                    }
+
+                    bonusRows.AddKeyValueRow(vitName, string.Join(" / ", parts), Color.Cyan, Color.White);
+                }
+            }
+
+            foreach (var effect in effects)
+            {
+                if (effect.Type == ItemEffect.None || effect.Percentage == 0)
+                {
+                    continue;
+                }
+
+                if (!Strings.ItemDescription.BonusEffects.TryGetValue((int)effect.Type, out var effectName))
+                {
+                    continue;
+                }
+
+                bonusRows.AddKeyValueRow(effectName, $"+{effect.Percentage}%", Color.Yellow, Color.White);
+            }
+
+            bonusRows.SizeToChildren(true, true);
+            bonusDesc.SizeToChildren(true, true);
+        }
+
+        AddDivider();
+        var container = AddComponent(new ComponentBase(this, "SetItemsContainer"));
+        int x = 0;
+        foreach (var id in set.ItemIds)
+        {
+            if (!ItemDescriptor.TryGet(id, out var setDesc) || setDesc == null)
+            {
+                continue;
+            }
+
+            var comp = new SetItemComponent(container, $"SetItem_{id}");
+            var tex = GameContentManager.Current.GetTexture(Framework.Content.TextureType.Item, setDesc.Icon);
+            if (tex != null)
+            {
+                comp.SetIcon(tex, setDesc.Color);
+            }
+
+            comp.SetStatus(PlayerHasSetItem(id));
+            comp.SetPosition(x, 0);
+            comp.SizeToChildren(true, true);
+            x += comp.Width + 4;
+        }
+
+        container.SetSize(x, 32);
     }
 
     protected void SetupHeader()

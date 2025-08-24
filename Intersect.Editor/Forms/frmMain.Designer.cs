@@ -116,6 +116,7 @@ namespace Intersect.Editor.Forms
             this.spellEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.variableEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.timeEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.setEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.postQuestionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.reportBugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -817,7 +818,8 @@ namespace Intersect.Editor.Forms
             this.shopEditorToolStripMenuItem,
             this.spellEditorToolStripMenuItem,
             this.variableEditorToolStripMenuItem,
-            this.timeEditorToolStripMenuItem});
+            this.timeEditorToolStripMenuItem,
+            this.setEditorToolStripMenuItem});
             this.contentEditorsToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.contentEditorsToolStripMenuItem.Name = "contentEditorsToolStripMenuItem";
             this.contentEditorsToolStripMenuItem.Size = new System.Drawing.Size(101, 20);
@@ -934,7 +936,15 @@ namespace Intersect.Editor.Forms
             this.timeEditorToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
             this.timeEditorToolStripMenuItem.Text = "Time Editor";
             this.timeEditorToolStripMenuItem.Click += new System.EventHandler(this.timeEditorToolStripMenuItem_Click);
-            // 
+            //
+            // setEditorToolStripMenuItem
+            //
+            this.setEditorToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.setEditorToolStripMenuItem.Name = "setEditorToolStripMenuItem";
+            this.setEditorToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.setEditorToolStripMenuItem.Text = "Set Editor";
+            this.setEditorToolStripMenuItem.Click += new System.EventHandler(this.setEditorToolStripMenuItem_Click);
+            //
             // helpToolStripMenuItem
             // 
             this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -1107,12 +1117,13 @@ namespace Intersect.Editor.Forms
 		private ToolStripMenuItem questEditorToolStripMenuItem;
 		private ToolStripMenuItem resourceEditorToolStripMenuItem;
 		private ToolStripMenuItem shopEditorToolStripMenuItem;
-		private ToolStripMenuItem spellEditorToolStripMenuItem;
-		private ToolStripMenuItem variableEditorToolStripMenuItem;
-		private ToolStripMenuItem timeEditorToolStripMenuItem;
-		private ToolStripMenuItem helpToolStripMenuItem;
-		private ToolStripMenuItem postQuestionToolStripMenuItem;
-		private ToolStripMenuItem reportBugToolStripMenuItem;
+                private ToolStripMenuItem spellEditorToolStripMenuItem;
+                private ToolStripMenuItem variableEditorToolStripMenuItem;
+                private ToolStripMenuItem timeEditorToolStripMenuItem;
+                private ToolStripMenuItem setEditorToolStripMenuItem;
+                private ToolStripMenuItem helpToolStripMenuItem;
+                private ToolStripMenuItem postQuestionToolStripMenuItem;
+                private ToolStripMenuItem reportBugToolStripMenuItem;
 		private ToolStripMenuItem aboutToolStripMenuItem;
 		private DarkMenuStrip menuStrip;
 		private ToolStripMenuItem toolsToolStripMenuItem;

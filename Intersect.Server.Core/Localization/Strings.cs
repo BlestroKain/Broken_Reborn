@@ -436,6 +436,9 @@ public static partial class Strings
         public readonly LocalizedString ItemCount = @" - {00} Items.";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString SetCount = @" - {00} Sets.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public readonly LocalizedString KillSuccess = @"{00} has been killed!";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -893,6 +896,15 @@ public static partial class Strings
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public readonly LocalizedString Stunned = @"You cannot use this item while stunned.";
+    }
+
+    public sealed partial class SetsNamespace : LocaleNamespace
+    {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString DeleteSet = @"Delete Set";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString DeleteSetInUse = @"Cannot delete set while items still reference it.";
     }
 
     public sealed partial class MappingNamespace : LocaleNamespace
@@ -1536,6 +1548,8 @@ public static partial class Strings
 
         public readonly ItemsNamespace Items = new ItemsNamespace();
 
+        public readonly SetsNamespace Sets = new SetsNamespace();
+
         public readonly MappingNamespace Mapping = new MappingNamespace();
 
         public readonly MigrationNamespace Migration = new MigrationNamespace();
@@ -1613,6 +1627,8 @@ public static partial class Strings
     public static IntroNamespace Intro => Root.Intro;
 
     public static ItemsNamespace Items => Root.Items;
+
+    public static SetsNamespace Sets => Root.Sets;
 
     public static MappingNamespace Mapping => Root.Mapping;
 

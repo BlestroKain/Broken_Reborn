@@ -70,6 +70,7 @@ public partial class FrmMain : Form
     private FrmSwitchVariable mSwitchVariableEditor;
 
     private FrmTime mTimeEditor;
+    private frmSets mSetEditor;
 
     //General Editting Variables
     bool mTMouseDown;
@@ -1302,6 +1303,11 @@ public partial class FrmMain : Form
         PacketSender.SendOpenEditor(GameObjectType.Time);
     }
 
+    private void setEditorToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        PacketSender.SendOpenEditor(GameObjectType.Sets);
+    }
+
     private void layersToolStripMenuItem_DropDownOpened(object sender, EventArgs e)
     {
         foreach (var itm in ((ToolStripMenuItem)sender).DropDownItems)
@@ -1726,6 +1732,15 @@ public partial class FrmMain : Form
                         mTimeEditor = new FrmTime();
                         mTimeEditor.InitEditor(DaylightCycleDescriptor.Instance);
                         mTimeEditor.Show();
+                    }
+
+                    break;
+                case GameObjectType.Sets:
+                    if (mSetEditor == null || !mSetEditor.Visible)
+                    {
+                        mSetEditor = new frmSets();
+                        mSetEditor.InitEditor();
+                        mSetEditor.Show();
                     }
 
                     break;

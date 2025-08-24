@@ -1511,6 +1511,13 @@ Tick timer saved in server config.json.";
 
     }
 
+    public partial struct SetsEditor
+    {
+        public static LocalizedString deleteblocked = @"Cannot delete set while items still reference it.";
+
+        public static LocalizedString deleteblockedtitle = @"Delete Set";
+    }
+
     public partial struct Direction
     {
         public static Dictionary<int, LocalizedString> CritterDirection = new Dictionary<int, LocalizedString>()

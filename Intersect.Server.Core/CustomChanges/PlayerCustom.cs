@@ -293,7 +293,11 @@ namespace Intersect.Server.Entities
             {
                 foreach (var slot in kvp.Value)
                 {
-                    if (!TryGetItemAt(slot, out var item) || item?.Descriptor?.SetId == Guid.Empty)
+                    if (
+                        !TryGetItemAt(slot, out var item) ||
+                        item?.Descriptor == null ||
+                        item.Descriptor.SetId == Guid.Empty
+                    )
                     {
                         continue;
                     }

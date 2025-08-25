@@ -63,9 +63,8 @@ namespace Intersect.Server.Migrations.Sqlite.Game
                 name: "FK_Items_Sets_Set",
                 table: "Items");
 
-            migrationBuilder.DropIndex(
-                name: "IX_Items_Set",
-                table: "Items");
+            // This index may not exist if a newer migration has already removed it.
+            migrationBuilder.Sql("DROP INDEX IF EXISTS \"IX_Items_Set\";");
 
             migrationBuilder.DropTable(
                 name: "Sets");

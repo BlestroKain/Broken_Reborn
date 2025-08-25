@@ -231,138 +231,102 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
         var equippedCount = set.ItemIds.Count(PlayerHasSetItem);
 
         AddDivider();
-        var desc = AddDescription();
-        desc.AddText($"{set.Name} ({equippedCount}/{set.ItemIds.Count})", CustomColors.ItemDesc.Primary);
-        if (!string.IsNullOrWhiteSpace(set.Description))
-        {
-            desc.AddLineBreak();
-            desc.AddText(set.Description, CustomColors.ItemDesc.Muted);
-        }
+        var descComponent = AddDescription();
+        descComponent.AddText($"{set.Name} ({equippedCount}/{set.ItemIds.Count})", Color.Yellow);
 
-        var container = AddComponent(new ComponentBase(this, "SetItemsContainer"));
-        int x = 0;
-        foreach (var id in set.ItemIds)
+        // Only show bonuses if we have at least two pieces equipped
+        if (equippedCount > 1 && set.HasBonuses)
         {
-            if (!ItemDescriptor.TryGet(id, out var setDesc) || setDesc == null)
+            var bonusDesc = AddDescription();
+            var bonusRows = new RowContainerComponent(bonusDesc, "SetBonusRows");
+
+            var (stats, percentStats, vitals, vitalsRegen, percentVitals, effects) = set.GetBonuses(equippedCount);
+
+            for (int i = 0; i < stats.Length; i++)
             {
-                continue;
+                if (stats[i] != 0 || percentStats[i] != 0)
+                {
+                    Strings.ItemDescription.StatCounts.TryGetValue(i, out var statName);
+                    var parts = new List<string>();
+                    if (stats[i] != 0)
+                    {
+                        parts.Add($"{(stats[i] > 0 ? "+" : string.Empty)}{stats[i]}");
+                    }
+                    if (percentStats[i] != 0)
+                    {
+                        parts.Add($"{percentStats[i]}%");
+                    }
+
+                    bonusRows.AddKeyValueRow(statName, string.Join(" / ", parts), Color.Magenta, Color.White);
+                }
             }
 
-            var comp = new SetItemComponent(container, $"SetItem_{id}");
-            var tex = GameContentManager.Current.GetTexture(Framework.Content.TextureType.Item, setDesc.Icon);
-            if (tex != null)
+            for (int i = 0; i < vitals.Length; i++)
             {
-                comp.SetIcon(tex, setDesc.Color);
+                if (vitals[i] != 0 || percentVitals[i] != 0 || vitalsRegen[i] != 0)
+                {
+                    Strings.ItemDescription.Vitals.TryGetValue(i, out var vitName);
+                    var parts = new List<string>();
+                    if (vitals[i] != 0)
+                    {
+                        parts.Add($"{(vitals[i] > 0 ? "+" : string.Empty)}{vitals[i]}");
+                    }
+                    if (percentVitals[i] != 0)
+                    {
+                        parts.Add($"{percentVitals[i]}%");
+                    }
+                    if (vitalsRegen[i] != 0)
+                    {
+                        parts.Add($"Regen {vitalsRegen[i]}%");
+                    }
+
+                    bonusRows.AddKeyValueRow(vitName, string.Join(" / ", parts), Color.Cyan, Color.White);
+                }
             }
 
-            comp.SetStatus(PlayerHasSetItem(id));
-            comp.SetPosition(x, 0);
-            comp.SizeToChildren(true, true);
-            x += comp.Width + 4;
-        }
-
-        container.SetSize(x, 32);
-
-        if (set.BonusTiers.Count > 0)
-        {
-            var bonuses = AddDescription();
-            var first = true;
-            foreach (var tier in set.BonusTiers.OrderBy(t => t.Key))
+            foreach (var effect in effects)
             {
-                if (!tier.Value.HasBonuses)
+                if (effect.Type == ItemEffect.None || effect.Percentage == 0)
                 {
                     continue;
                 }
 
-                var color = equippedCount >= tier.Key ? CustomColors.ItemDesc.Primary : CustomColors.ItemDesc.Muted;
-                if (!first)
+                if (!Strings.ItemDescription.BonusEffects.TryGetValue((int)effect.Type, out var effectName))
                 {
-                    bonuses.AddLineBreak();
+                    continue;
                 }
-                first = false;
 
-                bonuses.AddText($"{tier.Key} pieces:", color);
-                foreach (var line in GetSetBonusLines(tier.Value))
-                {
-                    bonuses.AddLineBreak();
-                    bonuses.AddText($"  {line}", color);
-                }
+                bonusRows.AddKeyValueRow(effectName, $"+{effect.Percentage}%", Color.Yellow, Color.White);
             }
-        }
-    }
 
-    private static IEnumerable<string> GetSetBonusLines(SetBonusTier tier)
-    {
-        var lines = new List<string>();
-
-        for (var i = 0; i < tier.Stats.Length && i < Strings.ItemDescription.Stats.Count; i++)
-        {
-            var val = tier.Stats[i];
-            var percent = tier.PercentageStats.Length > i ? tier.PercentageStats[i] : 0;
-            if (val != 0 || percent != 0)
-            {
-                Strings.ItemDescription.Stats.TryGetValue(i, out var label);
-                var parts = new List<string>();
-                if (val != 0)
-                {
-                    parts.Add($"{(val > 0 ? "+" : string.Empty)}{val}");
-                }
-                if (percent != 0)
-                {
-                    parts.Add(Strings.ItemDescription.Percentage.ToString(percent));
-                }
-
-                lines.Add($"{label} {string.Join(" ", parts)}".Trim());
-            }
+            bonusRows.SizeToChildren(true, true);
+            bonusDesc.SizeToChildren(true, true);
         }
 
-        for (var i = 0; i < tier.Vitals.Length && i < Strings.ItemDescription.Vitals.Count; i++)
-        {
-            var val = tier.Vitals[i];
-            var percent = tier.PercentageVitals.Length > i ? tier.PercentageVitals[i] : 0;
-            if (val != 0 || percent != 0)
-            {
-                Strings.ItemDescription.Vitals.TryGetValue(i, out var label);
-                var parts = new List<string>();
-                if (val != 0)
-                {
-                    parts.Add($"{(val > 0 ? "+" : string.Empty)}{val}");
-                }
-                if (percent != 0)
-                {
-                    parts.Add(Strings.ItemDescription.Percentage.ToString(percent));
-                }
+        AddDivider();
+        var setContainer = AddDescription();
+        var iconRow = new RowItemContainerComponent(setContainer, "SetIconRow");
 
-                lines.Add($"{label} {string.Join(" ", parts)}".Trim());
-            }
-        }
-
-        for (var i = 0; i < tier.VitalsRegen.Length && i < Strings.ItemDescription.VitalsRegen.Count; i++)
+        foreach (var itemId in set.ItemIds)
         {
-            var val = tier.VitalsRegen[i];
-            if (val != 0)
-            {
-                Strings.ItemDescription.VitalsRegen.TryGetValue(i, out var label);
-                lines.Add($"{label} {(val > 0 ? "+" : string.Empty)}{val}".Trim());
-            }
-        }
-
-        foreach (var effect in tier.Effects)
-        {
-            if (effect.Type == ItemEffect.None || effect.Percentage == 0)
+            if (!ItemDescriptor.TryGet(itemId, out var setDesc) || setDesc == null)
             {
                 continue;
             }
 
-            if (!Strings.ItemDescription.BonusEffects.TryGetValue((int)effect.Type, out var effectLabel))
+            var setItem = new SetItemComponent(iconRow, "SetItem");
+            var tex = GameContentManager.Current.GetTexture(Framework.Content.TextureType.Item, setDesc.Icon);
+            if (tex != null)
             {
-                continue;
+                setItem.SetIcon(tex, setDesc.Color);
             }
 
-            lines.Add($"{effectLabel} {Strings.ItemDescription.Percentage.ToString(effect.Percentage)}");
+            setItem.SetStatus(PlayerHasSetItem(itemId));
+            iconRow.AddItemComponent(setItem);
         }
 
-        return lines;
+        iconRow.SizeToChildren(true, false);
+        setContainer.SizeToChildren(true, true);
     }
 
     protected void SetupHeader()

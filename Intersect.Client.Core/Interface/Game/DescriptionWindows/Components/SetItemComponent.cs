@@ -1,3 +1,4 @@
+using System;
 using Intersect.Client.Framework.Content;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen;
@@ -56,15 +57,23 @@ public partial class SetItemComponent : ComponentBase
         _icon.Texture = texture;
         _icon.RenderColor = color;
         _icon.SizeToContents();
+        SetSize(_icon.Width, _icon.Height);
         Align.Center(_icon);
     }
 
     public void SetStatus(bool owned)
     {
         var textureName = owned ? _ownedIcon : _missingIcon;
-        _status.Texture = GameContentManager.Current.GetTexture(TextureType.Misc, textureName);
+        var texture = GameContentManager.Current.GetTexture(TextureType.Misc, textureName);
+        _status.Texture = texture;
         _status.RenderColor = owned ? Color.Green : Color.Red;
-        _status.SizeToContents();
+
+        if (texture != null)
+        {
+            _status.SizeToContents();
+        }
+
+        SetSize(Math.Max(_icon.Width, _status.Width), Math.Max(_icon.Height, _status.Height));
         Align.Center(_status);
     }
 

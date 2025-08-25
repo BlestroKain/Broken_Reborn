@@ -231,10 +231,14 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
         var equippedCount = set.ItemIds.Count(PlayerHasSetItem);
 
         AddDivider();
-        var descComponent = AddDescription();
-        descComponent.AddText($"{set.Name} ({equippedCount}/{set.ItemIds.Count})", Color.Yellow);
+        var desc = AddDescription();
+        desc.AddText($"{set.Name} ({equippedCount}/{set.ItemIds.Count})", CustomColors.ItemDesc.Primary);
+        if (!string.IsNullOrWhiteSpace(set.Description))
+        {
+            desc.AddLineBreak();
+            desc.AddText(set.Description, CustomColors.ItemDesc.Muted);
+        }
 
-        // Only show bonuses if we have at least two pieces equipped
         if (equippedCount > 1 && set.HasBonuses)
         {
             var bonusDesc = AddDescription();
@@ -304,29 +308,29 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
         }
 
         AddDivider();
-        var setContainer = AddDescription();
-        var iconRow = new RowItemContainerComponent(setContainer.Container, "SetIconRow");
-
-        foreach (var itemId in set.ItemIds)
+        var container = AddComponent(new ComponentBase(this, "SetItemsContainer"));
+        int x = 0;
+        foreach (var id in set.ItemIds)
         {
-            if (!ItemDescriptor.TryGet(itemId, out var setDesc) || setDesc == null)
+            if (!ItemDescriptor.TryGet(id, out var setDesc) || setDesc == null)
             {
                 continue;
             }
 
-            var setItem = new SetItemComponent(iconRow.Container, "SetItem");
+            var comp = new SetItemComponent(container, $"SetItem_{id}");
             var tex = GameContentManager.Current.GetTexture(Framework.Content.TextureType.Item, setDesc.Icon);
             if (tex != null)
             {
-                setItem.SetIcon(tex, setDesc.Color);
+                comp.SetIcon(tex, setDesc.Color);
             }
 
-            setItem.SetStatus(PlayerHasSetItem(itemId));
-            iconRow.AddItemComponent(setItem);
+            comp.SetStatus(PlayerHasSetItem(id));
+            comp.SetPosition(x, 0);
+            comp.SizeToChildren(true, true);
+            x += comp.Width + 4;
         }
 
-        iconRow.SizeToChildren(true, false);
-        setContainer.SizeToChildren(true, true);
+        container.SetSize(x, 32);
     }
 
     protected void SetupHeader()

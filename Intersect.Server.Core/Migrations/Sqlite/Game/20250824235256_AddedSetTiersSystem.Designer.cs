@@ -1072,9 +1072,6 @@ namespace Intersect.Server.Migrations.Sqlite.Game
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("BonusTiersJson")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("BonusTiers");
 
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");

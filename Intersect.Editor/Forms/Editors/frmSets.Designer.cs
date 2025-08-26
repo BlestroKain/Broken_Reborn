@@ -80,11 +80,6 @@ partial class frmSets
         lblVit = new Label();
         lblWis = new Label();
         grpItemsSets = new DarkUI.Controls.DarkGroupBox();
-        grpAutoTiers = new DarkUI.Controls.DarkGroupBox();
-        cmbTierPattern = new DarkUI.Controls.DarkComboBox();
-        chkDistributeFlat = new DarkUI.Controls.DarkCheckBox();
-        chkClearExisting = new DarkUI.Controls.DarkCheckBox();
-        btnAutoFillTiers = new DarkUI.Controls.DarkButton();
         cmbItems = new DarkUI.Controls.DarkComboBox();
         btnRemove = new DarkUI.Controls.DarkButton();
         btnAdd = new DarkUI.Controls.DarkButton();
@@ -150,7 +145,6 @@ partial class frmSets
         ((System.ComponentModel.ISupportInitialize)nudVit).BeginInit();
         ((System.ComponentModel.ISupportInitialize)nudAgi).BeginInit();
         grpItemsSets.SuspendLayout();
-        grpAutoTiers.SuspendLayout();
         grpGeneral.SuspendLayout();
         grpVitalBonuses.SuspendLayout();
         ((System.ComponentModel.ISupportInitialize)nudMPPercentage).BeginInit();
@@ -762,63 +756,6 @@ partial class frmSets
         grpItemsSets.TabStop = false;
         grpItemsSets.Text = "Item";
 
-        // grpAutoTiers
-        grpAutoTiers.BackColor = System.Drawing.Color.FromArgb(45,45,48);
-        grpAutoTiers.BorderColor = System.Drawing.Color.FromArgb(90,90,90);
-        grpAutoTiers.ForeColor = System.Drawing.Color.Gainsboro;
-        grpAutoTiers.Location = new System.Drawing.Point(244, 446);
-        grpAutoTiers.Margin = new Padding(4,3,4,3);
-        grpAutoTiers.Name = "grpAutoTiers";
-        grpAutoTiers.Padding = new Padding(8,6,8,8);
-        grpAutoTiers.Size = new Size(536, 86);
-        grpAutoTiers.TabIndex = 90;
-        grpAutoTiers.TabStop = false;
-        grpAutoTiers.Text = "Auto-fill Tiers";
-
-        // cmbTierPattern
-        cmbTierPattern.BackColor = System.Drawing.Color.FromArgb(69,73,74);
-        cmbTierPattern.BorderColor = System.Drawing.Color.FromArgb(90,90,90);
-        cmbTierPattern.DrawMode = DrawMode.OwnerDrawFixed;
-        cmbTierPattern.DropDownStyle = ComboBoxStyle.DropDownList;
-        cmbTierPattern.FlatStyle = FlatStyle.Flat;
-        cmbTierPattern.ForeColor = System.Drawing.Color.Gainsboro;
-        cmbTierPattern.Location = new System.Drawing.Point(12, 24);
-        cmbTierPattern.Name = "cmbTierPattern";
-        cmbTierPattern.Size = new Size(180, 24);
-        cmbTierPattern.Items.AddRange(new object[] {
-            "Balanceado (40/30/20/10)",
-            "Adelantado (60/25/10/5)",
-            "Atrasado (10/20/30/40)",
-            "Parejo (igual por tier)"
-        });
-        cmbTierPattern.SelectedIndex = 0;
-
-        // chkDistributeFlat
-        chkDistributeFlat.Location = new System.Drawing.Point(210, 24);
-        chkDistributeFlat.Name = "chkDistributeFlat";
-        chkDistributeFlat.Size = new Size(150, 24);
-        chkDistributeFlat.Text = "Incluir valores planos";
-        chkDistributeFlat.Checked = false;
-
-        // chkClearExisting
-        chkClearExisting.Location = new System.Drawing.Point(210, 50);
-        chkClearExisting.Name = "chkClearExisting";
-        chkClearExisting.Size = new Size(180, 24);
-        chkClearExisting.Text = "Limpiar tiers existentes";
-        chkClearExisting.Checked = true;
-
-        // btnAutoFillTiers
-        btnAutoFillTiers.Location = new System.Drawing.Point(400, 26);
-        btnAutoFillTiers.Name = "btnAutoFillTiers";
-        btnAutoFillTiers.Padding = new Padding(6);
-        btnAutoFillTiers.Size = new Size(120, 28);
-        btnAutoFillTiers.Text = "Autorrellenar";
-        btnAutoFillTiers.Click += btnAutoFillTiers_Click;
-
-        grpAutoTiers.Controls.Add(cmbTierPattern);
-        grpAutoTiers.Controls.Add(chkDistributeFlat);
-        grpAutoTiers.Controls.Add(chkClearExisting);
-        grpAutoTiers.Controls.Add(btnAutoFillTiers);
         // 
         // cmbItems
         // 
@@ -1391,7 +1328,6 @@ partial class frmSets
         Controls.Add(grpStats);
         Controls.Add(grpEffects);
         Controls.Add(grpVitalBonuses);
-        Controls.Add(grpAutoTiers);
         Controls.Add(grpItemsSets);
         Controls.Add(lblTierCount);
         Controls.Add(btnCancel);
@@ -1442,8 +1378,6 @@ partial class frmSets
         grpRegen.PerformLayout();
         ((System.ComponentModel.ISupportInitialize)nudMpRegen).EndInit();
         ((System.ComponentModel.ISupportInitialize)nudHPRegen).EndInit();
-        grpAutoTiers.ResumeLayout(false);
-        grpAutoTiers.PerformLayout();
         toolStrip.ResumeLayout(false);
         toolStrip.PerformLayout();
         ResumeLayout(false);
@@ -1455,11 +1389,6 @@ partial class frmSets
     private DarkUI.Controls.DarkTextBox txtSearch;
     private Controls.GameObjectList lstGameObjects;
     private DarkUI.Controls.DarkGroupBox grpItemsSets;
-    private DarkUI.Controls.DarkGroupBox grpAutoTiers;
-    private DarkUI.Controls.DarkComboBox cmbTierPattern;
-    private DarkUI.Controls.DarkCheckBox chkDistributeFlat;
-    private DarkUI.Controls.DarkCheckBox chkClearExisting;
-    private DarkUI.Controls.DarkButton btnAutoFillTiers;
     private DarkUI.Controls.DarkComboBox cmbItems;
     private DarkUI.Controls.DarkButton btnRemove;
     private DarkUI.Controls.DarkButton btnAdd;

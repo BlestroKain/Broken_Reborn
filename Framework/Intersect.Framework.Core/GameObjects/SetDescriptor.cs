@@ -48,17 +48,6 @@ public partial class SetDescriptor : DatabaseObject<SetDescriptor>, IFolderable
         set => ItemIds = JsonConvert.DeserializeObject<List<Guid>>(value ?? "") ?? new();
     }
 
-    [NotMapped]
-    public Dictionary<int, SetBonusTier> BonusTiers { get; set; } = new();
-
-    [Column("BonusTiers")]
-    [JsonIgnore]
-    public string BonusTiersJson
-    {
-        get => JsonConvert.SerializeObject(BonusTiers);
-        set => BonusTiers = JsonConvert.DeserializeObject<Dictionary<int, SetBonusTier>>(value ?? "") ?? new();
-    }
-
     [Column("VitalsGiven")]
     [JsonIgnore]
     public string VitalsJson
@@ -141,29 +130,43 @@ public partial class SetDescriptor : DatabaseObject<SetDescriptor>, IFolderable
         PercentageVitals = ArrayExtensions.EnsureLen(PercentageVitals, Enum.GetValues<Vital>().Length);
         Effects ??= new List<EffectData>();
 
-        foreach (var tier in BonusTiers.Values)
-        {
-            tier.Validate();
-        }
-
-        if (!BonusTiers.Any() && HasLegacyBonuses())
-        {
-            BonusTiers[Math.Max(1, ItemIds.Count)] = new SetBonusTier
-            {
-                Stats = Stats,
-                PercentageStats = PercentageStats,
-                Vitals = Vitals,
-                VitalsRegen = VitalsRegen,
-                PercentageVitals = PercentageVitals,
-                Effects = Effects
-            };
-        }
-
         // (Opcional) limpiar ItemIds que ya no coinciden
         ItemIds = ItemIds.Where(id => ItemDescriptor.Get(id)?.SetId == Id).ToList();
     }
 
-    private bool HasLegacyBonuses() =>
+    public (int[] stats, int[] percentStats, long[] vitals, long[] vitalsRegen, int[] percentVitals, List<EffectData> effects) GetBonuses(int pieces)
+    {
+        var totalPieces = Math.Max(1, ItemIds.Count);
+        var ratio = Math.Clamp(pieces / (float)totalPieces, 0f, 1f);
+
+        var stats = new int[Enum.GetValues<Stat>().Length];
+        var percentStats = new int[Enum.GetValues<Stat>().Length];
+        var vitals = new long[Enum.GetValues<Vital>().Length];
+        var vitalsRegen = new long[Enum.GetValues<Vital>().Length];
+        var percentVitals = new int[Enum.GetValues<Vital>().Length];
+
+        for (var i = 0; i < stats.Length; i++)
+        {
+            stats[i] = (int)Math.Round(Stats[i] * ratio);
+            percentStats[i] = (int)Math.Round(PercentageStats[i] * ratio);
+        }
+
+        for (var i = 0; i < vitals.Length; i++)
+        {
+            vitals[i] = (long)Math.Round(Vitals[i] * ratio);
+            vitalsRegen[i] = (long)Math.Round(VitalsRegen[i] * ratio);
+            percentVitals[i] = (int)Math.Round(PercentageVitals[i] * ratio);
+        }
+
+        var effects = Effects
+            .Select(e => new EffectData(e.Type, (int)Math.Round(e.Percentage * ratio), e.IsPassive, e.Stacking))
+            .ToList();
+
+        return (stats, percentStats, vitals, vitalsRegen, percentVitals, effects);
+    }
+
+    [NotMapped, JsonIgnore]
+    public bool HasBonuses =>
         Stats.Any(s => s != 0) ||
         PercentageStats.Any(s => s != 0) ||
         Vitals.Any(v => v != 0) ||
@@ -171,58 +174,22 @@ public partial class SetDescriptor : DatabaseObject<SetDescriptor>, IFolderable
         VitalsRegen.Any(v => v != 0) ||
         Effects.Any();
 
-    public (int[] stats, int[] percentStats, long[] vitals, long[] vitalsRegen, int[] percentVitals, List<EffectData> effects) GetBonuses(int pieces)
-    {
-        if (!BonusTiers.Any())
-        {
-            return (
-                new int[Enum.GetValues<Stat>().Length],
-                new int[Enum.GetValues<Stat>().Length],
-                new long[Enum.GetValues<Vital>().Length],
-                new long[Enum.GetValues<Vital>().Length],
-                new int[Enum.GetValues<Vital>().Length],
-                new List<EffectData>()
-            );
-        }
-
-        var key = BonusTiers.Keys.Where(k => k <= pieces).DefaultIfEmpty(0).Max();
-        if (key == 0 || !BonusTiers.TryGetValue(key, out var tier))
-        {
-            return (
-                new int[Enum.GetValues<Stat>().Length],
-                new int[Enum.GetValues<Stat>().Length],
-                new long[Enum.GetValues<Vital>().Length],
-                new long[Enum.GetValues<Vital>().Length],
-                new int[Enum.GetValues<Vital>().Length],
-                new List<EffectData>()
-            );
-        }
-
-        return tier.GetBonuses();
-    }
-
-    [NotMapped, JsonIgnore]
-    public bool HasBonuses => BonusTiers.Values.Any(t => t.HasBonuses);
-
     public int GetEffectPercentage(ItemEffect type)
     {
-        return BonusTiers.TryGetValue(Math.Max(1, ItemIds.Count), out var tier)
-            ? tier.GetEffectPercentage(type)
-            : 0;
+        return Effects.Find(effect => effect.Type == type)?.Percentage ?? 0;
     }
 
     public void SetEffectOfType(ItemEffect type, int value)
     {
-        if (BonusTiers.TryGetValue(Math.Max(1, ItemIds.Count), out var tier))
+        var effectToEdit = Effects.Find(effect => effect.Type == type);
+        if (effectToEdit != null)
         {
-            tier.SetEffectOfType(type, value);
+            effectToEdit.Percentage = value;
         }
     }
 
     [NotMapped, JsonIgnore]
-    public ItemEffect[] EffectsEnabled => BonusTiers.TryGetValue(Math.Max(1, ItemIds.Count), out var tier)
-        ? tier.EffectsEnabled
-        : Array.Empty<ItemEffect>();
+    public ItemEffect[] EffectsEnabled => Effects.Select(effect => effect.Type).ToArray();
 
     public static string GetName(Guid id) => Get(id)?.Name ?? "???";
 

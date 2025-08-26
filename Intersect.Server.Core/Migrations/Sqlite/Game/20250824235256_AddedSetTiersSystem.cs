@@ -80,11 +80,6 @@ namespace Intersect.Server.Migrations.Sqlite.Game
                 oldType: "TEXT",
                 oldDefaultValue: "[]");
 
-            migrationBuilder.AddColumn<string>(
-                name: "BonusTiers",
-                table: "Sets",
-                type: "TEXT",
-                nullable: true);
 
             migrationBuilder.AlterColumn<string>(
                 name: "Effects",
@@ -99,9 +94,6 @@ namespace Intersect.Server.Migrations.Sqlite.Game
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "BonusTiers",
-                table: "Sets");
 
             migrationBuilder.AlterColumn<string>(
                 name: "VitalsRegen",

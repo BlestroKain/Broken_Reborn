@@ -80,17 +80,17 @@ partial class frmSets
         lblVit = new Label();
         lblWis = new Label();
         grpItemsSets = new DarkUI.Controls.DarkGroupBox();
+        cmbItems = new DarkUI.Controls.DarkComboBox();
+        btnRemove = new DarkUI.Controls.DarkButton();
+        btnAdd = new DarkUI.Controls.DarkButton();
+        lblItemSet = new Label();
+        lstItems = new ListBox();
         grpAutoTiers = new DarkUI.Controls.DarkGroupBox();
         cmbTierPattern = new DarkUI.Controls.DarkComboBox();
         chkDistributeFlat = new DarkUI.Controls.DarkCheckBox();
         chkClearExisting = new DarkUI.Controls.DarkCheckBox();
         btnAutoFillTiers = new DarkUI.Controls.DarkButton();
-        cmbItems = new DarkUI.Controls.DarkComboBox();
-        btnRemove = new DarkUI.Controls.DarkButton();
-        btnAdd = new DarkUI.Controls.DarkButton();
-        lblItemSet = new Label();
         lblTierCount = new Label();
-        lstItems = new ListBox();
         grpGeneral = new DarkUI.Controls.DarkGroupBox();
         btnAddFolder = new DarkUI.Controls.DarkButton();
         lblFolder = new Label();
@@ -177,7 +177,7 @@ partial class frmSets
         grpSets.Margin = new Padding(4, 3, 4, 3);
         grpSets.Name = "grpSets";
         grpSets.Padding = new Padding(4, 3, 4, 3);
-        grpSets.Size = new Size(237, 435);
+        grpSets.Size = new Size(237, 534);
         grpSets.TabIndex = 45;
         grpSets.TabStop = false;
         grpSets.Text = "Sets";
@@ -222,7 +222,7 @@ partial class frmSets
         lstGameObjects.Margin = new Padding(4, 3, 4, 3);
         lstGameObjects.Name = "lstGameObjects";
         lstGameObjects.SelectedImageIndex = 0;
-        lstGameObjects.Size = new Size(223, 377);
+        lstGameObjects.Size = new Size(223, 479);
         lstGameObjects.TabIndex = 26;
         // 
         // grpStats
@@ -761,64 +761,6 @@ partial class frmSets
         grpItemsSets.TabIndex = 47;
         grpItemsSets.TabStop = false;
         grpItemsSets.Text = "Item";
-
-        // grpAutoTiers
-        grpAutoTiers.BackColor = System.Drawing.Color.FromArgb(45,45,48);
-        grpAutoTiers.BorderColor = System.Drawing.Color.FromArgb(90,90,90);
-        grpAutoTiers.ForeColor = System.Drawing.Color.Gainsboro;
-        grpAutoTiers.Location = new System.Drawing.Point(244, 446);
-        grpAutoTiers.Margin = new Padding(4,3,4,3);
-        grpAutoTiers.Name = "grpAutoTiers";
-        grpAutoTiers.Padding = new Padding(8,6,8,8);
-        grpAutoTiers.Size = new Size(536, 86);
-        grpAutoTiers.TabIndex = 90;
-        grpAutoTiers.TabStop = false;
-        grpAutoTiers.Text = "Auto-fill Tiers";
-
-        // cmbTierPattern
-        cmbTierPattern.BackColor = System.Drawing.Color.FromArgb(69,73,74);
-        cmbTierPattern.BorderColor = System.Drawing.Color.FromArgb(90,90,90);
-        cmbTierPattern.DrawMode = DrawMode.OwnerDrawFixed;
-        cmbTierPattern.DropDownStyle = ComboBoxStyle.DropDownList;
-        cmbTierPattern.FlatStyle = FlatStyle.Flat;
-        cmbTierPattern.ForeColor = System.Drawing.Color.Gainsboro;
-        cmbTierPattern.Location = new System.Drawing.Point(12, 24);
-        cmbTierPattern.Name = "cmbTierPattern";
-        cmbTierPattern.Size = new Size(180, 24);
-        cmbTierPattern.Items.AddRange(new object[] {
-            "Balanceado (40/30/20/10)",
-            "Adelantado (60/25/10/5)",
-            "Atrasado (10/20/30/40)",
-            "Parejo (igual por tier)"
-        });
-        cmbTierPattern.SelectedIndex = 0;
-
-        // chkDistributeFlat
-        chkDistributeFlat.Location = new System.Drawing.Point(210, 24);
-        chkDistributeFlat.Name = "chkDistributeFlat";
-        chkDistributeFlat.Size = new Size(150, 24);
-        chkDistributeFlat.Text = "Incluir valores planos";
-        chkDistributeFlat.Checked = false;
-
-        // chkClearExisting
-        chkClearExisting.Location = new System.Drawing.Point(210, 50);
-        chkClearExisting.Name = "chkClearExisting";
-        chkClearExisting.Size = new Size(180, 24);
-        chkClearExisting.Text = "Limpiar tiers existentes";
-        chkClearExisting.Checked = true;
-
-        // btnAutoFillTiers
-        btnAutoFillTiers.Location = new System.Drawing.Point(400, 26);
-        btnAutoFillTiers.Name = "btnAutoFillTiers";
-        btnAutoFillTiers.Padding = new Padding(6);
-        btnAutoFillTiers.Size = new Size(120, 28);
-        btnAutoFillTiers.Text = "Autorrellenar";
-        btnAutoFillTiers.Click += btnAutoFillTiers_Click;
-
-        grpAutoTiers.Controls.Add(cmbTierPattern);
-        grpAutoTiers.Controls.Add(chkDistributeFlat);
-        grpAutoTiers.Controls.Add(chkClearExisting);
-        grpAutoTiers.Controls.Add(btnAutoFillTiers);
         // 
         // cmbItems
         // 
@@ -865,7 +807,7 @@ partial class frmSets
         btnAdd.Click += btnAdd_Click;
         // 
         // lblItemSet
-        //
+        // 
         lblItemSet.AutoSize = true;
         lblItemSet.Location = new System.Drawing.Point(9, 222);
         lblItemSet.Margin = new Padding(4, 0, 4, 0);
@@ -873,9 +815,6 @@ partial class frmSets
         lblItemSet.Size = new Size(34, 15);
         lblItemSet.TabIndex = 31;
         lblItemSet.Text = "Item:";
-        //
-        // lblTierCount
-        //
         // 
         // lstItems
         // 
@@ -891,6 +830,81 @@ partial class frmSets
         lstItems.Size = new Size(231, 197);
         lstItems.TabIndex = 29;
         lstItems.SelectedIndexChanged += lstItems_SelectedIndexChanged;
+        // 
+        // grpAutoTiers
+        // 
+        grpAutoTiers.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
+        grpAutoTiers.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+        grpAutoTiers.Controls.Add(cmbTierPattern);
+        grpAutoTiers.Controls.Add(chkDistributeFlat);
+        grpAutoTiers.Controls.Add(chkClearExisting);
+        grpAutoTiers.Controls.Add(btnAutoFillTiers);
+        grpAutoTiers.ForeColor = System.Drawing.Color.Gainsboro;
+        grpAutoTiers.Location = new System.Drawing.Point(244, 441);
+        grpAutoTiers.Margin = new Padding(4, 3, 4, 3);
+        grpAutoTiers.Name = "grpAutoTiers";
+        grpAutoTiers.Padding = new Padding(8, 6, 8, 8);
+        grpAutoTiers.Size = new Size(536, 86);
+        grpAutoTiers.TabIndex = 90;
+        grpAutoTiers.TabStop = false;
+        grpAutoTiers.Text = "Auto-fill Tiers";
+        // 
+        // cmbTierPattern
+        // 
+        cmbTierPattern.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+        cmbTierPattern.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+        cmbTierPattern.BorderStyle = ButtonBorderStyle.Solid;
+        cmbTierPattern.ButtonColor = System.Drawing.Color.FromArgb(43, 43, 43);
+        cmbTierPattern.DrawDropdownHoverOutline = false;
+        cmbTierPattern.DrawFocusRectangle = false;
+        cmbTierPattern.DrawMode = DrawMode.OwnerDrawFixed;
+        cmbTierPattern.DropDownStyle = ComboBoxStyle.DropDownList;
+        cmbTierPattern.FlatStyle = FlatStyle.Flat;
+        cmbTierPattern.ForeColor = System.Drawing.Color.Gainsboro;
+        cmbTierPattern.Items.AddRange(new object[] { "Balanceado (40/30/20/10)", "Adelantado (60/25/10/5)", "Atrasado (10/20/30/40)", "Parejo (igual por tier)" });
+        cmbTierPattern.Location = new System.Drawing.Point(12, 24);
+        cmbTierPattern.Name = "cmbTierPattern";
+        cmbTierPattern.Size = new Size(180, 24);
+        cmbTierPattern.TabIndex = 0;
+        cmbTierPattern.TextPadding = new Padding(2);
+        // 
+        // chkDistributeFlat
+        // 
+        chkDistributeFlat.Location = new System.Drawing.Point(210, 24);
+        chkDistributeFlat.Name = "chkDistributeFlat";
+        chkDistributeFlat.Size = new Size(150, 24);
+        chkDistributeFlat.TabIndex = 1;
+        chkDistributeFlat.Text = "Incluir valores planos";
+        // 
+        // chkClearExisting
+        // 
+        chkClearExisting.Checked = true;
+        chkClearExisting.CheckState = CheckState.Checked;
+        chkClearExisting.Location = new System.Drawing.Point(210, 50);
+        chkClearExisting.Name = "chkClearExisting";
+        chkClearExisting.Size = new Size(180, 24);
+        chkClearExisting.TabIndex = 2;
+        chkClearExisting.Text = "Limpiar tiers existentes";
+        // 
+        // btnAutoFillTiers
+        // 
+        btnAutoFillTiers.Location = new System.Drawing.Point(400, 26);
+        btnAutoFillTiers.Name = "btnAutoFillTiers";
+        btnAutoFillTiers.Padding = new Padding(6);
+        btnAutoFillTiers.Size = new Size(120, 28);
+        btnAutoFillTiers.TabIndex = 3;
+        btnAutoFillTiers.Text = "Autorrellenar";
+        btnAutoFillTiers.Click += btnAutoFillTiers_Click;
+        // 
+        // lblTierCount
+        // 
+        lblTierCount.AutoSize = true;
+        lblTierCount.Location = new System.Drawing.Point(243, 446);
+        lblTierCount.Margin = new Padding(4, 0, 4, 0);
+        lblTierCount.Name = "lblTierCount";
+        lblTierCount.Size = new Size(126, 15);
+        lblTierCount.TabIndex = 50;
+        lblTierCount.Text = "Defined/Equipped: 0/0";
         // 
         // grpGeneral
         // 
@@ -991,7 +1005,7 @@ partial class frmSets
         grpVitalBonuses.Controls.Add(lblManaBonus);
         grpVitalBonuses.Controls.Add(lblHealthBonus);
         grpVitalBonuses.ForeColor = System.Drawing.Color.Gainsboro;
-        grpVitalBonuses.Location = new System.Drawing.Point(504, 319);
+        grpVitalBonuses.Location = new System.Drawing.Point(504, 316);
         grpVitalBonuses.Margin = new Padding(4, 3, 4, 3);
         grpVitalBonuses.Name = "grpVitalBonuses";
         grpVitalBonuses.Padding = new Padding(4, 3, 4, 3);
@@ -1119,7 +1133,7 @@ partial class frmSets
         // btnCancel
         // 
         btnCancel.DialogResult = DialogResult.Cancel;
-        btnCancel.Location = new System.Drawing.Point(900, 473);
+        btnCancel.Location = new System.Drawing.Point(900, 532);
         btnCancel.Margin = new Padding(4, 3, 4, 3);
         btnCancel.Name = "btnCancel";
         btnCancel.Padding = new Padding(6);
@@ -1130,7 +1144,7 @@ partial class frmSets
         // 
         // btnSave
         // 
-        btnSave.Location = new System.Drawing.Point(695, 473);
+        btnSave.Location = new System.Drawing.Point(695, 532);
         btnSave.Margin = new Padding(4, 3, 4, 3);
         btnSave.Name = "btnSave";
         btnSave.Padding = new Padding(6);
@@ -1155,16 +1169,6 @@ partial class frmSets
         grpEffects.TabIndex = 60;
         grpEffects.TabStop = false;
         grpEffects.Text = "Bonus Effects";
-        //
-        // lblTierCount
-        //
-        lblTierCount.AutoSize = true;
-        lblTierCount.Location = new System.Drawing.Point(243, 446);
-        lblTierCount.Margin = new Padding(4, 0, 4, 0);
-        lblTierCount.Name = "lblTierCount";
-        lblTierCount.Size = new Size(130, 15);
-        lblTierCount.TabIndex = 50;
-        lblTierCount.Text = "Defined/Equipped: 0/0";
         // 
         // lstBonusEffects
         // 
@@ -1385,7 +1389,7 @@ partial class frmSets
         AutoScaleMode = AutoScaleMode.Font;
         AutoSize = true;
         BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
-        ClientSize = new Size(1116, 514);
+        ClientSize = new Size(1116, 568);
         ControlBox = false;
         Controls.Add(toolStrip);
         Controls.Add(grpStats);
@@ -1427,6 +1431,7 @@ partial class frmSets
         ((System.ComponentModel.ISupportInitialize)nudAgi).EndInit();
         grpItemsSets.ResumeLayout(false);
         grpItemsSets.PerformLayout();
+        grpAutoTiers.ResumeLayout(false);
         grpGeneral.ResumeLayout(false);
         grpGeneral.PerformLayout();
         grpVitalBonuses.ResumeLayout(false);
@@ -1442,11 +1447,10 @@ partial class frmSets
         grpRegen.PerformLayout();
         ((System.ComponentModel.ISupportInitialize)nudMpRegen).EndInit();
         ((System.ComponentModel.ISupportInitialize)nudHPRegen).EndInit();
-        grpAutoTiers.ResumeLayout(false);
-        grpAutoTiers.PerformLayout();
         toolStrip.ResumeLayout(false);
         toolStrip.PerformLayout();
         ResumeLayout(false);
+        PerformLayout();
     }
 
     #endregion

@@ -276,8 +276,9 @@ public partial class frmSets : EditorForm
         var weights = BuildDistribution(tierKeys.Length, cmbTierPattern.SelectedIndex);
 
         // Lee valores totales desde NUD (objetivo a distribuir)
-        var flatsStats = new int[(int)Intersect.Enums.Stat.Speed + 1];
-        var pctStats   = new int[flatsStats.Length];
+        var statsLength = Enum.GetValues<Stat>().Length;
+        var flatsStats = new int[statsLength];
+        var pctStats = new int[statsLength];
 
         flatsStats[(int)Stat.Attack]      = (int)nudStr.Value;
         flatsStats[(int)Stat.Agility]     = (int)nudAgi.Value;

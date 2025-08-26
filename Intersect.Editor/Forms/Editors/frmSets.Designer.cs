@@ -85,12 +85,6 @@ partial class frmSets
         btnAdd = new DarkUI.Controls.DarkButton();
         lblItemSet = new Label();
         lstItems = new ListBox();
-        grpAutoTiers = new DarkUI.Controls.DarkGroupBox();
-        cmbTierPattern = new DarkUI.Controls.DarkComboBox();
-        chkDistributeFlat = new DarkUI.Controls.DarkCheckBox();
-        chkClearExisting = new DarkUI.Controls.DarkCheckBox();
-        btnAutoFillTiers = new DarkUI.Controls.DarkButton();
-        lblTierCount = new Label();
         grpGeneral = new DarkUI.Controls.DarkGroupBox();
         btnAddFolder = new DarkUI.Controls.DarkButton();
         lblFolder = new Label();
@@ -150,7 +144,6 @@ partial class frmSets
         ((System.ComponentModel.ISupportInitialize)nudVit).BeginInit();
         ((System.ComponentModel.ISupportInitialize)nudAgi).BeginInit();
         grpItemsSets.SuspendLayout();
-        grpAutoTiers.SuspendLayout();
         grpGeneral.SuspendLayout();
         grpVitalBonuses.SuspendLayout();
         ((System.ComponentModel.ISupportInitialize)nudMPPercentage).BeginInit();
@@ -1395,7 +1388,6 @@ partial class frmSets
         Controls.Add(grpStats);
         Controls.Add(grpEffects);
         Controls.Add(grpVitalBonuses);
-        Controls.Add(grpAutoTiers);
         Controls.Add(grpItemsSets);
         Controls.Add(lblTierCount);
         Controls.Add(btnCancel);
@@ -1459,11 +1451,6 @@ partial class frmSets
     private DarkUI.Controls.DarkTextBox txtSearch;
     private Controls.GameObjectList lstGameObjects;
     private DarkUI.Controls.DarkGroupBox grpItemsSets;
-    private DarkUI.Controls.DarkGroupBox grpAutoTiers;
-    private DarkUI.Controls.DarkComboBox cmbTierPattern;
-    private DarkUI.Controls.DarkCheckBox chkDistributeFlat;
-    private DarkUI.Controls.DarkCheckBox chkClearExisting;
-    private DarkUI.Controls.DarkButton btnAutoFillTiers;
     private DarkUI.Controls.DarkComboBox cmbItems;
     private DarkUI.Controls.DarkButton btnRemove;
     private DarkUI.Controls.DarkButton btnAdd;

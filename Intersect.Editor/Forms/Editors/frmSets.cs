@@ -250,7 +250,6 @@ public partial class frmSets : EditorForm
         UpdateSaveButton();
     }
 
-
     private void toolStripItemNew_Click(object sender, EventArgs e)
     {
         PacketSender.SendCreateObject(GameObjectType.Sets);

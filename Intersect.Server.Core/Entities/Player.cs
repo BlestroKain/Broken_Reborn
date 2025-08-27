@@ -1252,6 +1252,27 @@ public partial class Player : Entity
             evt.Value.PlayerHasDied = true;
         }
 
+        Guid jailMapId = Guid.Empty;
+        byte jailX = 0;
+        byte jailY = 0;
+        var sendToJail = false;
+
+        if (killer is Npc npcKiller && MapController.Get(MapId)?.ZoneType == MapZone.Safe)
+        {
+            var opposingFaction = npcKiller.Descriptor.Faction != Alignment.Neutral &&
+                                   Faction != Alignment.Neutral &&
+                                   npcKiller.Descriptor.Faction != Faction;
+            var outlaw = Honor < 0;
+
+            if ((opposingFaction || outlaw) && npcKiller.Descriptor.SendToJailOnCapture)
+            {
+                jailMapId = npcKiller.Descriptor.JailMapId;
+                jailX = npcKiller.Descriptor.JailX;
+                jailY = npcKiller.Descriptor.JailY;
+                sendToJail = jailMapId != Guid.Empty;
+            }
+        }
+
         // Remove player from ALL threat lists.
         foreach (var instance in MapController.GetSurroundingMapInstances(Map.Id, MapInstanceId, true))
         {
@@ -1283,6 +1304,10 @@ public partial class Player : Entity
         }
         PacketSender.SendEntityDie(this);
         Respawn();
+        if (sendToJail)
+        {
+            Warp(jailMapId, jailX, jailY);
+        }
         PacketSender.SendInventory(this);
         PacketSender.SendPlayerSpells(this);
         PacketSender.SendSpellPoints(this);

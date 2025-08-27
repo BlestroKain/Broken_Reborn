@@ -84,6 +84,12 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
 
         modelBuilder.Entity<Player>().HasOne(p => p.PendingGuildInviteTo).WithMany().OnDelete(DeleteBehavior.SetNull);
 
+        modelBuilder.Entity<Player>().Property(p => p.Faction);
+        modelBuilder.Entity<Player>().Property(p => p.Wings);
+        modelBuilder.Entity<Player>().Property(p => p.Honor);
+        modelBuilder.Entity<Player>().Property(p => p.Grade);
+        modelBuilder.Entity<Player>().Property(p => p.LastFactionSwapAt);
+
         modelBuilder.Entity<Player>()
             .HasMany(b => b.Friends)
             .WithOne(p => p.Owner)

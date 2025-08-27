@@ -750,6 +750,21 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.Property<int>("SpellPoints")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("Faction")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Wings")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Honor")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Grade")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("LastFactionSwapAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Sprite")
                         .HasColumnType("TEXT");
 

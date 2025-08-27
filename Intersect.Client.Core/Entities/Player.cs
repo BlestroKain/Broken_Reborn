@@ -432,7 +432,7 @@ public partial class Player : Entity, IPlayer
                     continue;
                 }
 
-                Spells[spell.Slot].Load(spell.SpellId, spell.Properties);
+                Spells[spell.Slot].Load(spell.SpellId, spell.Properties, spell.SpellPointsSpent);
             }
 
             if (this == Globals.Me)

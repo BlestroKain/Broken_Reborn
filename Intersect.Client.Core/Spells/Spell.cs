@@ -9,6 +9,7 @@ public partial class Spell
     public Guid Id { get; set; }
     public int Level { get; set; }
     public SpellProperties Properties { get; set; } = new();
+    public int SpellPointsSpent { get; set; }
 
     public Spell Clone()
     {
@@ -17,16 +18,18 @@ public partial class Spell
             Id = Id,
             Level = Level,
             Properties = new SpellProperties(Properties),
+            SpellPointsSpent = SpellPointsSpent,
         };
 
         return newSpell;
     }
 
-    public void Load(Guid spellId, SpellProperties? properties)
+    public void Load(Guid spellId, SpellProperties? properties, int spellPointsSpent = 0)
     {
         Id = spellId;
         Properties = properties ?? new SpellProperties();
         Level = Properties.Level;
+        SpellPointsSpent = spellPointsSpent;
     }
 
 }

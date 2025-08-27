@@ -70,7 +70,7 @@ public partial class PlayerEntityPacket : EntityPacket
     public byte GuildBackgroundB { get; set; }
 
     [Key(41)]
-    public SpellUpdatePacket[] Spells { get; set; }
+    public SpellUpdatePacket[] Spells { get; set; } = [];
 
     [Key(42)]
     public int SpellPoints { get; set; }

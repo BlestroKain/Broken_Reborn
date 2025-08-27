@@ -102,6 +102,9 @@ public partial class Player : Entity
 
     public DateTime LastFactionSwapAt { get; set; } = DateTime.UtcNow;
 
+    [NotMapped, JsonIgnore]
+    public Guid? LastPlayerVictimId { get; set; }
+
     [Column("Equipment"), JsonIgnore]
     public string EquipmentJson
     {
@@ -1653,6 +1656,85 @@ public partial class Player : Entity
                     break;
                 }
         }
+    }
+
+    public void HandlePlayerKill(Player victim)
+    {
+        if (victim == null || victim == this)
+        {
+            return;
+        }
+
+        const int honorReward = 10;
+        const int honorPenalty = 5;
+        const int neutralPenalty = 10;
+
+        // Penalize killing neutral players
+        if (victim.Faction == Alignment.Neutral)
+        {
+            AdjustHonor(-neutralPenalty);
+            return;
+        }
+
+        // Only award honor for opposing factions
+        if (victim.Faction == Faction)
+        {
+            AdjustHonor(-honorPenalty);
+            return;
+        }
+
+        // Determine if levels are within ±30%
+        var fairFight = Math.Abs(Level - victim.Level) <= victim.Level * 0.3f;
+
+        var honorDelta = fairFight ? honorReward : -honorPenalty;
+
+        // Diminishing returns for killing the same player repeatedly
+        if (LastPlayerVictimId.HasValue && LastPlayerVictimId.Value == victim.Id && honorDelta > 0)
+        {
+            honorDelta /= 2;
+        }
+
+        AdjustHonor(honorDelta);
+        victim.AdjustHonor(-honorDelta);
+
+        LastPlayerVictimId = victim.Id;
+    }
+
+    public void AdjustHonor(int amount)
+    {
+        if (amount == 0)
+        {
+            return;
+        }
+
+        Honor += amount;
+        if (Honor < 0)
+        {
+            Honor = 0;
+        }
+
+        RecalculateGrade();
+    }
+
+    private void RecalculateGrade()
+    {
+        // Example rank table; thresholds define the minimum honor for each grade
+        int[] thresholds = { 0, 1000, 2000, 4000, 8000 };
+
+        var newGrade = 0;
+        for (var i = 0; i < thresholds.Length; i++)
+        {
+            if (Honor >= thresholds[i])
+            {
+                newGrade = i;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        Grade = newGrade;
     }
 
     public void UpdateQuestKillTasks(Entity en)

@@ -1476,12 +1476,14 @@ public partial class Npc : Entity
                 return !otherNpc.CanNpcCombat(this);
             case Player otherPlayer:
                 var conditionLists = Descriptor.PlayerFriendConditions;
-                if ((conditionLists?.Count ?? 0) == 0)
-                {
-                    return false;
-                }
+                var allyByConditions = (conditionLists?.Count ?? 0) > 0 &&
+                                       Conditions.MeetsConditionLists(conditionLists, otherPlayer, null);
 
-                return Conditions.MeetsConditionLists(conditionLists, otherPlayer, null);
+                var allyByFaction = Descriptor.Faction != Alignment.Neutral &&
+                                    otherPlayer.Faction == Descriptor.Faction &&
+                                    otherPlayer.Honor >= 0;
+
+                return allyByConditions || allyByFaction;
             default:
                 return base.IsAllyOf(otherEntity);
         }
@@ -1492,6 +1494,15 @@ public partial class Npc : Entity
         if (IsAllyOf(en))
         {
             return false;
+        }
+
+        if (Descriptor.Faction != Alignment.Neutral)
+        {
+            if (en.Honor < 0 ||
+                (en.Faction != Alignment.Neutral && en.Faction != Descriptor.Faction))
+            {
+                return true;
+            }
         }
 
         if (Descriptor.Aggressive)

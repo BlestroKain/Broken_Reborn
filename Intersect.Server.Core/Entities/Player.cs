@@ -92,6 +92,7 @@ public partial class Player : Entity
     [NotMapped]
     public bool SpellPointsChanged { get; set; }
 
+   
     [Column("Equipment"), JsonIgnore]
     public string EquipmentJson
     {
@@ -1166,17 +1167,22 @@ public partial class Player : Entity
         pkt.GuildRank = GuildRank;
         if (Guild != null)
         {
-            pkt.GuildBackgroundFile = Guild.LogoBackground;
-            pkt.GuildBackgroundR = Guild.BackgroundR;
-            pkt.GuildBackgroundG = Guild.BackgroundG;
-            pkt.GuildBackgroundB = Guild.BackgroundB;
+        pkt.GuildBackgroundFile = Guild.LogoBackground;
+        pkt.GuildBackgroundR = Guild.BackgroundR;
+        pkt.GuildBackgroundG = Guild.BackgroundG;
+        pkt.GuildBackgroundB = Guild.BackgroundB;
 
-            pkt.GuildSymbolFile = Guild.LogoSymbol;
-            pkt.GuildSymbolR = Guild.SymbolR;
-            pkt.GuildSymbolG = Guild.SymbolG;
-            pkt.GuildSymbolB = Guild.SymbolB;
+        pkt.GuildSymbolFile = Guild.LogoSymbol;
+        pkt.GuildSymbolR = Guild.SymbolR;
+        pkt.GuildSymbolG = Guild.SymbolG;
+        pkt.GuildSymbolB = Guild.SymbolB;
 
         }
+
+        pkt.Faction = Faction;
+        pkt.Wings = Wings;
+        pkt.Honor = Honor;
+        pkt.Grade = Grade;
 
         if (forPlayer == this)
         {
@@ -1239,6 +1245,27 @@ public partial class Player : Entity
             evt.Value.PlayerHasDied = true;
         }
 
+        Guid jailMapId = Guid.Empty;
+        byte jailX = 0;
+        byte jailY = 0;
+        var sendToJail = false;
+
+        if (killer is Npc npcKiller && MapController.Get(MapId)?.ZoneType == MapZone.Safe)
+        {
+            var opposingFaction = npcKiller.Descriptor.Faction != Alignment.Neutral &&
+                                   Faction != Alignment.Neutral &&
+                                   npcKiller.Descriptor.Faction != Faction;
+            var outlaw = Honor < 0;
+
+            if ((opposingFaction || outlaw) && npcKiller.Descriptor.SendToJailOnCapture)
+            {
+                jailMapId = npcKiller.Descriptor.JailMapId;
+                jailX = npcKiller.Descriptor.JailX;
+                jailY = npcKiller.Descriptor.JailY;
+                sendToJail = jailMapId != Guid.Empty;
+            }
+        }
+
         // Remove player from ALL threat lists.
         foreach (var instance in MapController.GetSurroundingMapInstances(Map.Id, MapInstanceId, true))
         {
@@ -1270,6 +1297,10 @@ public partial class Player : Entity
         }
         PacketSender.SendEntityDie(this);
         Respawn();
+        if (sendToJail)
+        {
+            Warp(jailMapId, jailX, jailY);
+        }
         PacketSender.SendInventory(this);
         PacketSender.SendPlayerSpells(this);
         PacketSender.SendSpellPoints(this);
@@ -1643,6 +1674,105 @@ public partial class Player : Entity
                     break;
                 }
         }
+    }
+
+    public void HandlePlayerKill(Player victim)
+    {
+        if (victim == null || victim == this)
+        {
+            return;
+        }
+
+        const int honorReward = 10;
+        const int honorPenalty = 5;
+        const int neutralPenalty = 10;
+        var rewardCooldown = TimeSpan.FromMinutes(5);
+
+        // Penalize killing neutral players
+        if (victim.Faction == Alignment.Neutral)
+        {
+            AdjustHonor(-neutralPenalty);
+            return;
+        }
+
+        // Penalize killing members of the same faction
+        if (victim.Faction == Faction)
+        {
+            AdjustHonor(-honorPenalty);
+            return;
+        }
+
+        var honorDelta = honorReward;
+        var now = DateTime.UtcNow;
+
+        // Clean out expired victim entries
+        foreach (var entry in RecentPlayerVictims.ToArray())
+        {
+            if (now - entry.Value > rewardCooldown)
+            {
+                RecentPlayerVictims.TryRemove(entry.Key, out _);
+            }
+        }
+
+        // Diminishing returns for killing the same player repeatedly
+        if (RecentPlayerVictims.TryGetValue(victim.Id, out var lastKill) &&
+            now - lastKill < rewardCooldown)
+        {
+            honorDelta /= 2;
+        }
+
+        AdjustHonor(honorDelta);
+        victim.AdjustHonor(-honorDelta);
+
+        RecentPlayerVictims[victim.Id] = now;
+
+        try
+        {
+            using var context = DbInterface.CreatePlayerContext(readOnly: false);
+            context.Player_KillLogs.Add(new KillLog(this, victim));
+            context.SaveChanges();
+        }
+        catch
+        {
+            // ignore logging failures
+        }
+    }
+
+    public void AdjustHonor(int amount)
+    {
+        if (amount == 0)
+        {
+            return;
+        }
+
+        Honor += amount;
+        if (Honor < 0)
+        {
+            Honor = 0;
+        }
+
+        RecalculateGrade();
+    }
+
+    private void RecalculateGrade()
+    {
+        // Example rank table; thresholds define the minimum honor for each grade
+        int[] thresholds = { 0, 1000, 2000, 4000, 8000 };
+
+        var newGrade = 0;
+        for (var i = 0; i < thresholds.Length; i++)
+        {
+            if (Honor >= thresholds[i])
+            {
+                newGrade = i;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        Grade = newGrade;
     }
 
     public void UpdateQuestKillTasks(Entity en)

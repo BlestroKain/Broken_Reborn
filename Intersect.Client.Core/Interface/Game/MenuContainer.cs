@@ -49,6 +49,13 @@ public partial class MenuContainer : Panel
     private readonly Button _guildButton;
     private readonly GuildWindow _guildWindow;
 
+    private readonly ImagePanel _factionButtonContainer;
+    private readonly Button _factionButton;
+    private readonly FactionWindow _factionWindow;
+
+    private readonly ImagePanel _wingsButtonContainer;
+    private readonly Button _wingsButton;
+
     private readonly ImagePanel _escapeMenuButtonContainer;
     private readonly Button _escapeMenuButton;
     private readonly JobsWindow mJobsWindow;
@@ -197,6 +204,55 @@ public partial class MenuContainer : Panel
         _guildButton.SetToolTipText(text: Strings.Guilds.Guild);
         _guildButton.Clicked += GuildBtn_Clicked;
 
+        _factionButtonContainer = new ImagePanel(parent: this, name: nameof(_factionButtonContainer))
+        {
+            Dock = Pos.Left,
+            MaximumSize = new Point(x: 36, y: 36),
+            MinimumSize = new Point(x: 36, y: 36),
+            Padding = new Padding(size: 2),
+            Size = new Point(x: 36, y: 36),
+            TextureFilename = "menuitem.png",
+        };
+        _factionButton = new Button(parent: _factionButtonContainer, name: nameof(_factionButton), disableText: true)
+        {
+            Alignment = [Alignments.Center],
+            Size = new Point(x: 32, y: 32),
+        };
+        _factionButton.SetStateTexture(componentState: ComponentState.Normal, textureName: "factionicon.png");
+        _factionButton.SetStateTexture(componentState: ComponentState.Hovered, textureName: "factionicon_hovered.png");
+        _factionButton.SetToolTipText(text: "Faction");
+        _factionWindow = new FactionWindow(gameCanvas) { IsHidden = true };
+        _factionButton.Clicked += (s, e) => ToggleFactionWindow();
+
+        _wingsButtonContainer = new ImagePanel(parent: this, name: nameof(_wingsButtonContainer))
+        {
+            Dock = Pos.Left,
+            MaximumSize = new Point(x: 36, y: 36),
+            MinimumSize = new Point(x: 36, y: 36),
+            Padding = new Padding(size: 2),
+            Size = new Point(x: 36, y: 36),
+            TextureFilename = "menuitem.png",
+        };
+        _wingsButton = new Button(parent: _wingsButtonContainer, name: nameof(_wingsButton), disableText: true)
+        {
+            Alignment = [Alignments.Center],
+            Size = new Point(x: 32, y: 32),
+        };
+        _wingsButton.SetStateTexture(componentState: ComponentState.Normal, textureName: "wingicon.png");
+        _wingsButton.SetStateTexture(componentState: ComponentState.Hovered, textureName: "wingicon_hovered.png");
+        _wingsButton.SetToolTipText(text: "Toggle Wings");
+        _wingsButton.Clicked += (s, e) =>
+        {
+            if (Globals.Me == null)
+            {
+                return;
+            }
+
+            var newState = Globals.Me.Wings == WingState.Enabled ? WingState.None : WingState.Enabled;
+            Globals.Me.Wings = newState;
+            PacketSender.SendToggleWings(newState);
+        };
+
         _escapeMenuButtonContainer = new ImagePanel(parent: this, name: nameof(_escapeMenuButtonContainer))
         {
             Dock = Pos.Left,
@@ -308,6 +364,7 @@ public partial class MenuContainer : Panel
         _questsWindow.Hide();
         _spellsWindow.Hide();
         _guildWindow.Hide();
+        _factionWindow.Hide();
         mJobsWindow.Hide();
     }
 
@@ -362,6 +419,20 @@ public partial class MenuContainer : Panel
     public void HideGuildWindow()
     {
         _guildWindow.Hide();
+    }
+
+    public void ToggleFactionWindow()
+    {
+        if (_factionWindow.IsVisible())
+        {
+            _factionWindow.Hide();
+        }
+        else
+        {
+            HideWindows();
+            _factionWindow.Refresh();
+            _factionWindow.Show();
+        }
     }
 
     public void ToggleInventoryWindow()

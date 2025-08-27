@@ -21,6 +21,7 @@ using static Intersect.Server.Database.Logging.Entities.GuildHistory;
 using Intersect.Server.Collections.Sorting;
 using Microsoft.Extensions.Logging;
 using Intersect.Framework.Core.GameObjects.Guild;
+using System.Linq;
 
 namespace Intersect.Server.Database.PlayerData.Players;
 
@@ -79,6 +80,20 @@ public partial class Guild
     [NotMapped]
     [JsonIgnore]
     public ConcurrentDictionary<Guid, GuildMember> Members { get; private set; } = new ConcurrentDictionary<Guid, GuildMember>();
+
+    public Alignment GetFaction()
+    {
+        foreach (var member in Members.Keys)
+        {
+            var plyr = Player.Find(member);
+            if (plyr != null)
+            {
+                return plyr.Faction;
+            }
+        }
+
+        return Alignment.Neutral;
+    }
 
     /// <summary>
     /// The last time this guilds status was updated and memberlist was send to online players
@@ -288,6 +303,18 @@ public partial class Guild
             return false;
         }
 
+        var guildFaction = initiator?.Faction ?? GetFaction();
+        if (player.Faction != Alignment.Neutral && player.Faction != guildFaction)
+        {
+            PacketSender.SendChatMsg(player, Strings.Guilds.DifferentFaction, ChatMessageType.Guild);
+            if (initiator != null)
+            {
+                PacketSender.SendChatMsg(initiator, Strings.Guilds.InviteDifferentFaction, ChatMessageType.Guild);
+            }
+
+            return false;
+        }
+
         try
         {
             // Save the guild before adding a new player
@@ -321,6 +348,10 @@ public partial class Guild
         player.GuildRank = rank;
         player.DonateXPGuild = 0;
         player.GuildExpPercentage = 0;
+        if (player.Faction == Alignment.Neutral)
+        {
+            player.SetFaction(guildFaction);
+        }
         player.GuildJoinDate = DateTime.UtcNow;
         context.Update(player);
         context.ChangeTracker.DetectChanges();
@@ -967,6 +998,36 @@ public partial class Guild
         catch (Exception exception)
         {
             ApplicationContext.Context.Value?.Logger.LogError(exception, "Failed to list guilds");
+            total = 0;
+            return null;
+        }
+    }
+
+    public static IList<KeyValuePair<Guild, int>> TopByHonor(int skip, int take, out int total)
+    {
+        try
+        {
+            using var context = DbInterface.CreatePlayerContext();
+
+            var query = context.Guilds
+                .Select(g => new
+                {
+                    Guild = g,
+                    Honor = context.Players.Where(p => p.Guild.Id == g.Id).Sum(p => p.Honor),
+                })
+                .OrderByDescending(g => g.Honor);
+
+            total = query.Count();
+
+            return query
+                .Skip(skip)
+                .Take(take)
+                .Select(g => new KeyValuePair<Guild, int>(g.Guild, g.Honor))
+                .ToList();
+        }
+        catch (Exception exception)
+        {
+            ApplicationContext.Context.Value?.Logger.LogError(exception, "Failed to list guilds by honor");
             total = 0;
             return null;
         }

@@ -1311,7 +1311,8 @@ public static partial class PacketSender
                 i,
                 player.Spells[i].SpellId,
                 player.Spells[i].Level,
-                player.Spells[i].Properties
+                player.Spells[i].Properties,
+                player.Spells[i].SpellPointsSpent
             );
         }
 
@@ -1331,7 +1332,8 @@ public static partial class PacketSender
                 slot,
                 player.Spells[slot].SpellId,
                 player.Spells[slot].Level,
-                player.Spells[slot].Properties
+                player.Spells[slot].Properties,
+                player.Spells[slot].SpellPointsSpent
             )
         );
     }

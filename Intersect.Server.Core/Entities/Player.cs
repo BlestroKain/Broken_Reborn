@@ -1199,7 +1199,8 @@ public partial class Player : Entity
                     i,
                     slot.SpellId,
                     slot.Level,
-                    slot.Properties
+                    slot.Properties,
+                    slot.SpellPointsSpent
                 );
             }
 

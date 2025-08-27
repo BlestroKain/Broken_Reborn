@@ -12,12 +12,19 @@ public partial class SpellUpdatePacket : IntersectPacket
     {
     }
 
-    public SpellUpdatePacket(int slot, Guid spellId, int level, SpellProperties? properties = null)
+    public SpellUpdatePacket(
+        int slot,
+        Guid spellId,
+        int level,
+        SpellProperties? properties = null,
+        int spellPointsSpent = 0
+    )
     {
         Slot = slot;
         SpellId = spellId;
         Level = level;
         Properties = properties;
+        SpellPointsSpent = spellPointsSpent;
     }
 
     [Key(0)]
@@ -31,5 +38,8 @@ public partial class SpellUpdatePacket : IntersectPacket
 
     [Key(3)]
     public SpellProperties? Properties { get; set; }
+
+    [Key(4)]
+    public int SpellPointsSpent { get; set; }
 
 }

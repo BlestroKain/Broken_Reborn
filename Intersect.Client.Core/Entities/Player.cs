@@ -64,6 +64,16 @@ public partial class Player : Entity, IPlayer
 
     public long ExperienceToNextLevel { get; set; } = 0;
 
+    public Alignment Faction { get; set; }
+
+    public WingState Wings { get; set; }
+
+    public int Honor { get; set; }
+
+    public int Grade { get; set; }
+
+    public DateTime LastFactionSwapAt { get; set; }
+
     IReadOnlyList<IFriendInstance> IPlayer.Friends => Friends;
 
     public List<IFriendInstance> Friends { get; set; } = [];

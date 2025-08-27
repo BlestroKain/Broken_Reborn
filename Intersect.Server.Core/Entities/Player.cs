@@ -92,6 +92,16 @@ public partial class Player : Entity
     [NotMapped]
     public bool SpellPointsChanged { get; set; }
 
+    public Alignment Faction { get; set; }
+
+    public WingState Wings { get; set; }
+
+    public int Honor { get; set; }
+
+    public int Grade { get; set; }
+
+    public DateTime LastFactionSwapAt { get; set; } = DateTime.UtcNow;
+
     [Column("Equipment"), JsonIgnore]
     public string EquipmentJson
     {

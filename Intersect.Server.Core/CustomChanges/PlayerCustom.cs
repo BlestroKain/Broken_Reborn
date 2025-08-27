@@ -18,6 +18,16 @@ namespace Intersect.Server.Entities
 {
     public partial class Player : Entity
     {
+        public Alignment Faction { get; set; }
+
+        public WingState Wings { get; set; }
+
+        public int Honor { get; set; }
+
+        public int Grade { get; set; }
+
+        public DateTime LastFactionSwapAt { get; set; }
+
         /// <summary>
         /// Calcula los puntos de experiencia modificados en función de la diferencia de niveles entre el jugador y el enemigo.
         /// </summary>

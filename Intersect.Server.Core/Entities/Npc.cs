@@ -1491,6 +1491,12 @@ public partial class Npc : Entity
 
     public bool ShouldAttackPlayerOnSight(Player en)
     {
+        // Outlaws are always attacked regardless of NPC faction
+        if (en.Honor < 0)
+        {
+            return true;
+        }
+
         if (IsAllyOf(en))
         {
             return false;
@@ -1498,8 +1504,8 @@ public partial class Npc : Entity
 
         if (Descriptor.Faction != Alignment.Neutral)
         {
-            if (en.Honor < 0 ||
-                (en.Faction != Alignment.Neutral && en.Faction != Descriptor.Faction))
+            // Guards only attack opposing faction players when their wings are enabled
+            if (en.Faction != Alignment.Neutral && en.Faction != Descriptor.Faction && en.Wings == WingState.On)
             {
                 return true;
             }

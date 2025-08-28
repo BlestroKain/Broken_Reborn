@@ -224,6 +224,8 @@ public partial record Options
 
     public ItemOptions Items { get; set; } = new();
 
+    public PrismOptions Prism { get; set; } = new();
+
     #endregion Other Game Properties
 
     #endregion Configuration Properties

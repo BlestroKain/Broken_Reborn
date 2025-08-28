@@ -3160,6 +3160,12 @@ public abstract partial class Entity : IEntity
         if (killer is Player attacker && this is Player victim)
         {
             attacker.HandlePlayerKill(victim);
+
+            // Penalize attacking much lower level players
+            if (Math.Abs(attacker.Level - victim.Level) > victim.Level * 0.3f)
+            {
+                attacker.AdjustHonor(-5);
+            }
         }
 
         if (dropItems)

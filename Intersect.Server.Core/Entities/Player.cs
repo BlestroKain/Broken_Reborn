@@ -103,7 +103,7 @@ public partial class Player : Entity
     public DateTime LastFactionSwapAt { get; set; } = DateTime.UtcNow;
 
     [NotMapped, JsonIgnore]
-    public Guid? LastPlayerVictimId { get; set; }
+    public ConcurrentDictionary<Guid, DateTime> RecentPlayerVictims { get; } = new();
 
     [Column("Equipment"), JsonIgnore]
     public string EquipmentJson
@@ -1693,6 +1693,7 @@ public partial class Player : Entity
         const int honorReward = 10;
         const int honorPenalty = 5;
         const int neutralPenalty = 10;
+        var rewardCooldown = TimeSpan.FromMinutes(5);
 
         // Penalize killing neutral players
         if (victim.Faction == Alignment.Neutral)
@@ -1701,20 +1702,28 @@ public partial class Player : Entity
             return;
         }
 
-        // Only award honor for opposing factions
+        // Penalize killing members of the same faction
         if (victim.Faction == Faction)
         {
             AdjustHonor(-honorPenalty);
             return;
         }
 
-        // Determine if levels are within ±30%
-        var fairFight = Math.Abs(Level - victim.Level) <= victim.Level * 0.3f;
+        var honorDelta = honorReward;
+        var now = DateTime.UtcNow;
 
-        var honorDelta = fairFight ? honorReward : -honorPenalty;
+        // Clean out expired victim entries
+        foreach (var entry in RecentPlayerVictims.ToArray())
+        {
+            if (now - entry.Value > rewardCooldown)
+            {
+                RecentPlayerVictims.TryRemove(entry.Key, out _);
+            }
+        }
 
         // Diminishing returns for killing the same player repeatedly
-        if (LastPlayerVictimId.HasValue && LastPlayerVictimId.Value == victim.Id && honorDelta > 0)
+        if (RecentPlayerVictims.TryGetValue(victim.Id, out var lastKill) &&
+            now - lastKill < rewardCooldown)
         {
             honorDelta /= 2;
         }
@@ -1722,7 +1731,18 @@ public partial class Player : Entity
         AdjustHonor(honorDelta);
         victim.AdjustHonor(-honorDelta);
 
-        LastPlayerVictimId = victim.Id;
+        RecentPlayerVictims[victim.Id] = now;
+
+        try
+        {
+            using var context = DbInterface.CreatePlayerContext(readOnly: false);
+            context.Player_KillLogs.Add(new KillLog(this, victim));
+            context.SaveChanges();
+        }
+        catch
+        {
+            // ignore logging failures
+        }
     }
 
     public void AdjustHonor(int amount)

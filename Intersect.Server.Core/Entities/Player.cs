@@ -26,6 +26,7 @@ using Intersect.GameObjects;
 using Intersect.Network;
 using Intersect.Network.Packets.Server;
 using Intersect.Server.Core.MapInstancing;
+using Intersect.Server.Core.Services;
 using Intersect.Server.Database;
 using Intersect.Server.Database.Logging.Entities;
 using Intersect.Server.Database.PlayerData;
@@ -1745,34 +1746,8 @@ public partial class Player : Entity
             return;
         }
 
-        Honor += amount;
-        if (Honor < 0)
-        {
-            Honor = 0;
-        }
-
-        RecalculateGrade();
-    }
-
-    private void RecalculateGrade()
-    {
-        // Example rank table; thresholds define the minimum honor for each grade
-        int[] thresholds = { 0, 1000, 2000, 4000, 8000 };
-
-        var newGrade = 0;
-        for (var i = 0; i < thresholds.Length; i++)
-        {
-            if (Honor >= thresholds[i])
-            {
-                newGrade = i;
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        Grade = newGrade;
+        Honor = HonorService.Clamp(Honor + amount);
+        Grade = HonorService.CalculateGrade(Honor);
     }
 
     public void UpdateQuestKillTasks(Entity en)

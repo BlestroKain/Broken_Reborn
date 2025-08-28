@@ -7,6 +7,7 @@ using Intersect.Framework.Core.GameObjects.Variables;
 using Intersect.Server.Database;
 using Intersect.Server.Entities;
 using Microsoft.EntityFrameworkCore;
+using Intersect.Server.Core.Services;
 
 namespace Intersect.Server.Core.Services;
 
@@ -41,7 +42,7 @@ internal static class HonorDecayService
             }
 
             var reduction = (int)Math.Round(player.Honor * fraction);
-            player.Honor -= reduction;
+            player.Honor = HonorService.Clamp(player.Honor - reduction);
         }
 
         await context.SaveChangesAsync().ConfigureAwait(false);
@@ -54,7 +55,7 @@ internal static class HonorDecayService
             }
 
             var reduction = (int)Math.Round(online.Honor * fraction);
-            online.Honor -= reduction;
+            online.Honor = HonorService.Clamp(online.Honor - reduction);
         }
 
         SetLastRun(now);

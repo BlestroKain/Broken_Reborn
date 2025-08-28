@@ -14,6 +14,7 @@ using Intersect.Server.Database.PlayerData.Players;
 using Intersect.Utilities;
 using Intersect.Server.Database.PlayerData.Api;
 using Intersect.Server.Core.MapInstancing;
+using Intersect.Server.Core.Services;
 
 namespace Intersect.Server.Core;
 
@@ -26,6 +27,7 @@ internal sealed partial class LogicService
     {
         private readonly LogicService _logicService;
         private long _nextClearExpiredTokens;
+        private long _nextHonorDecayCheck;
 
         /// <summary>
         /// We lock on this in order to stop maps from entering the update queue. This is only done when the editor is saving/modifying game maps or the map grids are being rebuilt.
@@ -103,6 +105,14 @@ internal sealed partial class LogicService
                             .ContinueWith(remainingCount => _nextClearExpiredTokens -= remainingCount.Result > 0 ? 60000 : 0, TaskContinuationOptions.RunContinuationsAsynchronously);
 #pragma warning restore CA2008 // Do not create tasks without passing a TaskScheduler
                         _nextClearExpiredTokens = startTime + 60000;
+                    }
+
+                    if (startTime > _nextHonorDecayCheck)
+                    {
+#pragma warning disable CA2008 // Do not create tasks without passing a TaskScheduler
+                        _ = HonorDecayService.TryRunAsync();
+#pragma warning restore CA2008 // Do not create tasks without passing a TaskScheduler
+                        _nextHonorDecayCheck = startTime + 3600000;
                     }
 
 

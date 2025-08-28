@@ -823,71 +823,7 @@ partial class frmSets
         lstItems.Size = new Size(231, 197);
         lstItems.TabIndex = 29;
         lstItems.SelectedIndexChanged += lstItems_SelectedIndexChanged;
-        // 
-        // grpAutoTiers
-        // 
-        grpAutoTiers.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
-        grpAutoTiers.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
-        grpAutoTiers.Controls.Add(cmbTierPattern);
-        grpAutoTiers.Controls.Add(chkDistributeFlat);
-        grpAutoTiers.Controls.Add(chkClearExisting);
-        grpAutoTiers.Controls.Add(btnAutoFillTiers);
-        grpAutoTiers.ForeColor = System.Drawing.Color.Gainsboro;
-        grpAutoTiers.Location = new System.Drawing.Point(244, 441);
-        grpAutoTiers.Margin = new Padding(4, 3, 4, 3);
-        grpAutoTiers.Name = "grpAutoTiers";
-        grpAutoTiers.Padding = new Padding(8, 6, 8, 8);
-        grpAutoTiers.Size = new Size(536, 86);
-        grpAutoTiers.TabIndex = 90;
-        grpAutoTiers.TabStop = false;
-        grpAutoTiers.Text = "Auto-fill Tiers";
-        // 
-        // cmbTierPattern
-        // 
-        cmbTierPattern.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
-        cmbTierPattern.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
-        cmbTierPattern.BorderStyle = ButtonBorderStyle.Solid;
-        cmbTierPattern.ButtonColor = System.Drawing.Color.FromArgb(43, 43, 43);
-        cmbTierPattern.DrawDropdownHoverOutline = false;
-        cmbTierPattern.DrawFocusRectangle = false;
-        cmbTierPattern.DrawMode = DrawMode.OwnerDrawFixed;
-        cmbTierPattern.DropDownStyle = ComboBoxStyle.DropDownList;
-        cmbTierPattern.FlatStyle = FlatStyle.Flat;
-        cmbTierPattern.ForeColor = System.Drawing.Color.Gainsboro;
-        cmbTierPattern.Items.AddRange(new object[] { "Balanceado (40/30/20/10)", "Adelantado (60/25/10/5)", "Atrasado (10/20/30/40)", "Parejo (igual por tier)" });
-        cmbTierPattern.Location = new System.Drawing.Point(12, 24);
-        cmbTierPattern.Name = "cmbTierPattern";
-        cmbTierPattern.Size = new Size(180, 24);
-        cmbTierPattern.TabIndex = 0;
-        cmbTierPattern.TextPadding = new Padding(2);
-        // 
-        // chkDistributeFlat
-        // 
-        chkDistributeFlat.Location = new System.Drawing.Point(210, 24);
-        chkDistributeFlat.Name = "chkDistributeFlat";
-        chkDistributeFlat.Size = new Size(150, 24);
-        chkDistributeFlat.TabIndex = 1;
-        chkDistributeFlat.Text = "Incluir valores planos";
-        // 
-        // chkClearExisting
-        // 
-        chkClearExisting.Checked = true;
-        chkClearExisting.CheckState = CheckState.Checked;
-        chkClearExisting.Location = new System.Drawing.Point(210, 50);
-        chkClearExisting.Name = "chkClearExisting";
-        chkClearExisting.Size = new Size(180, 24);
-        chkClearExisting.TabIndex = 2;
-        chkClearExisting.Text = "Limpiar tiers existentes";
-        // 
-        // btnAutoFillTiers
-        // 
-        btnAutoFillTiers.Location = new System.Drawing.Point(400, 26);
-        btnAutoFillTiers.Name = "btnAutoFillTiers";
-        btnAutoFillTiers.Padding = new Padding(6);
-        btnAutoFillTiers.Size = new Size(120, 28);
-        btnAutoFillTiers.TabIndex = 3;
-        btnAutoFillTiers.Text = "Autorrellenar";
-        btnAutoFillTiers.Click += btnAutoFillTiers_Click;
+     
         // 
         // lblTierCount
         // 
@@ -1423,7 +1359,6 @@ partial class frmSets
         ((System.ComponentModel.ISupportInitialize)nudAgi).EndInit();
         grpItemsSets.ResumeLayout(false);
         grpItemsSets.PerformLayout();
-        grpAutoTiers.ResumeLayout(false);
         grpGeneral.ResumeLayout(false);
         grpGeneral.PerformLayout();
         grpVitalBonuses.ResumeLayout(false);

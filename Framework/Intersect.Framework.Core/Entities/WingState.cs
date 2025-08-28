@@ -2,7 +2,7 @@ namespace Intersect.Enums;
 
 public enum WingState
 {
-    None = 0,
+    Off = 0,
 
-    Enabled,
+    On,
 }

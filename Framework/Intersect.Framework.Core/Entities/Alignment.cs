@@ -4,7 +4,7 @@ public enum Alignment
 {
     Neutral = 0,
 
-    Faction1,
+    Serolf,
 
-    Faction2,
+    Nidraj,
 }

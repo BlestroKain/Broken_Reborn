@@ -248,7 +248,7 @@ public partial class MenuContainer : Panel
                 return;
             }
 
-            var newState = Globals.Me.Wings == WingState.Enabled ? WingState.None : WingState.Enabled;
+            var newState = Globals.Me.Wings == WingState.On ? WingState.Off : WingState.On;
             Globals.Me.Wings = newState;
             PacketSender.SendToggleWings(newState);
         };

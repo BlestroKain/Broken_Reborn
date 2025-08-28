@@ -41,6 +41,45 @@ public static class HonorService
         return 0;
     }
 
+    public static int DecayTowardsZero(int honor, double percent)
+    {
+        if (honor == 0 || percent <= 0)
+        {
+            return honor;
+        }
+
+        if (percent >= 100)
+        {
+            return DecayTowardsZero(honor);
+        }
+
+        var abs = Math.Abs(honor);
+        var decay = 0;
+        foreach (var bracket in Brackets)
+        {
+            var minAbs = Math.Abs(bracket.Min);
+            var maxAbs = Math.Abs(bracket.Max);
+            if (abs >= minAbs && abs <= maxAbs)
+            {
+                decay = bracket.Decay;
+                break;
+            }
+        }
+
+        decay = (int)Math.Round(decay * (percent / 100.0));
+
+        if (honor > 0)
+        {
+            honor = Math.Max(0, honor - decay);
+        }
+        else
+        {
+            honor = Math.Min(0, honor + decay);
+        }
+
+        return honor;
+    }
+
     public static int DecayTowardsZero(int honor)
     {
         if (honor == 0)

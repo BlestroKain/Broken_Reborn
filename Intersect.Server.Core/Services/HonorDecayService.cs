@@ -33,7 +33,6 @@ internal static class HonorDecayService
 
         using var context = DbInterface.CreatePlayerContext(readOnly: false);
         var players = await context.Players.ToListAsync().ConfigureAwait(false);
-        var fraction = decayPercent / 100.0;
         foreach (var player in players)
         {
             if (player.Honor == 0)
@@ -41,8 +40,8 @@ internal static class HonorDecayService
                 continue;
             }
 
-            var reduction = (int)Math.Round(player.Honor * fraction);
-            player.Honor = HonorService.Clamp(player.Honor - reduction);
+            player.Honor = HonorService.DecayTowardsZero(player.Honor, decayPercent);
+            player.Grade = HonorService.CalculateGrade(player.Honor);
         }
 
         await context.SaveChangesAsync().ConfigureAwait(false);
@@ -54,8 +53,8 @@ internal static class HonorDecayService
                 continue;
             }
 
-            var reduction = (int)Math.Round(online.Honor * fraction);
-            online.Honor = HonorService.Clamp(online.Honor - reduction);
+            online.Honor = HonorService.DecayTowardsZero(online.Honor, decayPercent);
+            online.Grade = HonorService.CalculateGrade(online.Honor);
         }
 
         SetLastRun(now);

@@ -11,26 +11,37 @@ public partial class Player
     /// <summary>
     /// Invoked when the player places a prism.
     /// </summary>
-    public event Action<Player, PrismDescriptor>? PrismPlaced;
+    public event Action<Player, AlignmentPrism>? PrismPlaced;
 
     /// <summary>
     /// Invoked when the player attacks a prism.
     /// </summary>
-    public event Action<Player, PrismDescriptor>? PrismAttacked;
+    public event Action<Player, AlignmentPrism>? PrismAttacked;
 
     /// <summary>
     /// Places a new prism and notifies listeners.
     /// </summary>
     public void PlacePrism()
     {
-        var prism = new PrismDescriptor { OwnerId = Id, State = PrismState.Placed };
+        var prism = new AlignmentPrism
+        {
+            Id = Guid.NewGuid(),
+            Owner = Faction,
+            State = PrismState.Placed,
+            PlacedAt = DateTime.UtcNow,
+            MapId = this.MapId,
+            Level = 1,
+            MaxHp = 1,
+            Hp = 1,
+        };
+
         PrismPlaced?.Invoke(this, prism);
     }
 
     /// <summary>
     /// Notifies that the player attacked a prism. Additional honor is awarded.
     /// </summary>
-    public void AttackPrism(PrismDescriptor prism)
+    public void AttackPrism(AlignmentPrism prism)
     {
         prism.State = PrismState.UnderAttack;
         PrismAttacked?.Invoke(this, prism);

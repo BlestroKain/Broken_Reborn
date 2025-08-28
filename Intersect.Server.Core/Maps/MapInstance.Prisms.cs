@@ -13,7 +13,7 @@ public partial class MapInstance
     /// <summary>
     /// Prism currently controlling this map instance, if any.
     /// </summary>
-    public PrismDescriptor? ControllingPrism { get; private set; }
+    public AlignmentPrism? ControllingPrism { get; private set; }
 
     /// <summary>
     /// True if the controlling prism is under attack.
@@ -30,7 +30,18 @@ public partial class MapInstance
     /// </summary>
     public void PlacePrism(Player player)
     {
-        ControllingPrism = new PrismDescriptor { OwnerId = player.Id, State = PrismState.Placed };
+        ControllingPrism = new AlignmentPrism
+        {
+            Id = Guid.NewGuid(),
+            Owner = player.Faction,
+            State = PrismState.Placed,
+            MapId = MapInstanceId,
+            PlacedAt = DateTime.UtcNow,
+            Level = 1,
+            MaxHp = 1,
+            Hp = 1,
+        };
+
         player.Honor += 10; // bonus honor for placing a prism
     }
 
@@ -39,7 +50,7 @@ public partial class MapInstance
     /// </summary>
     public void ApplyPrismBonus(Player player)
     {
-        if (ControllingPrism != null && ControllingPrism.OwnerId == player.Id)
+        if (ControllingPrism != null && ControllingPrism.Owner == player.Faction)
         {
             if (ControllingPrism.State == PrismState.UnderAttack)
             {

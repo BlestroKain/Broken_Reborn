@@ -5,6 +5,8 @@ using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.General;
+using Intersect.Client.Networking;
+using Intersect.Enums;
 
 namespace Intersect.Client.Interface.Game;
 
@@ -15,7 +17,7 @@ public partial class FactionWindow : Window
 {
     private readonly Label _honorLabel;
     private readonly Label _gradeLabel;
-    private readonly Label _rankingLabel;
+    private readonly Button _wingsButton;
 
     public FactionWindow(Canvas gameCanvas) : base(gameCanvas, nameof(FactionWindow), false, nameof(FactionWindow))
     {
@@ -28,8 +30,21 @@ public partial class FactionWindow : Window
         _gradeLabel = new Label(this, "GradeLabel");
         _gradeLabel.SetPosition(10, 40);
 
-        _rankingLabel = new Label(this, "RankingLabel");
-        _rankingLabel.SetPosition(10, 70);
+        _wingsButton = new Button(this, "WingsButton");
+        _wingsButton.SetPosition(10, 70);
+        _wingsButton.SetText("Toggle Wings");
+        _wingsButton.Clicked += (s, e) =>
+        {
+            var me = Globals.Me;
+            if (me == null)
+            {
+                return;
+            }
+
+            var newState = me.Wings == WingState.On ? WingState.Off : WingState.On;
+            me.Wings = newState;
+            PacketSender.SendToggleWings(newState);
+        };
     }
 
     /// <summary>
@@ -44,12 +59,8 @@ public partial class FactionWindow : Window
         }
 
         _honorLabel.Text = $"Honor: {me.Honor}";
-        _gradeLabel.Text = $"Grade: {me.Grade}";
-
-        // Ranking name derived from grade; this is a simple placeholder mapping.
-        string[] rankNames = { "Recruit", "Soldier", "Officer", "Commander", "Legend" };
-        var rankIndex = Math.Clamp(me.Grade, 0, rankNames.Length - 1);
-        _rankingLabel.Text = $"Ranking: {rankNames[rankIndex]}";
+        var grade = (FactionGrade)Math.Clamp(me.Grade, 0, (int)FactionGrade.Legend);
+        _gradeLabel.Text = $"Grade: {grade}";
     }
 }
 

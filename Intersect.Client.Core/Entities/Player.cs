@@ -2782,21 +2782,19 @@ public partial class Player : Entity, IPlayer
             DrawEquipment($"aura_{Grade}.png", Color.White);
         }
 
-        if (Wings == WingState.On)
+        if (Wings is WingState.On)
         {
             DrawEquipment(GetWingTexture(), Color.White);
         }
     }
 
-    private string GetWingTexture()
-    {
-        return Faction switch
+    private string GetWingTexture() =>
+        Faction switch
         {
             Alignment.Serolf => "wings_serolf.png",
             Alignment.Nidraj => "wings_nidraj.png",
             _ => "wings.png",
         };
-    }
 
     public override void DrawEquipment(string filename, Color renderColor)
     {
@@ -2877,15 +2875,12 @@ public partial class Player : Entity, IPlayer
             }
         }
 
-        switch (Faction)
+        textColor = Faction switch
         {
-            case Alignment.Serolf:
-                textColor = Color.Blue;
-                break;
-            case Alignment.Nidraj:
-                textColor = Color.Red;
-                break;
-        }
+            Alignment.Serolf => Color.Blue,
+            Alignment.Nidraj => Color.Red,
+            _ => textColor,
+        };
 
         if (borderColor is not { A: > 0 })
         {

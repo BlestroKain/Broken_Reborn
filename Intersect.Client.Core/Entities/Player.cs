@@ -64,6 +64,16 @@ public partial class Player : Entity, IPlayer
 
     public long ExperienceToNextLevel { get; set; } = 0;
 
+    public Alignment Faction { get; set; }
+
+    public WingState Wings { get; set; }
+
+    public int Honor { get; set; }
+
+    public int Grade { get; set; }
+
+    public DateTime LastFactionSwapAt { get; set; }
+
     IReadOnlyList<IFriendInstance> IPlayer.Friends => Friends;
 
     public List<IFriendInstance> Friends { get; set; } = [];
@@ -430,6 +440,11 @@ public partial class Player : Entity, IPlayer
                 Interface.Interface.EnqueueInGame(ui => ui.SpellsWindow?.Refresh());
             }
         }
+
+        Faction = playerPacket.Faction;
+        Wings = playerPacket.Wings;
+        Honor = playerPacket.Honor;
+        Grade = playerPacket.Grade;
 
         if (this == Globals.Me && TargetBox == null && Interface.Interface.HasInGameUI)
         {
@@ -2758,6 +2773,31 @@ public partial class Player : Entity, IPlayer
         PacketSender.SendNeedMapForGrid();
     }
 
+    public override void Draw()
+    {
+        base.Draw();
+
+        if (Grade > 0)
+        {
+            DrawEquipment($"aura_{Grade}.png", Color.White);
+        }
+
+        if (Wings == WingState.Enabled)
+        {
+            DrawEquipment(GetWingTexture(), Color.White);
+        }
+    }
+
+    private string GetWingTexture()
+    {
+        return Faction switch
+        {
+            Alignment.Faction1 => "wings_faction1.png",
+            Alignment.Faction2 => "wings_faction2.png",
+            _ => "wings.png",
+        };
+    }
+
     public override void DrawEquipment(string filename, Color renderColor)
     {
         //check if player is stunned or snared, if so don't let them move.
@@ -2835,6 +2875,16 @@ public partial class Player : Entity, IPlayer
                 borderColor = hostileColors.Outline;
                 backgroundColor = hostileColors.Background;
             }
+        }
+
+        switch (Faction)
+        {
+            case Alignment.Faction1:
+                textColor = Color.Red;
+                break;
+            case Alignment.Faction2:
+                textColor = Color.Blue;
+                break;
         }
 
         if (borderColor is not { A: > 0 })

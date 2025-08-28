@@ -2834,6 +2834,12 @@ internal sealed partial class PacketHandler
                     // Are we already in a guild? or have a pending invite?
                     if (target.Guild == null && target.PendingGuildInvite == default)
                     {
+                        if (target.Faction != Alignment.Neutral && target.Faction != player.Faction)
+                        {
+                            PacketSender.SendChatMsg(player, Strings.Guilds.InviteDifferentFaction, ChatMessageType.Guild, CustomColors.Alerts.Error);
+                            return;
+                        }
+
                         // Thank god, we can FINALLY get started!
                         // Set our invite and send our players the relevant messages.
                         target.PendingGuildInvite = new GuildInvite
@@ -3036,6 +3042,20 @@ internal sealed partial class PacketHandler
 
                 return;
             }
+        }
+
+        var guildFaction = inviter?.Faction ?? guild.GetFaction();
+        if (player.Faction != Alignment.Neutral && player.Faction != guildFaction)
+        {
+            PacketSender.SendChatMsg(player, Strings.Guilds.DifferentFaction, ChatMessageType.Guild, CustomColors.Alerts.Error);
+            player.PendingGuildInvite = default;
+            player.Save();
+            return;
+        }
+
+        if (player.Faction == Alignment.Neutral)
+        {
+            player.SetFaction(guildFaction);
         }
 
         // Accept our invite!

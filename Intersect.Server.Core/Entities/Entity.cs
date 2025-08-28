@@ -3156,6 +3156,18 @@ public abstract partial class Entity : IEntity
         // Run events and other things.
         killer?.KilledEntity(this);
 
+        // Honor and faction handling for PvP kills
+        if (killer is Player attacker && this is Player victim)
+        {
+            attacker.HandlePlayerKill(victim);
+
+            // Penalize attacking much lower level players
+            if (Math.Abs(attacker.Level - victim.Level) > victim.Level * 0.3f)
+            {
+                attacker.AdjustHonor(-5);
+            }
+        }
+
         if (dropItems)
         {
             var lootGenerated = new List<Player>();

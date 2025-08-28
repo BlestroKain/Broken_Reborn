@@ -32,7 +32,17 @@ public partial class Player
     /// </summary>
     public void AttackPrism(PrismDescriptor prism)
     {
+        prism.State = PrismState.UnderAttack;
         PrismAttacked?.Invoke(this, prism);
         Honor += 5; // bonus honor for participating in prism combat
+    }
+
+    /// <summary>
+    /// Marks a prism as dominated after a successful defense.
+    /// </summary>
+    public void DominatePrism(PrismDescriptor prism)
+    {
+        prism.State = PrismState.Dominated;
+        Honor += 10; // extra honor for dominating a prism
     }
 }

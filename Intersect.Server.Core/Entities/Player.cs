@@ -26,6 +26,7 @@ using Intersect.GameObjects;
 using Intersect.Network;
 using Intersect.Network.Packets.Server;
 using Intersect.Server.Core.MapInstancing;
+using Intersect.Server.Core.Services;
 using Intersect.Server.Database;
 using Intersect.Server.Database.Logging.Entities;
 using Intersect.Server.Database.PlayerData;
@@ -1679,10 +1680,12 @@ public partial class Player : Entity
 
     public void HandlePlayerKill(Player victim)
     {
+
         AlignmentPvPService.HandleKill(this, victim);
     }
 
     public void AdjustHonor(int amount) => HonorService.AdjustHonor(this, amount);
+
 
     public void UpdateQuestKillTasks(Entity en)
     {

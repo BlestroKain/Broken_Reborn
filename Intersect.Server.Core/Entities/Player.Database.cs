@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using Intersect.Server.Collections.Indexing;
 using Intersect.Server.Collections.Sorting;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 
 namespace Intersect.Server.Entities;
 
@@ -503,6 +504,27 @@ public partial class Player
         }
     }
 
+    public static IEnumerable<Player> RankByHonor(
+        int page,
+        int count
+    )
+    {
+        try
+        {
+            using (var context = DbInterface.CreatePlayerContext())
+            {
+                var results = QueryPlayersByHonor(context, page * count, count);
+
+                return results?.ToList();
+            }
+        }
+        catch (Exception exception)
+        {
+            ApplicationContext.Context.Value?.Logger.LogError(exception, "Error ranking players by honor");
+            return null;
+        }
+    }
+
     #endregion
 
     #region Compiled Queries
@@ -544,6 +566,17 @@ public partial class Player
              .Include(p => p.MailBoxs)
                .ThenInclude(m => m.SenderPlayer)
                 .AsSplitQuery()
+        ) ??
+        throw new InvalidOperationException();
+
+    private static readonly Func<PlayerContext, int, int, IEnumerable<Player>> QueryPlayersByHonor =
+        EF.CompileQuery(
+            (PlayerContext context, int offset, int count) => context.Players
+                .OrderByDescending(p => p.Honor)
+                .ThenByDescending(p => p.Level)
+                .Skip(offset)
+                .Take(count)
+                .Include(p => p.Guild)
         ) ??
         throw new InvalidOperationException();
 

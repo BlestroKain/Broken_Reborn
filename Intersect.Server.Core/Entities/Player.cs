@@ -43,6 +43,7 @@ using Newtonsoft.Json;
 using Stat = Intersect.Enums.Stat;
 using Intersect.Framework.Core.GameObjects.Guild;
 using System.Linq;
+using Intersect.Server.Services;
 
 namespace Intersect.Server.Entities;
 
@@ -1678,102 +1679,10 @@ public partial class Player : Entity
 
     public void HandlePlayerKill(Player victim)
     {
-        if (victim == null || victim == this)
-        {
-            return;
-        }
-
-        const int honorReward = 10;
-        const int honorPenalty = 5;
-        const int neutralPenalty = 10;
-        var rewardCooldown = TimeSpan.FromMinutes(5);
-
-        // Penalize killing neutral players
-        if (victim.Faction == Alignment.Neutral)
-        {
-            AdjustHonor(-neutralPenalty);
-            return;
-        }
-
-        // Penalize killing members of the same faction
-        if (victim.Faction == Faction)
-        {
-            AdjustHonor(-honorPenalty);
-            return;
-        }
-
-        var honorDelta = honorReward;
-        var now = DateTime.UtcNow;
-
-        // Clean out expired victim entries
-        foreach (var entry in RecentPlayerVictims.ToArray())
-        {
-            if (now - entry.Value > rewardCooldown)
-            {
-                RecentPlayerVictims.TryRemove(entry.Key, out _);
-            }
-        }
-
-        // Diminishing returns for killing the same player repeatedly
-        if (RecentPlayerVictims.TryGetValue(victim.Id, out var lastKill) &&
-            now - lastKill < rewardCooldown)
-        {
-            honorDelta /= 2;
-        }
-
-        AdjustHonor(honorDelta);
-        victim.AdjustHonor(-honorDelta);
-
-        RecentPlayerVictims[victim.Id] = now;
-
-        try
-        {
-            using var context = DbInterface.CreatePlayerContext(readOnly: false);
-            context.Player_KillLogs.Add(new KillLog(this, victim));
-            context.SaveChanges();
-        }
-        catch
-        {
-            // ignore logging failures
-        }
+        AlignmentPvPService.HandleKill(this, victim);
     }
 
-    public void AdjustHonor(int amount)
-    {
-        if (amount == 0)
-        {
-            return;
-        }
-
-        Honor += amount;
-        if (Honor < 0)
-        {
-            Honor = 0;
-        }
-
-        RecalculateGrade();
-    }
-
-    private void RecalculateGrade()
-    {
-        // Example rank table; thresholds define the minimum honor for each grade
-        int[] thresholds = { 0, 1000, 2000, 4000, 8000 };
-
-        var newGrade = 0;
-        for (var i = 0; i < thresholds.Length; i++)
-        {
-            if (Honor >= thresholds[i])
-            {
-                newGrade = i;
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        Grade = newGrade;
-    }
+    public void AdjustHonor(int amount) => HonorService.AdjustHonor(this, amount);
 
     public void UpdateQuestKillTasks(Entity en)
     {

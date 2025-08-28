@@ -27,6 +27,7 @@ using Intersect.Utilities;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Stat = Intersect.Enums.Stat;
+using Intersect.Server.Services;
 
 namespace Intersect.Server.Entities;
 
@@ -3156,16 +3157,9 @@ public abstract partial class Entity : IEntity
         // Run events and other things.
         killer?.KilledEntity(this);
 
-        // Honor and faction handling for PvP kills
         if (killer is Player attacker && this is Player victim)
         {
-            attacker.HandlePlayerKill(victim);
-
-            // Penalize attacking much lower level players
-            if (Math.Abs(attacker.Level - victim.Level) > victim.Level * 0.3f)
-            {
-                attacker.AdjustHonor(-5);
-            }
+            AlignmentPvPService.HandleKill(attacker, victim);
         }
 
         if (dropItems)

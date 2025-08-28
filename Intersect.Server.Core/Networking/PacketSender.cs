@@ -14,6 +14,7 @@ using Intersect.Framework.Core.GameObjects.Maps.MapList;
 using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.GameObjects.Resources;
+using Intersect.Framework.Core.GameObjects.Prisms;
 using Intersect.Framework.Core.GameObjects.Variables;
 using Intersect.Framework.Core.Network.Packets.Security;
 using Intersect.Framework.Core.Security;
@@ -180,6 +181,24 @@ public static partial class PacketSender
         var surroundingMapIds = surroundingMaps.Select(map => map.Id).ToArray();
         MapAreaIdsPacket mapAreaIdsPacket = new(surroundingMapIds);
         player.SendPacket(mapAreaIdsPacket);
+
+        var prisms = new List<PrismUpdatePacket>();
+        foreach (var map in surroundingMaps)
+        {
+            if (map.TryGetInstance(player.MapInstanceId, out var instance))
+            {
+                var prism = instance.ControllingPrism;
+                if (prism != null)
+                {
+                    prisms.Add(new PrismUpdatePacket(prism.MapId, prism.Owner, prism.State));
+                }
+            }
+        }
+
+        if (prisms.Count > 0)
+        {
+            player.SendPacket(new PrismListPacket(prisms.ToArray()));
+        }
     }
 
     public static MapPacket GenerateMapPacket(Client client, Guid mapId)

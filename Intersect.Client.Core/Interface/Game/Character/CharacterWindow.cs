@@ -8,6 +8,7 @@ using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
 using Intersect.Client.General;
 using Intersect.Client.Interface.Game.Breaking;
+using Intersect.Client.Interface;
 using Intersect.Client.Localization;
 using Intersect.Client.Networking;
 using Intersect.Enums;
@@ -34,6 +35,7 @@ public partial class CharacterWindow:Window
     Button mAddMagicResistBtn;
 
     Button mAddAgilityBtn;
+    Button mFactionButton;
 
     //Stats
     Label mAttackLabel;
@@ -122,6 +124,14 @@ public partial class CharacterWindow:Window
 
         mCharacterLevelAndClass = new Label(this, "ChatacterInfoLabel");
         mCharacterLevelAndClass.SetPosition(16, 40);
+
+        mFactionButton = new Button(this, "FactionInfoButton");
+        mFactionButton.SetSize(32, 32);
+        mFactionButton.SetPosition(470, 16);
+        mFactionButton.SetStateTexture(ComponentState.Normal, "factionicon.png");
+        mFactionButton.SetStateTexture(ComponentState.Hovered, "factionicon_hovered.png");
+        mFactionButton.SetToolTipText("Faction");
+        mFactionButton.Clicked += (s, e) => Interface.GameUi.GameMenu?.ToggleFactionWindow();
 
         // 🖼️ Contenedor y retrato
         mCharacterContainer = new ImagePanel(this, "CharacterContainer");

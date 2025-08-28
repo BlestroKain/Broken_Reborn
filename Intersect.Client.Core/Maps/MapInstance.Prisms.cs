@@ -17,4 +17,14 @@ public partial class MapInstance
     /// State of the controlling prism.
     /// </summary>
     public PrismState PrismState { get; set; } = PrismState.Placed;
+
+    /// <summary>
+    /// True if the prism is currently under attack.
+    /// </summary>
+    public bool PrismUnderAttack => PrismState == PrismState.UnderAttack;
+
+    /// <summary>
+    /// True if the prism has been dominated.
+    /// </summary>
+    public bool PrismDominated => PrismState == PrismState.Dominated;
 }

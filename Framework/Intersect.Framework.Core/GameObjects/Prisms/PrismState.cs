@@ -18,9 +18,14 @@ public enum PrismState
     Vulnerable,
 
     /// <summary>
-    /// The prism has been reinforced after surviving attacks.
+    /// The prism is currently under attack.
     /// </summary>
-    Reinforced,
+    UnderAttack,
+
+    /// <summary>
+    /// The prism has been dominated after surviving attacks.
+    /// </summary>
+    Dominated,
 
     /// <summary>
     /// The prism has been destroyed.

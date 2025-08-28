@@ -16,6 +16,16 @@ public partial class MapInstance
     public PrismDescriptor? ControllingPrism { get; private set; }
 
     /// <summary>
+    /// True if the controlling prism is under attack.
+    /// </summary>
+    public bool PrismUnderAttack => ControllingPrism?.State == PrismState.UnderAttack;
+
+    /// <summary>
+    /// True if the controlling prism is dominated.
+    /// </summary>
+    public bool PrismDominated => ControllingPrism?.State == PrismState.Dominated;
+
+    /// <summary>
     /// Places a prism on this map instance.
     /// </summary>
     public void PlacePrism(Player player)
@@ -31,8 +41,13 @@ public partial class MapInstance
     {
         if (ControllingPrism != null && ControllingPrism.OwnerId == player.Id)
         {
-            // simple honor tick to show the bonus mechanism
-            player.Honor += 1;
+            if (ControllingPrism.State == PrismState.UnderAttack)
+            {
+                return; // no bonus while the prism is contested
+            }
+
+            var bonus = ControllingPrism.State == PrismState.Dominated ? 2 : 1;
+            player.Honor += bonus;
         }
     }
 }

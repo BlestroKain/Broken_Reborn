@@ -21,6 +21,7 @@ using static Intersect.Server.Database.Logging.Entities.GuildHistory;
 using Intersect.Server.Collections.Sorting;
 using Microsoft.Extensions.Logging;
 using Intersect.Framework.Core.GameObjects.Guild;
+using System.Linq;
 
 namespace Intersect.Server.Database.PlayerData.Players;
 
@@ -997,6 +998,36 @@ public partial class Guild
         catch (Exception exception)
         {
             ApplicationContext.Context.Value?.Logger.LogError(exception, "Failed to list guilds");
+            total = 0;
+            return null;
+        }
+    }
+
+    public static IList<KeyValuePair<Guild, int>> TopByHonor(int skip, int take, out int total)
+    {
+        try
+        {
+            using var context = DbInterface.CreatePlayerContext();
+
+            var query = context.Guilds
+                .Select(g => new
+                {
+                    Guild = g,
+                    Honor = context.Players.Where(p => p.Guild.Id == g.Id).Sum(p => p.Honor),
+                })
+                .OrderByDescending(g => g.Honor);
+
+            total = query.Count();
+
+            return query
+                .Skip(skip)
+                .Take(take)
+                .Select(g => new KeyValuePair<Guild, int>(g.Guild, g.Honor))
+                .ToList();
+        }
+        catch (Exception exception)
+        {
+            ApplicationContext.Context.Value?.Logger.LogError(exception, "Failed to list guilds by honor");
             total = 0;
             return null;
         }

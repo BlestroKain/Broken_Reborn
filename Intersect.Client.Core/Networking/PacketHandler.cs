@@ -2469,4 +2469,31 @@ internal sealed partial class PacketHandler
         }
     }
 
+    //PrismListPacket
+    public void HandlePacket(IPacketSender packetSender, PrismListPacket packet)
+    {
+        foreach (var prism in packet.Prisms)
+        {
+            HandlePrism(prism);
+        }
+    }
+
+    //PrismUpdatePacket
+    public void HandlePacket(IPacketSender packetSender, PrismUpdatePacket packet)
+    {
+        HandlePrism(packet);
+    }
+
+    private static void HandlePrism(PrismUpdatePacket packet)
+    {
+        var map = MapInstance.Get(packet.MapId);
+        if (map == null)
+        {
+            return;
+        }
+
+        map.PrismOwner = packet.Owner;
+        map.PrismState = packet.State;
+    }
+
 }

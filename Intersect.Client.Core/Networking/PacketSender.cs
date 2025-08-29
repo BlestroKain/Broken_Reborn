@@ -143,6 +143,11 @@ public static partial class PacketSender
         Network.SendPacket(new ToggleWingsPacket(state));
     }
 
+    public static void SendPrismAttack(Guid mapId)
+    {
+        Network.SendPacket(new PrismAttackPacket(mapId));
+    }
+
     public static void SendActivateEvent(Guid eventId)
     {
         Network.SendPacket(new ActivateEventPacket(eventId));

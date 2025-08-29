@@ -459,6 +459,18 @@
     <Compile Update="Forms\Editors\frmNpc.Designer.cs">
       <DependentUpon>frmNpc.cs</DependentUpon>
     </Compile>
+    <Compile Update="Forms\Editors\frmPrismOptions.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\Editors\frmPrismOptions.Designer.cs">
+      <DependentUpon>frmPrismOptions.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Forms\Editors\frmPrisms.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\Editors\frmPrisms.Designer.cs">
+      <DependentUpon>frmPrisms.cs</DependentUpon>
+    </Compile>
     <Compile Update="Forms\Editors\frmProjectile.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -587,6 +599,12 @@
     </EmbeddedResource>
     <EmbeddedResource Update="Forms\Editors\frmNpc.resx">
       <DependentUpon>frmNpc.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Forms\Editors\frmPrismOptions.resx">
+      <DependentUpon>frmPrismOptions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Forms\Editors\frmPrisms.resx">
+      <DependentUpon>frmPrisms.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Update="Forms\Editors\frmProjectile.resx">
       <DependentUpon>frmProjectile.cs</DependentUpon>

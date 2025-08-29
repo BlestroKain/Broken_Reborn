@@ -269,6 +269,9 @@ public partial record Options
 
         SaveToDisk();
 
+        // Load prism configuration after ensuring the resources directory exists
+        PrismConfig.Load();
+
         return true;
     }
 
@@ -318,6 +321,9 @@ public partial record Options
             var loadedOptions = JsonConvert.DeserializeObject<Options>(data, PublicSerializerSettings);
             Instance = loadedOptions;
             OptionsLoaded?.Invoke(loadedOptions);
+
+            // Ensure prism definitions are loaded locally
+            PrismConfig.Load();
         }
         catch (Exception exception)
         {

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Drawing;
 using System.Windows.Forms;
 using Intersect.Config;
 using Intersect.Framework.Core.GameObjects.Prisms;
@@ -12,6 +13,11 @@ public partial class FrmPrisms : Form
     {
         InitializeComponent();
         Icon = Program.Icon;
+        areaEditor.AreaChanged += AreaEditor_AreaChanged;
+        nudAreaX.ValueChanged += NudArea_ValueChanged;
+        nudAreaY.ValueChanged += NudArea_ValueChanged;
+        nudAreaW.ValueChanged += NudArea_ValueChanged;
+        nudAreaH.ValueChanged += NudArea_ValueChanged;
         LoadList();
     }
 
@@ -43,12 +49,29 @@ public partial class FrmPrisms : Form
         nudX.Value = p.X;
         nudY.Value = p.Y;
         nudLevel.Value = p.Level;
-        txtWindows.Lines = p.Windows.Select(w => $"{w.Day}|{w.Start:hh\\:mm}|{w.End:hh\\:mm}").ToArray();
-        txtModules.Lines = p.Modules.Select(m => m.Name).ToArray();
+
+        dgvWindows.Rows.Clear();
+        foreach (var w in p.Windows)
+        {
+            var duration = w.End - w.Start;
+            if (duration < TimeSpan.Zero)
+            {
+                duration += TimeSpan.FromDays(1);
+            }
+            dgvWindows.Rows.Add(w.Day, w.Start.ToString(@"hh\:mm"), duration.ToString(@"hh\:mm"));
+        }
+
+        dgvModules.Rows.Clear();
+        foreach (var m in p.Modules)
+        {
+            dgvModules.Rows.Add(m.Type, m.Level);
+        }
+
         nudAreaX.Value = p.Area.X;
         nudAreaY.Value = p.Area.Y;
         nudAreaW.Value = p.Area.Width;
         nudAreaH.Value = p.Area.Height;
+        areaEditor.Area = new Rectangle(p.Area.X, p.Area.Y, p.Area.Width, p.Area.Height);
     }
 
     private void btnAdd_Click(object sender, EventArgs e)
@@ -85,20 +108,40 @@ public partial class FrmPrisms : Form
             p.Y = (int)nudY.Value;
             p.Level = (int)nudLevel.Value;
 
-            p.Windows = txtWindows.Lines
-                .Select(line => line.Split('|'))
-                .Where(parts => parts.Length == 3 && Enum.TryParse(parts[0], true, out DayOfWeek _))
-                .Select(parts => new VulnerabilityWindow
+            p.Windows = dgvWindows.Rows
+                .Cast<DataGridViewRow>()
+                .Where(r => !r.IsNewRow)
+                .Select(r =>
                 {
-                    Day = Enum.Parse<DayOfWeek>(parts[0], true),
-                    Start = TimeSpan.TryParse(parts[1], out var s) ? s : TimeSpan.Zero,
-                    End = TimeSpan.TryParse(parts[2], out var e) ? e : TimeSpan.Zero
+                    var start = TimeSpan.TryParse(r.Cells["colStart"].Value?.ToString(), out var s)
+                        ? s
+                        : TimeSpan.Zero;
+                    var duration = TimeSpan.TryParse(r.Cells["colDuration"].Value?.ToString(), out var d)
+                        ? d
+                        : TimeSpan.Zero;
+                    var end = start + duration;
+                    if (end.TotalHours >= 24)
+                    {
+                        end -= TimeSpan.FromDays(1);
+                    }
+
+                    return new VulnerabilityWindow
+                    {
+                        Day = r.Cells["colDay"].Value is DayOfWeek day ? day : DayOfWeek.Monday,
+                        Start = start,
+                        End = end
+                    };
                 })
                 .ToList();
 
-            p.Modules = txtModules.Lines
-                .Where(l => !string.IsNullOrWhiteSpace(l))
-                .Select(l => new PrismModule { Name = l.Trim() })
+            p.Modules = dgvModules.Rows
+                .Cast<DataGridViewRow>()
+                .Where(r => !r.IsNewRow)
+                .Select(r => new PrismModule
+                {
+                    Type = r.Cells["colType"].Value is PrismModuleType t ? t : PrismModuleType.Vision,
+                    Level = int.TryParse(r.Cells["colLevel"].Value?.ToString(), out var lvl) ? lvl : 1
+                })
                 .ToList();
 
             p.Area = new PrismArea
@@ -112,5 +155,63 @@ public partial class FrmPrisms : Form
 
         PrismConfig.Save();
         LoadList();
+    }
+
+    private void btnWindowAdd_Click(object sender, EventArgs e)
+    {
+        dgvWindows.Rows.Add(DayOfWeek.Monday, "00:00", "01:00");
+    }
+
+    private void btnWindowEdit_Click(object sender, EventArgs e)
+    {
+        if (dgvWindows.CurrentCell != null)
+        {
+            dgvWindows.BeginEdit(true);
+        }
+    }
+
+    private void btnWindowDelete_Click(object sender, EventArgs e)
+    {
+        foreach (DataGridViewRow row in dgvWindows.SelectedRows)
+        {
+            if (!row.IsNewRow)
+            {
+                dgvWindows.Rows.Remove(row);
+            }
+        }
+    }
+
+    private void btnModuleAdd_Click(object sender, EventArgs e)
+    {
+        dgvModules.Rows.Add(PrismModuleType.Vision, 1);
+    }
+
+    private void btnModuleDelete_Click(object sender, EventArgs e)
+    {
+        foreach (DataGridViewRow row in dgvModules.SelectedRows)
+        {
+            if (!row.IsNewRow)
+            {
+                dgvModules.Rows.Remove(row);
+            }
+        }
+    }
+
+    private void AreaEditor_AreaChanged(object? sender, EventArgs e)
+    {
+        var rect = areaEditor.Area;
+        nudAreaX.Value = rect.X;
+        nudAreaY.Value = rect.Y;
+        nudAreaW.Value = rect.Width;
+        nudAreaH.Value = rect.Height;
+    }
+
+    private void NudArea_ValueChanged(object? sender, EventArgs e)
+    {
+        areaEditor.Area = new Rectangle(
+            (int)nudAreaX.Value,
+            (int)nudAreaY.Value,
+            (int)nudAreaW.Value,
+            (int)nudAreaH.Value);
     }
 }

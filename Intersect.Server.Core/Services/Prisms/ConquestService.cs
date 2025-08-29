@@ -88,8 +88,16 @@ public sealed class ConquestService : IConquestService
             _repository.FactionAreaBonuses.Remove(bonus);
         }
 
+        var dbPrism = await _repository.Prisms
+            .FindAsync(new object[] { prism.Id }, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (dbPrism != null)
+        {
+            _repository.Prisms.Remove(dbPrism);
+        }
+
         map.ControllingPrism = null;
-        _repository.Prisms.Remove(prism);
         await _repository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         if (destroyer != null)

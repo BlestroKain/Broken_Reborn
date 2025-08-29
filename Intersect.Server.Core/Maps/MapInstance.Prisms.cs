@@ -13,7 +13,7 @@ public partial class MapInstance
     /// <summary>
     /// Prism currently controlling this map instance, if any.
     /// </summary>
-    public AlignmentPrism? ControllingPrism { get; private set; }
+    public AlignmentPrism? ControllingPrism { get; internal set; }
 
     /// <summary>
     /// True if the controlling prism is under attack.

@@ -423,7 +423,7 @@ public partial class MenuContainer : Panel
 
     public void ToggleFactionWindow()
     {
-        if (_factionWindow.IsVisible())
+        if (_factionWindow.IsVisibleInTree)
         {
             _factionWindow.Hide();
         }

@@ -1,4 +1,4 @@
-using System;
+using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Prisms;
 
 namespace Intersect.Client.Maps;
@@ -9,9 +9,9 @@ namespace Intersect.Client.Maps;
 public partial class MapInstance
 {
     /// <summary>
-    /// Identifier of the prism owner if the map is conquered.
+    /// Alignment of the prism owner if the map is conquered.
     /// </summary>
-    public Guid? PrismOwnerId { get; set; }
+    public Alignment PrismOwner { get; set; } = Alignment.Neutral;
 
     /// <summary>
     /// State of the controlling prism.

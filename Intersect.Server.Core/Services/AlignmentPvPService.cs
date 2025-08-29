@@ -22,6 +22,14 @@ internal static class AlignmentPvPService
             return;
         }
 
+        // Prevent honor gains if both players share the same account or IP address.
+        var killerIp = killer.User?.LastIp;
+        var victimIp = victim.User?.LastIp;
+        if (killer.UserId == victim.UserId || (!string.IsNullOrEmpty(killerIp) && killerIp == victimIp))
+        {
+            return;
+        }
+
         var now = DateTime.UtcNow;
 
         foreach (var entry in killer.RecentPlayerVictims.ToArray())

@@ -12,6 +12,10 @@ public partial class PrismContribution
 
     public Guid PlayerId { get; set; }
 
+    public Guid PlayerUserId { get; set; }
+
+    public string PlayerIp { get; set; }
+
     public int Contribution { get; set; }
 }
 

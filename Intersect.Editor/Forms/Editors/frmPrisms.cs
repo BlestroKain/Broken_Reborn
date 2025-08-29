@@ -3,6 +3,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Intersect.Config;
 using Intersect.Framework.Core.GameObjects.Prisms;
+using Intersect.Editor.General;
 
 namespace Intersect.Editor.Forms.Editors;
 
@@ -12,6 +13,10 @@ public partial class FrmPrisms : Form
     {
         InitializeComponent();
         Icon = Program.Icon;
+        mapPicker.TileSelected += MapPickerOnTileSelected;
+        mapPicker.SetMap(Globals.CurrentMap?.Id ?? Guid.Empty);
+        nudX.Maximum = Options.Instance.Map.MapWidth - 1;
+        nudY.Maximum = Options.Instance.Map.MapHeight - 1;
         LoadList();
     }
 
@@ -42,6 +47,7 @@ public partial class FrmPrisms : Form
         txtMapId.Text = p.MapId.ToString();
         nudX.Value = p.X;
         nudY.Value = p.Y;
+        mapPicker.SetMap(p.MapId);
         nudLevel.Value = p.Level;
         txtWindows.Lines = p.Windows.Select(w => $"{w.Day}|{w.Start:hh\\:mm}|{w.End:hh\\:mm}").ToArray();
         txtModules.Lines = p.Modules.Select(m => m.Name).ToArray();
@@ -112,5 +118,12 @@ public partial class FrmPrisms : Form
 
         PrismConfig.Save();
         LoadList();
+    }
+
+    private void MapPickerOnTileSelected(Guid mapId, int x, int y)
+    {
+        txtMapId.Text = mapId.ToString();
+        nudX.Value = Math.Max(nudX.Minimum, Math.Min(nudX.Maximum, x));
+        nudY.Value = Math.Max(nudY.Minimum, Math.Min(nudY.Maximum, y));
     }
 }

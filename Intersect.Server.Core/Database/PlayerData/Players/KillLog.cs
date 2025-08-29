@@ -14,6 +14,10 @@ public partial class KillLog
         Victim = victim;
         AttackerId = attacker.Id;
         VictimId = victim.Id;
+        AttackerUserId = attacker.UserId;
+        VictimUserId = victim.UserId;
+        AttackerIp = attacker.User?.LastIp;
+        VictimIp = victim.User?.LastIp;
         Timestamp = DateTime.UtcNow;
     }
 
@@ -23,6 +27,14 @@ public partial class KillLog
     public Guid AttackerId { get; private set; }
 
     public Guid VictimId { get; private set; }
+
+    public Guid AttackerUserId { get; private set; }
+
+    public Guid VictimUserId { get; private set; }
+
+    public string AttackerIp { get; private set; }
+
+    public string VictimIp { get; private set; }
 
     public DateTime Timestamp { get; private set; }
 

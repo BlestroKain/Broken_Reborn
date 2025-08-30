@@ -12,7 +12,7 @@ public partial class MapInstance
     /// <summary>
     /// Alignment of the prism owner if the map is conquered.
     /// </summary>
-    public Alignment PrismOwner { get; set; } = Alignment.Neutral;
+    public Factions PrismOwner { get; set; } = Factions.Neutral;
 
     /// <summary>
     /// State of the controlling prism.

@@ -867,9 +867,9 @@ public static partial class CommandPrinter
     {
         var faction = command.Desired switch
         {
-            Alignment.Neutral => Strings.EventCommandList.neutral.ToString(),
-            Alignment.Serolf => Strings.EventCommandList.serolf.ToString(),
-            Alignment.Nidraj => Strings.EventCommandList.nidraj.ToString(),
+            Factions.Neutral => Strings.EventCommandList.neutral.ToString(),
+            Factions.Serolf => Strings.EventCommandList.serolf.ToString(),
+            Factions.Nidraj => Strings.EventCommandList.nidraj.ToString(),
             _ => Strings.EventCommandList.neutral.ToString(),
         };
 

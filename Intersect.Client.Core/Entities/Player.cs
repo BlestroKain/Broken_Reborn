@@ -64,7 +64,7 @@ public partial class Player : Entity, IPlayer
 
     public long ExperienceToNextLevel { get; set; } = 0;
 
-    public Alignment Faction { get; set; }
+    public Factions Faction { get; set; }
 
     public WingState Wings { get; set; }
 
@@ -2791,8 +2791,8 @@ public partial class Player : Entity, IPlayer
     private string GetWingTexture() =>
         Faction switch
         {
-            Alignment.Serolf => "wings_serolf.png",
-            Alignment.Nidraj => "wings_nidraj.png",
+            Factions.Serolf => "wings_serolf.png",
+            Factions.Nidraj => "wings_nidraj.png",
             _ => "wings.png",
         };
 
@@ -2877,8 +2877,8 @@ public partial class Player : Entity, IPlayer
 
         textColor = Faction switch
         {
-            Alignment.Serolf => Color.Blue,
-            Alignment.Nidraj => Color.Red,
+            Factions.Serolf => Color.Blue,
+            Factions.Nidraj => Color.Red,
             _ => textColor,
         };
 

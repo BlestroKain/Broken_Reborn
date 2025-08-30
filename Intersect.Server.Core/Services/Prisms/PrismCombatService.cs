@@ -34,7 +34,7 @@ internal static class PrismCombatService
         public Guid PlayerUserId { get; init; }
         public string PlayerIp { get; init; }
         public string PlayerFingerprint { get; init; }
-        public Alignment Faction { get; init; }
+        public Factions Faction { get; init; }
 
         public int Damage;
         public int Presence;

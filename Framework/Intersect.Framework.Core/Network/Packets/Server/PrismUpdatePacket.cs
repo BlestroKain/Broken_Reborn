@@ -13,7 +13,7 @@ public partial class PrismUpdatePacket : IntersectPacket
     {
     }
 
-    public PrismUpdatePacket(Guid mapId, Alignment owner, PrismState state, int hp, int maxHp, DateTime? nextVulnerabilityStart)
+    public PrismUpdatePacket(Guid mapId, Factions owner, PrismState state, int hp, int maxHp, DateTime? nextVulnerabilityStart)
     {
         MapId = mapId;
         Owner = owner;
@@ -27,7 +27,7 @@ public partial class PrismUpdatePacket : IntersectPacket
     public Guid MapId { get; set; }
 
     [Key(1)]
-    public Alignment Owner { get; set; }
+    public Factions Owner { get; set; }
 
     [Key(2)]
     public PrismState State { get; set; }

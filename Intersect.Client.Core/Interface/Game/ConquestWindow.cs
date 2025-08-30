@@ -51,7 +51,7 @@ public class ConquestWindow : Window
     public void Refresh()
     {
         _list.DeleteAllChildren();
-        var meFaction = Globals.Me?.Faction ?? Intersect.Enums.Alignment.Neutral;
+        var meFaction = Globals.Me?.Faction ?? Intersect.Enums.Factions.Neutral;
         var filter = (Filter)(_filter.SelectedItem?.UserData ?? Filter.All);
 
         var maps = MapInstance.Lookup.Values
@@ -61,8 +61,8 @@ public class ConquestWindow : Window
             {
                 Filter.Own => map.PrismOwner == meFaction,
                 Filter.Rival =>
-                    map.PrismOwner != meFaction && map.PrismOwner != Intersect.Enums.Alignment.Neutral,
-                Filter.Neutral => map.PrismOwner == Intersect.Enums.Alignment.Neutral,
+                    map.PrismOwner != meFaction && map.PrismOwner != Intersect.Enums.Factions.Neutral,
+                Filter.Neutral => map.PrismOwner == Intersect.Enums.Factions.Neutral,
                 _ => true,
             })
             .OrderBy(map => map.PrismNextVulnerabilityStart ?? DateTime.MaxValue);

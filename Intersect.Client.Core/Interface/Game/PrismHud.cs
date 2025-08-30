@@ -76,8 +76,8 @@ public class PrismHud : ImagePanel
 
         var color = map.PrismOwner switch
         {
-            Intersect.Enums.Alignment.Serolf => Color.Blue,
-            Intersect.Enums.Alignment.Nidraj => Color.Red,
+            Intersect.Enums.Factions.Serolf => Color.Blue,
+            Intersect.Enums.Factions.Nidraj => Color.Red,
             _ => Color.Gray
         };
 

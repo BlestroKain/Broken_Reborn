@@ -1479,7 +1479,7 @@ public partial class Npc : Entity
                 var allyByConditions = (conditionLists?.Count ?? 0) > 0 &&
                                        Conditions.MeetsConditionLists(conditionLists, otherPlayer, null);
 
-                var allyByFaction = Descriptor.Faction != Alignment.Neutral &&
+                var allyByFaction = Descriptor.Faction != Factions.Neutral &&
                                     otherPlayer.Faction == Descriptor.Faction &&
                                     otherPlayer.Honor >= 0;
 
@@ -1502,10 +1502,10 @@ public partial class Npc : Entity
             return false;
         }
 
-        if (Descriptor.Faction != Alignment.Neutral)
+        if (Descriptor.Faction != Factions.Neutral)
         {
             // Guards only attack opposing faction players when their wings are enabled
-            if (en.Faction != Alignment.Neutral && en.Faction != Descriptor.Faction && en.Wings == WingState.On)
+            if (en.Faction != Factions.Neutral && en.Faction != Descriptor.Faction && en.Wings == WingState.On)
             {
                 return true;
             }

@@ -3,6 +3,7 @@ using Intersect.Config;
 using Intersect.Enums;
 using Intersect.Server.Database;
 using Intersect.Server.Entities;
+using Intersect.Server.Localization;
 
 namespace Intersect.Server.Services;
 
@@ -61,6 +62,20 @@ public static class AlignmentService
         context.SaveChanges();
 
         return new Result(true, null, p.Faction, now + cooldown);
+    }
+
+    public static string? GetMessage(string code, DateTime? nextAllowed)
+    {
+        return code switch
+        {
+            "same" => Strings.Alignment.AlreadyInFaction.ToString(),
+            "guild" => Strings.Alignment.GuildMismatch.ToString(),
+            "wings" => Strings.Alignment.WingsOn.ToString(),
+            "cooldown" when nextAllowed.HasValue =>
+                Strings.Alignment.SwapCooldown.ToString()
+                    .Replace("{fecha}", nextAllowed.Value.ToLocalTime().ToString("g")),
+            _ => null,
+        };
     }
 }
 

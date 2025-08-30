@@ -2394,12 +2394,23 @@ public static partial class CommandProcessing
         var result = AlignmentService.TrySetAlignment(player, command.Desired, options);
         if (result.Success)
         {
-            PacketSender.SendChatMsg(player, $"Alignment changed to {player.Faction}.", ChatMessageType.Notice);
+            var message = Strings.Alignment.ChangedTo.ToString(player.Faction);
+            if (result.NextAllowedChangeAt.HasValue)
+            {
+                var cooldown = AlignmentService.GetMessage("cooldown", result.NextAllowedChangeAt);
+                if (!string.IsNullOrEmpty(cooldown))
+                {
+                    message += $" {cooldown}";
+                }
+            }
+
+            PacketSender.SendChatMsg(player, message, ChatMessageType.Notice);
             PacketSender.SendEntityDataToProximity(player);
         }
         else
         {
-            var message = result.Message ?? "Unable to change alignment.";
+            var message = AlignmentService.GetMessage(result.Message!, result.NextAllowedChangeAt)
+                          ?? "Unable to change alignment.";
             PacketSender.SendChatMsg(player, message, ChatMessageType.Error);
         }
     }

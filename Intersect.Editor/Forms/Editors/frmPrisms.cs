@@ -11,6 +11,7 @@ namespace Intersect.Editor.Forms.Editors;
 
 public partial class FrmPrisms : Form
 {
+    private const int MaxModules = 3;
     public FrmPrisms()
     {
         InitializeComponent();
@@ -98,61 +99,134 @@ public partial class FrmPrisms : Form
     private void btnSave_Click(object sender, EventArgs e)
     {
         var p = SelectedPrism;
-        if (p != null)
+        if (p == null)
         {
-            if (Guid.TryParse(txtMapId.Text, out var mapId))
+            return;
+        }
+
+        var errors = new List<string>();
+
+        var areaW = (int)nudAreaW.Value;
+        var areaH = (int)nudAreaH.Value;
+        if (areaW <= 0 || areaH <= 0)
+        {
+            errors.Add("El área debe tener un ancho y alto mayores que 0.");
+        }
+
+        var windows = dgvWindows.Rows
+            .Cast<DataGridViewRow>()
+            .Where(r => !r.IsNewRow)
+            .Select(r =>
             {
-                p.MapId = mapId;
-            }
-
-            p.X = (int)nudX.Value;
-            p.Y = (int)nudY.Value;
-            p.Level = (int)nudLevel.Value;
-
-            p.Windows = dgvWindows.Rows
-                .Cast<DataGridViewRow>()
-                .Where(r => !r.IsNewRow)
-                .Select(r =>
+                var start = TimeSpan.TryParse(r.Cells["colStart"].Value?.ToString(), out var s) ? s : TimeSpan.Zero;
+                var duration = TimeSpan.TryParse(r.Cells["colDuration"].Value?.ToString(), out var d) ? d : TimeSpan.Zero;
+                var end = start + duration;
+                if (end.TotalHours >= 24)
                 {
-                    var start = TimeSpan.TryParse(r.Cells["colStart"].Value?.ToString(), out var s)
-                        ? s
-                        : TimeSpan.Zero;
-                    var duration = TimeSpan.TryParse(r.Cells["colDuration"].Value?.ToString(), out var d)
-                        ? d
-                        : TimeSpan.Zero;
-                    var end = start + duration;
-                    if (end.TotalHours >= 24)
-                    {
-                        end -= TimeSpan.FromDays(1);
-                    }
+                    end -= TimeSpan.FromDays(1);
+                }
 
-                    return new VulnerabilityWindow
+                return new
+                {
+                    Duration = duration,
+                    Window = new VulnerabilityWindow
                     {
                         Day = r.Cells["colDay"].Value is DayOfWeek day ? day : DayOfWeek.Monday,
                         Start = start,
                         End = end
-                    };
-                })
-                .ToList();
+                    }
+                };
+            })
+            .ToList();
 
-            p.Modules = dgvModules.Rows
-                .Cast<DataGridViewRow>()
-                .Where(r => !r.IsNewRow)
-                .Select(r => new PrismModule
-                {
-                    Type = r.Cells["colType"].Value is PrismModuleType t ? t : PrismModuleType.Vision,
-                    Level = int.TryParse(r.Cells["colLevel"].Value?.ToString(), out var lvl) ? lvl : 1
-                })
-                .ToList();
-
-            p.Area = new PrismArea
-            {
-                X = (int)nudAreaX.Value,
-                Y = (int)nudAreaY.Value,
-                Width = (int)nudAreaW.Value,
-                Height = (int)nudAreaH.Value
-            };
+        foreach (var w in windows.Where(w => w.Duration <= TimeSpan.Zero))
+        {
+            errors.Add($"La ventana que inicia a {w.Window.Start:hh\\:mm} debe tener duración mayor que 0.");
         }
+
+        var intervalsByDay = new Dictionary<DayOfWeek, List<(int start, int end)>>();
+        void AddInterval(DayOfWeek day, int start, int end)
+        {
+            if (!intervalsByDay.TryGetValue(day, out var list))
+            {
+                list = new List<(int, int)>();
+                intervalsByDay[day] = list;
+            }
+            list.Add((start, end));
+        }
+
+        foreach (var w in windows.Where(w => w.Duration > TimeSpan.Zero))
+        {
+            var start = (int)w.Window.Start.TotalMinutes;
+            var end = (int)w.Window.End.TotalMinutes;
+            if (start < end)
+            {
+                AddInterval(w.Window.Day, start, end);
+            }
+            else
+            {
+                AddInterval(w.Window.Day, start, 24 * 60);
+                var nextDay = (DayOfWeek)(((int)w.Window.Day + 1) % 7);
+                AddInterval(nextDay, 0, end);
+            }
+        }
+
+        foreach (var kvp in intervalsByDay)
+        {
+            var list = kvp.Value.OrderBy(i => i.start).ToList();
+            for (var i = 1; i < list.Count; i++)
+            {
+                if (list[i - 1].end > list[i].start)
+                {
+                    errors.Add($"Las ventanas de vulnerabilidad se solapan el {kvp.Key}.");
+                    break;
+                }
+            }
+        }
+
+        var modules = dgvModules.Rows
+            .Cast<DataGridViewRow>()
+            .Where(r => !r.IsNewRow)
+            .Select(r => new PrismModule
+            {
+                Type = r.Cells["colType"].Value is PrismModuleType t ? t : PrismModuleType.Vision,
+                Level = int.TryParse(r.Cells["colLevel"].Value?.ToString(), out var lvl) ? lvl : 1
+            })
+            .ToList();
+
+        if (modules.Count > MaxModules)
+        {
+            errors.Add($"No se pueden agregar más de {MaxModules} módulos.");
+        }
+
+        if (modules.GroupBy(m => m.Type).Any(g => g.Count() > 1))
+        {
+            errors.Add("No se permiten módulos duplicados.");
+        }
+
+        if (errors.Any())
+        {
+            MessageBox.Show(string.Join("\n", errors), "Errores", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        if (Guid.TryParse(txtMapId.Text, out var mapId))
+        {
+            p.MapId = mapId;
+        }
+
+        p.X = (int)nudX.Value;
+        p.Y = (int)nudY.Value;
+        p.Level = (int)nudLevel.Value;
+        p.Windows = windows.Select(w => w.Window).ToList();
+        p.Modules = modules;
+        p.Area = new PrismArea
+        {
+            X = (int)nudAreaX.Value,
+            Y = (int)nudAreaY.Value,
+            Width = areaW,
+            Height = areaH
+        };
 
         PrismConfig.Save();
         LoadList();

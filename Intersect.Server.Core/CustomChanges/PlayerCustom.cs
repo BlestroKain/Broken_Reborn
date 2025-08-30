@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -18,13 +19,19 @@ namespace Intersect.Server.Entities
 {
     public partial class Player : Entity
     {
-        /// <summary>
-        /// Calcula los puntos de experiencia modificados en función de la diferencia de niveles entre el jugador y el enemigo.
-        /// </summary>
-        /// <param name="enemyLevel">El nivel del enemigo.</param>
-        /// <param name="exp">Los puntos de experiencia base ganados.</param>
-        /// <param name="playerLevel">El nivel del jugador (opcional, con un valor predeterminado de 0).</param>
-        /// <returns>Los puntos de experiencia modificados.</returns>
+        public Alignment Faction { get; set; }
+
+        public WingState Wings { get; set; }
+
+        public int Honor { get; set; }
+
+        public int Grade { get; set; }
+
+        public DateTime LastFactionSwapAt { get; set; } = DateTime.UtcNow;
+
+        [NotMapped, JsonIgnore]
+        public ConcurrentDictionary<Guid, DateTime> RecentPlayerVictims { get; } = new();
+
         public long ExpModifiedByLevel(int enemyLevel, long baseExp, int playerLevel = 0)
         {
             // Calcula la diferencia de niveles entre el jugador y el enemigo.

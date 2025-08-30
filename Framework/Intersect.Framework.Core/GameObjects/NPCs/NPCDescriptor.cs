@@ -199,6 +199,16 @@ public partial class NPCDescriptor : DatabaseObject<NPCDescriptor>, IFolderable
 
     public int ResetRadius { get; set; }
 
+    public Alignment Faction { get; set; } = Alignment.Neutral;
+
+    public bool SendToJailOnCapture { get; set; } = false;
+
+    public Guid JailMapId { get; set; } = Guid.Empty;
+
+    public byte JailX { get; set; }
+
+    public byte JailY { get; set; }
+
     //Conditions
     [Column("PlayerFriendConditions")]
     [JsonIgnore]

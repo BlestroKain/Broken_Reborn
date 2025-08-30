@@ -24,6 +24,8 @@ internal static class PrismService
             Owner = player.Faction,
             State = PrismState.Placed,
             MapId = map.MapInstanceId,
+            X = player?.X ?? 0,
+            Y = player?.Y ?? 0,
             PlacedAt = now,
             MaturationEndsAt = now.AddSeconds(options.MaturationSeconds),
             Level = player.Level,

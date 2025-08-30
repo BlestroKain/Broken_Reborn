@@ -2258,6 +2258,7 @@ Tick timer saved in server config.json.";
 
         public static LocalizedString setalignment = @"Set Player Alignment to {00}";
 
+
         public static LocalizedString neutral = @"Neutral";
 
         public static LocalizedString serolf = @"Serolf";
@@ -3429,6 +3430,7 @@ Tick timer saved in server config.json.";
 
         public static LocalizedString title = @"Set Alignment";
 
+
         public static Dictionary<int, LocalizedString> alignments = new Dictionary<int, LocalizedString>
         {
             {0, @"Neutral"},
@@ -3436,10 +3438,9 @@ Tick timer saved in server config.json.";
             {2, @"Nidraj"},
         };
 
-        public static LocalizedString IgnoreCooldown = @"Ignore Cooldown?";
+        public static LocalizedString IgnoreCooldown = @"¿Ignorar tiempo de espera?";
 
-        public static LocalizedString IgnoreGuildLock = @"Ignore Guild Lock?";
-
+        public static LocalizedString IgnoreGuildLock = @"¿Ignorar bloqueo de gremio?";
     }
 
     public partial struct EventSetAnimation

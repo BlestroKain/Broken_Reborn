@@ -11,6 +11,7 @@ using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects;
 using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Framework.Core.GameObjects.NPCs;
+using Intersect.Framework.Core.GameObjects.Prisms;
 using Intersect.Framework.Logging;
 using Intersect.Framework.SystemInformation;
 using Intersect.GameObjects;
@@ -19,6 +20,8 @@ using Intersect.Plugins;
 using Intersect.Plugins.Contexts;
 using Intersect.Plugins.Helpers;
 using Intersect.Server.Database;
+using Intersect.Server.Database.PlayerData;
+using Intersect.Server.Database.Prisms;
 using Intersect.Server.Database.PlayerData.Players;
 using Intersect.Server.Entities;
 using Intersect.Server.General;
@@ -28,8 +31,11 @@ using Intersect.Server.Networking;
 using Intersect.Server.Plugins;
 using Intersect.Threading;
 using Intersect.Utilities;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using Serilog;
+
+using AlignmentPrismEntity = Intersect.Server.Database.Prisms.AlignmentPrism;
 
 namespace Intersect.Server.Core;
 
@@ -71,6 +77,11 @@ internal static class Bootstrapper
         }
 
         Console.WriteLine("Pre-context setup finished.");
+
+        if (parsedArguments.CommandLineOptions.SyncPrisms)
+        {
+            Options.Instance.Prism.SyncOnStartup = true;
+        }
 
         var (loggerFactory, logger) = new LoggerConfiguration().CreateLoggerForIntersect(
             entryAssembly,
@@ -293,6 +304,8 @@ internal static class Bootstrapper
             return false;
         }
 
+        SyncPrismsFromConfiguration();
+
         Time.Update();
 
         Console.WriteLine();
@@ -317,6 +330,61 @@ internal static class Bootstrapper
         }
 
         return true;
+    }
+
+    private static void SyncPrismsFromConfiguration()
+    {
+        using var context = DbInterface.CreatePlayerContext(readOnly: false);
+        IPrismRepository? repository = context switch
+        {
+            SqlitePlayerContext sqlite => new SqlitePrismRepository(sqlite),
+            _ => null,
+        };
+
+        if (repository == null)
+        {
+            return;
+        }
+
+        var shouldSync = Options.Instance.Prism.SyncOnStartup || !repository.Prisms.Any();
+        if (!shouldSync)
+        {
+            return;
+        }
+
+        repository.Prisms.RemoveRange(repository.Prisms.ToArray());
+
+        foreach (var prism in PrismConfig.Prisms)
+        {
+            var dbPrism = new AlignmentPrismEntity
+            {
+                Id = prism.Id,
+                MapId = prism.MapId,
+                Faction = (int)prism.Owner,
+                X = prism.X,
+                Y = prism.Y,
+                Level = prism.Level,
+                Hp = prism.Hp,
+                MaxHp = prism.MaxHp,
+                Windows = prism.Windows
+                    .Select(w => new VulnerabilityWindow { Day = w.Day, Start = w.Start, End = w.End })
+                    .ToList(),
+                Modules = prism.Modules
+                    .Select(m => new PrismModule { Type = m.Type, Level = m.Level })
+                    .ToList(),
+                Area = new PrismArea
+                {
+                    X = prism.Area.X,
+                    Y = prism.Area.Y,
+                    Width = prism.Area.Width,
+                    Height = prism.Area.Height,
+                },
+            };
+
+            repository.Prisms.Add(dbPrism);
+        }
+
+        repository.SaveChangesAsync().GetAwaiter().GetResult();
     }
 
     private static void PrintIntroduction()

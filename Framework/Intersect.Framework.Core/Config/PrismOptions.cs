@@ -8,6 +8,11 @@ namespace Intersect.Config;
 public class PrismOptions
 {
     /// <summary>
+    ///     Synchronize configured prisms to the database on startup.
+    /// </summary>
+    public bool SyncOnStartup { get; set; } = false;
+
+    /// <summary>
     ///     Base amount of hit points a prism has at level 1.
     /// </summary>
     public int BaseHp { get; set; } = 1000;

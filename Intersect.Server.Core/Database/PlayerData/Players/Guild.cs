@@ -22,6 +22,7 @@ using Intersect.Server.Collections.Sorting;
 using Microsoft.Extensions.Logging;
 using Intersect.Framework.Core.GameObjects.Guild;
 using System.Linq;
+using Intersect.Server.Services;
 
 namespace Intersect.Server.Database.PlayerData.Players;
 
@@ -368,7 +369,15 @@ public partial class Guild
         player.GuildExpPercentage = 0;
         if (player.Faction == Alignment.Neutral)
         {
-            player.SetFaction(guildFaction);
+            AlignmentService.TrySetAlignment(
+                player,
+                guildFaction,
+                new AlignmentApplyOptions
+                {
+                    IgnoreCooldown = true,
+                    IgnoreGuildLock = true,
+                }
+            );
         }
         player.GuildJoinDate = DateTime.UtcNow;
         context.Update(player);

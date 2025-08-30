@@ -1143,6 +1143,43 @@ internal sealed partial class PacketHandler
                 PacketSender.SendChatMsg(player, Strings.Player.Offline, ChatMessageType.PM, CustomColors.Alerts.Error);
             }
         }
+        else if (cmd == "/alignment" && msgSplit.Length >= 2 &&
+                 string.Equals(msgSplit[0], "set", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!Enum.TryParse<Alignment>(msgSplit[1], true, out var desired))
+            {
+                PacketSender.SendChatMsg(player, Strings.Commands.invalid, ChatMessageType.Error, CustomColors.Alerts.Error);
+                return;
+            }
+
+            var result = AlignmentService.TrySetAlignment(player, desired);
+            if (result.Success)
+            {
+                PacketSender.SendChatMsg(
+                    player,
+                    $"Alignment set to {desired}.",
+                    ChatMessageType.Notice,
+                    CustomColors.Alerts.Success
+                );
+            }
+            else
+            {
+                var feedback = result.Message;
+                if (result.NextAllowedChangeAt.HasValue)
+                {
+                    feedback += $" Next change at {result.NextAllowedChangeAt.Value:u}.";
+                }
+
+                PacketSender.SendChatMsg(
+                    player,
+                    feedback,
+                    ChatMessageType.Error,
+                    CustomColors.Alerts.Error
+                );
+            }
+
+            return;
+        }
         else
         {
             //Search for command activated events and run them

@@ -62,7 +62,14 @@ public sealed class FactionAreaBonusApplier : IFactionBonusApplier
             return value;
         }
 
-        if (bonus.Faction != (int)player.Faction)
+        if (prism.Owner != player.Faction)
+        {
+            return value;
+        }
+
+        var area = prism.Area;
+        if (player.X < area.X || player.Y < area.Y || player.X >= area.X + area.Width ||
+            player.Y >= area.Y + area.Height)
         {
             return value;
         }

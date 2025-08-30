@@ -38,6 +38,8 @@ using Intersect.Server.Framework.Items;
 using Intersect.Server.Localization;
 using Intersect.Server.Maps;
 using Intersect.Server.Networking;
+using Intersect.Server.Core;
+using Intersect.Server.Services.Prisms;
 using Intersect.Utilities;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -4463,6 +4465,10 @@ public partial class Player : Entity
                 {
                     quantity = 1;
                 }
+
+                var bonusApplier = Bootstrapper.Context?.Services
+                    .FirstOrDefault(s => s is IFactionBonusApplier) as IFactionBonusApplier;
+                quantity = (int)Math.Max(1, MathF.Round(bonusApplier?.ApplyCraftBonus(this, quantity) ?? quantity));
 
                 if (TryGiveItem(craftItem.Id, quantity))
                 {

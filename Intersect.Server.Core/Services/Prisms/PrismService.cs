@@ -6,12 +6,17 @@ using Intersect.Framework.Core.GameObjects.Prisms;
 using Intersect.Server.Core;
 using Intersect.Server.Entities;
 using Intersect.Server.Maps;
+using Intersect.Server.Metrics;
 using Intersect.Server.Networking;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Intersect.Server.Services.Prisms;
 
 internal static class PrismService
 {
+    public static ILogger Logger { get; set; } = NullLogger.Instance;
+
     public static AlignmentPrism PlacePrism(Player player, MapInstance map)
     {
         var options = Options.Instance.Prism;
@@ -34,6 +39,13 @@ internal static class PrismService
         };
 
         map.ControllingPrism = prism;
+        Logger.LogInformation(
+            "Prism {PrismId} placed on map {MapId} by {PlayerId} at {Time}",
+            prism.Id,
+            map.MapInstanceId,
+            player?.Id,
+            now
+        );
         Broadcast(map);
         return prism;
     }
@@ -48,6 +60,7 @@ internal static class PrismService
 
         var now = DateTime.UtcNow;
         var changed = false;
+        var previousState = prism.State;
         var inWindow = IsInVulnerabilityWindow(prism, now);
 
         switch (prism.State)
@@ -103,6 +116,19 @@ internal static class PrismService
 
         if (changed)
         {
+            Logger.LogInformation(
+                "Prism {PrismId} state changed from {OldState} to {NewState} at {Time}",
+                prism.Id,
+                previousState,
+                prism.State,
+                now
+            );
+
+            if (previousState == PrismState.UnderAttack && prism.State != PrismState.UnderAttack)
+            {
+                PrismCombatService.BattleEnded();
+            }
+
             Broadcast(map);
         }
     }

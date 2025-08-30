@@ -228,8 +228,14 @@ public partial class FrmPrisms : Form
             Height = areaH
         };
 
+        var index = lstPrisms.SelectedIndex;
         PrismConfig.Save();
+        PrismConfig.Load();
         LoadList();
+        if (index >= 0 && index < lstPrisms.Items.Count)
+        {
+            lstPrisms.SelectedIndex = index;
+        }
     }
     private void btnWindowAdd_Click(object sender, EventArgs e)
     {

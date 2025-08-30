@@ -108,6 +108,24 @@ public static partial class Strings
         public readonly LocalizedString UnmuteSuccess = @"{00} has been unmuted!";
     }
 
+    public sealed partial class AlignmentNamespace : LocaleNamespace
+    {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString ChangedTo = @"Ahora perteneces a {00}.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString AlreadyInFaction = @"Ya perteneces a {00}.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString GuildMismatch = @"Tu gremio pertenece a una facción distinta.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString WingsOn = @"No puedes cambiar de facción mientras tus alas estén activadas.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString SwapCooldown = @"No puedes cambiar de facción nuevamente hasta {fecha}.";
+    }
+
     public sealed partial class BagNamespace : LocaleNamespace
     {
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

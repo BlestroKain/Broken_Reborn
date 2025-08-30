@@ -143,6 +143,11 @@ public static partial class PacketSender
         Network.SendPacket(new ToggleWingsPacket(state));
     }
 
+    public static void SendSetAlignment(Alignment alignment)
+    {
+        Network.SendPacket(new SetAlignmentRequestPacket(alignment));
+    }
+
     public static void SendPrismAttack(Guid mapId)
     {
         Network.SendPacket(new PrismAttackPacket(mapId));

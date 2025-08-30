@@ -2256,6 +2256,19 @@ Tick timer saved in server config.json.";
 
         public static LocalizedString setgender = @"Set Player Gender to {00}";
 
+        public static LocalizedString setalignment = @"Set Player Alignment to {00}";
+
+
+        public static LocalizedString neutral = @"Neutral";
+
+        public static LocalizedString serolf = @"Serolf";
+
+        public static LocalizedString nidraj = @"Nidraj";
+
+        public static LocalizedString ignorecooldown = @"(Ignore Cooldown)";
+
+        public static LocalizedString ignoreguildlock = @"(Ignore Guild Lock)";
+
         public static LocalizedString setlevel = @"Set Player Level To: {00}";
 
         public static LocalizedString setsprite = @"Set Player Sprite to {00}";
@@ -2429,6 +2442,8 @@ Tick timer saved in server config.json.";
             {"setclass", @"Change Class"},
             {"changeface", @"Change Face"},
             {"changegender", @"Change Gender"},
+            {"setalignment", @"Set Alignment"},
+            {"alignment", @"Alignment"},
             {"changeitems", @"Change Items"},
             {"changebestiary", @"Change Bestiary"},
             {"changelevel", @"Change Level"},
@@ -3402,6 +3417,30 @@ Tick timer saved in server config.json.";
 
         public static LocalizedString title = @"Set Access";
 
+    }
+
+    public partial struct EventSetAlignment
+    {
+
+        public static LocalizedString cancel = @"Cancel";
+
+        public static LocalizedString label = @"Alignment:";
+
+        public static LocalizedString okay = @"Ok";
+
+        public static LocalizedString title = @"Set Alignment";
+
+
+        public static Dictionary<int, LocalizedString> alignments = new Dictionary<int, LocalizedString>
+        {
+            {0, @"Neutral"},
+            {1, @"Serolf"},
+            {2, @"Nidraj"},
+        };
+
+        public static LocalizedString IgnoreCooldown = @"¿Ignorar tiempo de espera?";
+
+        public static LocalizedString IgnoreGuildLock = @"¿Ignorar bloqueo de gremio?";
     }
 
     public partial struct EventSetAnimation

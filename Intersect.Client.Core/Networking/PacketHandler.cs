@@ -2493,6 +2493,23 @@ internal sealed partial class PacketHandler
         }
     }
 
+    //SetAlignmentResponsePacket
+    public void HandlePacket(IPacketSender packetSender, SetAlignmentResponsePacket packet)
+    {
+        if (Globals.Me != null)
+        {
+            Globals.Me.Faction = packet.NewAlignment;
+        }
+
+        if (!string.IsNullOrWhiteSpace(packet.Message))
+        {
+            Interface.Interface.ShowAlert(
+                packet.Message,
+                alertType: packet.Success ? AlertType.Information : AlertType.Error
+            );
+        }
+    }
+
     private static void HandlePrism(PrismUpdatePacket packet)
     {
         var map = MapInstance.Get(packet.MapId);

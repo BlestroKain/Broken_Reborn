@@ -30,8 +30,9 @@ public class PrismHud : ImagePanel
         };
         _icon.SetPosition(0, 0);
 
-        _hpBar = new ProgressBar(this, "HpBar")
+        _hpBar = new ProgressBar(this)
         {
+            Name = "HpBar",
             AutoLabel = false,
             IsHorizontal = true,
         };
@@ -56,8 +57,8 @@ public class PrismHud : ImagePanel
 
         var color = map.PrismOwner switch
         {
-            Alignment.Serolf => Color.Blue,
-            Alignment.Nidraj => Color.Red,
+            Intersect.Enums.Alignment.Serolf => Color.Blue,
+            Intersect.Enums.Alignment.Nidraj => Color.Red,
             _ => Color.Gray
         };
 

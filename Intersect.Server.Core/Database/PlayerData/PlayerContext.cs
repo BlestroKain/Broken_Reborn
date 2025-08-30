@@ -4,11 +4,13 @@ using Intersect.Server.Database.PlayerData.Migrations;
 using Intersect.Server.Database.PlayerData.Players;
 using Intersect.Server.Database.PlayerData.SeedData;
 using Intersect.Server.Entities;
-using Intersect.Server.Database.Prisms;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Text.Json;
 using Intersect.Framework.Core.GameObjects.Prisms;
+using Intersect.Server.Database.Prisms;
+
+using AlignmentPrismEntity = Intersect.Server.Database.Prisms.AlignmentPrism;
 
 namespace Intersect.Server.Database.PlayerData;
 
@@ -57,7 +59,7 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
     public DbSet<MailBox> Player_MailBox { get; set; }
     public DbSet<KillLog> Player_KillLogs { get; set; }
 
-    public DbSet<AlignmentPrism> Prisms { get; set; }
+    public DbSet<AlignmentPrismEntity> Prisms { get; set; }
 
     public DbSet<PrismBattle> PrismBattles { get; set; }
 
@@ -159,7 +161,7 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
         modelBuilder.Entity<KillLog>().HasOne(k => k.Attacker).WithMany().OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<KillLog>().HasOne(k => k.Victim).WithMany().OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<AlignmentPrism>(entity =>
+        modelBuilder.Entity<AlignmentPrismEntity>(entity =>
         {
             var jsonOptions = new JsonSerializerOptions();
 
@@ -187,8 +189,8 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
                         : JsonSerializer.Deserialize<PrismArea>(v, jsonOptions) ?? new PrismArea()
                 );
         });
-        modelBuilder.Entity<PrismBattle>().HasOne<AlignmentPrism>().WithMany().HasForeignKey(b => b.PrismId);
-        modelBuilder.Entity<FactionAreaBonus>().HasOne<AlignmentPrism>().WithMany().HasForeignKey(b => b.PrismId);
+        modelBuilder.Entity<PrismBattle>().HasOne<AlignmentPrismEntity>().WithMany().HasForeignKey(b => b.PrismId);
+        modelBuilder.Entity<FactionAreaBonus>().HasOne<AlignmentPrismEntity>().WithMany().HasForeignKey(b => b.PrismId);
         modelBuilder.Entity<PrismContribution>().HasOne<PrismBattle>().WithMany().HasForeignKey(c => c.BattleId);
     }
 

@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
+using Intersect.Core;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Intersect.Framework.Core.GameObjects.Prisms;
 
@@ -17,6 +19,13 @@ public static class PrismConfig
 
     private static string PrismPath => Path.Combine(Options.ResourcesDirectory, "Config", "prisms.json");
 
+    private class PrismConfigData
+    {
+        public int Version { get; set; } = 1;
+
+        public List<AlignmentPrism> Prisms { get; set; } = new();
+    }
+
     /// <summary>
     ///     Loads prism definitions from disk if available.
     /// </summary>
@@ -25,11 +34,24 @@ public static class PrismConfig
         if (!File.Exists(PrismPath))
         {
             Prisms = new();
+            Save();
+            ApplicationContext.Context.Value?.Logger.LogInformation(
+                "Created prism configuration at {PrismPath}",
+                PrismPath
+            );
             return;
         }
 
         var json = File.ReadAllText(PrismPath);
-        Prisms = JsonConvert.DeserializeObject<List<AlignmentPrism>>(json) ?? new();
+        if (json.TrimStart().StartsWith("{"))
+        {
+            var config = JsonConvert.DeserializeObject<PrismConfigData>(json);
+            Prisms = config?.Prisms ?? new();
+        }
+        else
+        {
+            Prisms = JsonConvert.DeserializeObject<List<AlignmentPrism>>(json) ?? new();
+        }
     }
 
     /// <summary>
@@ -37,13 +59,13 @@ public static class PrismConfig
     /// </summary>
     public static void Save()
     {
-        var directory = Path.GetDirectoryName(PrismPath);
-        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+        var directory = Path.Combine(Options.ResourcesDirectory, "Config");
+        if (!Directory.Exists(directory))
         {
             Directory.CreateDirectory(directory);
         }
 
-        var json = JsonConvert.SerializeObject(Prisms, Formatting.Indented);
+        var json = JsonConvert.SerializeObject(new PrismConfigData { Prisms = Prisms }, Formatting.Indented);
         File.WriteAllText(PrismPath, json);
     }
 }

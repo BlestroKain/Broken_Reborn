@@ -51,6 +51,8 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
 
     public DbSet<UserVariable> User_Variables { get; set; }
     public DbSet<MailBox> Player_MailBox { get; set; }
+    public DbSet<KillLog> Player_KillLogs { get; set; }
+
 
     internal async ValueTask Commit(
         bool commit = false,
@@ -83,6 +85,12 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
         modelBuilder.Entity<Player>().HasOne(p => p.PendingGuildInviteFrom).WithMany().OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<Player>().HasOne(p => p.PendingGuildInviteTo).WithMany().OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Player>().Property(p => p.Faction);
+        modelBuilder.Entity<Player>().Property(p => p.Wings);
+        modelBuilder.Entity<Player>().Property(p => p.Honor);
+        modelBuilder.Entity<Player>().Property(p => p.Grade);
+        modelBuilder.Entity<Player>().Property(p => p.LastFactionSwapAt);
 
         modelBuilder.Entity<Player>()
             .HasMany(b => b.Friends)
@@ -136,6 +144,10 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
             .WithMany() // no necesitamos colección inversa aquí
             .HasForeignKey(m => m.SenderId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<KillLog>().HasOne(k => k.Attacker).WithMany().OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<KillLog>().HasOne(k => k.Victim).WithMany().OnDelete(DeleteBehavior.Restrict);
+
     }
 
     public void Seed()

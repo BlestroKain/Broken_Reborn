@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -180,6 +181,7 @@ public static partial class PacketSender
         var surroundingMapIds = surroundingMaps.Select(map => map.Id).ToArray();
         MapAreaIdsPacket mapAreaIdsPacket = new(surroundingMapIds);
         player.SendPacket(mapAreaIdsPacket);
+
     }
 
     public static MapPacket GenerateMapPacket(Client client, Guid mapId)

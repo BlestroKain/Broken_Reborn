@@ -22,6 +22,7 @@ using Intersect.Utilities;
 using Intersect.Framework;
 using Intersect.Models;
 using Intersect.Client.Interface.Shared;
+using Intersect.Client.Interface;
 using Intersect.Framework.Core;
 using Intersect.Framework.Core.GameObjects.Animations;
 using Intersect.Framework.Core.GameObjects.Crafting;
@@ -2466,6 +2467,23 @@ internal sealed partial class PacketHandler
             case FadeType.FadeOut:
                 Fade.FadeOut(packet.DurationMs, packet.WaitForCompletion);
                 break;
+        }
+    }
+
+    //SetAlignmentResponsePacket
+    public void HandlePacket(IPacketSender packetSender, SetAlignmentResponsePacket packet)
+    {
+        if (Globals.Me != null)
+        {
+            Globals.Me.Faction = packet.NewAlignment;
+        }
+
+        if (!string.IsNullOrWhiteSpace(packet.Message))
+        {
+            Interface.Interface.ShowAlert(
+                packet.Message,
+                alertType: packet.Success ? AlertType.Information : AlertType.Error
+            );
         }
     }
 

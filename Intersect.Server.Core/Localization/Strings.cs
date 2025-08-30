@@ -108,6 +108,24 @@ public static partial class Strings
         public readonly LocalizedString UnmuteSuccess = @"{00} has been unmuted!";
     }
 
+    public sealed partial class AlignmentNamespace : LocaleNamespace
+    {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString ChangedTo = @"Ahora perteneces a {00}.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString AlreadyInFaction = @"Ya perteneces a esta facción.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString GuildMismatch = @"Tu gremio pertenece a una facción distinta.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString WingsOn = @"No puedes cambiar de facción mientras tus alas estén activadas.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString SwapCooldown = @"Podrás cambiar el {fecha}.";
+    }
+
     public sealed partial class BagNamespace : LocaleNamespace
     {
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -764,6 +782,9 @@ public static partial class Strings
         public readonly LocalizedString InviteAlreadyInGuild = @"The player you're trying to invite is already in a guild or has a pending invite.";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString InviteDifferentFaction = @"You cannot invite players from a different faction.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public readonly LocalizedString InviteDeclined = @"You have declined the request to join {00}.";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -807,6 +828,12 @@ public static partial class Strings
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public readonly LocalizedString NotReceivedInvite = @"You've not received any guild invites yet.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString DifferentFaction = @"Your faction does not match the guild's faction.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString FactionApplied = @"Your faction has been changed to match the guild's.";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public readonly LocalizedString Promoted = @"{00} has been promoted to {01}!";
@@ -1514,6 +1541,8 @@ public static partial class Strings
 
         public readonly AccountNamespace Account = new AccountNamespace();
 
+        public readonly AlignmentNamespace Alignment = new AlignmentNamespace();
+
         public readonly BagNamespace Bags = new BagNamespace();
 
         public readonly BankNamespace Banks = new BankNamespace();
@@ -1591,6 +1620,8 @@ public static partial class Strings
     #region Namespace Exposure
 
     public static AccountNamespace Account => Root.Account;
+
+    public static AlignmentNamespace Alignment => Root.Alignment;
 
     public static BagNamespace Bags => Root.Bags;
 

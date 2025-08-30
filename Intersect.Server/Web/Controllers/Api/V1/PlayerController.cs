@@ -18,6 +18,7 @@ using Intersect.Server.Web.Http;
 using Intersect.Server.Web.Types;
 using Intersect.Server.Web.Types.Player;
 using Intersect.Utilities;
+using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -99,6 +100,34 @@ namespace Intersect.Server.Web.Controllers.Api.V1
                     ],
                     Direction = sortDirection,
                 }],
+            });
+        }
+
+        [HttpGet("honor")]
+        [ProducesResponseType(typeof(DataPage<Player>), (int)HttpStatusCode.OK, ContentTypes.Json)]
+        public IActionResult Honor(
+            [FromQuery] int page = 0,
+            [FromQuery] int pageSize = 0,
+            [FromQuery] int limit = PagingInfo.MaxPageSize
+        )
+        {
+            page = Math.Max(page, 0);
+            pageSize = Math.Max(Math.Min(pageSize, PagingInfo.MaxPageSize), PagingInfo.MinPageSize);
+            limit = Math.Max(Math.Min(limit, pageSize), 1);
+
+            var values = Player.RankByHonor(page, pageSize).ToList();
+            if (limit != pageSize)
+            {
+                values = values.Take(limit).ToList();
+            }
+
+            return Ok(new DataPage<Player>
+            {
+                Total = Player.Count(),
+                Page = page,
+                PageSize = pageSize,
+                Count = values.Count,
+                Values = values,
             });
         }
 

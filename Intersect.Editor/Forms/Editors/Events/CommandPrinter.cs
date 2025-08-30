@@ -863,6 +863,31 @@ public static partial class CommandPrinter
             : Strings.EventCommandList.female);
     }
 
+    private static string GetCommandText(SetAlignmentCommand command, MapInstance map)
+    {
+        var text = Strings.EventCommandList.setalignment.ToString(
+            command.Desired switch
+            {
+                Alignment.Neutral => Strings.EventCommandList.neutral,
+                Alignment.Serolf => Strings.EventCommandList.serolf,
+                Alignment.Nidraj => Strings.EventCommandList.nidraj,
+                _ => Strings.EventCommandList.neutral,
+            }
+        );
+
+        if (command.IgnoreCooldown)
+        {
+            text += " " + Strings.EventCommandList.ignorecooldown;
+        }
+
+        if (command.IgnoreGuildLock)
+        {
+            text += " " + Strings.EventCommandList.ignoreguildlock;
+        }
+
+        return text;
+    }
+
     private static string GetCommandText(SetAccessCommand command, MapInstance map)
     {
         switch (command.Access)

@@ -3132,7 +3132,15 @@ internal sealed partial class PacketHandler
 
         if (player.Faction == Alignment.Neutral)
         {
-            player.SetFaction(guildFaction);
+            AlignmentService.TrySetAlignment(
+                player,
+                guildFaction,
+                new AlignmentApplyOptions
+                {
+                    IgnoreCooldown = true,
+                    IgnoreGuildLock = true,
+                }
+            );
         }
 
         // Accept our invite!

@@ -49,12 +49,6 @@ namespace Intersect.Server.Entities
             Guild?.UpdateMemberList();
         }
 
-        public void SetFaction(Alignment faction)
-        {
-            Faction = faction;
-            LastFactionSwapAt = DateTime.UtcNow;
-        }
-
     }
 
 }

@@ -28,7 +28,7 @@ internal static class PrismService
             Id = Guid.NewGuid(),
             Owner = player.Faction,
             State = PrismState.Placed,
-            MapId = map.MapInstanceId,
+            MapId = map.MapId,
             X = player?.X ?? 0,
             Y = player?.Y ?? 0,
             PlacedAt = now,
@@ -42,7 +42,7 @@ internal static class PrismService
         Logger.LogInformation(
             "Prism {PrismId} placed on map {MapId} by {PlayerId} at {Time}",
             prism.Id,
-            map.MapInstanceId,
+            map.MapId,
             player?.Id,
             now
         );

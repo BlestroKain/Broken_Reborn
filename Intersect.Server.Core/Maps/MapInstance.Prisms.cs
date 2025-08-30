@@ -35,7 +35,7 @@ public partial class MapInstance
             Id = Guid.NewGuid(),
             Owner = player.Faction,
             State = PrismState.Placed,
-            MapId = MapInstanceId,
+            MapId = MapId,
             PlacedAt = DateTime.UtcNow,
             X = player.X,
             Y = player.Y,

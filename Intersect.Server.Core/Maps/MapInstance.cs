@@ -98,6 +98,11 @@ public partial class MapInstance : IMapInstance
     public Guid MapInstanceId { get; set; }
 
     /// <summary>
+    /// The ID of the base map for this instance.
+    /// </summary>
+    public Guid MapId => mMapController.Id;
+
+    /// <summary>
     /// The last time the <see cref="Core.LogicService.LogicThread"/> made a call to <see cref="Update(long)"/>.
     /// <remarks>
     /// This is used to determine when enough time has passed to cleanup this instance (remove it from it's parent <see cref="MapController"/>).

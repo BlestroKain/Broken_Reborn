@@ -37,6 +37,8 @@ public partial class MapInstance
             State = PrismState.Placed,
             MapId = MapInstanceId,
             PlacedAt = DateTime.UtcNow,
+            X = player.X,
+            Y = player.Y,
             Level = 1,
             MaxHp = 1,
             Hp = 1,

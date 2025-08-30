@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Prisms;
 using Intersect.Config;
 using Intersect.Server.Core.Services;
@@ -36,6 +37,37 @@ public sealed class ConquestService : IConquestService
         _logger = logger ?? NullLogger<ConquestService>.Instance;
     }
 
+    private void DistributeRewards(
+        MapInstance map,
+        AlignmentPrism prism,
+        Func<PrismCombatService.Contribution, bool> filter,
+        int honor
+    )
+    {
+        var contributions = PrismCombatService.GetContributions(prism)
+            .Where(filter)
+            .ToList();
+
+        var total = contributions.Sum(c => c.Total);
+        if (total <= 0)
+        {
+            return;
+        }
+
+        foreach (var contrib in contributions)
+        {
+            var player = map.GetPlayers().FirstOrDefault(p => p.Id == contrib.PlayerId);
+            if (player == null)
+            {
+                continue;
+            }
+
+            var reward = (int)Math.Round(honor * (double)contrib.Total / total);
+            HonorService.AdjustHonor(player, reward);
+            // TODO: MeritService.AdjustMerit(player, reward);
+        }
+    }
+
     /// <summary>
     /// Captures the prism for the captor's faction and applies any area bonuses.
     /// </summary>
@@ -47,6 +79,7 @@ public sealed class ConquestService : IConquestService
         }
 
         var prism = map.ControllingPrism;
+        DistributeRewards(map, prism, c => c.Faction == captor.Faction, 50);
         prism.Owner = captor.Faction;
         prism.State = PrismState.Dominated;
         var now = DateTime.UtcNow;
@@ -84,9 +117,6 @@ public sealed class ConquestService : IConquestService
 
         await _repository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         _bonusApplier.ApplyBonus(bonus);
-
-        // Award honor for capturing the prism
-        HonorService.AdjustHonor(captor, 50);
     }
 
     /// <summary>
@@ -101,6 +131,7 @@ public sealed class ConquestService : IConquestService
 
         var prism = map.ControllingPrism;
         var now = DateTime.UtcNow;
+        DistributeRewards(map, prism, c => c.Faction != prism.Owner, 25);
 
         var bonus = await _repository.FactionAreaBonuses
             .FirstOrDefaultAsync(b => b.PrismId == prism.Id, cancellationToken)
@@ -133,8 +164,20 @@ public sealed class ConquestService : IConquestService
 
         if (destroyer != null)
         {
-            HonorService.AdjustHonor(destroyer, 25);
+            // TODO: Additional rewards for destroyer if needed
         }
+    }
+
+    public Task DefendAsync(MapInstance map, CancellationToken cancellationToken = default)
+    {
+        if (map?.ControllingPrism == null)
+        {
+            return Task.CompletedTask;
+        }
+
+        var prism = map.ControllingPrism;
+        DistributeRewards(map, prism, c => c.Faction == prism.Owner, 25);
+        return Task.CompletedTask;
     }
 }
 

@@ -1,9 +1,13 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Intersect.Config;
 using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Prisms;
+using Intersect.Server.Database;
+using Intersect.Server.Database.Prisms;
 using Intersect.Server.Entities;
 using Intersect.Server.Maps;
 using Intersect.Server.Metrics;
@@ -20,6 +24,25 @@ internal static class PrismCombatService
     private static readonly ConcurrentDictionary<(Guid PrismId, Guid AttackerId), (DateTime TickStart, int Damage)>
         DamageTracker = new();
 
+    // Tracks active battles and their contributions.
+    private static readonly ConcurrentDictionary<Guid, PrismBattle> Battles = new();
+
+    internal sealed class Contribution
+    {
+        public Guid PlayerId { get; init; }
+        public Guid PlayerUserId { get; init; }
+        public string PlayerIp { get; init; }
+        public Alignment Faction { get; init; }
+
+        public int Damage;
+        public int Presence;
+        public int Heals;
+
+        public int Total => Damage + Presence + Heals;
+    }
+
+    private static readonly ConcurrentDictionary<Guid, ConcurrentDictionary<Guid, Contribution>> BattleContributions = new();
+
     private static int _activeBattles;
 
     public static int ActiveBattles => _activeBattles;
@@ -32,14 +55,67 @@ internal static class PrismCombatService
         }
     }
 
-    internal static void BattleEnded()
+    public static IEnumerable<Contribution> GetContributions(AlignmentPrism prism)
     {
+        if (prism?.CurrentBattleId == null)
+        {
+            return Array.Empty<Contribution>();
+        }
+
+        return BattleContributions.TryGetValue(prism.CurrentBattleId.Value, out var dict)
+            ? dict.Values
+            : Array.Empty<Contribution>();
+    }
+
+    internal static void BattleEnded(AlignmentPrism prism)
+    {
+        if (prism?.CurrentBattleId == null)
+        {
+            return;
+        }
+
+        var now = DateTime.UtcNow;
+        var battleId = prism.CurrentBattleId.Value;
+        if (!Battles.TryRemove(battleId, out var battle))
+        {
+            battle = new PrismBattle { Id = battleId, PrismId = prism.Id, StartedAt = now };
+        }
+
+        battle.EndedAt = now;
+
+        BattleContributions.TryRemove(battleId, out var contributions);
+
+        using (var context = DbInterface.CreatePlayerContext(readOnly: false))
+        {
+            context.PrismBattles.Add(battle);
+            if (contributions != null)
+            {
+                foreach (var contrib in contributions.Values)
+                {
+                    context.PrismContributions.Add(
+                        new PrismContribution
+                        {
+                            BattleId = battle.Id,
+                            PlayerId = contrib.PlayerId,
+                            PlayerUserId = contrib.PlayerUserId,
+                            PlayerIp = contrib.PlayerIp,
+                            Contribution = contrib.Total,
+                        }
+                    );
+                }
+            }
+
+            context.SaveChanges();
+        }
+
+        prism.CurrentBattleId = null;
+
         var battles = Interlocked.Decrement(ref _activeBattles);
         RecordActiveBattles();
         Logger.LogInformation(
             "Prism battle ended. Active battles: {Count} at {Time}",
             battles,
-            DateTime.UtcNow
+            now
         );
     }
 
@@ -117,6 +193,11 @@ internal static class PrismCombatService
         {
             prism.State = PrismState.UnderAttack;
             prism.CurrentBattleId ??= Guid.NewGuid();
+            Battles.TryAdd(
+                prism.CurrentBattleId.Value,
+                new PrismBattle { Id = prism.CurrentBattleId.Value, PrismId = prism.Id, StartedAt = now }
+            );
+            BattleContributions.TryAdd(prism.CurrentBattleId.Value, new());
             var battles = Interlocked.Increment(ref _activeBattles);
             Logger.LogInformation(
                 "Prism {PrismId} entered battle {BattleId} due to attack by {AttackerId} at {Time}",
@@ -126,6 +207,23 @@ internal static class PrismCombatService
                 now
             );
             RecordActiveBattles();
+        }
+
+        if (prism.CurrentBattleId != null)
+        {
+            var contributions = BattleContributions.GetOrAdd(prism.CurrentBattleId.Value, _ => new());
+            var contrib = contributions.GetOrAdd(
+                attacker.Id,
+                id => new Contribution
+                {
+                    PlayerId = id,
+                    PlayerUserId = attacker.UserId,
+                    PlayerIp = attacker.Client?.Ip,
+                    Faction = attacker.Faction,
+                }
+            );
+
+            contrib.Damage += amount;
         }
 
         Logger.LogInformation(
@@ -149,5 +247,49 @@ internal static class PrismCombatService
         }
 
         PrismService.Broadcast(map);
+    }
+
+    public static void RecordPresence(AlignmentPrism prism, Player player, int amount = 1)
+    {
+        if (prism?.CurrentBattleId == null || player == null || amount <= 0)
+        {
+            return;
+        }
+
+        var contributions = BattleContributions.GetOrAdd(prism.CurrentBattleId.Value, _ => new());
+        var contrib = contributions.GetOrAdd(
+            player.Id,
+            id => new Contribution
+            {
+                PlayerId = id,
+                PlayerUserId = player.UserId,
+                PlayerIp = player.Client?.Ip,
+                Faction = player.Faction,
+            }
+        );
+
+        contrib.Presence += amount;
+    }
+
+    public static void RecordHealing(AlignmentPrism prism, Player healer, int amount)
+    {
+        if (prism?.CurrentBattleId == null || healer == null || amount <= 0)
+        {
+            return;
+        }
+
+        var contributions = BattleContributions.GetOrAdd(prism.CurrentBattleId.Value, _ => new());
+        var contrib = contributions.GetOrAdd(
+            healer.Id,
+            id => new Contribution
+            {
+                PlayerId = id,
+                PlayerUserId = healer.UserId,
+                PlayerIp = healer.Client?.Ip,
+                Faction = healer.Faction,
+            }
+        );
+
+        contrib.Heals += amount;
     }
 }

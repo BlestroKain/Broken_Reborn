@@ -28,7 +28,16 @@ public class PrismOptions
     public int AttackCooldownSeconds { get; set; } = 30;
 
     /// <summary>
-    ///     If true, prisms are captured for the attacker's faction instead of being destroyed when their HP is depleted.
     /// </summary>
     public bool CaptureInsteadOfDestroy { get; set; } = true;
+
+    ///     Maximum damage a single player can inflict per scheduler tick.
+    /// </summary>
+    public int DamageCapPerTick { get; set; } = 50;
+
+    /// <summary>
+    ///     Interval in seconds between scheduler ticks.
+    /// </summary>
+    public int SchedulerIntervalSeconds { get; set; } = 1;
+
 }

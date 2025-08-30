@@ -37,6 +37,7 @@ namespace Intersect.Editor.Forms.Editors
         private System.Windows.Forms.Label lblAreaY;
         private System.Windows.Forms.Label lblAreaW;
         private System.Windows.Forms.Label lblAreaH;
+        private Intersect.Editor.Forms.Controls.MapPicker mapPicker;
 
         protected override void Dispose(bool disposing)
         {
@@ -93,6 +94,7 @@ namespace Intersect.Editor.Forms.Editors
             toolStripItemPaste = new ToolStripButton();
             toolStripSeparator3 = new ToolStripSeparator();
             toolStripItemUndo = new ToolStripButton();
+            mapPicker = new Intersect.Editor.Forms.Controls.MapPicker();
             ((System.ComponentModel.ISupportInitialize)nudX).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudY).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudLevel).BeginInit();
@@ -443,9 +445,18 @@ namespace Intersect.Editor.Forms.Editors
             lblAreaH.Size = new Size(43, 15);
             lblAreaH.TabIndex = 20;
             lblAreaH.Text = "Area H";
-            // 
+            //
+            // mapPicker
+            //
+            mapPicker.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
+            mapPicker.Location = new System.Drawing.Point(502, 72);
+            mapPicker.Margin = new Padding(4, 3, 4, 3);
+            mapPicker.Name = "mapPicker";
+            mapPicker.Size = new Size(300, 336);
+            mapPicker.TabIndex = 27;
+            //
             // toolStrip
-            // 
+            //
             toolStrip.AutoSize = false;
             toolStrip.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
             toolStrip.ForeColor = System.Drawing.Color.FromArgb(220, 220, 220);
@@ -559,6 +570,7 @@ namespace Intersect.Editor.Forms.Editors
             Controls.Add(btnSave);
             Controls.Add(btnDelete);
             Controls.Add(btnAdd);
+            Controls.Add(mapPicker);
             Controls.Add(lblAreaH);
             Controls.Add(nudAreaH);
             Controls.Add(lblAreaW);

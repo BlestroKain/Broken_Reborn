@@ -1,9 +1,10 @@
 using System;
 using System.Linq;
-using System.Drawing;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using Intersect.Config;
 using Intersect.Framework.Core.GameObjects.Prisms;
+using Intersect.Editor.Forms;
 
 namespace Intersect.Editor.Forms.Editors;
 
@@ -13,11 +14,6 @@ public partial class FrmPrisms : Form
     {
         InitializeComponent();
         Icon = Program.Icon;
-        areaEditor.AreaChanged += AreaEditor_AreaChanged;
-        nudAreaX.ValueChanged += NudArea_ValueChanged;
-        nudAreaY.ValueChanged += NudArea_ValueChanged;
-        nudAreaW.ValueChanged += NudArea_ValueChanged;
-        nudAreaH.ValueChanged += NudArea_ValueChanged;
         LoadList();
     }
 
@@ -71,7 +67,6 @@ public partial class FrmPrisms : Form
         nudAreaY.Value = p.Area.Y;
         nudAreaW.Value = p.Area.Width;
         nudAreaH.Value = p.Area.Height;
-        areaEditor.Area = new Rectangle(p.Area.X, p.Area.Y, p.Area.Width, p.Area.Height);
     }
 
     private void btnAdd_Click(object sender, EventArgs e)
@@ -197,21 +192,22 @@ public partial class FrmPrisms : Form
         }
     }
 
-    private void AreaEditor_AreaChanged(object? sender, EventArgs e)
+    private void btnAreaSelect_Click(object sender, EventArgs e)
     {
-        var rect = areaEditor.Area;
-        nudAreaX.Value = rect.X;
-        nudAreaY.Value = rect.Y;
-        nudAreaW.Value = rect.Width;
-        nudAreaH.Value = rect.Height;
-    }
+        if (!Guid.TryParse(txtMapId.Text, out var mapId))
+        {
+            return;
+        }
 
-    private void NudArea_ValueChanged(object? sender, EventArgs e)
-    {
-        areaEditor.Area = new Rectangle(
-            (int)nudAreaX.Value,
-            (int)nudAreaY.Value,
-            (int)nudAreaW.Value,
-            (int)nudAreaH.Value);
+        var selector = new FrmWarpSelection();
+        selector.InitForm(true, new List<Guid> { mapId });
+        selector.SelectTile(mapId, (int)nudAreaX.Value, (int)nudAreaY.Value);
+        selector.ShowDialog();
+
+        if (selector.GetResult())
+        {
+            nudAreaX.Value = selector.GetX();
+            nudAreaY.Value = selector.GetY();
+        }
     }
 }

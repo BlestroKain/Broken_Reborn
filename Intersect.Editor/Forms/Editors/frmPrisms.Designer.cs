@@ -26,7 +26,7 @@ namespace Intersect.Editor.Forms.Editors
         private DarkButton btnWindowDelete;
         private DarkButton btnModuleAdd;
         private DarkButton btnModuleDelete;
-        private Intersect.Editor.Forms.Controls.AreaEditor areaEditor;
+        private DarkButton btnAreaSelect;
         private System.Windows.Forms.Label lblMapId;
         private System.Windows.Forms.Label lblX;
         private System.Windows.Forms.Label lblY;
@@ -71,7 +71,7 @@ namespace Intersect.Editor.Forms.Editors
             btnWindowDelete = new DarkButton();
             btnModuleAdd = new DarkButton();
             btnModuleDelete = new DarkButton();
-            areaEditor = new Intersect.Editor.Forms.Controls.AreaEditor();
+            btnAreaSelect = new DarkButton();
             lblMapId = new Label();
             lblX = new Label();
             lblY = new Label();
@@ -253,11 +253,15 @@ namespace Intersect.Editor.Forms.Editors
             btnModuleDelete.Text = "Delete";
             btnModuleDelete.Click += btnModuleDelete_Click;
             //
-            // areaEditor
+            // btnAreaSelect
             //
-            areaEditor.Location = new System.Drawing.Point(502, 384);
-            areaEditor.Name = "areaEditor";
-            areaEditor.Size = new Size(233, 127);
+            btnAreaSelect.Location = new System.Drawing.Point(496, 384);
+            btnAreaSelect.Margin = new Padding(4, 3, 4, 3);
+            btnAreaSelect.Name = "btnAreaSelect";
+            btnAreaSelect.Size = new Size(75, 23);
+            btnAreaSelect.TabIndex = 29;
+            btnAreaSelect.Text = "Select";
+            btnAreaSelect.Click += btnAreaSelect_Click;
             // 
             // nudAreaX
             // 
@@ -563,7 +567,7 @@ namespace Intersect.Editor.Forms.Editors
             Controls.Add(nudAreaY);
             Controls.Add(lblAreaX);
             Controls.Add(nudAreaX);
-            Controls.Add(areaEditor);
+            Controls.Add(btnAreaSelect);
             Controls.Add(btnModuleDelete);
             Controls.Add(btnModuleAdd);
             Controls.Add(btnWindowDelete);

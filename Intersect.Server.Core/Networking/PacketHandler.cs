@@ -3259,5 +3259,11 @@ internal sealed partial class PacketHandler
         }
     }
 
+    //SetAlignmentRequestPacket
+    public void HandlePacket(Client client, SetAlignmentRequestPacket packet)
+    {
+        // Alignment change handling to be implemented
+    }
+
     #endregion
 }

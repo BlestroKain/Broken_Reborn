@@ -3307,9 +3307,23 @@ internal sealed partial class PacketHandler
         }
 
         var result = AlignmentService.TrySetAlignment(player, packet.Desired);
+
+        var message = result.Success
+            ? Strings.Alignment.ChangedTo.ToString(result.NewAlignment)
+            : AlignmentService.GetMessage(result.Message!, result.NextAllowedChangeAt) ?? string.Empty;
+
+        if (result.Success && result.NextAllowedChangeAt.HasValue)
+        {
+            var cooldown = AlignmentService.GetMessage("cooldown", result.NextAllowedChangeAt);
+            if (!string.IsNullOrEmpty(cooldown))
+            {
+                message += $" {cooldown}";
+            }
+        }
+
         var response = new SetAlignmentResponsePacket(
             result.Success,
-            result.Message,
+            message,
             result.NewAlignment,
             result.NextAllowedChangeAt
         );

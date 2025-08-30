@@ -114,7 +114,7 @@ public static partial class Strings
         public readonly LocalizedString ChangedTo = @"Ahora perteneces a {00}.";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public readonly LocalizedString AlreadyInFaction = @"Ya perteneces a {00}.";
+        public readonly LocalizedString AlreadyInFaction = @"Ya perteneces a esta facción.";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public readonly LocalizedString GuildMismatch = @"Tu gremio pertenece a una facción distinta.";
@@ -123,7 +123,7 @@ public static partial class Strings
         public readonly LocalizedString WingsOn = @"No puedes cambiar de facción mientras tus alas estén activadas.";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public readonly LocalizedString SwapCooldown = @"No puedes cambiar de facción nuevamente hasta {fecha}.";
+        public readonly LocalizedString SwapCooldown = @"Podrás cambiar el {fecha}.";
     }
 
     public sealed partial class BagNamespace : LocaleNamespace
@@ -1538,6 +1538,8 @@ public static partial class Strings
 
         public readonly AccountNamespace Account = new AccountNamespace();
 
+        public readonly AlignmentNamespace Alignment = new AlignmentNamespace();
+
         public readonly BagNamespace Bags = new BagNamespace();
 
         public readonly BankNamespace Banks = new BankNamespace();
@@ -1615,6 +1617,8 @@ public static partial class Strings
     #region Namespace Exposure
 
     public static AccountNamespace Account => Root.Account;
+
+    public static AlignmentNamespace Alignment => Root.Alignment;
 
     public static BagNamespace Bags => Root.Bags;
 

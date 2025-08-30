@@ -13,11 +13,15 @@ namespace Intersect.Editor.Forms.Editors
         private DarkNumericUpDown nudHpPerLevel;
         private DarkNumericUpDown nudMaturationSeconds;
         private DarkNumericUpDown nudAttackCooldown;
+        private DarkNumericUpDown nudDamageCapPerTick;
+        private DarkNumericUpDown nudSchedulerIntervalSeconds;
         private DarkButton btnSave;
         private System.Windows.Forms.Label lblBaseHp;
         private System.Windows.Forms.Label lblHpPerLevel;
         private System.Windows.Forms.Label lblMaturation;
         private System.Windows.Forms.Label lblCooldown;
+        private System.Windows.Forms.Label lblDamageCapPerTick;
+        private System.Windows.Forms.Label lblSchedulerInterval;
 
         /// <summary>
         /// Clean up any resources being used.
@@ -44,15 +48,21 @@ namespace Intersect.Editor.Forms.Editors
             nudHpPerLevel = new DarkNumericUpDown();
             nudMaturationSeconds = new DarkNumericUpDown();
             nudAttackCooldown = new DarkNumericUpDown();
+            nudDamageCapPerTick = new DarkNumericUpDown();
+            nudSchedulerIntervalSeconds = new DarkNumericUpDown();
             btnSave = new DarkButton();
             lblBaseHp = new Label();
             lblHpPerLevel = new Label();
             lblMaturation = new Label();
             lblCooldown = new Label();
+            lblDamageCapPerTick = new Label();
+            lblSchedulerInterval = new Label();
             ((System.ComponentModel.ISupportInitialize)nudBaseHp).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudHpPerLevel).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudMaturationSeconds).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudAttackCooldown).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudDamageCapPerTick).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudSchedulerIntervalSeconds).BeginInit();
             SuspendLayout();
             // 
             // nudBaseHp
@@ -102,15 +112,39 @@ namespace Intersect.Editor.Forms.Editors
             nudAttackCooldown.Size = new Size(117, 23);
             nudAttackCooldown.TabIndex = 6;
             nudAttackCooldown.Value = new decimal(new int[] { 0, 0, 0, 0 });
-            // 
+            //
+            // nudDamageCapPerTick
+            //
+            nudDamageCapPerTick.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            nudDamageCapPerTick.ForeColor = System.Drawing.Color.Gainsboro;
+            nudDamageCapPerTick.Location = new System.Drawing.Point(14, 152);
+            nudDamageCapPerTick.Margin = new Padding(4, 3, 4, 3);
+            nudDamageCapPerTick.Maximum = new decimal(new int[] { 100000, 0, 0, 0 });
+            nudDamageCapPerTick.Name = "nudDamageCapPerTick";
+            nudDamageCapPerTick.Size = new Size(117, 23);
+            nudDamageCapPerTick.TabIndex = 8;
+            nudDamageCapPerTick.Value = new decimal(new int[] { 0, 0, 0, 0 });
+            //
+            // nudSchedulerIntervalSeconds
+            //
+            nudSchedulerIntervalSeconds.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            nudSchedulerIntervalSeconds.ForeColor = System.Drawing.Color.Gainsboro;
+            nudSchedulerIntervalSeconds.Location = new System.Drawing.Point(14, 187);
+            nudSchedulerIntervalSeconds.Margin = new Padding(4, 3, 4, 3);
+            nudSchedulerIntervalSeconds.Maximum = new decimal(new int[] { 100000, 0, 0, 0 });
+            nudSchedulerIntervalSeconds.Name = "nudSchedulerIntervalSeconds";
+            nudSchedulerIntervalSeconds.Size = new Size(117, 23);
+            nudSchedulerIntervalSeconds.TabIndex = 10;
+            nudSchedulerIntervalSeconds.Value = new decimal(new int[] { 0, 0, 0, 0 });
+            //
             // btnSave
-            // 
-            btnSave.Location = new System.Drawing.Point(14, 152);
+            //
+            btnSave.Location = new System.Drawing.Point(14, 221);
             btnSave.Margin = new Padding(4, 3, 4, 3);
             btnSave.Name = "btnSave";
             btnSave.Padding = new Padding(6, 6, 6, 6);
             btnSave.Size = new Size(88, 27);
-            btnSave.TabIndex = 8;
+            btnSave.TabIndex = 12;
             btnSave.Text = "Save";
             btnSave.Click += btnSave_Click;
             // 
@@ -153,14 +187,38 @@ namespace Intersect.Editor.Forms.Editors
             lblCooldown.Size = new Size(78, 15);
             lblCooldown.TabIndex = 7;
             lblCooldown.Text = "Cooldown (s)";
-            // 
+            //
+            // lblDamageCapPerTick
+            //
+            lblDamageCapPerTick.AutoSize = true;
+            lblDamageCapPerTick.Location = new System.Drawing.Point(138, 154);
+            lblDamageCapPerTick.Margin = new Padding(4, 0, 4, 0);
+            lblDamageCapPerTick.Name = "lblDamageCapPerTick";
+            lblDamageCapPerTick.Size = new Size(111, 15);
+            lblDamageCapPerTick.TabIndex = 9;
+            lblDamageCapPerTick.Text = "Damage Cap/Tick";
+            //
+            // lblSchedulerInterval
+            //
+            lblSchedulerInterval.AutoSize = true;
+            lblSchedulerInterval.Location = new System.Drawing.Point(138, 189);
+            lblSchedulerInterval.Margin = new Padding(4, 0, 4, 0);
+            lblSchedulerInterval.Name = "lblSchedulerInterval";
+            lblSchedulerInterval.Size = new Size(133, 15);
+            lblSchedulerInterval.TabIndex = 11;
+            lblSchedulerInterval.Text = "Scheduler Interval (s)";
+            //
             // FrmPrismOptions
-            // 
+            //
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
-            ClientSize = new Size(280, 196);
+            ClientSize = new Size(280, 266);
             Controls.Add(btnSave);
+            Controls.Add(lblSchedulerInterval);
+            Controls.Add(nudSchedulerIntervalSeconds);
+            Controls.Add(lblDamageCapPerTick);
+            Controls.Add(nudDamageCapPerTick);
             Controls.Add(lblCooldown);
             Controls.Add(nudAttackCooldown);
             Controls.Add(lblMaturation);
@@ -181,6 +239,8 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)nudHpPerLevel).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudMaturationSeconds).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudAttackCooldown).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudDamageCapPerTick).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudSchedulerIntervalSeconds).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }

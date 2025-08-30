@@ -1153,30 +1153,26 @@ internal sealed partial class PacketHandler
             }
 
             var result = AlignmentService.TrySetAlignment(player, desired);
-            if (result.Success)
-            {
-                PacketSender.SendChatMsg(
-                    player,
-                    $"Alignment set to {desired}.",
-                    ChatMessageType.Notice,
-                    CustomColors.Alerts.Success
-                );
-            }
-            else
-            {
-                var feedback = result.Message;
-                if (result.NextAllowedChangeAt.HasValue)
-                {
-                    feedback += $" Next change at {result.NextAllowedChangeAt.Value:u}.";
-                }
 
-                PacketSender.SendChatMsg(
-                    player,
-                    feedback,
-                    ChatMessageType.Error,
-                    CustomColors.Alerts.Error
-                );
+            var message = result.Success
+                ? Strings.Alignment.ChangedTo.ToString(result.NewAlignment)
+                : AlignmentService.GetMessage(result.Message!, result.NextAllowedChangeAt) ?? string.Empty;
+
+            if (result.NextAllowedChangeAt.HasValue && (result.Success || result.Message != "cooldown"))
+            {
+                var cooldown = AlignmentService.GetMessage("cooldown", result.NextAllowedChangeAt);
+                if (!string.IsNullOrEmpty(cooldown))
+                {
+                    message += $" {cooldown}";
+                }
             }
+
+            PacketSender.SendChatMsg(
+                player,
+                message,
+                result.Success ? ChatMessageType.Notice : ChatMessageType.Error,
+                result.Success ? CustomColors.Alerts.Success : CustomColors.Alerts.Error
+            );
 
             return;
         }

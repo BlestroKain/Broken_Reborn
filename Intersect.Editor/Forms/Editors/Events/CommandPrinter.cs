@@ -865,27 +865,16 @@ public static partial class CommandPrinter
 
     private static string GetCommandText(SetAlignmentCommand command, MapInstance map)
     {
-        var text = Strings.EventCommandList.setalignment.ToString(
-            command.Desired switch
-            {
-                Alignment.Neutral => Strings.EventCommandList.neutral,
-                Alignment.Serolf => Strings.EventCommandList.serolf,
-                Alignment.Nidraj => Strings.EventCommandList.nidraj,
-                _ => Strings.EventCommandList.neutral,
-            }
-        );
-
-        if (command.IgnoreCooldown)
+        var faction = command.Desired switch
         {
-            text += " " + Strings.EventCommandList.ignorecooldown;
-        }
+            Alignment.Neutral => Strings.EventCommandList.neutral.ToString(),
+            Alignment.Serolf => Strings.EventCommandList.serolf.ToString(),
+            Alignment.Nidraj => Strings.EventCommandList.nidraj.ToString(),
+            _ => Strings.EventCommandList.neutral.ToString(),
+        };
 
-        if (command.IgnoreGuildLock)
-        {
-            text += " " + Strings.EventCommandList.ignoreguildlock;
-        }
-
-        return text;
+        return
+            $"Set Alignment → {faction} (ignoreCooldown={command.IgnoreCooldown}, ignoreGuildLock={command.IgnoreGuildLock})";
     }
 
     private static string GetCommandText(SetAccessCommand command, MapInstance map)

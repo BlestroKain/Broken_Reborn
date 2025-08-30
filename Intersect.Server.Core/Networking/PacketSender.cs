@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,6 +34,7 @@ using Intersect.Server.General;
 using Intersect.Server.Localization;
 using Intersect.Server.Maps;
 using Intersect.Server.Classes.Maps;
+using Intersect.Server.Services.Prisms;
 using Intersect.Utilities;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -190,7 +192,8 @@ public static partial class PacketSender
                 var prism = instance.ControllingPrism;
                 if (prism != null)
                 {
-                    prisms.Add(new PrismUpdatePacket(prism.MapId, prism.Owner, prism.State));
+                    var nextStart = PrismService.GetNextVulnerabilityStart(prism, DateTime.UtcNow);
+                    prisms.Add(new PrismUpdatePacket(prism.MapId, prism.Owner, prism.State, prism.Hp, prism.MaxHp, nextStart));
                 }
             }
         }

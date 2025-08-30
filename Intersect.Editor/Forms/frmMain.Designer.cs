@@ -124,6 +124,7 @@ namespace Intersect.Editor.Forms
             this.menuStrip = new DarkUI.Controls.DarkMenuStrip();
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.packageUpdateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.prismsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.prismOptionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
@@ -1000,9 +1001,10 @@ namespace Intersect.Editor.Forms
             this.menuStrip.Text = "menuStrip1";
             // 
             // toolsToolStripMenuItem
-            // 
+            //
             this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.packageUpdateToolStripMenuItem,
+            this.prismsToolStripMenuItem,
             this.prismOptionsToolStripMenuItem});
             this.toolsToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
@@ -1016,6 +1018,15 @@ namespace Intersect.Editor.Forms
             this.packageUpdateToolStripMenuItem.Size = new System.Drawing.Size(159, 22);
             this.packageUpdateToolStripMenuItem.Text = "Package Update";
             this.packageUpdateToolStripMenuItem.Click += new System.EventHandler(this.packageUpdateToolStripMenuItem_Click);
+            //
+            // prismsToolStripMenuItem
+            //
+            this.prismsToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.prismsToolStripMenuItem.Name = "prismsToolStripMenuItem";
+            this.prismsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift | System.Windows.Forms.Keys.P)));
+            this.prismsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.prismsToolStripMenuItem.Text = "Prisms...";
+            this.prismsToolStripMenuItem.Click += new System.EventHandler(this.prismsToolStripMenuItem_Click);
             //
             // prismOptionsToolStripMenuItem
             //
@@ -1143,6 +1154,7 @@ namespace Intersect.Editor.Forms
 		private ToolStripSeparator toolStripSeparator13;
         private ToolStripMenuItem craftsEditorToolStripMenuItem;
         private ToolStripMenuItem packageUpdateToolStripMenuItem;
+        private ToolStripMenuItem prismsToolStripMenuItem;
         private ToolStripMenuItem prismOptionsToolStripMenuItem;
         private ToolStripMenuItem layersToolStripMenuItem;
         private ToolStripMenuItem hideEventsToolStripMenuItem;

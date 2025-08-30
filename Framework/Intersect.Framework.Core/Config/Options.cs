@@ -224,6 +224,8 @@ public partial record Options
 
     public ItemOptions Items { get; set; } = new();
 
+    public PrismOptions Prism { get; set; } = new();
+
     #endregion Other Game Properties
 
     #endregion Configuration Properties
@@ -266,6 +268,9 @@ public partial record Options
         instance.FixAnimatedSprites();
 
         SaveToDisk();
+
+        // Load prism configuration after ensuring the resources directory exists
+        PrismConfig.Load();
 
         return true;
     }
@@ -316,6 +321,9 @@ public partial record Options
             var loadedOptions = JsonConvert.DeserializeObject<Options>(data, PublicSerializerSettings);
             Instance = loadedOptions;
             OptionsLoaded?.Invoke(loadedOptions);
+
+            // Ensure prism definitions are loaded locally
+            PrismConfig.Load();
         }
         catch (Exception exception)
         {

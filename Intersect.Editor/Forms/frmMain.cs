@@ -200,6 +200,7 @@ public partial class FrmMain : Form
     {
         toolsToolStripMenuItem.Text = Strings.MainForm.tools;
         packageUpdateToolStripMenuItem.Text = Strings.MainForm.MenuToolsPackageUpdate;
+        prismOptionsToolStripMenuItem.Text = Strings.MainForm.MenuToolsPrismOptions;
     }
 
     private void InitLocalizationMenuHelp()
@@ -306,6 +307,9 @@ public partial class FrmMain : Form
 
             case Keys.Control | Keys.S:
                 toolStripBtnSaveMap_Click(null, null);
+                return;
+            case Keys.Control | Keys.Shift | Keys.O:
+                prismOptionsToolStripMenuItem_Click(null, null);
                 return;
         }
 
@@ -2022,6 +2026,12 @@ public partial class FrmMain : Form
         }
 
         return default;
+    }
+
+    private void prismOptionsToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        var prismForm = new FrmPrismOptions();
+        prismForm.ShowDialog();
     }
 
     private void packageUpdateToolStripMenuItem_Click(object sender, EventArgs e) => PackageUpdate();

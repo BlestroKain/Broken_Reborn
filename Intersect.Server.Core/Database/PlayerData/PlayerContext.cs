@@ -5,6 +5,12 @@ using Intersect.Server.Database.PlayerData.Players;
 using Intersect.Server.Database.PlayerData.SeedData;
 using Intersect.Server.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Text.Json;
+using Intersect.Framework.Core.GameObjects.Prisms;
+using Intersect.Server.Database.Prisms;
+
+using AlignmentPrismEntity = Intersect.Server.Database.Prisms.AlignmentPrism;
 
 namespace Intersect.Server.Database.PlayerData;
 
@@ -51,6 +57,15 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
 
     public DbSet<UserVariable> User_Variables { get; set; }
     public DbSet<MailBox> Player_MailBox { get; set; }
+    public DbSet<KillLog> Player_KillLogs { get; set; }
+
+    public DbSet<AlignmentPrismEntity> Prisms { get; set; }
+
+    public DbSet<PrismBattle> PrismBattles { get; set; }
+
+    public DbSet<PrismContribution> PrismContributions { get; set; }
+
+    public DbSet<FactionAreaBonus> FactionAreaBonuses { get; set; }
 
     internal async ValueTask Commit(
         bool commit = false,
@@ -83,6 +98,12 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
         modelBuilder.Entity<Player>().HasOne(p => p.PendingGuildInviteFrom).WithMany().OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<Player>().HasOne(p => p.PendingGuildInviteTo).WithMany().OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Player>().Property(p => p.Faction);
+        modelBuilder.Entity<Player>().Property(p => p.Wings);
+        modelBuilder.Entity<Player>().Property(p => p.Honor);
+        modelBuilder.Entity<Player>().Property(p => p.Grade);
+        modelBuilder.Entity<Player>().Property(p => p.LastFactionSwapAt);
 
         modelBuilder.Entity<Player>()
             .HasMany(b => b.Friends)
@@ -136,6 +157,41 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
             .WithMany() // no necesitamos colección inversa aquí
             .HasForeignKey(m => m.SenderId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<KillLog>().HasOne(k => k.Attacker).WithMany().OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<KillLog>().HasOne(k => k.Victim).WithMany().OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<AlignmentPrismEntity>(entity =>
+        {
+            var jsonOptions = new JsonSerializerOptions();
+
+            entity.Property(p => p.Windows)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, jsonOptions),
+                    v => string.IsNullOrEmpty(v)
+                        ? new List<VulnerabilityWindow>()
+                        : JsonSerializer.Deserialize<List<VulnerabilityWindow>>(v, jsonOptions) ?? new List<VulnerabilityWindow>()
+                );
+
+            entity.Property(p => p.Modules)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, jsonOptions),
+                    v => string.IsNullOrEmpty(v)
+                        ? new List<PrismModule>()
+                        : JsonSerializer.Deserialize<List<PrismModule>>(v, jsonOptions) ?? new List<PrismModule>()
+                );
+
+            entity.Property(p => p.Area)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, jsonOptions),
+                    v => string.IsNullOrEmpty(v)
+                        ? new PrismArea()
+                        : JsonSerializer.Deserialize<PrismArea>(v, jsonOptions) ?? new PrismArea()
+                );
+        });
+        modelBuilder.Entity<PrismBattle>().HasOne<AlignmentPrismEntity>().WithMany().HasForeignKey(b => b.PrismId);
+        modelBuilder.Entity<FactionAreaBonus>().HasOne<AlignmentPrismEntity>().WithMany().HasForeignKey(b => b.PrismId);
+        modelBuilder.Entity<PrismContribution>().HasOne<PrismBattle>().WithMany().HasForeignKey(c => c.BattleId);
     }
 
     public void Seed()

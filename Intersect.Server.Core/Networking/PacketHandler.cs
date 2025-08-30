@@ -1,3 +1,4 @@
+using System;
 using Intersect.Enums;
 using Intersect.GameObjects;
 using Intersect.Network;
@@ -26,6 +27,8 @@ using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.Security;
 using Intersect.Network.Packets.Server;
 using Intersect.Server.Core;
+using Intersect.Framework.Core.GameObjects.Prisms;
+using Intersect.Server.Services.Prisms;
 using Microsoft.Extensions.Logging;
 using ChatMsgPacket = Intersect.Network.Packets.Client.ChatMsgPacket;
 using LoginPacket = Intersect.Network.Packets.Client.LoginPacket;
@@ -1414,6 +1417,50 @@ internal sealed partial class PacketHandler
         {
             player.AttackTimer = Timing.Global.Milliseconds + latencyAdjustmentMs + player.CalculateAttackTime();
         }
+    }
+
+    //PrismAttackPacket
+    public void HandlePacket(Client client, PrismAttackPacket packet)
+    {
+        var player = client?.Entity;
+        if (player == null)
+        {
+            return;
+        }
+
+        if (player.Wings != WingState.On)
+        {
+            return;
+        }
+
+        if (!MapController.TryGetInstanceFromMap(player.MapId, player.MapInstanceId, out var mapInstance))
+        {
+            return;
+        }
+
+        var prism = mapInstance.ControllingPrism;
+        if (prism == null || prism.Owner == player.Faction)
+        {
+            return;
+        }
+
+        var distance = player.GetDistanceTo(mapInstance.GetController(), prism.X, prism.Y);
+        if (distance > 1)
+        {
+            return;
+        }
+
+        var now = DateTime.UtcNow;
+        var stillUnderAttack = prism.State == PrismState.UnderAttack && prism.LastHitAt.HasValue &&
+                               (now - prism.LastHitAt.Value).TotalSeconds <=
+                               Options.Instance.Prism.AttackCooldownSeconds;
+
+        if (!PrismService.IsInVulnerabilityWindow(prism, now) && !stillUnderAttack)
+        {
+            return;
+        }
+
+        PrismCombatService.ApplyDamage(mapInstance, prism, 1, player);
     }
 
     //DirectionPacket
@@ -2834,6 +2881,12 @@ internal sealed partial class PacketHandler
                     // Are we already in a guild? or have a pending invite?
                     if (target.Guild == null && target.PendingGuildInvite == default)
                     {
+                        if (target.Faction != Alignment.Neutral && target.Faction != player.Faction)
+                        {
+                            PacketSender.SendChatMsg(player, Strings.Guilds.InviteDifferentFaction, ChatMessageType.Guild, CustomColors.Alerts.Error);
+                            return;
+                        }
+
                         // Thank god, we can FINALLY get started!
                         // Set our invite and send our players the relevant messages.
                         target.PendingGuildInvite = new GuildInvite
@@ -3036,6 +3089,20 @@ internal sealed partial class PacketHandler
 
                 return;
             }
+        }
+
+        var guildFaction = inviter?.Faction ?? guild.GetFaction();
+        if (player.Faction != Alignment.Neutral && player.Faction != guildFaction)
+        {
+            PacketSender.SendChatMsg(player, Strings.Guilds.DifferentFaction, ChatMessageType.Guild, CustomColors.Alerts.Error);
+            player.PendingGuildInvite = default;
+            player.Save();
+            return;
+        }
+
+        if (player.Faction == Alignment.Neutral)
+        {
+            player.SetFaction(guildFaction);
         }
 
         // Accept our invite!

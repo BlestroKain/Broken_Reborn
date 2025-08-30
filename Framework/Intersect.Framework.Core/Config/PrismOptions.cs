@@ -28,6 +28,9 @@ public class PrismOptions
     public int AttackCooldownSeconds { get; set; } = 30;
 
     /// <summary>
+    /// </summary>
+    public bool CaptureInsteadOfDestroy { get; set; } = true;
+
     ///     Maximum damage a single player can inflict per scheduler tick.
     /// </summary>
     public int DamageCapPerTick { get; set; } = 50;
@@ -36,4 +39,5 @@ public class PrismOptions
     ///     Interval in seconds between scheduler ticks.
     /// </summary>
     public int SchedulerIntervalSeconds { get; set; } = 1;
+
 }

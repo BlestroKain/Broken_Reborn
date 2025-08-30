@@ -1,7 +1,9 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Intersect.Config;
 using Intersect.Framework.Core.GameObjects.Prisms;
+using Intersect.Server.Core;
 using Intersect.Server.Entities;
 using Intersect.Server.Maps;
 using Intersect.Server.Networking;
@@ -44,34 +46,85 @@ internal static class PrismService
 
         var now = DateTime.UtcNow;
         var changed = false;
+        var inWindow = IsInVulnerabilityWindow(prism, now);
 
         switch (prism.State)
         {
             case PrismState.Placed:
                 if (prism.MaturationEndsAt.HasValue && now >= prism.MaturationEndsAt.Value)
                 {
+                    prism.State = inWindow ? PrismState.Vulnerable : PrismState.Dominated;
+                    changed = true;
+                }
+
+                break;
+
+            case PrismState.Vulnerable:
+                if (!inWindow)
+                {
+                    prism.State = PrismState.Dominated;
+                    changed = true;
+                }
+
+                break;
+
+            case PrismState.Dominated:
+                if (inWindow)
+                {
                     prism.State = PrismState.Vulnerable;
                     changed = true;
                 }
+
                 break;
+
             case PrismState.UnderAttack:
                 if (prism.Hp <= 0)
                 {
                     prism.State = PrismState.Destroyed;
                     changed = true;
+
+                    HandleConquest(map);
                 }
                 else if (prism.LastHitAt.HasValue &&
                          (now - prism.LastHitAt.Value).TotalSeconds >= Options.Instance.Prism.AttackCooldownSeconds)
                 {
-                    prism.State = PrismState.Dominated;
+                    prism.State = inWindow ? PrismState.Vulnerable : PrismState.Dominated;
                     changed = true;
                 }
+
+                break;
+
+            case PrismState.Destroyed:
+                HandleConquest(map);
                 break;
         }
 
         if (changed)
         {
             Broadcast(map);
+        }
+    }
+
+    private static void HandleConquest(MapInstance map)
+    {
+        var conquestService = Bootstrapper.Context?.Services
+            .FirstOrDefault(s => s is IConquestService) as IConquestService;
+
+        if (conquestService == null)
+        {
+            return;
+        }
+
+        var prism = map.ControllingPrism;
+        var player = map.GetPlayers().FirstOrDefault(p => p.Faction != prism.Owner);
+
+        if (Options.Instance.Prism.CaptureInsteadOfDestroy)
+        {
+            _ = conquestService.CaptureAsync(map, player);
+        }
+        else
+        {
+            _ = conquestService.DestroyAsync(map, player);
         }
     }
 

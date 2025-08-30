@@ -11,6 +11,7 @@ using Intersect.Server.Database.Prisms;
 using Intersect.Server.Entities;
 using Intersect.Server.Maps;
 using Intersect.Server.Metrics;
+using GameAlignmentPrism = Intersect.Framework.Core.GameObjects.Prisms.AlignmentPrism;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -22,10 +23,10 @@ internal static class PrismCombatService
 
     // Tracks damage dealt by players to prisms within the current tick window.
     private static readonly ConcurrentDictionary<(Guid PrismId, Guid AttackerId), (DateTime TickStart, int Damage)>
-        DamageTracker = new();
+        DamageTracker = new ConcurrentDictionary<(Guid PrismId, Guid AttackerId), (DateTime TickStart, int Damage)>();
 
     // Tracks active battles and their contributions.
-    private static readonly ConcurrentDictionary<Guid, PrismBattle> Battles = new();
+    private static readonly ConcurrentDictionary<Guid, PrismBattle> Battles = new ConcurrentDictionary<Guid, PrismBattle>();
 
     internal sealed class Contribution
     {
@@ -42,10 +43,12 @@ internal static class PrismCombatService
         public int Total => Damage + Presence + Heals;
     }
 
-    private static readonly ConcurrentDictionary<Guid, ConcurrentDictionary<Guid, Contribution>> BattleContributions = new();
+    private static readonly ConcurrentDictionary<Guid, ConcurrentDictionary<Guid, Contribution>> BattleContributions =
+        new ConcurrentDictionary<Guid, ConcurrentDictionary<Guid, Contribution>>();
 
     // Tracks death timestamps to enforce respawn cooldown.
-    private static readonly ConcurrentDictionary<Guid, DateTime> DeathTimestamps = new();
+    private static readonly ConcurrentDictionary<Guid, DateTime> DeathTimestamps =
+        new ConcurrentDictionary<Guid, DateTime>();
 
     private const double ContributionDecayFactor = 0.99;
 
@@ -61,7 +64,7 @@ internal static class PrismCombatService
         }
     }
 
-    public static IEnumerable<Contribution> GetContributions(AlignmentPrism prism)
+    public static IEnumerable<Contribution> GetContributions(GameAlignmentPrism prism)
     {
         if (prism?.CurrentBattleId == null)
         {
@@ -73,7 +76,7 @@ internal static class PrismCombatService
             : Array.Empty<Contribution>();
     }
 
-    public static DateTime? GetBattleStart(AlignmentPrism prism)
+    public static DateTime? GetBattleStart(GameAlignmentPrism prism)
     {
         if (prism?.CurrentBattleId == null)
         {
@@ -83,7 +86,7 @@ internal static class PrismCombatService
         return Battles.TryGetValue(prism.CurrentBattleId.Value, out var battle) ? battle.StartedAt : null;
     }
 
-    public static void DiminishContributions(AlignmentPrism prism)
+    public static void DiminishContributions(GameAlignmentPrism prism)
     {
         if (prism?.CurrentBattleId == null)
         {
@@ -101,7 +104,7 @@ internal static class PrismCombatService
         }
     }
 
-    public static void RecordDeath(AlignmentPrism prism, Player player)
+    public static void RecordDeath(GameAlignmentPrism prism, Player player)
     {
         if (prism?.State != PrismState.UnderAttack || player == null)
         {
@@ -122,7 +125,7 @@ internal static class PrismCombatService
                (now - time).TotalSeconds < Options.Instance.Prism.RespawnCooldownSeconds;
     }
 
-    internal static void BattleEnded(AlignmentPrism prism)
+    internal static void BattleEnded(GameAlignmentPrism prism)
     {
         if (prism?.CurrentBattleId == null)
         {
@@ -175,7 +178,7 @@ internal static class PrismCombatService
         );
     }
 
-    public static bool CanDamage(AlignmentPrism prism, DateTime now)
+    public static bool CanDamage(GameAlignmentPrism prism, DateTime now)
     {
         if (Options.Instance.Prism.AllowDamageOutsideVulnerability)
         {
@@ -188,7 +191,7 @@ internal static class PrismCombatService
         return PrismService.IsInVulnerabilityWindow(prism, now) || stillUnderAttack;
     }
 
-    public static void ApplyDamage(MapInstance map, AlignmentPrism prism, int amount, Player attacker)
+    public static void ApplyDamage(MapInstance map, GameAlignmentPrism prism, int amount, Player attacker)
     {
         var now = DateTime.UtcNow;
 
@@ -274,7 +277,7 @@ internal static class PrismCombatService
                 prism.CurrentBattleId.Value,
                 new PrismBattle { Id = prism.CurrentBattleId.Value, PrismId = prism.Id, StartedAt = now }
             );
-            BattleContributions.TryAdd(prism.CurrentBattleId.Value, new());
+            BattleContributions.TryAdd(prism.CurrentBattleId.Value, new ConcurrentDictionary<Guid, Contribution>());
             var battles = Interlocked.Increment(ref _activeBattles);
             Logger.LogInformation(
                 "Prism {PrismId} entered battle {BattleId} due to attack by {AttackerId} at {Time}",
@@ -288,7 +291,10 @@ internal static class PrismCombatService
 
         if (prism.CurrentBattleId != null)
         {
-            var contributions = BattleContributions.GetOrAdd(prism.CurrentBattleId.Value, _ => new());
+            var contributions = BattleContributions.GetOrAdd(
+                prism.CurrentBattleId.Value,
+                _ => new ConcurrentDictionary<Guid, Contribution>()
+            );
             var contrib = contributions.GetOrAdd(
                 attacker.Id,
                 id => new Contribution
@@ -327,14 +333,17 @@ internal static class PrismCombatService
         PrismService.Broadcast(map);
     }
 
-    public static void RecordPresence(AlignmentPrism prism, Player player, int amount = 1)
+    public static void RecordPresence(GameAlignmentPrism prism, Player player, int amount = 1)
     {
         if (prism?.CurrentBattleId == null || player == null || amount <= 0)
         {
             return;
         }
 
-        var contributions = BattleContributions.GetOrAdd(prism.CurrentBattleId.Value, _ => new());
+        var contributions = BattleContributions.GetOrAdd(
+            prism.CurrentBattleId.Value,
+            _ => new ConcurrentDictionary<Guid, Contribution>()
+        );
         var contrib = contributions.GetOrAdd(
             player.Id,
             id => new Contribution
@@ -350,14 +359,17 @@ internal static class PrismCombatService
         contrib.Presence += amount;
     }
 
-    public static void RecordHealing(AlignmentPrism prism, Player healer, int amount)
+    public static void RecordHealing(GameAlignmentPrism prism, Player healer, int amount)
     {
         if (prism?.CurrentBattleId == null || healer == null || amount <= 0)
         {
             return;
         }
 
-        var contributions = BattleContributions.GetOrAdd(prism.CurrentBattleId.Value, _ => new());
+        var contributions = BattleContributions.GetOrAdd(
+            prism.CurrentBattleId.Value,
+            _ => new ConcurrentDictionary<Guid, Contribution>()
+        );
         var contrib = contributions.GetOrAdd(
             healer.Id,
             id => new Contribution

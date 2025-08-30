@@ -33,11 +33,11 @@ public class ConquestWindow : Window
 
         _filter = new ComboBox(this, "OwnerFilter");
         _filter.SetBounds(10, 10, 120, 20);
-        _filter.AddItem("All", Filter.All);
-        _filter.AddItem("Own", Filter.Own);
-        _filter.AddItem("Rival", Filter.Rival);
-        _filter.AddItem("Neutral", Filter.Neutral);
-        _filter.Select(0);
+        _filter.AddItem("All", userData: Filter.All);
+        _filter.AddItem("Own", userData: Filter.Own);
+        _filter.AddItem("Rival", userData: Filter.Rival);
+        _filter.AddItem("Neutral", userData: Filter.Neutral);
+        _filter.SelectByUserData(Filter.All);
         _filter.ItemSelected += (_, _) => Refresh();
 
         _list = new ScrollControl(this, "PrismList");
@@ -51,7 +51,7 @@ public class ConquestWindow : Window
     public void Refresh()
     {
         _list.DeleteAllChildren();
-        var meFaction = Globals.Me?.Faction ?? Alignment.Neutral;
+        var meFaction = Globals.Me?.Faction ?? Intersect.Enums.Alignment.Neutral;
         var filter = (Filter)(_filter.SelectedItem?.UserData ?? Filter.All);
 
         var maps = MapInstance.Lookup.Values
@@ -60,8 +60,9 @@ public class ConquestWindow : Window
             .Where(map => filter switch
             {
                 Filter.Own => map.PrismOwner == meFaction,
-                Filter.Rival => map.PrismOwner != meFaction && map.PrismOwner != Alignment.Neutral,
-                Filter.Neutral => map.PrismOwner == Alignment.Neutral,
+                Filter.Rival =>
+                    map.PrismOwner != meFaction && map.PrismOwner != Intersect.Enums.Alignment.Neutral,
+                Filter.Neutral => map.PrismOwner == Intersect.Enums.Alignment.Neutral,
                 _ => true,
             })
             .OrderBy(map => map.PrismNextVulnerabilityStart ?? DateTime.MaxValue);

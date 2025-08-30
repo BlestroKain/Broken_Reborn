@@ -1239,9 +1239,10 @@ public partial class Player : Entity
         CastTime = 0;
         CastTarget = null;
 
-        if (Map != null && Map.ControllingPrism != null)
+        if (MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var mapInstance)
+            && mapInstance.ControllingPrism != null)
         {
-            PrismCombatService.RecordDeath(Map.ControllingPrism, this);
+            PrismCombatService.RecordDeath(mapInstance.ControllingPrism, this);
         }
 
         //Flag death to the client

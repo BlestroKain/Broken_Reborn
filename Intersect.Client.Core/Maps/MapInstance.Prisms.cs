@@ -1,3 +1,4 @@
+using System;
 using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Prisms;
 
@@ -27,4 +28,19 @@ public partial class MapInstance
     /// True if the prism has been dominated.
     /// </summary>
     public bool PrismDominated => PrismState == PrismState.Dominated;
+
+    /// <summary>
+    /// Current health of the controlling prism.
+    /// </summary>
+    public int PrismHp { get; set; }
+
+    /// <summary>
+    /// Maximum health of the controlling prism.
+    /// </summary>
+    public int PrismMaxHp { get; set; }
+
+    /// <summary>
+    /// Start time of the next vulnerability window, if any.
+    /// </summary>
+    public DateTime? PrismNextVulnerabilityStart { get; set; }
 }

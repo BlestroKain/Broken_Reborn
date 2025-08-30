@@ -138,6 +138,33 @@ internal static class PrismService
         return prism.Windows.Any(window => window.Contains(time));
     }
 
+    public static DateTime? GetNextVulnerabilityStart(AlignmentPrism prism, DateTime now)
+    {
+        if (prism.Windows == null || prism.Windows.Count == 0)
+        {
+            return null;
+        }
+
+        DateTime? next = null;
+        foreach (var window in prism.Windows)
+        {
+            var daysUntil = ((int)window.Day - (int)now.DayOfWeek + 7) % 7;
+            var candidate = now.Date.AddDays(daysUntil).Add(window.Start);
+
+            if (candidate <= now)
+            {
+                candidate = candidate.AddDays(7);
+            }
+
+            if (next == null || candidate < next)
+            {
+                next = candidate;
+            }
+        }
+
+        return next;
+    }
+
     public static void Broadcast(MapInstance map)
     {
         foreach (var player in map.GetPlayers())

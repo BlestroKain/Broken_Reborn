@@ -23,7 +23,7 @@ public static class AlignmentService
     {
         apply ??= new AlignmentApplyOptions();
 
-        var cooldown = Options.Instance.Prism.AlignmentSwapCooldown;
+        var cooldown = TimeSpan.FromDays(Options.Instance.Alignment.SwapCooldownDays);
         var now = DateTime.UtcNow;
         var nextAllowed = p.LastFactionSwapAt + cooldown;
 

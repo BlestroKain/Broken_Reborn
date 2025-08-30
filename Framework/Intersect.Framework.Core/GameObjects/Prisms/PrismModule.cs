@@ -22,6 +22,8 @@ public class PrismModule
 public enum PrismModuleType
 {
     Vision,
-    Prospecting
+    Prospecting,
+    Crafting,
+    GuardBoost
 }
 

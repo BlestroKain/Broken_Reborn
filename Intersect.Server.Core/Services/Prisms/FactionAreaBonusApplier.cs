@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using Intersect.Framework.Core.GameObjects.Prisms;
 using Intersect.Server.Database.Prisms;
 using Intersect.Server.Entities;
 using Intersect.Server.Maps;
@@ -16,7 +17,7 @@ public sealed class FactionAreaBonusApplier : IFactionBonusApplier
 
     public float ApplyDropBonus(Player player, float value)
     {
-        return Apply(player, value);
+        return Apply(player, value, PrismModuleType.Prospecting);
     }
 
     public float ApplyGatherBonus(Player player, float value)
@@ -26,7 +27,7 @@ public sealed class FactionAreaBonusApplier : IFactionBonusApplier
 
     public float ApplyCraftBonus(Player player, float value)
     {
-        return Apply(player, value);
+        return Apply(player, value, PrismModuleType.Crafting);
     }
 
     public void ClearBonus(Guid prismId)
@@ -39,7 +40,7 @@ public sealed class FactionAreaBonusApplier : IFactionBonusApplier
         _bonuses[bonus.PrismId] = bonus;
     }
 
-    private float Apply(Player player, float value)
+    private float Apply(Player player, float value, PrismModuleType? moduleType = null)
     {
         if (player == null)
         {
@@ -67,6 +68,11 @@ public sealed class FactionAreaBonusApplier : IFactionBonusApplier
             return value;
         }
 
+        if (prism.State != PrismState.Dominated)
+        {
+            return value;
+        }
+
         var area = prism.Area;
         if (player.X < area.X || player.Y < area.Y || player.X >= area.X + area.Width ||
             player.Y >= area.Y + area.Height)
@@ -74,7 +80,20 @@ public sealed class FactionAreaBonusApplier : IFactionBonusApplier
             return value;
         }
 
-        return value * (1 + bonus.Bonus / 100f);
+        var bonusValue = bonus.Bonus;
+
+        if (moduleType.HasValue)
+        {
+            foreach (var module in prism.Modules)
+            {
+                if (module.Type == moduleType.Value)
+                {
+                    bonusValue += module.Level * 5;
+                }
+            }
+        }
+
+        return value * (1 + bonusValue / 100f);
     }
 }
 

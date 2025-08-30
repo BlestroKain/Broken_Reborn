@@ -2256,7 +2256,7 @@ Tick timer saved in server config.json.";
 
         public static LocalizedString setgender = @"Set Player Gender to {00}";
 
-        public static LocalizedString setalignment = @"Set Player Alignment to {00}";
+        public static LocalizedString setalignment = @"Establecer alineación del jugador a {00}";
 
         public static LocalizedString neutral = @"Neutral";
 
@@ -2264,9 +2264,9 @@ Tick timer saved in server config.json.";
 
         public static LocalizedString nidraj = @"Nidraj";
 
-        public static LocalizedString ignorecooldown = @"(Ignore Cooldown)";
+        public static LocalizedString ignorecooldown = @"(Ignorar tiempo de espera)";
 
-        public static LocalizedString ignoreguildlock = @"(Ignore Guild Lock)";
+        public static LocalizedString ignoreguildlock = @"(Ignorar bloqueo de gremio)";
 
         public static LocalizedString setlevel = @"Set Player Level To: {00}";
 
@@ -3419,13 +3419,13 @@ Tick timer saved in server config.json.";
     public partial struct EventSetAlignment
     {
 
-        public static LocalizedString cancel = @"Cancel";
+        public static LocalizedString cancel = @"Cancelar";
 
-        public static LocalizedString label = @"Alignment:";
+        public static LocalizedString label = @"Alineación:";
 
-        public static LocalizedString okay = @"Ok";
+        public static LocalizedString okay = @"Aceptar";
 
-        public static LocalizedString title = @"Set Alignment";
+        public static LocalizedString title = @"Establecer alineación";
 
         public static Dictionary<int, LocalizedString> alignments = new Dictionary<int, LocalizedString>
         {
@@ -3434,9 +3434,9 @@ Tick timer saved in server config.json.";
             {2, @"Nidraj"},
         };
 
-        public static LocalizedString IgnoreCooldown = @"Ignore Cooldown?";
+        public static LocalizedString IgnoreCooldown = @"¿Ignorar tiempo de espera?";
 
-        public static LocalizedString IgnoreGuildLock = @"Ignore Guild Lock?";
+        public static LocalizedString IgnoreGuildLock = @"¿Ignorar bloqueo de gremio?";
 
     }
 

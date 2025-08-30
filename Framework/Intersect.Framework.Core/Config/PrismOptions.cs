@@ -33,6 +33,11 @@ public class PrismOptions
     public int AttackCooldownSeconds { get; set; } = 30;
 
     /// <summary>
+    ///     Maximum distance in tiles at which the prism HP bar is displayed.
+    /// </summary>
+    public int HudDisplayRadius { get; set; } = 10;
+
+    /// <summary>
     /// </summary>
     public bool CaptureInsteadOfDestroy { get; set; } = true;
 

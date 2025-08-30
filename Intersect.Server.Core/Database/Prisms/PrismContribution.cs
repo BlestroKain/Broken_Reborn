@@ -16,6 +16,8 @@ public partial class PrismContribution
 
     public string PlayerIp { get; set; }
 
+    public string PlayerFingerprint { get; set; }
+
     public int Contribution { get; set; }
 }
 

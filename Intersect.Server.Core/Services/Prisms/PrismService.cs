@@ -65,8 +65,15 @@ internal static class PrismService
 
         if (prism.State == PrismState.UnderAttack)
         {
+            PrismCombatService.DiminishContributions(prism);
             foreach (var player in map.GetPlayers())
             {
+                if (PrismCombatService.IsOnRespawnCooldown(player, now))
+                {
+                    player.WarpToSpawn();
+                    continue;
+                }
+
                 PrismCombatService.RecordPresence(prism, player);
             }
         }
@@ -110,6 +117,12 @@ internal static class PrismService
                 }
                 else if (prism.LastHitAt.HasValue &&
                          (now - prism.LastHitAt.Value).TotalSeconds >= Options.Instance.Prism.AttackCooldownSeconds)
+                {
+                    prism.State = inWindow ? PrismState.Vulnerable : PrismState.Dominated;
+                    changed = true;
+                }
+                else if (PrismCombatService.GetBattleStart(prism) is DateTime startedAt &&
+                         (now - startedAt).TotalMinutes >= Options.Instance.Prism.MaxBattleDurationMinutes)
                 {
                     prism.State = inWindow ? PrismState.Vulnerable : PrismState.Dominated;
                     changed = true;

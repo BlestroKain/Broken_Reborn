@@ -1239,6 +1239,11 @@ public partial class Player : Entity
         CastTime = 0;
         CastTarget = null;
 
+        if (Map != null && Map.ControllingPrism != null)
+        {
+            PrismCombatService.RecordDeath(Map.ControllingPrism, this);
+        }
+
         //Flag death to the client
         PlayDeathAnimation();
         PacketSender.SendPlayerDeath(this);

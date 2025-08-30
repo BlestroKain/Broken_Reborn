@@ -32,6 +32,7 @@ internal static class PrismCombatService
         public Guid PlayerId { get; init; }
         public Guid PlayerUserId { get; init; }
         public string PlayerIp { get; init; }
+        public string PlayerFingerprint { get; init; }
         public Alignment Faction { get; init; }
 
         public int Damage;
@@ -42,6 +43,11 @@ internal static class PrismCombatService
     }
 
     private static readonly ConcurrentDictionary<Guid, ConcurrentDictionary<Guid, Contribution>> BattleContributions = new();
+
+    // Tracks death timestamps to enforce respawn cooldown.
+    private static readonly ConcurrentDictionary<Guid, DateTime> DeathTimestamps = new();
+
+    private const double ContributionDecayFactor = 0.99;
 
     private static int _activeBattles;
 
@@ -65,6 +71,55 @@ internal static class PrismCombatService
         return BattleContributions.TryGetValue(prism.CurrentBattleId.Value, out var dict)
             ? dict.Values
             : Array.Empty<Contribution>();
+    }
+
+    public static DateTime? GetBattleStart(AlignmentPrism prism)
+    {
+        if (prism?.CurrentBattleId == null)
+        {
+            return null;
+        }
+
+        return Battles.TryGetValue(prism.CurrentBattleId.Value, out var battle) ? battle.StartedAt : null;
+    }
+
+    public static void DiminishContributions(AlignmentPrism prism)
+    {
+        if (prism?.CurrentBattleId == null)
+        {
+            return;
+        }
+
+        if (BattleContributions.TryGetValue(prism.CurrentBattleId.Value, out var dict))
+        {
+            foreach (var contrib in dict.Values)
+            {
+                contrib.Damage = (int)(contrib.Damage * ContributionDecayFactor);
+                contrib.Presence = (int)(contrib.Presence * ContributionDecayFactor);
+                contrib.Heals = (int)(contrib.Heals * ContributionDecayFactor);
+            }
+        }
+    }
+
+    public static void RecordDeath(AlignmentPrism prism, Player player)
+    {
+        if (prism?.State != PrismState.UnderAttack || player == null)
+        {
+            return;
+        }
+
+        DeathTimestamps[player.Id] = DateTime.UtcNow;
+    }
+
+    public static bool IsOnRespawnCooldown(Player player, DateTime now)
+    {
+        if (player == null)
+        {
+            return false;
+        }
+
+        return DeathTimestamps.TryGetValue(player.Id, out var time) &&
+               (now - time).TotalSeconds < Options.Instance.Prism.RespawnCooldownSeconds;
     }
 
     internal static void BattleEnded(AlignmentPrism prism)
@@ -99,6 +154,7 @@ internal static class PrismCombatService
                             PlayerId = contrib.PlayerId,
                             PlayerUserId = contrib.PlayerUserId,
                             PlayerIp = contrib.PlayerIp,
+                            PlayerFingerprint = contrib.PlayerFingerprint,
                             Contribution = contrib.Total,
                         }
                     );
@@ -143,6 +199,17 @@ internal static class PrismCombatService
                 now,
                 prism?.Id,
                 attacker?.Id
+            );
+            return;
+        }
+
+        if (IsOnRespawnCooldown(attacker, now))
+        {
+            Logger.LogInformation(
+                "Ignored attack on prism {PrismId} by {AttackerId} at {Time}: respawn cooldown",
+                prism.Id,
+                attacker.Id,
+                now
             );
             return;
         }
@@ -229,6 +296,7 @@ internal static class PrismCombatService
                     PlayerId = id,
                     PlayerUserId = attacker.UserId,
                     PlayerIp = attacker.Client?.Ip,
+                    PlayerFingerprint = attacker.Client?.Ip,
                     Faction = attacker.Faction,
                 }
             );
@@ -274,6 +342,7 @@ internal static class PrismCombatService
                 PlayerId = id,
                 PlayerUserId = player.UserId,
                 PlayerIp = player.Client?.Ip,
+                PlayerFingerprint = player.Client?.Ip,
                 Faction = player.Faction,
             }
         );
@@ -296,6 +365,7 @@ internal static class PrismCombatService
                 PlayerId = id,
                 PlayerUserId = healer.UserId,
                 PlayerIp = healer.Client?.Ip,
+                PlayerFingerprint = healer.Client?.Ip,
                 Faction = healer.Faction,
             }
         );

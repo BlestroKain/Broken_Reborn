@@ -26,4 +26,14 @@ public class PrismOptions
     ///     Seconds after the last hit before the prism battle ends.
     /// </summary>
     public int AttackCooldownSeconds { get; set; } = 30;
+
+    /// <summary>
+    ///     Maximum damage a single player can inflict per scheduler tick.
+    /// </summary>
+    public int DamageCapPerTick { get; set; } = 50;
+
+    /// <summary>
+    ///     Interval in seconds between scheduler ticks.
+    /// </summary>
+    public int SchedulerIntervalSeconds { get; set; } = 1;
 }

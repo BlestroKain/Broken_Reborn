@@ -10,9 +10,6 @@ namespace Intersect.Server.Services.Prisms;
 
 internal static class PrismCombatService
 {
-    // Maximum damage a single player can inflict per tick.
-    private const int DamageCapPerTick = 50;
-
     // Tracks damage dealt by players to prisms within the current tick window.
     private static readonly ConcurrentDictionary<(Guid PrismId, Guid AttackerId), (DateTime TickStart, int Damage)>
         DamageTracker = new();
@@ -43,7 +40,7 @@ internal static class PrismCombatService
 
         // Apply diminishing returns on repeated hits by the same player.
         var key = (prism.Id, attacker.Id);
-        var tickDuration = TimeSpan.FromSeconds(1);
+        var tickDuration = TimeSpan.FromSeconds(Options.Instance.Prism.SchedulerIntervalSeconds);
         var record = DamageTracker.GetOrAdd(key, _ => (now, 0));
 
         if (now - record.TickStart > tickDuration)
@@ -51,7 +48,7 @@ internal static class PrismCombatService
             record = (now, 0);
         }
 
-        var remaining = DamageCapPerTick - record.Damage;
+        var remaining = Options.Instance.Prism.DamageCapPerTick - record.Damage;
         if (remaining <= 0)
         {
             return;

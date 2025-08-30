@@ -28,6 +28,7 @@ using Intersect.Framework.Core.Security;
 using Intersect.Network.Packets.Server;
 using Intersect.Server.Core;
 using Intersect.Framework.Core.GameObjects.Prisms;
+using Intersect.Server.Services;
 using Intersect.Server.Services.Prisms;
 using Microsoft.Extensions.Logging;
 using ChatMsgPacket = Intersect.Network.Packets.Client.ChatMsgPacket;
@@ -3260,9 +3261,34 @@ internal sealed partial class PacketHandler
     }
 
     //SetAlignmentRequestPacket
+    public void HandleSetAlignmentRequest(Client client, SetAlignmentRequestPacket packet)
+    {
+        var player = client?.Entity;
+        if (player == null)
+        {
+            return;
+        }
+
+        var result = AlignmentService.TrySetAlignment(player, packet.Desired);
+        var response = new SetAlignmentResponsePacket(
+            result.Success,
+            result.Message,
+            result.NewAlignment,
+            result.NextAllowedChangeAt
+        );
+
+        PacketSender.SendPacket(client, response);
+
+        if (result.Success)
+        {
+            PacketSender.SendEntityDataToProximity(player);
+        }
+    }
+
+    // compatibility handler
     public void HandlePacket(Client client, SetAlignmentRequestPacket packet)
     {
-        // Alignment change handling to be implemented
+        HandleSetAlignmentRequest(client, packet);
     }
 
     #endregion

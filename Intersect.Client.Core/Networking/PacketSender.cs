@@ -138,6 +138,21 @@ public static partial class PacketSender
         Network.SendPacket(new EnterGamePacket());
     }
 
+    public static void SendToggleWings(WingState state)
+    {
+        Network.SendPacket(new ToggleWingsPacket(state));
+    }
+
+    public static void SendSetAlignment(Factions alignment)
+    {
+        Network.SendPacket(new SetAlignmentRequestPacket(alignment));
+    }
+
+    public static void SendPrismAttack(Guid mapId, Guid prismId)
+    {
+        Network.SendPacket(new PrismAttackPacket(mapId, prismId));
+    }
+
     public static void SendActivateEvent(Guid eventId)
     {
         Network.SendPacket(new ActivateEventPacket(eventId));

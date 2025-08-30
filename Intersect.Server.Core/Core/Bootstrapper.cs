@@ -19,6 +19,7 @@ using Intersect.Plugins;
 using Intersect.Plugins.Contexts;
 using Intersect.Plugins.Helpers;
 using Intersect.Server.Database;
+using Intersect.Server.Database.PlayerData;
 using Intersect.Server.Database.PlayerData.Players;
 using Intersect.Server.Entities;
 using Intersect.Server.General;
@@ -30,6 +31,7 @@ using Intersect.Threading;
 using Intersect.Utilities;
 using Microsoft.Extensions.Logging;
 using Serilog;
+
 
 namespace Intersect.Server.Core;
 
@@ -71,6 +73,11 @@ internal static class Bootstrapper
         }
 
         Console.WriteLine("Pre-context setup finished.");
+
+        if (parsedArguments.CommandLineOptions.SyncPrisms)
+        {
+            Options.Instance.Prism.SyncOnStartup = true;
+        }
 
         var (loggerFactory, logger) = new LoggerConfiguration().CreateLoggerForIntersect(
             entryAssembly,
@@ -292,6 +299,7 @@ internal static class Bootstrapper
 
             return false;
         }
+
 
         Time.Update();
 

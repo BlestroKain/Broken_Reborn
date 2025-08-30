@@ -1,3 +1,4 @@
+using System;
 using Intersect.Enums;
 using Intersect.GameObjects;
 using Intersect.Network;
@@ -26,6 +27,9 @@ using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.Security;
 using Intersect.Network.Packets.Server;
 using Intersect.Server.Core;
+using Intersect.Framework.Core.GameObjects.Prisms;
+using Intersect.Server.Services;
+using Intersect.Server.Services.Prisms;
 using Microsoft.Extensions.Logging;
 using ChatMsgPacket = Intersect.Network.Packets.Client.ChatMsgPacket;
 using LoginPacket = Intersect.Network.Packets.Client.LoginPacket;
@@ -1139,6 +1143,39 @@ internal sealed partial class PacketHandler
                 PacketSender.SendChatMsg(player, Strings.Player.Offline, ChatMessageType.PM, CustomColors.Alerts.Error);
             }
         }
+        else if (cmd == "/alignment" && msgSplit.Length >= 2 &&
+                 string.Equals(msgSplit[0], "set", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!Enum.TryParse<Factions>(msgSplit[1], true, out var desired))
+            {
+                PacketSender.SendChatMsg(player, Strings.Commands.invalid, ChatMessageType.Error, CustomColors.Alerts.Error);
+                return;
+            }
+
+            var result = AlignmentService.TrySetAlignment(player, desired);
+
+            var message = result.Success
+                ? Strings.Alignment.ChangedTo.ToString(result.NewAlignment)
+                : AlignmentService.GetMessage(result.Message!, result.NextAllowedChangeAt) ?? string.Empty;
+
+            if (result.NextAllowedChangeAt.HasValue && (result.Success || result.Message != "cooldown"))
+            {
+                var cooldown = AlignmentService.GetMessage("cooldown", result.NextAllowedChangeAt);
+                if (!string.IsNullOrEmpty(cooldown))
+                {
+                    message += $" {cooldown}";
+                }
+            }
+
+            PacketSender.SendChatMsg(
+                player,
+                message,
+                result.Success ? ChatMessageType.Notice : ChatMessageType.Error,
+                result.Success ? CustomColors.Alerts.Success : CustomColors.Alerts.Error
+            );
+
+            return;
+        }
         else
         {
             //Search for command activated events and run them
@@ -1414,6 +1451,51 @@ internal sealed partial class PacketHandler
         {
             player.AttackTimer = Timing.Global.Milliseconds + latencyAdjustmentMs + player.CalculateAttackTime();
         }
+    }
+
+    //PrismAttackPacket
+    public void HandlePacket(Client client, PrismAttackPacket packet)
+    {
+        var player = client?.Entity;
+        if (player == null)
+        {
+            return;
+        }
+
+        if (player.Wings != WingState.On)
+        {
+            return;
+        }
+
+        if (packet.MapId != player.MapId)
+        {
+            return;
+        }
+
+        if (!MapController.TryGetInstanceFromMap(player.MapId, player.MapInstanceId, out var mapInstance))
+        {
+            return;
+        }
+
+        var prism = mapInstance.ControllingPrism;
+        if (prism == null || prism.Owner == player.Faction || prism.Id != packet.PrismId)
+        {
+            return;
+        }
+
+        var distance = player.GetDistanceTo(mapInstance.GetController(), prism.X, prism.Y);
+        if (distance > 1)
+        {
+            return;
+        }
+
+        var now = DateTime.UtcNow;
+        if (!PrismCombatService.CanDamage(prism, now))
+        {
+            return;
+        }
+
+        PrismCombatService.ApplyDamage(mapInstance, prism, 1, player);
     }
 
     //DirectionPacket
@@ -2834,6 +2916,12 @@ internal sealed partial class PacketHandler
                     // Are we already in a guild? or have a pending invite?
                     if (target.Guild == null && target.PendingGuildInvite == default)
                     {
+                        if (target.Faction != Factions.Neutral && target.Faction != player.Faction)
+                        {
+                            PacketSender.SendChatMsg(player, Strings.Guilds.InviteDifferentFaction, ChatMessageType.Guild, CustomColors.Alerts.Error);
+                            return;
+                        }
+
                         // Thank god, we can FINALLY get started!
                         // Set our invite and send our players the relevant messages.
                         target.PendingGuildInvite = new GuildInvite
@@ -3038,6 +3126,28 @@ internal sealed partial class PacketHandler
             }
         }
 
+        var guildFaction = inviter?.Faction ?? guild.GetFaction();
+        if (player.Faction != Factions.Neutral && player.Faction != guildFaction)
+        {
+            PacketSender.SendChatMsg(player, Strings.Guilds.DifferentFaction, ChatMessageType.Guild, CustomColors.Alerts.Error);
+            player.PendingGuildInvite = default;
+            player.Save();
+            return;
+        }
+
+        if (player.Faction == Factions.Neutral)
+        {
+            AlignmentService.TrySetAlignment(
+                player,
+                guildFaction,
+                new AlignmentApplyOptions
+                {
+                    IgnoreCooldown = true,
+                    IgnoreGuildLock = true,
+                }
+            );
+        }
+
         // Accept our invite!
         if (!guild.TryAddMember(player, guildOptions.Ranks.Length - 1, inviter))
         {
@@ -3196,5 +3306,45 @@ internal sealed partial class PacketHandler
         }
     }
 
+    //SetAlignmentRequestPacket
+    public void HandlePacket(Client client, SetAlignmentRequestPacket packet)
+    {
+        var player = client?.Entity;
+        if (player == null)
+        {
+            return;
+        }
+
+        var result = AlignmentService.TrySetAlignment(player, packet.Desired);
+
+        var message = result.Success
+            ? Strings.Alignment.ChangedTo.ToString(result.NewAlignment)
+            : AlignmentService.GetMessage(result.Message!, result.NextAllowedChangeAt) ?? string.Empty;
+
+        if (result.Success && result.NextAllowedChangeAt.HasValue)
+        {
+            var cooldown = AlignmentService.GetMessage("cooldown", result.NextAllowedChangeAt);
+            if (!string.IsNullOrEmpty(cooldown))
+            {
+                message += $" {cooldown}";
+            }
+        }
+
+        var response = new SetAlignmentResponsePacket(
+            result.Success,
+            message,
+            result.NewAlignment,
+            result.NextAllowedChangeAt
+        );
+
+        client.Send(response);
+
+        if (result.Success)
+        {
+            PacketSender.SendEntityDataToProximity(player);
+        }
+    }
+
+  
     #endregion
 }

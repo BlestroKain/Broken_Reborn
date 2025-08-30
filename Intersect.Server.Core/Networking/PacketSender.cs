@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,7 @@ using Intersect.Framework.Core.GameObjects.Maps.MapList;
 using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.GameObjects.Resources;
+using Intersect.Framework.Core.GameObjects.Prisms;
 using Intersect.Framework.Core.GameObjects.Variables;
 using Intersect.Framework.Core.Network.Packets.Security;
 using Intersect.Framework.Core.Security;
@@ -32,6 +34,7 @@ using Intersect.Server.General;
 using Intersect.Server.Localization;
 using Intersect.Server.Maps;
 using Intersect.Server.Classes.Maps;
+using Intersect.Server.Services.Prisms;
 using Intersect.Utilities;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -180,6 +183,35 @@ public static partial class PacketSender
         var surroundingMapIds = surroundingMaps.Select(map => map.Id).ToArray();
         MapAreaIdsPacket mapAreaIdsPacket = new(surroundingMapIds);
         player.SendPacket(mapAreaIdsPacket);
+
+        var prisms = new List<PrismUpdatePacket>();
+        foreach (var map in surroundingMaps)
+        {
+            if (map.TryGetInstance(player.MapInstanceId, out var instance))
+            {
+                var prism = instance.ControllingPrism;
+                if (prism != null)
+                {
+                    var nextStart = PrismService.GetNextVulnerabilityStart(prism, DateTime.UtcNow);
+                    prisms.Add(
+                        new PrismUpdatePacket(
+                            prism.MapId,
+                            prism.Id,
+                            prism.Owner,
+                            prism.State,
+                            prism.Hp,
+                            prism.MaxHp,
+                            nextStart
+                        )
+                    );
+                }
+            }
+        }
+
+        if (prisms.Count > 0)
+        {
+            player.SendPacket(new PrismListPacket(prisms.ToArray()));
+        }
     }
 
     public static MapPacket GenerateMapPacket(Client client, Guid mapId)

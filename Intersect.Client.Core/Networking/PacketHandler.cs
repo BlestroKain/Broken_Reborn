@@ -11,6 +11,7 @@ using Intersect.Client.Interface.Menu;
 using Intersect.Client.Items;
 using Intersect.Client.Localization;
 using Intersect.Client.Maps;
+using Intersect.Client.Maps.Prisms;
 using Intersect.Configuration;
 using Intersect.Core;
 using Intersect.Enums;
@@ -22,6 +23,7 @@ using Intersect.Utilities;
 using Intersect.Framework;
 using Intersect.Models;
 using Intersect.Client.Interface.Shared;
+using Intersect.Client.Interface;
 using Intersect.Framework.Core;
 using Intersect.Framework.Core.GameObjects.Animations;
 using Intersect.Framework.Core.GameObjects.Crafting;
@@ -2467,6 +2469,63 @@ internal sealed partial class PacketHandler
                 Fade.FadeOut(packet.DurationMs, packet.WaitForCompletion);
                 break;
         }
+    }
+
+    //PrismListPacket
+    public void HandlePacket(IPacketSender packetSender, PrismListPacket packet)
+    {
+        PrismVisualManager.Synchronize(packet);
+        foreach (var prism in packet.Prisms)
+        {
+            HandlePrism(prism);
+        }
+
+        Interface.Interface.GameUi.ConquestWindow.Refresh();
+        Interface.Interface.GameUi.PrismHud.Refresh(Globals.Me?.MapInstance as MapInstance);
+    }
+
+    //PrismUpdatePacket
+    public void HandlePacket(IPacketSender packetSender, PrismUpdatePacket packet)
+    {
+        PrismVisualManager.Update(packet);
+        HandlePrism(packet);
+        Interface.Interface.GameUi.ConquestWindow.Refresh();
+        if (Globals.Me?.MapId == packet.MapId)
+        {
+            Interface.Interface.GameUi.PrismHud.Refresh(Globals.Me.MapInstance as MapInstance);
+        }
+    }
+
+    //SetAlignmentResponsePacket
+    public void HandlePacket(IPacketSender packetSender, SetAlignmentResponsePacket packet)
+    {
+        if (Globals.Me != null)
+        {
+            Globals.Me.Faction = packet.NewAlignment;
+        }
+
+        if (!string.IsNullOrWhiteSpace(packet.Message))
+        {
+            Interface.Interface.ShowAlert(
+                packet.Message,
+                alertType: packet.Success ? AlertType.Information : AlertType.Error
+            );
+        }
+    }
+
+    private static void HandlePrism(PrismUpdatePacket packet)
+    {
+        var map = MapInstance.Get(packet.MapId);
+        if (map == null)
+        {
+            return;
+        }
+
+        map.PrismOwner = packet.Owner;
+        map.PrismState = packet.State;
+        map.PrismHp = packet.Hp;
+        map.PrismMaxHp = packet.MaxHp;
+        map.PrismNextVulnerabilityStart = packet.NextVulnerabilityStart;
     }
 
 }

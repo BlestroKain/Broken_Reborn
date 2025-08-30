@@ -11,6 +11,7 @@ using Intersect.Client.Interface;
 using Intersect.Client.Interface.Game;
 using Intersect.Client.Interface.Shared;
 using Intersect.Client.Maps;
+using Intersect.Client.Maps.Prisms;
 using Intersect.Client.Networking;
 using Intersect.Configuration;
 using Intersect.Enums;
@@ -330,6 +331,14 @@ public static partial class Input
                             _ = (Interface.Interface.GameUi.GameMenu?.ToggleFriendsWindow());
                             break;
 
+                        case Control.OpenFaction:
+                            Interface.Interface.GameUi.GameMenu?.ToggleFactionWindow();
+                            break;
+
+                        case Control.OpenConquest:
+                            Interface.Interface.GameUi.GameMenu?.ToggleConquestWindow();
+                            break;
+
                         case Control.OpenBestiary:
                             Interface.Interface.GameUi.ToggleBestiaryWindow();
                             break;
@@ -494,6 +503,11 @@ public static partial class Input
         }
 
         if (modifier == Keys.None && mouseButton == MouseButton.Left && Globals.Me.TryTarget())
+        {
+            return;
+        }
+
+        if (modifier == Keys.None && mouseButton == MouseButton.Left && PrismVisualManager.TryClickAttack())
         {
             return;
         }

@@ -327,6 +327,12 @@
     <Compile Update="Forms\Editors\Events\Event Commands\EventCommand_SetAccess.Designer.cs">
       <DependentUpon>EventCommand_SetAccess.cs</DependentUpon>
     </Compile>
+    <Compile Update="Forms\Editors\Events\Event Commands\EventCommand_SetAlignment.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Forms\Editors\Events\Event Commands\EventCommand_SetAlignment.Designer.cs">
+      <DependentUpon>EventCommand_SetAlignment.cs</DependentUpon>
+    </Compile>
     <Compile Update="Forms\Editors\Events\Event Commands\EventCommand_SetClass.cs">
       <SubType>UserControl</SubType>
     </Compile>

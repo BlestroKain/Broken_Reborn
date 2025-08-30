@@ -45,9 +45,11 @@ public enum EventCommandType
 
     ChangeFace,
 
-    ChangeGender,
+    ChangeGender = 21,
 
-    SetAccess,
+    SetAlignment = 60,
+
+    SetAccess = 22,
 
     //Movement,
     WarpPlayer,

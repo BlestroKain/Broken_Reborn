@@ -110,6 +110,8 @@ public partial class GameInterface : MutableInterface
 
     public PlayerStatusWindow PlayerStatusWindow;
 
+    public PrismHud PrismHud;
+
     private SettingsWindow GetOrCreateSettingsWindow()
     {
         _settingsWindow ??= new SettingsWindow(GameCanvas)
@@ -160,6 +162,8 @@ public partial class GameInterface : MutableInterface
 
     public MenuContainer GameMenu { get; private set; }
 
+    public ConquestWindow ConquestWindow => GameMenu.ConquestWindow;
+
     public void InitGameGui()
     {
         mChatBox = new Chatbox(GameCanvas, this);
@@ -168,6 +172,7 @@ public partial class GameInterface : MutableInterface
         PlayerBox = new EntityBox(GameCanvas, EntityType.Player, Globals.Me, true);
         PlayerBox.SetEntity(Globals.Me);
         PlayerStatusWindow = new PlayerStatusWindow(GameCanvas);
+        PrismHud = new PrismHud(GameCanvas);
         if (mPictureWindow == null)
         {
             mPictureWindow = new PictureWindow(GameCanvas);

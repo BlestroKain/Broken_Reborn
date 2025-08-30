@@ -26,4 +26,9 @@ public class PrismOptions
     ///     Seconds after the last hit before the prism battle ends.
     /// </summary>
     public int AttackCooldownSeconds { get; set; } = 30;
+
+    /// <summary>
+    ///     If true, prisms are captured for the attacker's faction instead of being destroyed when their HP is depleted.
+    /// </summary>
+    public bool CaptureInsteadOfDestroy { get; set; } = true;
 }

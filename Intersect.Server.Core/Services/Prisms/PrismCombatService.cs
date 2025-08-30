@@ -43,6 +43,19 @@ internal static class PrismCombatService
         );
     }
 
+    public static bool CanDamage(AlignmentPrism prism, DateTime now)
+    {
+        if (Options.Instance.Prism.AllowDamageOutsideVulnerability)
+        {
+            return true;
+        }
+
+        var stillUnderAttack = prism.State == PrismState.UnderAttack && prism.LastHitAt.HasValue &&
+                               (now - prism.LastHitAt.Value).TotalSeconds <= Options.Instance.Prism.AttackCooldownSeconds;
+
+        return PrismService.IsInVulnerabilityWindow(prism, now) || stillUnderAttack;
+    }
+
     public static void ApplyDamage(MapInstance map, AlignmentPrism prism, int amount, Player attacker)
     {
         var now = DateTime.UtcNow;
@@ -71,10 +84,7 @@ internal static class PrismCombatService
         }
 
         // Attacks are only allowed within the vulnerability window or during the under attack timeout.
-        var stillUnderAttack = prism.State == PrismState.UnderAttack && prism.LastHitAt.HasValue &&
-                               (now - prism.LastHitAt.Value).TotalSeconds <= Options.Instance.Prism.AttackCooldownSeconds;
-
-        if (!PrismService.IsInVulnerabilityWindow(prism, now) && !stillUnderAttack)
+        if (!CanDamage(prism, now))
         {
             Logger.LogInformation(
                 "Ignored attack on prism {PrismId} by {AttackerId} at {Time}: outside vulnerability window",

@@ -33,6 +33,11 @@ public class PrismOptions
     public int AttackCooldownSeconds { get; set; } = 30;
 
     /// <summary>
+    ///     Allow damage outside the vulnerability window.
+    /// </summary>
+    public bool AllowDamageOutsideVulnerability { get; set; } = false;
+
+    /// <summary>
     /// </summary>
     public bool CaptureInsteadOfDestroy { get; set; } = true;
 

@@ -9,6 +9,7 @@ namespace Intersect.Server.Services.Prisms;
 public interface IConquestService
 {
     Task CaptureAsync(MapInstance map, Player captor, CancellationToken cancellationToken = default);
+    Task DefendAsync(MapInstance map, CancellationToken cancellationToken = default);
     Task DestroyAsync(MapInstance map, Player destroyer, CancellationToken cancellationToken = default);
 }
 

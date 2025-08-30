@@ -36,6 +36,10 @@ public class PrismOptions
     ///     Allow damage outside the vulnerability window.
     /// </summary>
     public bool AllowDamageOutsideVulnerability { get; set; } = false;
+    ///     Maximum distance in tiles at which the prism HP bar is displayed.
+    /// </summary>
+    public int HudDisplayRadius { get; set; } = 10;
+
 
     /// <summary>
     /// </summary>

@@ -63,6 +63,14 @@ internal static class PrismService
         var previousState = prism.State;
         var inWindow = IsInVulnerabilityWindow(prism, now);
 
+        if (prism.State == PrismState.UnderAttack)
+        {
+            foreach (var player in map.GetPlayers())
+            {
+                PrismCombatService.RecordPresence(prism, player);
+            }
+        }
+
         switch (prism.State)
         {
             case PrismState.Placed:
@@ -126,7 +134,10 @@ internal static class PrismService
 
             if (previousState == PrismState.UnderAttack && prism.State != PrismState.UnderAttack)
             {
-                PrismCombatService.BattleEnded();
+                var conquestService = Bootstrapper.Context?.Services
+                    .FirstOrDefault(s => s is IConquestService) as IConquestService;
+                _ = conquestService?.DefendAsync(map);
+                PrismCombatService.BattleEnded(prism);
             }
 
             Broadcast(map);

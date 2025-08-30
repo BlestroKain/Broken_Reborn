@@ -1,7 +1,10 @@
 using System;
 using System.Drawing;
+using System.Linq;
 using Intersect.Client.Framework.Gwen.Control;
+using Intersect.Client.General;
 using Intersect.Client.Maps;
+using Intersect.Config;
 using Intersect.Enums;
 
 namespace Intersect.Client.Interface.Game;
@@ -53,6 +56,22 @@ public class PrismHud : ImagePanel
             return;
         }
 
+        var radius = Options.Instance.Prism.HudDisplayRadius;
+        if (radius > 0 && Globals.Me != null)
+        {
+            var prism = PrismConfig.Prisms.FirstOrDefault(p => p.MapId == map.Id);
+            if (prism != null)
+            {
+                var dx = Globals.Me.X - prism.X;
+                var dy = Globals.Me.Y - prism.Y;
+                if (Math.Sqrt(dx * dx + dy * dy) > radius)
+                {
+                    Hide();
+                    return;
+                }
+            }
+        }
+
         Show();
 
         var color = map.PrismOwner switch
@@ -70,6 +89,8 @@ public class PrismHud : ImagePanel
         _icon.TextColor = color;
         _hpBar.RenderColor = color;
         _hpBar.Value = map.PrismMaxHp > 0 ? map.PrismHp / (float)map.PrismMaxHp : 0f;
+        var vuln = map.PrismNextVulnerabilityStart?.ToLocalTime().ToString("g") ?? "N/A";
+        _hpBar.SetToolTipText($"Next window: {vuln}");
         _stateLabel.Text = $"{map.PrismOwner} - {map.PrismState}";
     }
 }

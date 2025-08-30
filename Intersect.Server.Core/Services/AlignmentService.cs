@@ -1,67 +1,66 @@
 using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Intersect.Enums;
 using Intersect.Config;
+using Intersect.Enums;
+using Intersect.Server.Database;
 using Intersect.Server.Entities;
-using Intersect.Server.Database.PlayerData;
-using Intersect.Server.Networking;
 
 namespace Intersect.Server.Services;
 
-public sealed class AlignmentService
+public static class AlignmentService
 {
-    private readonly IPlayerRepository _repository;
+    public readonly record struct Result(
+        bool Success,
+        string? Message,
+        Alignment NewAlignment,
+        DateTime? NextAllowedChangeAt
+    );
 
-    public AlignmentService(IPlayerRepository repository)
-    {
-        _repository = repository;
-    }
-
-    public async Task<(bool ok, string? reason, DateTime? nextAllowed)> TrySetAlignment(
-        Player player,
+    public static Result TrySetAlignment(
+        Player p,
         Alignment desired,
-        CancellationToken cancellationToken = default
+        AlignmentApplyOptions? apply = null
     )
     {
+        apply ??= new AlignmentApplyOptions();
+
         var cooldown = Options.Instance.Prism.AlignmentSwapCooldown;
         var now = DateTime.UtcNow;
-        var nextAllowed = player.LastFactionSwapAt + cooldown;
+        var nextAllowed = p.LastFactionSwapAt + cooldown;
 
-        if (player.Alignment == desired)
+        if (p.Faction == desired)
         {
-            return (false, "same", nextAllowed);
+            return new Result(false, "same", p.Faction, nextAllowed);
         }
 
-        var guildFaction = player.GuildFaction;
-        if (guildFaction != Alignment.Neutral && desired != Alignment.Neutral && desired != guildFaction)
+        var guildFaction = p.Guild?.GetFaction() ?? Alignment.Neutral;
+        if (!apply.IgnoreGuildLock && guildFaction != Alignment.Neutral && desired != Alignment.Neutral && guildFaction != desired)
         {
-            return (false, "guild", nextAllowed);
+            return new Result(false, "guild", p.Faction, nextAllowed);
         }
 
-        if (now < nextAllowed)
+        if (p.Wings == WingState.On)
         {
-            return (false, "cooldown", nextAllowed);
+            return new Result(false, "wings", p.Faction, nextAllowed);
         }
 
-        if (player.Wings == WingState.On)
+        if (!apply.IgnoreCooldown && now < nextAllowed)
         {
-            return (false, "wings", nextAllowed);
+            return new Result(false, "cooldown", p.Faction, nextAllowed);
         }
 
-        player.Alignment = desired;
-        player.LastFactionSwapAt = now;
-        if (desired == Alignment.Neutral && player.Wings == WingState.On)
+        p.Faction = desired;
+        p.LastFactionSwapAt = now;
+        if (desired == Alignment.Neutral)
         {
-            player.Wings = WingState.Off;
+            p.Wings = WingState.Off;
         }
 
-        _repository.Players.Update(player);
-        await _repository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        using var context = DbInterface.CreatePlayerContext(readOnly: false);
+        var _players = context.Players;
+        _players.Update(p);
+        context.SaveChanges();
 
-        PacketSender.SendEntityDataToProximity(player);
-
-        return (true, null, now + cooldown);
+        return new Result(true, null, p.Faction, now + cooldown);
     }
 }
 

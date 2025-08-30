@@ -330,6 +330,14 @@ public static partial class Input
                             _ = (Interface.Interface.GameUi.GameMenu?.ToggleFriendsWindow());
                             break;
 
+                        case Control.OpenFaction:
+                            Interface.Interface.GameUi.GameMenu?.ToggleFactionWindow();
+                            break;
+
+                        case Control.OpenConquest:
+                            Interface.Interface.GameUi.GameMenu?.ToggleConquestWindow();
+                            break;
+
                         case Control.OpenBestiary:
                             Interface.Interface.GameUi.ToggleBestiaryWindow();
                             break;

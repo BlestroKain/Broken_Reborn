@@ -26,6 +26,8 @@ internal sealed class BuiltinControlsProvider : IControlsProvider
         { Control.OpenParties, new ControlMapping(new ControlBinding(Keys.None, Keys.P), ControlBinding.Default) },
         { Control.OpenSpells, new ControlMapping(new ControlBinding(Keys.None, Keys.K), ControlBinding.Default) },
         { Control.OpenFriends, new ControlMapping(new ControlBinding(Keys.None, Keys.F), ControlBinding.Default) },
+        { Control.OpenFaction, new ControlMapping(new ControlBinding(Keys.None, Keys.H), ControlBinding.Default) },
+        { Control.OpenConquest, new ControlMapping(new ControlBinding(Keys.None, Keys.N), ControlBinding.Default) },
         { Control.OpenBestiary, new ControlMapping(new ControlBinding(Keys.None, Keys.B), ControlBinding.Default) },
         { Control.OpenGuild, new ControlMapping(new ControlBinding(Keys.None, Keys.G), ControlBinding.Default) },
         { Control.OpenSettings, new ControlMapping(new ControlBinding(Keys.None, Keys.O), ControlBinding.Default) },

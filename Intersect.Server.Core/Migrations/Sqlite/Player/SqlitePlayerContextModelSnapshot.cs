@@ -429,6 +429,41 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.ToTable("Player_Items");
                 });
 
+            modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.KillLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AttackerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AttackerIp")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AttackerUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("VictimId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("VictimIp")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("VictimUserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AttackerId");
+
+                    b.HasIndex("VictimId");
+
+                    b.ToTable("Player_KillLogs");
+                });
+
             modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.MailBox", b =>
                 {
                     b.Property<Guid>("Id")
@@ -621,6 +656,118 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("Intersect.Server.Database.Prisms.AlignmentPrism", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Area")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Faction")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Hp")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("MapId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("MaxHp")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Modules")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Windows")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("X")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Y")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Prisms");
+                });
+
+            modelBuilder.Entity("Intersect.Server.Database.Prisms.FactionAreaBonus", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Bonus")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Faction")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("PrismId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PrismId");
+
+                    b.ToTable("FactionAreaBonuses");
+                });
+
+            modelBuilder.Entity("Intersect.Server.Database.Prisms.PrismBattle", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("EndedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("PrismId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PrismId");
+
+                    b.ToTable("PrismBattles");
+                });
+
+            modelBuilder.Entity("Intersect.Server.Database.Prisms.PrismContribution", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("BattleId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Contribution")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("PlayerFingerprint")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PlayerIp")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("PlayerUserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BattleId");
+
+                    b.ToTable("PrismContributions");
+                });
+
             modelBuilder.Entity("Intersect.Server.Entities.Player", b =>
                 {
                     b.Property<Guid>("Id")
@@ -649,11 +796,17 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.Property<string>("Face")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Faction")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("FooterLabelJson")
                         .HasColumnType("TEXT")
                         .HasColumnName("FooterLabel");
 
                     b.Property<int>("Gender")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Grade")
                         .HasColumnType("INTEGER");
 
                     b.Property<float>("GuildExpPercentage")
@@ -672,6 +825,9 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                         .HasColumnType("TEXT")
                         .HasColumnName("HeaderLabel");
 
+                    b.Property<int>("Honor")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("InstanceType")
                         .HasColumnType("INTEGER");
 
@@ -686,6 +842,9 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.Property<string>("JsonColor")
                         .HasColumnType("TEXT")
                         .HasColumnName("Color");
+
+                    b.Property<DateTime>("LastFactionSwapAt")
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("LastOnline")
                         .HasColumnType("TEXT");
@@ -770,6 +929,9 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.Property<string>("VitalsJson")
                         .HasColumnType("TEXT")
                         .HasColumnName("Vitals");
+
+                    b.Property<int>("Wings")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("X")
                         .HasColumnType("INTEGER");
@@ -944,6 +1106,25 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.Navigation("Player");
                 });
 
+            modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.KillLog", b =>
+                {
+                    b.HasOne("Intersect.Server.Entities.Player", "Attacker")
+                        .WithMany()
+                        .HasForeignKey("AttackerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Intersect.Server.Entities.Player", "Victim")
+                        .WithMany()
+                        .HasForeignKey("VictimId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Attacker");
+
+                    b.Navigation("Victim");
+                });
+
             modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.MailBox", b =>
                 {
                     b.HasOne("Intersect.Server.Entities.Player", "Player")
@@ -1005,6 +1186,33 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Intersect.Server.Database.Prisms.FactionAreaBonus", b =>
+                {
+                    b.HasOne("Intersect.Server.Database.Prisms.AlignmentPrism", null)
+                        .WithMany()
+                        .HasForeignKey("PrismId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Intersect.Server.Database.Prisms.PrismBattle", b =>
+                {
+                    b.HasOne("Intersect.Server.Database.Prisms.AlignmentPrism", null)
+                        .WithMany()
+                        .HasForeignKey("PrismId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Intersect.Server.Database.Prisms.PrismContribution", b =>
+                {
+                    b.HasOne("Intersect.Server.Database.Prisms.PrismBattle", null)
+                        .WithMany()
+                        .HasForeignKey("BattleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Intersect.Server.Entities.Player", b =>

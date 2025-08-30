@@ -26,6 +26,10 @@ public partial class GameMetricsController : MetricsController
 
     public Histogram MapTotalUpdateTime { get; private set; }
 
+    public Histogram ActivePrismBattles { get; private set; }
+
+    public Histogram PrismCaptures { get; private set; }
+
     public GameMetricsController() : base(CONTEXT)
     {
         Cps = new Histogram(nameof(Cps), this);
@@ -39,5 +43,7 @@ public partial class GameMetricsController : MetricsController
         MapUpdateQueuedTime = new Histogram(nameof(MapUpdateQueuedTime), this);
         MapUpdateProcessingTime = new Histogram(nameof(MapUpdateProcessingTime), this);
         MapTotalUpdateTime = new Histogram(nameof(MapTotalUpdateTime), this);
+        ActivePrismBattles = new Histogram(nameof(ActivePrismBattles), this);
+        PrismCaptures = new Histogram(nameof(PrismCaptures), this);
     }
 }

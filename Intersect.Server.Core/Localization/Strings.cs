@@ -764,6 +764,9 @@ public static partial class Strings
         public readonly LocalizedString InviteAlreadyInGuild = @"The player you're trying to invite is already in a guild or has a pending invite.";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString InviteDifferentFaction = @"You cannot invite players from a different faction.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public readonly LocalizedString InviteDeclined = @"You have declined the request to join {00}.";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -807,6 +810,9 @@ public static partial class Strings
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public readonly LocalizedString NotReceivedInvite = @"You've not received any guild invites yet.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString DifferentFaction = @"Your faction does not match the guild's faction.";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public readonly LocalizedString Promoted = @"{00} has been promoted to {01}!";

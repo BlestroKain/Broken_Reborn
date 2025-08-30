@@ -4311,6 +4311,8 @@ Tick timer saved in server config.json.";
         public static LocalizedString tools = @"Tools";
 
         public static LocalizedString MenuToolsPackageUpdate = @"Package Update";
+        public static LocalizedString MenuToolsPrisms = @"Prisms...";
+        public static LocalizedString MenuToolsPrismOptions = @"Prism Options";
 
         public static LocalizedString toolsdir = @"tools";
 

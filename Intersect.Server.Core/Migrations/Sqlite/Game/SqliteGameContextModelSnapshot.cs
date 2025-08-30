@@ -478,6 +478,9 @@ namespace Intersect.Server.Migrations.Sqlite.Game
                     b.Property<long>("Experience")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("Faction")
+                        .HasColumnType("INTEGER");
+
                     b.Property<byte>("FleeHealthPercentage")
                         .HasColumnType("INTEGER");
 
@@ -495,6 +498,15 @@ namespace Intersect.Server.Migrations.Sqlite.Game
                         .HasColumnName("Immunities");
 
                     b.Property<bool>("IndividualizedLoot")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("JailMapId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte>("JailX")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<byte>("JailY")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("JsonAggroList")
@@ -557,6 +569,9 @@ namespace Intersect.Server.Migrations.Sqlite.Game
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("ScalingStat")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("SendToJailOnCapture")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("SightRange")
@@ -1068,7 +1083,6 @@ namespace Intersect.Server.Migrations.Sqlite.Game
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
-
 
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");

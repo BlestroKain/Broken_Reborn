@@ -1450,7 +1450,12 @@ internal sealed partial class PacketHandler
             return;
         }
 
-        if (!PrismService.IsInVulnerabilityWindow(prism, DateTime.UtcNow))
+        var now = DateTime.UtcNow;
+        var stillUnderAttack = prism.State == PrismState.UnderAttack && prism.LastHitAt.HasValue &&
+                               (now - prism.LastHitAt.Value).TotalSeconds <=
+                               Options.Instance.Prism.AttackCooldownSeconds;
+
+        if (!PrismService.IsInVulnerabilityWindow(prism, now) && !stillUnderAttack)
         {
             return;
         }

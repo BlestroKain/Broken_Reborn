@@ -1,9 +1,11 @@
 using System;
 using System.Linq;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using Intersect.Config;
 using Intersect.Framework.Core.GameObjects.Prisms;
-using Intersect.Editor.General;
+using Intersect.Editor.Forms;
+
 
 namespace Intersect.Editor.Forms.Editors;
 
@@ -49,8 +51,24 @@ public partial class FrmPrisms : Form
         nudY.Value = p.Y;
         mapPicker.SetMap(p.MapId);
         nudLevel.Value = p.Level;
-        txtWindows.Lines = p.Windows.Select(w => $"{w.Day}|{w.Start:hh\\:mm}|{w.End:hh\\:mm}").ToArray();
-        txtModules.Lines = p.Modules.Select(m => m.Name).ToArray();
+
+        dgvWindows.Rows.Clear();
+        foreach (var w in p.Windows)
+        {
+            var duration = w.End - w.Start;
+            if (duration < TimeSpan.Zero)
+            {
+                duration += TimeSpan.FromDays(1);
+            }
+            dgvWindows.Rows.Add(w.Day, w.Start.ToString(@"hh\:mm"), duration.ToString(@"hh\:mm"));
+        }
+
+        dgvModules.Rows.Clear();
+        foreach (var m in p.Modules)
+        {
+            dgvModules.Rows.Add(m.Type, m.Level);
+        }
+
         nudAreaX.Value = p.Area.X;
         nudAreaY.Value = p.Area.Y;
         nudAreaW.Value = p.Area.Width;
@@ -91,20 +109,40 @@ public partial class FrmPrisms : Form
             p.Y = (int)nudY.Value;
             p.Level = (int)nudLevel.Value;
 
-            p.Windows = txtWindows.Lines
-                .Select(line => line.Split('|'))
-                .Where(parts => parts.Length == 3 && Enum.TryParse(parts[0], true, out DayOfWeek _))
-                .Select(parts => new VulnerabilityWindow
+            p.Windows = dgvWindows.Rows
+                .Cast<DataGridViewRow>()
+                .Where(r => !r.IsNewRow)
+                .Select(r =>
                 {
-                    Day = Enum.Parse<DayOfWeek>(parts[0], true),
-                    Start = TimeSpan.TryParse(parts[1], out var s) ? s : TimeSpan.Zero,
-                    End = TimeSpan.TryParse(parts[2], out var e) ? e : TimeSpan.Zero
+                    var start = TimeSpan.TryParse(r.Cells["colStart"].Value?.ToString(), out var s)
+                        ? s
+                        : TimeSpan.Zero;
+                    var duration = TimeSpan.TryParse(r.Cells["colDuration"].Value?.ToString(), out var d)
+                        ? d
+                        : TimeSpan.Zero;
+                    var end = start + duration;
+                    if (end.TotalHours >= 24)
+                    {
+                        end -= TimeSpan.FromDays(1);
+                    }
+
+                    return new VulnerabilityWindow
+                    {
+                        Day = r.Cells["colDay"].Value is DayOfWeek day ? day : DayOfWeek.Monday,
+                        Start = start,
+                        End = end
+                    };
                 })
                 .ToList();
 
-            p.Modules = txtModules.Lines
-                .Where(l => !string.IsNullOrWhiteSpace(l))
-                .Select(l => new PrismModule { Name = l.Trim() })
+            p.Modules = dgvModules.Rows
+                .Cast<DataGridViewRow>()
+                .Where(r => !r.IsNewRow)
+                .Select(r => new PrismModule
+                {
+                    Type = r.Cells["colType"].Value is PrismModuleType t ? t : PrismModuleType.Vision,
+                    Level = int.TryParse(r.Cells["colLevel"].Value?.ToString(), out var lvl) ? lvl : 1
+                })
                 .ToList();
 
             p.Area = new PrismArea
@@ -119,11 +157,69 @@ public partial class FrmPrisms : Form
         PrismConfig.Save();
         LoadList();
     }
+    private void btnWindowAdd_Click(object sender, EventArgs e)
+    {
+        dgvWindows.Rows.Add(DayOfWeek.Monday, "00:00", "01:00");
+    }
 
+    private void btnWindowEdit_Click(object sender, EventArgs e)
+    {
+        if (dgvWindows.CurrentCell != null)
+        {
+            dgvWindows.BeginEdit(true);
+        }
+    }
+
+    private void btnWindowDelete_Click(object sender, EventArgs e)
+    {
+        foreach (DataGridViewRow row in dgvWindows.SelectedRows)
+        {
+            if (!row.IsNewRow)
+            {
+                dgvWindows.Rows.Remove(row);
+            }
+        }
+    }
+
+    private void btnModuleAdd_Click(object sender, EventArgs e)
+    {
+        dgvModules.Rows.Add(PrismModuleType.Vision, 1);
+    }
+
+    private void btnModuleDelete_Click(object sender, EventArgs e)
+    {
+        foreach (DataGridViewRow row in dgvModules.SelectedRows)
+        {
+            if (!row.IsNewRow)
+            {
+                dgvModules.Rows.Remove(row);
+            }
+        }
+    }
+
+    private void btnAreaSelect_Click(object sender, EventArgs e)
+    {
+        if (!Guid.TryParse(txtMapId.Text, out var mapId))
+        {
+            return;
+        }
+
+        var selector = new FrmWarpSelection();
+        selector.InitForm(true, new List<Guid> { mapId });
+        selector.SelectTile(mapId, (int)nudAreaX.Value, (int)nudAreaY.Value);
+        selector.ShowDialog();
+
+        if (selector.GetResult())
+        {
+            nudAreaX.Value = selector.GetX();
+            nudAreaY.Value = selector.GetY();
+        }
+}
     private void MapPickerOnTileSelected(Guid mapId, int x, int y)
     {
         txtMapId.Text = mapId.ToString();
         nudX.Value = Math.Max(nudX.Minimum, Math.Min(nudX.Maximum, x));
         nudY.Value = Math.Max(nudY.Minimum, Math.Min(nudY.Maximum, y));
+
     }
 }

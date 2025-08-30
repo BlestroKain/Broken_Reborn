@@ -1,14 +1,27 @@
 namespace Intersect.Framework.Core.GameObjects.Prisms;
 
 /// <summary>
-///     Represents a module attached to a prism. Modules can later be expanded with
-///     additional behaviour; currently only the module name is stored.
+///     Represents a module attached to a prism.
 /// </summary>
 public class PrismModule
 {
     /// <summary>
-    ///     Name or identifier of the module.
+    ///     The module type.
     /// </summary>
-    public string Name { get; set; } = string.Empty;
+    public PrismModuleType Type { get; set; }
+
+    /// <summary>
+    ///     Level of the module (1-3).
+    /// </summary>
+    public int Level { get; set; }
+}
+
+/// <summary>
+///     Available module types for prisms.
+/// </summary>
+public enum PrismModuleType
+{
+    Vision,
+    Prospecting
 }
 

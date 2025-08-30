@@ -1,4 +1,6 @@
 using DarkUI.Controls;
+using System.Windows.Forms;
+using Intersect.Framework.Core.GameObjects.Prisms;
 
 namespace Intersect.Editor.Forms.Editors
 {
@@ -10,8 +12,8 @@ namespace Intersect.Editor.Forms.Editors
         private DarkNumericUpDown nudX;
         private DarkNumericUpDown nudY;
         private DarkNumericUpDown nudLevel;
-        private System.Windows.Forms.TextBox txtWindows;
-        private System.Windows.Forms.TextBox txtModules;
+        private System.Windows.Forms.DataGridView dgvWindows;
+        private System.Windows.Forms.DataGridView dgvModules;
         private DarkNumericUpDown nudAreaX;
         private DarkNumericUpDown nudAreaY;
         private DarkNumericUpDown nudAreaW;
@@ -19,6 +21,12 @@ namespace Intersect.Editor.Forms.Editors
         private DarkButton btnAdd;
         private DarkButton btnDelete;
         private DarkButton btnSave;
+        private DarkButton btnWindowAdd;
+        private DarkButton btnWindowEdit;
+        private DarkButton btnWindowDelete;
+        private DarkButton btnModuleAdd;
+        private DarkButton btnModuleDelete;
+        private DarkButton btnAreaSelect;
         private System.Windows.Forms.Label lblMapId;
         private System.Windows.Forms.Label lblX;
         private System.Windows.Forms.Label lblY;
@@ -50,8 +58,8 @@ namespace Intersect.Editor.Forms.Editors
             nudX = new DarkNumericUpDown();
             nudY = new DarkNumericUpDown();
             nudLevel = new DarkNumericUpDown();
-            txtWindows = new TextBox();
-            txtModules = new TextBox();
+            dgvWindows = new DataGridView();
+            dgvModules = new DataGridView();
             nudAreaX = new DarkNumericUpDown();
             nudAreaY = new DarkNumericUpDown();
             nudAreaW = new DarkNumericUpDown();
@@ -59,6 +67,12 @@ namespace Intersect.Editor.Forms.Editors
             btnAdd = new DarkButton();
             btnDelete = new DarkButton();
             btnSave = new DarkButton();
+            btnWindowAdd = new DarkButton();
+            btnWindowEdit = new DarkButton();
+            btnWindowDelete = new DarkButton();
+            btnModuleAdd = new DarkButton();
+            btnModuleDelete = new DarkButton();
+            btnAreaSelect = new DarkButton();
             lblMapId = new Label();
             lblX = new Label();
             lblY = new Label();
@@ -84,6 +98,8 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)nudX).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudY).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudLevel).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)dgvWindows).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)dgvModules).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudAreaX).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudAreaY).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudAreaW).BeginInit();
@@ -148,27 +164,106 @@ namespace Intersect.Editor.Forms.Editors
             nudLevel.TabIndex = 7;
             nudLevel.Value = new decimal(new int[] { 0, 0, 0, 0 });
             // 
-            // txtWindows
-            // 
-            txtWindows.BackColor = System.Drawing.Color.FromArgb(60, 63, 65);
-            txtWindows.ForeColor = SystemColors.Window;
-            txtWindows.Location = new System.Drawing.Point(257, 176);
-            txtWindows.Margin = new Padding(4, 3, 4, 3);
-            txtWindows.Multiline = true;
-            txtWindows.Name = "txtWindows";
-            txtWindows.Size = new Size(233, 92);
-            txtWindows.TabIndex = 9;
-            // 
-            // txtModules
-            // 
-            txtModules.BackColor = System.Drawing.Color.FromArgb(60, 63, 65);
-            txtModules.ForeColor = SystemColors.Window;
-            txtModules.Location = new System.Drawing.Point(257, 280);
-            txtModules.Margin = new Padding(4, 3, 4, 3);
-            txtModules.Multiline = true;
-            txtModules.Name = "txtModules";
-            txtModules.Size = new Size(233, 92);
-            txtModules.TabIndex = 11;
+            // dgvWindows
+            //
+            dgvWindows.AllowUserToAddRows = false;
+            dgvWindows.BackgroundColor = System.Drawing.Color.FromArgb(60, 63, 65);
+            dgvWindows.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dgvWindows.Location = new System.Drawing.Point(257, 176);
+            dgvWindows.Name = "dgvWindows";
+            dgvWindows.RowHeadersVisible = false;
+            dgvWindows.Size = new Size(233, 92);
+            dgvWindows.TabIndex = 9;
+            var colDay = new DataGridViewComboBoxColumn();
+            colDay.Name = "colDay";
+            colDay.HeaderText = "Day";
+            colDay.DataSource = Enum.GetValues(typeof(DayOfWeek));
+            var colStart = new DataGridViewTextBoxColumn();
+            colStart.Name = "colStart";
+            colStart.HeaderText = "Start";
+            var colDuration = new DataGridViewTextBoxColumn();
+            colDuration.Name = "colDuration";
+            colDuration.HeaderText = "Duration";
+            dgvWindows.Columns.AddRange(new DataGridViewColumn[] { colDay, colStart, colDuration });
+            //
+            // dgvModules
+            //
+            dgvModules.AllowUserToAddRows = false;
+            dgvModules.BackgroundColor = System.Drawing.Color.FromArgb(60, 63, 65);
+            dgvModules.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dgvModules.Location = new System.Drawing.Point(257, 280);
+            dgvModules.Name = "dgvModules";
+            dgvModules.RowHeadersVisible = false;
+            dgvModules.Size = new Size(233, 92);
+            dgvModules.TabIndex = 11;
+            var colType = new DataGridViewComboBoxColumn();
+            colType.Name = "colType";
+            colType.HeaderText = "Type";
+            colType.DataSource = Enum.GetValues(typeof(PrismModuleType));
+            var colLevel = new DataGridViewTextBoxColumn();
+            colLevel.Name = "colLevel";
+            colLevel.HeaderText = "Level";
+            dgvModules.Columns.AddRange(new DataGridViewColumn[] { colType, colLevel });
+            //
+            // btnWindowAdd
+            //
+            btnWindowAdd.Location = new System.Drawing.Point(496, 176);
+            btnWindowAdd.Margin = new Padding(4, 3, 4, 3);
+            btnWindowAdd.Name = "btnWindowAdd";
+            btnWindowAdd.Size = new Size(75, 23);
+            btnWindowAdd.TabIndex = 24;
+            btnWindowAdd.Text = "Add";
+            btnWindowAdd.Click += btnWindowAdd_Click;
+            //
+            // btnWindowEdit
+            //
+            btnWindowEdit.Location = new System.Drawing.Point(496, 205);
+            btnWindowEdit.Margin = new Padding(4, 3, 4, 3);
+            btnWindowEdit.Name = "btnWindowEdit";
+            btnWindowEdit.Size = new Size(75, 23);
+            btnWindowEdit.TabIndex = 25;
+            btnWindowEdit.Text = "Edit";
+            btnWindowEdit.Click += btnWindowEdit_Click;
+            //
+            // btnWindowDelete
+            //
+            btnWindowDelete.Location = new System.Drawing.Point(496, 234);
+            btnWindowDelete.Margin = new Padding(4, 3, 4, 3);
+            btnWindowDelete.Name = "btnWindowDelete";
+            btnWindowDelete.Size = new Size(75, 23);
+            btnWindowDelete.TabIndex = 26;
+            btnWindowDelete.Text = "Delete";
+            btnWindowDelete.Click += btnWindowDelete_Click;
+            //
+            // btnModuleAdd
+            //
+            btnModuleAdd.Location = new System.Drawing.Point(496, 280);
+            btnModuleAdd.Margin = new Padding(4, 3, 4, 3);
+            btnModuleAdd.Name = "btnModuleAdd";
+            btnModuleAdd.Size = new Size(75, 23);
+            btnModuleAdd.TabIndex = 27;
+            btnModuleAdd.Text = "Add";
+            btnModuleAdd.Click += btnModuleAdd_Click;
+            //
+            // btnModuleDelete
+            //
+            btnModuleDelete.Location = new System.Drawing.Point(496, 309);
+            btnModuleDelete.Margin = new Padding(4, 3, 4, 3);
+            btnModuleDelete.Name = "btnModuleDelete";
+            btnModuleDelete.Size = new Size(75, 23);
+            btnModuleDelete.TabIndex = 28;
+            btnModuleDelete.Text = "Delete";
+            btnModuleDelete.Click += btnModuleDelete_Click;
+            //
+            // btnAreaSelect
+            //
+            btnAreaSelect.Location = new System.Drawing.Point(496, 384);
+            btnAreaSelect.Margin = new Padding(4, 3, 4, 3);
+            btnAreaSelect.Name = "btnAreaSelect";
+            btnAreaSelect.Size = new Size(75, 23);
+            btnAreaSelect.TabIndex = 29;
+            btnAreaSelect.Text = "Select";
+            btnAreaSelect.Click += btnAreaSelect_Click;
             // 
             // nudAreaX
             // 
@@ -297,9 +392,9 @@ namespace Intersect.Editor.Forms.Editors
             lblWindows.Location = new System.Drawing.Point(502, 176);
             lblWindows.Margin = new Padding(4, 0, 4, 0);
             lblWindows.Name = "lblWindows";
-            lblWindows.Size = new Size(179, 15);
+            lblWindows.Size = new Size(56, 15);
             lblWindows.TabIndex = 10;
-            lblWindows.Text = "Windows (Day|HH:mm|HH:mm)";
+            lblWindows.Text = "Windows";
             // 
             // lblModules
             // 
@@ -484,10 +579,16 @@ namespace Intersect.Editor.Forms.Editors
             Controls.Add(nudAreaY);
             Controls.Add(lblAreaX);
             Controls.Add(nudAreaX);
+            Controls.Add(btnAreaSelect);
+            Controls.Add(btnModuleDelete);
+            Controls.Add(btnModuleAdd);
+            Controls.Add(btnWindowDelete);
+            Controls.Add(btnWindowEdit);
+            Controls.Add(btnWindowAdd);
             Controls.Add(lblModules);
-            Controls.Add(txtModules);
+            Controls.Add(dgvModules);
             Controls.Add(lblWindows);
-            Controls.Add(txtWindows);
+            Controls.Add(dgvWindows);
             Controls.Add(lblLevel);
             Controls.Add(nudLevel);
             Controls.Add(lblY);
@@ -504,6 +605,8 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)nudX).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudY).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudLevel).EndInit();
+            ((System.ComponentModel.ISupportInitialize)dgvWindows).EndInit();
+            ((System.ComponentModel.ISupportInitialize)dgvModules).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudAreaX).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudAreaY).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudAreaW).EndInit();

@@ -196,6 +196,11 @@ public partial class FrmPrisms : Form
             })
             .ToList();
 
+        if (modules.Any(m => m.Level < 1 || m.Level > 3))
+        {
+            errors.Add("El nivel de cada módulo debe estar entre 1 y 3.");
+        }
+
         if (modules.Count > MaxModules)
         {
             errors.Add($"No se pueden agregar más de {MaxModules} módulos.");
@@ -206,7 +211,9 @@ public partial class FrmPrisms : Form
             errors.Add("No se permiten módulos duplicados.");
         }
 
-        if (errors.Any())
+        var hasErrors = errors.Any();
+        btnSave.Enabled = !hasErrors;
+        if (hasErrors)
         {
             MessageBox.Show(string.Join("\n", errors), "Errores", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;

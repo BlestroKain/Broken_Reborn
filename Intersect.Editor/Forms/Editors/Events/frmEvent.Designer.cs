@@ -58,6 +58,8 @@ namespace Intersect.Editor.Forms.Editors.Events
             var treeNode22 = new TreeNode("Change Player Color");
             var treeNode23 = new TreeNode("Change Face");
             var treeNode24 = new TreeNode("Change Gender");
+            var treeNode78 = new TreeNode("Set Alignment");
+            var treeNode79 = new TreeNode("Alignment", new TreeNode[] { treeNode78 });
             var treeNode25 = new TreeNode("Set Access");
             var treeNode26 = new TreeNode("Change Class");
             var treeNode27 = new TreeNode("Equip/Unequip Item");
@@ -67,7 +69,7 @@ namespace Intersect.Editor.Forms.Editors.Events
             var treeNode31 = new TreeNode("Reset Stat Point Allocations");
             var treeNode32 = new TreeNode("Cast Spell On");
             var treeNode77 = new TreeNode("Change Bestiary");
-            var treeNode33 = new TreeNode("Player Control", new TreeNode[] { treeNode14, treeNode15, treeNode16, treeNode17, treeNode18, treeNode19, treeNode20, treeNode21, treeNode22, treeNode23, treeNode24, treeNode25, treeNode26, treeNode27, treeNode28, treeNode29, treeNode30, treeNode31, treeNode32, treeNode77 });
+            var treeNode33 = new TreeNode("Player Control", new TreeNode[] { treeNode14, treeNode15, treeNode16, treeNode17, treeNode18, treeNode19, treeNode20, treeNode21, treeNode22, treeNode23, treeNode24, treeNode79, treeNode25, treeNode26, treeNode27, treeNode28, treeNode29, treeNode30, treeNode31, treeNode32, treeNode77 });
             var treeNode34 = new TreeNode("Warp Player");
             var treeNode35 = new TreeNode("Set Move Route");
             var treeNode36 = new TreeNode("Wait for Route Completion");
@@ -902,6 +904,10 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode23.Text = "Change Face";
             treeNode24.Name = "changegender";
             treeNode24.Text = "Change Gender";
+            treeNode78.Name = "setalignment";
+            treeNode78.Text = "Set Alignment";
+            treeNode79.Name = "alignment";
+            treeNode79.Text = "Alignment";
             treeNode25.Name = "setaccess";
             treeNode25.Text = "Set Access";
             treeNode26.Name = "setclass";

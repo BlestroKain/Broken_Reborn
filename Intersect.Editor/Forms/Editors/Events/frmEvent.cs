@@ -611,6 +611,10 @@ public partial class FrmEvent : Form
                 tmpCommand = new ChangeGenderCommand();
 
                 break;
+            case EventCommandType.SetAlignment:
+                tmpCommand = new SetAlignmentCommand();
+
+                break;
             case EventCommandType.ChangeNameColor:
                 tmpCommand = new ChangeNameColorCommand();
 
@@ -1309,6 +1313,10 @@ public partial class FrmEvent : Form
                 break;
             case EventCommandType.ChangeGender:
                 cmdWindow = new EventCommandChangeGender((ChangeGenderCommand)command, this);
+
+                break;
+            case EventCommandType.SetAlignment:
+                cmdWindow = new EventCommandSetAlignment((SetAlignmentCommand)command, this);
 
                 break;
             case EventCommandType.ChangeNameColor:

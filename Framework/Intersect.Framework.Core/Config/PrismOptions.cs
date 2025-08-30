@@ -33,6 +33,16 @@ public class PrismOptions
     public int AttackCooldownSeconds { get; set; } = 30;
 
     /// <summary>
+    ///     Maximum duration in minutes a prism battle may last.
+    /// </summary>
+    public int MaxBattleDurationMinutes { get; set; } = 15;
+
+    /// <summary>
+    ///     Seconds a player must wait after dying before rejoining a prism battle.
+    /// </summary>
+    public int RespawnCooldownSeconds { get; set; } = 60;
+
+    /// <summary>
     ///     Allow damage outside the vulnerability window.
     /// </summary>
     public bool AllowDamageOutsideVulnerability { get; set; } = false;

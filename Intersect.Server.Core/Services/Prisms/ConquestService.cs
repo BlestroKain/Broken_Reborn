@@ -46,6 +46,8 @@ public sealed class ConquestService : IConquestService
     {
         var contributions = PrismCombatService.GetContributions(prism)
             .Where(filter)
+            .GroupBy(c => (c.PlayerIp, c.PlayerFingerprint))
+            .Select(g => g.First())
             .ToList();
 
         var total = contributions.Sum(c => c.Total);

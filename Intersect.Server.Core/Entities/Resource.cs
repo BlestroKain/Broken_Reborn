@@ -12,6 +12,9 @@ using Intersect.Server.Framework.Items;
 using Intersect.Server.Maps;
 using Intersect.Server.Networking;
 using Intersect.Utilities;
+using Intersect.Server.Core;
+using Intersect.Server.Services.Prisms;
+using System.Linq;
 
 namespace Intersect.Server.Entities;
 
@@ -183,6 +186,9 @@ public partial class Resource : Entity
             selectedTile ??= tiles[Randomization.Next(0, tiles.Count)];
 
             var itemSource = AsItemSource();
+            var player = killer as Player;
+            var bonusApplier = Bootstrapper.Context?.Services
+                .FirstOrDefault(s => s is IFactionBonusApplier) as IFactionBonusApplier;
 
             // Drop items
             foreach (var item in Items)
@@ -192,12 +198,19 @@ public partial class Resource : Entity
                     var mapId = selectedTile.GetMapId();
                     if (MapController.TryGetInstanceFromMap(mapId, MapInstanceId, out var mapInstance))
                     {
+                        var quantity = item.Quantity;
+                        if (player != null)
+                        {
+                            quantity = (int)Math.Max(1,
+                                MathF.Round(bonusApplier?.ApplyGatherBonus(player, quantity) ?? quantity));
+                        }
+
                         mapInstance.SpawnItem(
                             itemSource,
                             selectedTile.GetX(),
                             selectedTile.GetY(),
                             item,
-                            item.Quantity,
+                            quantity,
                             killer.Id
                         );
                     }

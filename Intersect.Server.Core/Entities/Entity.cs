@@ -28,6 +28,8 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Stat = Intersect.Enums.Stat;
 using Intersect.Server.Services;
+using Intersect.Server.Core;
+using Intersect.Server.Services.Prisms;
 
 namespace Intersect.Server.Entities;
 
@@ -3274,6 +3276,13 @@ public abstract partial class Entity : IEntity
 
             var playerKiller = killer as Player;
             var dropRateModifier = 1 + (playerKiller?.GetEquipmentBonusEffect(ItemEffect.Luck) / 100f ?? 0);
+            var bonusApplier = Bootstrapper.Context?.Services
+                .FirstOrDefault(s => s is IFactionBonusApplier) as IFactionBonusApplier;
+            if (playerKiller != null)
+            {
+                dropRateModifier = bonusApplier?.ApplyDropBonus(playerKiller, dropRateModifier) ?? dropRateModifier;
+            }
+
             if (!ShouldDropItem(killer, itemDescriptor, drop, dropRateModifier, out Guid lootOwner))
             {
                 continue;

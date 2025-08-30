@@ -5,6 +5,8 @@ using System.Windows.Forms;
 using Intersect.Config;
 using Intersect.Framework.Core.GameObjects.Prisms;
 using Intersect.Editor.Forms;
+using Intersect.Editor.General;
+using Intersect.Editor.Core;
 
 
 namespace Intersect.Editor.Forms.Editors;
@@ -228,8 +230,14 @@ public partial class FrmPrisms : Form
             Height = areaH
         };
 
+        var index = lstPrisms.SelectedIndex;
         PrismConfig.Save();
+        PrismConfig.Load();
         LoadList();
+        if (index >= 0 && index < lstPrisms.Items.Count)
+        {
+            lstPrisms.SelectedIndex = index;
+        }
     }
     private void btnWindowAdd_Click(object sender, EventArgs e)
     {

@@ -15,7 +15,7 @@ public static class PrismConfig
     /// </summary>
     public static List<AlignmentPrism> Prisms { get; private set; } = new();
 
-    private static string PrismPath => Path.Combine(Options.ResourcesDirectory, "prisms.json");
+    private static string PrismPath => Path.Combine(Options.ResourcesDirectory, "Config", "prisms.json");
 
     /// <summary>
     ///     Loads prism definitions from disk if available.
@@ -37,9 +37,10 @@ public static class PrismConfig
     /// </summary>
     public static void Save()
     {
-        if (!Directory.Exists(Options.ResourcesDirectory))
+        var directory = Path.GetDirectoryName(PrismPath);
+        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
         {
-            Directory.CreateDirectory(Options.ResourcesDirectory);
+            Directory.CreateDirectory(directory);
         }
 
         var json = JsonConvert.SerializeObject(Prisms, Formatting.Indented);

@@ -2,6 +2,7 @@ using System;
 using DarkUI.Controls;
 using System.Windows.Forms;
 using Intersect.Config;
+using Intersect.Editor.Core;
 
 namespace Intersect.Editor.Forms.Editors;
 

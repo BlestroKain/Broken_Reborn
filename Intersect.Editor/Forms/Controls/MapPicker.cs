@@ -26,7 +26,7 @@ public class MapPicker : UserControl
 
         _picture = new PictureBox
         {
-            Location = new Point(0, 0)
+            Location = new System.Drawing. Point(0, 0)
         };
 
         _picture.Paint += Picture_Paint;
@@ -80,7 +80,7 @@ public class MapPicker : UserControl
             (int)(tileW * _zoom),
             (int)(tileH * _zoom));
 
-        using var brush = new SolidBrush(Color.FromArgb(80, Color.White));
+        using var brush = new SolidBrush(System.Drawing. Color.FromArgb(80, 255,255,255));
         e.Graphics.FillRectangle(brush, rect);
         e.Graphics.DrawRectangle(Pens.White, rect);
     }

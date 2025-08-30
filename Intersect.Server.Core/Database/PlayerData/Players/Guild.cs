@@ -315,6 +315,24 @@ public partial class Guild
             return false;
         }
 
+        if (player.Faction == Alignment.Neutral && guildFaction != Alignment.Neutral)
+        {
+            player.Faction = guildFaction;
+            player.Save();
+            PacketSender.SendChatMsg(player, Strings.Guilds.FactionApplied, ChatMessageType.Guild);
+
+            if (player.Faction != guildFaction)
+            {
+                PacketSender.SendChatMsg(player, Strings.Guilds.DifferentFaction, ChatMessageType.Guild);
+                if (initiator != null)
+                {
+                    PacketSender.SendChatMsg(initiator, Strings.Guilds.InviteDifferentFaction, ChatMessageType.Guild);
+                }
+
+                return false;
+            }
+        }
+
         try
         {
             // Save the guild before adding a new player

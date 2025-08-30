@@ -833,6 +833,9 @@ public static partial class Strings
         public readonly LocalizedString DifferentFaction = @"Your faction does not match the guild's faction.";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString FactionApplied = @"Your faction has been changed to match the guild's.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public readonly LocalizedString Promoted = @"{00} has been promoted to {01}!";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

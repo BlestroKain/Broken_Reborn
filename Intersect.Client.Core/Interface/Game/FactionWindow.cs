@@ -29,7 +29,7 @@ public sealed class FactionWindow : Window
     private readonly Label _honorLabel;
     private readonly Label _gradeLabel;
     private readonly Button _wingsButton;
-
+    private readonly Button _conquestButton;
     // Honor bar
     private readonly Base _honorBarBg;
     private readonly Base _honorBarMid;
@@ -142,8 +142,11 @@ public sealed class FactionWindow : Window
             UpdateWingsButton(newState);
             PacketSender.SendToggleWings(newState);
         };
-
-                // primera actualización
+        _conquestButton = new Button(this, "ConquestButton");
+        _conquestButton.SetPosition(10, 100);
+        _conquestButton.SetText("Conquest");
+        _conquestButton.Clicked += (s, e) => Interface.GameUi.GameMenu?.ToggleConquestWindow();
+        // primera actualización
         Refresh();
     }
 

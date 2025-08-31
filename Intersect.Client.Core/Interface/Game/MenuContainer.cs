@@ -49,12 +49,8 @@ public partial class MenuContainer : Panel
     private readonly Button _guildButton;
     private readonly GuildWindow _guildWindow;
 
-    private readonly ImagePanel _factionButtonContainer;
-    private readonly Button _factionButton;
     private readonly FactionWindow _factionWindow;
 
-    private readonly ImagePanel _conquestButtonContainer;
-    private readonly Button _conquestButton;
     private readonly ConquestWindow _conquestWindow;
 
     private readonly ImagePanel _wingsButtonContainer;
@@ -208,45 +204,9 @@ public partial class MenuContainer : Panel
         _guildButton.SetToolTipText(text: Strings.Guilds.Guild);
         _guildButton.Clicked += GuildBtn_Clicked;
 
-        _factionButtonContainer = new ImagePanel(parent: this, name: nameof(_factionButtonContainer))
-        {
-            Dock = Pos.Left,
-            MaximumSize = new Point(x: 36, y: 36),
-            MinimumSize = new Point(x: 36, y: 36),
-            Padding = new Padding(size: 2),
-            Size = new Point(x: 36, y: 36),
-            TextureFilename = "menuitem.png",
-        };
-        _factionButton = new Button(parent: _factionButtonContainer, name: nameof(_factionButton), disableText: true)
-        {
-            Alignment = [Alignments.Center],
-            Size = new Point(x: 32, y: 32),
-        };
-        _factionButton.SetStateTexture(componentState: ComponentState.Normal, textureName: "factionicon.png");
-        _factionButton.SetStateTexture(componentState: ComponentState.Hovered, textureName: "factionicon_hovered.png");
-        _factionButton.SetToolTipText(text: "Faction");
         _factionWindow = new FactionWindow(gameCanvas) { IsHidden = true };
-        _factionButton.Clicked += (s, e) => ToggleFactionWindow();
 
-        _conquestButtonContainer = new ImagePanel(parent: this, name: nameof(_conquestButtonContainer))
-        {
-            Dock = Pos.Left,
-            MaximumSize = new Point(x: 36, y: 36),
-            MinimumSize = new Point(x: 36, y: 36),
-            Padding = new Padding(size: 2),
-            Size = new Point(x: 36, y: 36),
-            TextureFilename = "menuitem.png",
-        };
-        _conquestButton = new Button(parent: _conquestButtonContainer, name: nameof(_conquestButton), disableText: true)
-        {
-            Alignment = [Alignments.Center],
-            Size = new Point(x: 32, y: 32),
-        };
-        _conquestButton.SetStateTexture(componentState: ComponentState.Normal, textureName: "conquesticon.png");
-        _conquestButton.SetStateTexture(componentState: ComponentState.Hovered, textureName: "conquesticon_hovered.png");
-        _conquestButton.SetToolTipText(text: "Conquest");
         _conquestWindow = new ConquestWindow(gameCanvas) { IsHidden = true };
-        _conquestButton.Clicked += (s, e) => ToggleConquestWindow();
 
         _wingsButtonContainer = new ImagePanel(parent: this, name: nameof(_wingsButtonContainer))
         {

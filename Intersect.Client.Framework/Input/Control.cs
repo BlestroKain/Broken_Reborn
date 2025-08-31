@@ -47,6 +47,8 @@ public enum Control
 
     OpenGuild,
 
+    OpenMinimap,
+
     OpenSettings,
 
     OpenDebugger,

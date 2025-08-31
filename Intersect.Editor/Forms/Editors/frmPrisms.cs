@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using Intersect.Config;
 using Intersect.Framework.Core.GameObjects.Prisms;
+using Intersect.Framework.Core.GameObjects.Maps.MapList;
 using Intersect.Editor.Forms;
 using Intersect.Editor.General;
 using Intersect.Editor.Core;
@@ -14,29 +15,46 @@ namespace Intersect.Editor.Forms.Editors;
 public partial class FrmPrisms : Form
 {
     private const int MaxModules = 3;
+    private List<AlignmentPrism> _sortedPrisms = new();
     public FrmPrisms()
     {
         InitializeComponent();
         Icon = Program.Icon;
         mapPicker.TileSelected += MapPickerOnTileSelected;
-        mapPicker.SetMap(Globals.CurrentMap?.Id ?? Guid.Empty);
+        var currentMapId = Globals.CurrentMap != null ? Globals.CurrentMap.Id : Guid.Empty;
+        mapPicker.SetMap(currentMapId);
         nudX.Maximum = Options.Instance.Map.MapWidth - 1;
         nudY.Maximum = Options.Instance.Map.MapHeight - 1;
+        nudX.ValueChanged += NudXY_ValueChanged;
+        nudY.ValueChanged += NudXY_ValueChanged;
         LoadList();
     }
 
     private void LoadList()
     {
+        var items = PrismConfig.Prisms
+            .Select(p => new
+            {
+                Prism = p,
+                MapName = MapList.List.FindMap(p.MapId)?.Name ?? p.MapId.ToString()
+            })
+            .OrderBy(i => i.MapName)
+            .ThenBy(i => i.Prism.X)
+            .ThenBy(i => i.Prism.Y)
+            .ToList();
+
+        _sortedPrisms = items.Select(i => i.Prism).ToList();
+
         lstPrisms.Items.Clear();
-        foreach (var p in PrismConfig.Prisms)
+        foreach (var item in items)
         {
-            lstPrisms.Items.Add($"{p.MapId} ({p.X},{p.Y})");
+            lstPrisms.Items.Add($"{item.MapName} ({item.Prism.X},{item.Prism.Y})");
         }
     }
 
     private AlignmentPrism? SelectedPrism =>
-        lstPrisms.SelectedIndex >= 0 && lstPrisms.SelectedIndex < PrismConfig.Prisms.Count
-            ? PrismConfig.Prisms[lstPrisms.SelectedIndex]
+        lstPrisms.SelectedIndex >= 0 && lstPrisms.SelectedIndex < _sortedPrisms.Count
+            ? _sortedPrisms[lstPrisms.SelectedIndex]
             : null;
 
     private void lstPrisms_SelectedIndexChanged(object sender, EventArgs e) => LoadSelected();
@@ -50,9 +68,10 @@ public partial class FrmPrisms : Form
         }
 
         txtMapId.Text = p.MapId.ToString();
+        ApplyMapBounds(p.MapId);
         nudX.Value = p.X;
         nudY.Value = p.Y;
-        mapPicker.SetMap(p.MapId);
+        mapPicker.SelectTile(p.MapId, p.X, p.Y);
         nudLevel.Value = p.Level;
 
         dgvWindows.Rows.Clear();
@@ -83,7 +102,7 @@ public partial class FrmPrisms : Form
         var prism = new AlignmentPrism { Id = Guid.NewGuid() };
         PrismConfig.Prisms.Add(prism);
         LoadList();
-        lstPrisms.SelectedIndex = PrismConfig.Prisms.Count - 1;
+        lstPrisms.SelectedIndex = _sortedPrisms.IndexOf(prism);
     }
 
     private void btnDelete_Click(object sender, EventArgs e)
@@ -237,10 +256,11 @@ public partial class FrmPrisms : Form
             Height = areaH
         };
 
-        var index = lstPrisms.SelectedIndex;
+        var selectedId = p.Id;
         PrismConfig.Save();
         PrismConfig.Load();
         LoadList();
+        var index = _sortedPrisms.FindIndex(prism => prism.Id == selectedId);
         if (index >= 0 && index < lstPrisms.Items.Count)
         {
             lstPrisms.SelectedIndex = index;
@@ -288,7 +308,8 @@ public partial class FrmPrisms : Form
 
     private void btnAreaSelect_Click(object sender, EventArgs e)
     {
-        if (!Guid.TryParse(txtMapId.Text, out var mapId))
+        Guid mapId;
+        if (!Guid.TryParse(txtMapId.Text, out mapId))
         {
             return;
         }
@@ -303,12 +324,68 @@ public partial class FrmPrisms : Form
             nudAreaX.Value = selector.GetX();
             nudAreaY.Value = selector.GetY();
         }
-}
+    }
+
+    private void btnPickPos_Click(object? sender, EventArgs e)
+    {
+        var selector = new FrmWarpSelection();
+        List<Guid>? restrict = null;
+        if (Guid.TryParse(txtMapId.Text, out var currMap) && currMap != Guid.Empty)
+        {
+            restrict = new List<Guid> { currMap };
+        }
+
+        selector.InitForm(true, restrict);
+        Guid mapId;
+        if (!Guid.TryParse(txtMapId.Text, out mapId))
+        {
+            mapId = Globals.CurrentMap != null ? Globals.CurrentMap.Id : Guid.Empty;
+        }
+
+        selector.SelectTile(mapId, (int)nudX.Value, (int)nudY.Value);
+        selector.ShowDialog();
+
+        if (selector.GetResult())
+        {
+            var pickedMap = selector.GetMap();
+            var x = selector.GetX();
+            var y = selector.GetY();
+
+            txtMapId.Text = pickedMap.ToString();
+            ApplyMapBounds(pickedMap);
+            nudX.Value = Math.Max(nudX.Minimum, Math.Min(nudX.Maximum, x));
+            nudY.Value = Math.Max(nudY.Minimum, Math.Min(nudY.Maximum, y));
+
+            mapPicker.SelectTile(pickedMap, x, y);
+        }
+    }
+
+    private void NudXY_ValueChanged(object? sender, EventArgs e)
+    {
+        Guid mapId;
+        if (!Guid.TryParse(txtMapId.Text, out mapId) || mapId == Guid.Empty)
+        {
+            return;
+        }
+
+        ApplyMapBounds(mapId);
+        mapPicker.SelectTile(mapId, (int)nudX.Value, (int)nudY.Value);
+    }
+
+    private void ApplyMapBounds(Guid mapId)
+    {
+        var maxW = Options.Instance.Map.MapWidth;
+        var maxH = Options.Instance.Map.MapHeight;
+
+        nudX.Maximum = Math.Max(0, maxW - 1);
+        nudY.Maximum = Math.Max(0, maxH - 1);
+    }
+
     private void MapPickerOnTileSelected(Guid mapId, int x, int y)
     {
         txtMapId.Text = mapId.ToString();
+        ApplyMapBounds(mapId);
         nudX.Value = Math.Max(nudX.Minimum, Math.Min(nudX.Maximum, x));
         nudY.Value = Math.Max(nudY.Minimum, Math.Min(nudY.Maximum, y));
-
     }
 }

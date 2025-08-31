@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Intersect.Core;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -8,12 +10,12 @@ using Intersect.Framework.Core.GameObjects.Prisms;
 namespace Intersect.Config;
 
 /// <summary>
-///     Handles loading and saving of prism definitions that are shared by the server and client.
+///     Provides access to <see cref="PrismDescriptor"/> definitions stored on disk.
 /// </summary>
-public static class PrismConfig
+public static class PrismDescriptorStore
 {
     /// <summary>
-    ///     Collection of configured prisms.
+    ///     Cached collection of prism descriptors.
     /// </summary>
     public static List<PrismDescriptor> Prisms { get; private set; } = new();
 
@@ -27,19 +29,19 @@ public static class PrismConfig
     }
 
     /// <summary>
-    ///     Loads prism definitions from disk if available.
+    ///     Loads prism descriptors from disk and returns the cached collection.
     /// </summary>
-    public static void Load()
+    public static IReadOnlyList<PrismDescriptor> LoadAll()
     {
         if (!File.Exists(PrismPath))
         {
             Prisms = new();
-            Save();
+            SaveAll();
             ApplicationContext.Context.Value?.Logger.LogInformation(
                 "Created prism configuration at {PrismPath}",
                 PrismPath
             );
-            return;
+            return Prisms;
         }
 
         var json = File.ReadAllText(PrismPath);
@@ -52,12 +54,27 @@ public static class PrismConfig
         {
             Prisms = JsonConvert.DeserializeObject<List<PrismDescriptor>>(json) ?? new();
         }
+
+        return Prisms;
     }
 
     /// <summary>
-    ///     Persists prism definitions to disk.
+    ///     Retrieves a prism descriptor by identifier, loading from disk if necessary.
     /// </summary>
-    public static void Save()
+    public static PrismDescriptor? Get(Guid id)
+    {
+        if (Prisms.Count == 0)
+        {
+            LoadAll();
+        }
+
+        return Prisms.FirstOrDefault(p => p.Id == id);
+    }
+
+    /// <summary>
+    ///     Persists the cached prism descriptors to disk.
+    /// </summary>
+    public static void SaveAll()
     {
         var directory = Path.Combine(Options.ResourcesDirectory, "Config");
         if (!Directory.Exists(directory))
@@ -69,3 +86,4 @@ public static class PrismConfig
         File.WriteAllText(PrismPath, json);
     }
 }
+

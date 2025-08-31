@@ -44,7 +44,7 @@ public partial class FrmPrisms : Form
 
     private void LoadList()
     {
-        var items = PrismConfig.Prisms
+        var items = PrismDescriptorStore.Prisms
             .Select(p => new
             {
                 Prism = p,
@@ -117,7 +117,7 @@ public partial class FrmPrisms : Form
     private void btnAdd_Click(object sender, EventArgs e)
     {
         var prism = new PrismDescriptor { Id = Guid.NewGuid() };
-        PrismConfig.Prisms.Add(prism);
+        PrismDescriptorStore.Prisms.Add(prism);
         LoadList();
         lstPrisms.SelectedIndex = _sortedPrisms.IndexOf(prism);
     }
@@ -130,7 +130,7 @@ public partial class FrmPrisms : Form
             return;
         }
 
-        PrismConfig.Prisms.Remove(p);
+        PrismDescriptorStore.Prisms.Remove(p);
         LoadList();
     }
 
@@ -272,8 +272,8 @@ public partial class FrmPrisms : Form
         p.TintByFaction = chkTintByFaction.Checked;
         p.SpriteOffsetY = (int)nudSpriteOffsetY.Value;
         var selectedId = p.Id;
-        PrismConfig.Save();
-        PrismConfig.Load();
+        PrismDescriptorStore.SaveAll();
+        PrismDescriptorStore.LoadAll();
         LoadList();
         var index = _sortedPrisms.FindIndex(prism => prism.Id == selectedId);
         if (index >= 0 && index < lstPrisms.Items.Count)

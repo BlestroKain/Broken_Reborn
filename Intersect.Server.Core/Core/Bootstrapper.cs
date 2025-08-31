@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.Reflection;
 using System.Resources;
@@ -11,6 +12,7 @@ using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects;
 using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Framework.Core.GameObjects.NPCs;
+using Intersect.Framework.Core.GameObjects.Prisms;
 using Intersect.Framework.Logging;
 using Intersect.Framework.SystemInformation;
 using Intersect.GameObjects;
@@ -21,6 +23,7 @@ using Intersect.Plugins.Helpers;
 using Intersect.Server.Database;
 using Intersect.Server.Database.PlayerData;
 using Intersect.Server.Database.PlayerData.Players;
+using Intersect.Server.Database.Prisms;
 using Intersect.Server.Entities;
 using Intersect.Server.General;
 using Intersect.Server.Localization;
@@ -300,6 +303,41 @@ internal static class Bootstrapper
             return false;
         }
 
+        // Load prism descriptors and ensure corresponding entities exist
+        var prismDescriptors = PrismDescriptorStore.LoadAll();
+        if (prismDescriptors.Count > 0)
+        {
+            using var context = DbInterface.CreatePlayerContext(readOnly: false);
+            foreach (var descriptor in prismDescriptors)
+            {
+                context.Prisms.EnsureEntity(
+                    descriptor.Id,
+                    () => new PrismEntity
+                    {
+                        PrismId = descriptor.Id,
+                        Owner = 0,
+                        State = PrismState.Dominated,
+                        MaxHp = Options.Instance.Prism.BaseHp,
+                        Hp = Options.Instance.Prism.BaseHp,
+                        LastStateChangeAt = DateTime.UtcNow,
+                    },
+                    existing =>
+                    {
+                        var maxHp = Options.Instance.Prism.BaseHp;
+                        if (existing.MaxHp != maxHp)
+                        {
+                            existing.MaxHp = maxHp;
+                            if (existing.Hp > maxHp)
+                            {
+                                existing.Hp = maxHp;
+                            }
+                        }
+                    }
+                );
+            }
+
+            context.SaveChanges();
+        }
 
         Time.Update();
 

@@ -27,7 +27,7 @@ public static class PrismVisualManager
     {
         if (!Prisms.TryGetValue(packet.MapId, out var visual))
         {
-            var info = PrismConfig.Prisms.FirstOrDefault(p => p.MapId == packet.MapId);
+            var info = PrismDescriptorStore.LoadAll().FirstOrDefault(p => p.MapId == packet.MapId);
             if (info == null)
             {
                 return;

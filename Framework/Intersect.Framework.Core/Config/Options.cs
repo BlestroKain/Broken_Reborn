@@ -271,8 +271,8 @@ public partial record Options
 
         SaveToDisk();
 
-        // Load prism configuration after ensuring the resources directory exists
-        PrismConfig.Load();
+        // Load prism descriptors after ensuring the resources directory exists
+        PrismDescriptorStore.LoadAll();
 
         return true;
     }
@@ -325,7 +325,7 @@ public partial record Options
             OptionsLoaded?.Invoke(loadedOptions);
 
             // Ensure prism definitions are loaded locally
-            PrismConfig.Load();
+            PrismDescriptorStore.LoadAll();
         }
         catch (Exception exception)
         {

@@ -14,7 +14,7 @@ namespace Intersect.Client.Maps.Prisms;
 
 public class PrismVisual
 {
-    private readonly AlignmentPrism _info;
+    private readonly PrismDescriptor _info;
     private readonly AnimationDescriptor? _idle;
     private readonly AnimationDescriptor? _vulnerable;
     private readonly AnimationDescriptor? _underAttack;
@@ -22,7 +22,7 @@ public class PrismVisual
     private long _stateStart = Timing.Global.Milliseconds;
     private FloatRect _bounds;
 
-    public PrismVisual(AlignmentPrism info)
+    public PrismVisual(PrismDescriptor info)
     {
         _info = info;
         if (info.IdleAnimationId.HasValue && info.IdleAnimationId != Guid.Empty)

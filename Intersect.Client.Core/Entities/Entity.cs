@@ -840,8 +840,11 @@ public partial class Entity : IEntity
                 {
                     items = MyEquipment.TryGetValue(z, out var invList)
                         ? invList
-                            .Where(i => i >= 0 && i < Options.Instance.Player.MaxInventory)
-                            .Select(i => Inventory[i].ItemId)
+                            .Where(i =>
+                                i >= 0 &&
+                                i < Options.Instance.Player.MaxInventory &&
+                                Inventory[i] != null)
+                            .Select(i => Inventory[i]!.ItemId)
                             .ToList()
                         : new List<Guid>();
                 }
@@ -1366,8 +1369,11 @@ public partial class Entity : IEntity
                         if (MyEquipment.TryGetValue(equipSlot, out var equippedIndexes) && equippedIndexes != null)
                         {
                             equipList = equippedIndexes
-                                .Where(i => i >= 0 && i < Options.Instance.Player.MaxInventory)
-                                .Select(i => Inventory[i].ItemId)
+                                .Where(i =>
+                                    i >= 0 &&
+                                    i < Options.Instance.Player.MaxInventory &&
+                                    Inventory[i] != null)
+                                .Select(i => Inventory[i]!.ItemId)
                                 .ToList();
                         }
                     }
@@ -2194,9 +2200,10 @@ public partial class Entity : IEntity
                     if (MyEquipment.TryGetValue(weaponSlot, out var myList) &&
                         myList.Count > 0 &&
                         myList[0] >= 0 &&
-                        myList[0] < Inventory.Length)
+                        myList[0] < Inventory.Length &&
+                        Inventory[myList[0]] != null)
                     {
-                        itemId = Inventory[myList[0]].ItemId;
+                        itemId = Inventory[myList[0]]!.ItemId;
                     }
                 }
                 else

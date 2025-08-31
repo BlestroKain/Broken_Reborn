@@ -93,7 +93,10 @@ public static partial class PacketSender
         }
 
         client.TimedBufferPacketsRemaining = 5;
-        client.Send(new JoinGamePacket());
+        var discovery = client.Entity?.MapDiscoveries
+            ?.ToDictionary(k => k.Key, v => v.Value.Data)
+            ?? new Dictionary<Guid, byte[]>();
+        client.Send(new JoinGamePacket(discovery));
         SendGameData(client);
      
         if (!client.IsEditor)

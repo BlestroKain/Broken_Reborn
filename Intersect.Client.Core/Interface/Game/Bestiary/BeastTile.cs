@@ -8,6 +8,7 @@ using Intersect.Client.Core;
 using Intersect.Client.Framework.Content;
 using System;
 using Intersect.Client.Framework.Input;
+using System.Collections.Generic;
 
 namespace Intersect.Client.Interface.Game.Bestiary
 {
@@ -119,6 +120,10 @@ namespace Intersect.Client.Interface.Game.Bestiary
                 _icon.Texture = null;
                 _icon.IsHidden = true;
             }
+
+            var tooltipLines = new List<string> { $"Nivel sugerido: {desc.Level}" };
+
+            SetToolTipText(string.Join("\n", tooltipLines));
         }
 
 

@@ -355,8 +355,24 @@ public static partial class Input
                             break;
 
                         case Control.OpenMinimap:
-                            Interface.Interface.GameUi.GameMenu?.ToggleMinimapWindow();
+                        {
+                            var gameMenu = Interface.Interface.GameUi.GameMenu;
+                            if (gameMenu == null)
+                            {
+                                break;
+                            }
+
+                            if (gameMenu.IsWorldMapVisible())
+                            {
+                                gameMenu.ToggleWorldMapWindow();
+                            }
+                            else
+                            {
+                                gameMenu.ToggleMinimapWindow();
+                            }
+
                             break;
+                        }
 
                         case Control.TargetParty1:
                             Globals.Me?.TargetPartyMember(0);

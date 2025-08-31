@@ -125,10 +125,10 @@ public partial class MinimapOptions
         public Dictionary<JobType, Color> Resource { get; set; } = new()
         {
             { JobType.None, Color.White },
-            { JobType.Lumberjack, Color.SaddleBrown },
+            { JobType.Lumberjack, Color.Orange },
             { JobType.Mining, Color.Gray },
             { JobType.Farming, Color.Green },
-            { JobType.Fishing, Color.CornflowerBlue },
+            { JobType.Fishing, Color.Cyan },
         };
         public Color Default { get; set; } = Color.Magenta;
     }

@@ -62,7 +62,7 @@ public class WorldMapWindow
     {
         _dragging = true;
         _dragOrigin = pos;
-        _canvasOrigin = _canvas.Position;
+        _canvasOrigin = new Point(_canvas.X, _canvas.Y);
     }
 
     internal void EndDrag()

@@ -1,4 +1,5 @@
 using DarkUI.Controls;
+using System;
 using System.Windows.Forms;
 using Intersect.Framework.Core.GameObjects.Prisms;
 
@@ -189,7 +190,7 @@ namespace Intersect.Editor.Forms.Editors
             var colDay = new DataGridViewComboBoxColumn();
             colDay.Name = "colDay";
             colDay.HeaderText = "Day";
-            colDay.DataSource = Enum.GetValues(typeof(DayOfWeek));
+            colDay.Items.AddRange((object[])Enum.GetValues(typeof(DayOfWeek)));
             var colStart = new DataGridViewTextBoxColumn();
             colStart.Name = "colStart";
             colStart.HeaderText = "Start";
@@ -211,7 +212,7 @@ namespace Intersect.Editor.Forms.Editors
             var colType = new DataGridViewComboBoxColumn();
             colType.Name = "colType";
             colType.HeaderText = "Type";
-            colType.DataSource = Enum.GetValues(typeof(PrismModuleType));
+            colType.Items.AddRange((object[])Enum.GetValues(typeof(PrismModuleType)));
             var colLevel = new DataGridViewTextBoxColumn();
             colLevel.Name = "colLevel";
             colLevel.HeaderText = "Level";

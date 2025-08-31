@@ -1461,6 +1461,7 @@ public partial class Base : IDisposable
                 continue;
             }
 
+
             if (node._name is not { } name || string.IsNullOrWhiteSpace(name))
             {
                 continue;

@@ -120,9 +120,6 @@ public sealed class ConquestWindow : Window
         _empty.SetPosition(8, 8);
         _empty.SetSize(_list.Width - 16, 20);
         _empty.IsHidden = true;
-
-        LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
-        Refresh();
     }
 
     private static void MakeHeaderLabel(Base parent, string text, int x, int y, int w)
@@ -263,6 +260,7 @@ public sealed class ConquestWindow : Window
 
     protected override void EnsureInitialized()
     {
-        LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+        LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString(), saveOutput: false);
+        Refresh();
     }
 }

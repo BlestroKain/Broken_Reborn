@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using Intersect;
 using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
@@ -14,6 +17,16 @@ public class MapFilters
     private readonly ImagePanel _panel;
     private readonly Dictionary<string, Checkbox> _filters = new();
     private readonly TextBox _searchBox;
+
+    /// <summary>
+    /// Inverted index mapping search tokens to matching map entries.
+    /// </summary>
+    private readonly Dictionary<string, HashSet<MapSearchEntry>> _searchIndex = new();
+
+    /// <summary>
+    /// Collection of all indexed map entries.
+    /// </summary>
+    private readonly List<MapSearchEntry> _entries = new();
 
     /// <summary>
     /// Raised when the user submits a search query.
@@ -63,5 +76,98 @@ public class MapFilters
     }
 
     public string SearchText => _searchBox.Text;
+
+    /// <summary>
+    /// Represents an item that can be searched for on the world map.
+    /// </summary>
+    public record MapSearchEntry(string Name, string Type, IReadOnlyList<string> Tags, Point Position);
+
+    private static IEnumerable<string> Tokenize(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return Enumerable.Empty<string>();
+        }
+
+        return text
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(t => t.ToLowerInvariant());
+    }
+
+    private void IndexToken(string token, MapSearchEntry entry)
+    {
+        if (!_searchIndex.TryGetValue(token, out var set))
+        {
+            set = [];
+            _searchIndex[token] = set;
+        }
+
+        set.Add(entry);
+    }
+
+    /// <summary>
+    /// Adds an entry to the search index, indexing by name, type, and tags.
+    /// </summary>
+    public void IndexEntry(MapSearchEntry entry)
+    {
+        _entries.Add(entry);
+
+        foreach (var token in Tokenize(entry.Name))
+        {
+            IndexToken(token, entry);
+        }
+
+        foreach (var token in Tokenize(entry.Type))
+        {
+            IndexToken(token, entry);
+        }
+
+        foreach (var tag in entry.Tags ?? Array.Empty<string>())
+        {
+            foreach (var token in Tokenize(tag))
+            {
+                IndexToken(token, entry);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Searches the index and returns all matching entries.
+    /// </summary>
+    public IEnumerable<MapSearchEntry> Search(string query)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return Enumerable.Empty<MapSearchEntry>();
+        }
+
+        var tokens = Tokenize(query).ToArray();
+        if (tokens.Length == 0)
+        {
+            return Enumerable.Empty<MapSearchEntry>();
+        }
+
+        List<HashSet<MapSearchEntry>> sets = [];
+        foreach (var token in tokens)
+        {
+            if (_searchIndex.TryGetValue(token, out var set))
+            {
+                sets.Add(set);
+            }
+        }
+
+        if (sets.Count == 0)
+        {
+            return Enumerable.Empty<MapSearchEntry>();
+        }
+
+        var result = new HashSet<MapSearchEntry>(sets[0]);
+        foreach (var set in sets.Skip(1))
+        {
+            result.IntersectWith(set);
+        }
+
+        return result;
+    }
 }
 

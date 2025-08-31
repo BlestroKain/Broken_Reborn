@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Intersect.Client.Core;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen.Control;
@@ -21,6 +23,7 @@ public class WorldMapWindow
     private readonly MapFilters _filters;
     private readonly Label _tooltip;
     private readonly ImagePanel _waypoint;
+    private readonly List<ImagePanel> _searchHighlights = new();
 
     private float _zoom = 1f;
     private const float MinZoom = 0.25f;
@@ -40,6 +43,7 @@ public class WorldMapWindow
         _canvas = new MapCanvas(this, _window, "MapImage");
         _legend = new MapLegend(_window);
         _filters = new MapFilters(_window);
+        _filters.SearchSubmitted += OnSearchSubmitted;
 
         _tooltip = new Label(_window, "Tooltip");
         _tooltip.IsHidden = true;
@@ -153,6 +157,45 @@ public class WorldMapWindow
         MapPreferences.Instance.WorldMapZoom = _zoom;
         MapPreferences.Instance.WorldMapPosition = new Point(_canvas.X, _canvas.Y);
         MapPreferences.Save();
+    }
+
+    private void CenterOn(Point pos)
+    {
+        var targetX = ClampX(_window.Width / 2 - pos.X);
+        var targetY = ClampY(_window.Height / 2 - pos.Y);
+        _canvas.SetPosition(targetX, targetY);
+        MapPreferences.Instance.WorldMapPosition = new Point(_canvas.X, _canvas.Y);
+        MapPreferences.Save();
+    }
+
+    private void OnSearchSubmitted(string query)
+    {
+        foreach (var highlight in _searchHighlights)
+        {
+            highlight.Dispose();
+        }
+        _searchHighlights.Clear();
+
+        var results = _filters.Search(query).ToList();
+        if (results.Count == 0)
+        {
+            return;
+        }
+
+        var first = results[0];
+        CenterOn(first.Position);
+
+        _tooltip.Text = first.Name;
+        _tooltip.SetPosition(first.Position.X + 5, first.Position.Y + 5);
+        _tooltip.IsHidden = false;
+
+        foreach (var result in results)
+        {
+            var circle = new ImagePanel(_canvas, "SearchHighlight");
+            circle.SetBounds(result.Position.X - 8, result.Position.Y - 8, 16, 16);
+            circle.IsHidden = false;
+            _searchHighlights.Add(circle);
+        }
     }
 
     private class MapCanvas : ImagePanel

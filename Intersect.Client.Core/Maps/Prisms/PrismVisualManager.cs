@@ -58,7 +58,7 @@ public static class PrismVisualManager
         {
             if (visual.HitTest(x, y))
             {
-                PacketSender.SendPrismAttack(visual.MapId);
+                PacketSender.SendPrismAttack(visual.MapId, visual.PrismId);
                 return true;
             }
         }

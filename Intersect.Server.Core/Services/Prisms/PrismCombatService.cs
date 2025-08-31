@@ -11,7 +11,7 @@ using Intersect.Server.Database.Prisms;
 using Intersect.Server.Entities;
 using Intersect.Server.Maps;
 using Intersect.Server.Metrics;
-using GameAlignmentPrism = Intersect.Framework.Core.GameObjects.Prisms.AlignmentPrism;
+using Intersect.Server.Services.Prisms;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -64,7 +64,7 @@ internal static class PrismCombatService
         }
     }
 
-    public static IEnumerable<Contribution> GetContributions(GameAlignmentPrism prism)
+    public static IEnumerable<Contribution> GetContributions(PrismRuntime prism)
     {
         if (prism?.CurrentBattleId == null)
         {
@@ -76,7 +76,7 @@ internal static class PrismCombatService
             : Array.Empty<Contribution>();
     }
 
-    public static DateTime? GetBattleStart(GameAlignmentPrism prism)
+    public static DateTime? GetBattleStart(PrismRuntime prism)
     {
         if (prism?.CurrentBattleId == null)
         {
@@ -86,7 +86,7 @@ internal static class PrismCombatService
         return Battles.TryGetValue(prism.CurrentBattleId.Value, out var battle) ? battle.StartedAt : null;
     }
 
-    public static void DiminishContributions(GameAlignmentPrism prism)
+    public static void DiminishContributions(PrismRuntime prism)
     {
         if (prism?.CurrentBattleId == null)
         {
@@ -104,7 +104,7 @@ internal static class PrismCombatService
         }
     }
 
-    public static void RecordDeath(GameAlignmentPrism prism, Player player)
+    public static void RecordDeath(PrismRuntime prism, Player player)
     {
         if (prism?.State != PrismState.UnderAttack || player == null)
         {
@@ -125,7 +125,7 @@ internal static class PrismCombatService
                (now - time).TotalSeconds < Options.Instance.Prism.RespawnCooldownSeconds;
     }
 
-    internal static void BattleEnded(GameAlignmentPrism prism)
+    internal static void BattleEnded(PrismRuntime prism)
     {
         if (prism?.CurrentBattleId == null)
         {
@@ -178,7 +178,7 @@ internal static class PrismCombatService
         );
     }
 
-    public static bool CanDamage(GameAlignmentPrism prism, DateTime now)
+    public static bool CanDamage(PrismRuntime prism, DateTime now)
     {
         if (Options.Instance.Prism.AllowDamageOutsideVulnerability)
         {
@@ -191,7 +191,7 @@ internal static class PrismCombatService
         return PrismService.IsInVulnerabilityWindow(prism, now) || stillUnderAttack;
     }
 
-    public static void ApplyDamage(MapInstance map, GameAlignmentPrism prism, int amount, Player attacker)
+    public static void ApplyDamage(MapInstance map, PrismRuntime prism, int amount, Player attacker)
     {
         var now = DateTime.UtcNow;
 
@@ -333,7 +333,7 @@ internal static class PrismCombatService
         PrismService.Broadcast(map);
     }
 
-    public static void RecordPresence(GameAlignmentPrism prism, Player player, int amount = 1)
+    public static void RecordPresence(PrismRuntime prism, Player player, int amount = 1)
     {
         if (prism?.CurrentBattleId == null || player == null || amount <= 0)
         {
@@ -359,7 +359,7 @@ internal static class PrismCombatService
         contrib.Presence += amount;
     }
 
-    public static void RecordHealing(GameAlignmentPrism prism, Player healer, int amount)
+    public static void RecordHealing(PrismRuntime prism, Player healer, int amount)
     {
         if (prism?.CurrentBattleId == null || healer == null || amount <= 0)
         {

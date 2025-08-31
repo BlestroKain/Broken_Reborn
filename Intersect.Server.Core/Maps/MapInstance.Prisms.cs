@@ -1,6 +1,8 @@
 using System;
 using Intersect.Framework.Core.GameObjects.Prisms;
 using Intersect.Server.Entities;
+using Intersect.Server.Database.Prisms;
+using Intersect.Server.Services.Prisms;
 
 namespace Intersect.Server.Maps;
 
@@ -13,7 +15,7 @@ public partial class MapInstance
     /// <summary>
     /// Prism currently controlling this map instance, if any.
     /// </summary>
-    public AlignmentPrism? ControllingPrism { get; internal set; }
+    public PrismRuntime? ControllingPrism { get; internal set; }
 
     /// <summary>
     /// True if the controlling prism is under attack.
@@ -30,19 +32,25 @@ public partial class MapInstance
     /// </summary>
     public void PlacePrism(Player player)
     {
-        ControllingPrism = new AlignmentPrism
+        var descriptor = new PrismDescriptor
         {
             Id = Guid.NewGuid(),
-            Owner = player.Faction,
-            State = PrismState.Placed,
             MapId = MapId,
-            PlacedAt = DateTime.UtcNow,
             X = player.X,
             Y = player.Y,
-            Level = 1,
+        };
+
+        var entity = new PrismEntity
+        {
+            PrismId = descriptor.Id,
+            Owner = player.Faction,
+            State = PrismState.Placed,
             MaxHp = 1,
             Hp = 1,
+            LastStateChangeAt = DateTime.UtcNow,
         };
+
+        ControllingPrism = new PrismRuntime(descriptor, entity);
 
         player.Honor += 10; // bonus honor for placing a prism
     }

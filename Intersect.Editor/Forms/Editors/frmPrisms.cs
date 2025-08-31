@@ -17,7 +17,7 @@ namespace Intersect.Editor.Forms.Editors;
 public partial class FrmPrisms : Form
 {
     private const int MaxModules = 3;
-    private List<AlignmentPrism> _sortedPrisms = new();
+    private List<PrismDescriptor> _sortedPrisms = new();
     public FrmPrisms()
     {
         InitializeComponent();
@@ -64,7 +64,7 @@ public partial class FrmPrisms : Form
         }
     }
 
-    private AlignmentPrism? SelectedPrism =>
+    private PrismDescriptor? SelectedPrism =>
         lstPrisms.SelectedIndex >= 0 && lstPrisms.SelectedIndex < _sortedPrisms.Count
             ? _sortedPrisms[lstPrisms.SelectedIndex]
             : null;
@@ -84,8 +84,6 @@ public partial class FrmPrisms : Form
         nudX.Value = p.X;
         nudY.Value = p.Y;
         mapPicker.SelectTile(p.MapId, p.X, p.Y);
-        nudLevel.Value = p.Level;
-
         dgvWindows.Rows.Clear();
         foreach (var w in p.Windows)
         {
@@ -118,7 +116,7 @@ public partial class FrmPrisms : Form
 
     private void btnAdd_Click(object sender, EventArgs e)
     {
-        var prism = new AlignmentPrism { Id = Guid.NewGuid() };
+        var prism = new PrismDescriptor { Id = Guid.NewGuid() };
         PrismConfig.Prisms.Add(prism);
         LoadList();
         lstPrisms.SelectedIndex = _sortedPrisms.IndexOf(prism);
@@ -234,11 +232,6 @@ public partial class FrmPrisms : Form
             })
             .ToList();
 
-        if (modules.Any(m => m.Level < 1 || m.Level > 3))
-        {
-            errors.Add("El nivel de cada módulo debe estar entre 1 y 3.");
-        }
-
         if (modules.Count > MaxModules)
         {
             errors.Add($"No se pueden agregar más de {MaxModules} módulos.");
@@ -264,7 +257,6 @@ public partial class FrmPrisms : Form
 
         p.X = (int)nudX.Value;
         p.Y = (int)nudY.Value;
-        p.Level = (int)nudLevel.Value;
         p.Windows = windows.Select(w => w.Window).ToList();
         p.Modules = modules;
         p.Area = new PrismArea

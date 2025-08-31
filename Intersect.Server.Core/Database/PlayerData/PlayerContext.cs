@@ -5,12 +5,9 @@ using Intersect.Server.Database.PlayerData.Players;
 using Intersect.Server.Database.PlayerData.SeedData;
 using Intersect.Server.Entities;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Text.Json;
-using Intersect.Framework.Core.GameObjects.Prisms;
 using Intersect.Server.Database.Prisms;
 
-using AlignmentPrismEntity = Intersect.Server.Database.Prisms.AlignmentPrism;
+using PrismEntity = Intersect.Server.Database.Prisms.PrismEntity;
 
 namespace Intersect.Server.Database.PlayerData;
 
@@ -59,7 +56,7 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
     public DbSet<MailBox> Player_MailBox { get; set; }
     public DbSet<KillLog> Player_KillLogs { get; set; }
 
-    public DbSet<AlignmentPrismEntity> Prisms { get; set; }
+    public DbSet<PrismEntity> Prisms { get; set; }
 
     public DbSet<PrismBattle> PrismBattles { get; set; }
 
@@ -161,42 +158,15 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
         modelBuilder.Entity<KillLog>().HasOne(k => k.Attacker).WithMany().OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<KillLog>().HasOne(k => k.Victim).WithMany().OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<AlignmentPrismEntity>(entity =>
+        modelBuilder.Entity<PrismEntity>(entity =>
         {
-            var jsonOptions = new JsonSerializerOptions();
-
             entity.Property(p => p.State);
-            entity.Property(p => p.PlacedAt);
-            entity.Property(p => p.MaturationEndsAt);
             entity.Property(p => p.LastHitAt);
+            entity.Property(p => p.LastStateChangeAt);
             entity.Property(p => p.CurrentBattleId);
-
-            entity.Property(p => p.Windows)
-                .HasConversion(
-                    v => JsonSerializer.Serialize(v, jsonOptions),
-                    v => string.IsNullOrEmpty(v)
-                        ? new List<VulnerabilityWindow>()
-                        : JsonSerializer.Deserialize<List<VulnerabilityWindow>>(v, jsonOptions) ?? new List<VulnerabilityWindow>()
-                );
-
-            entity.Property(p => p.Modules)
-                .HasConversion(
-                    v => JsonSerializer.Serialize(v, jsonOptions),
-                    v => string.IsNullOrEmpty(v)
-                        ? new List<PrismModule>()
-                        : JsonSerializer.Deserialize<List<PrismModule>>(v, jsonOptions) ?? new List<PrismModule>()
-                );
-
-            entity.Property(p => p.Area)
-                .HasConversion(
-                    v => JsonSerializer.Serialize(v, jsonOptions),
-                    v => string.IsNullOrEmpty(v)
-                        ? new PrismArea()
-                        : JsonSerializer.Deserialize<PrismArea>(v, jsonOptions) ?? new PrismArea()
-                );
         });
-        modelBuilder.Entity<PrismBattle>().HasOne<AlignmentPrismEntity>().WithMany().HasForeignKey(b => b.PrismId);
-        modelBuilder.Entity<FactionAreaBonus>().HasOne<AlignmentPrismEntity>().WithMany().HasForeignKey(b => b.PrismId);
+        modelBuilder.Entity<PrismBattle>().HasOne<PrismEntity>().WithMany().HasForeignKey(b => b.PrismId);
+        modelBuilder.Entity<FactionAreaBonus>().HasOne<PrismEntity>().WithMany().HasForeignKey(b => b.PrismId);
         modelBuilder.Entity<PrismContribution>().HasOne<PrismBattle>().WithMany().HasForeignKey(c => c.BattleId);
     }
 

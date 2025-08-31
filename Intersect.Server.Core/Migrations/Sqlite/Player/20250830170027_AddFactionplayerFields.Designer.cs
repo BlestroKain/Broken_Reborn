@@ -659,42 +659,33 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Intersect.Server.Database.Prisms.AlignmentPrism", b =>
+            modelBuilder.Entity("Intersect.Server.Database.Prisms.PrismEntity", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<Guid>("PrismId")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Area")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Faction")
+                    b.Property<int>("Owner")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("Hp")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Level")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("MapId")
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("MaxHp")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Modules")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Windows")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("X")
+                    b.Property<int>("State")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Y")
-                        .HasColumnType("INTEGER");
+                    b.Property<DateTime?>("LastHitAt")
+                        .HasColumnType("TEXT");
 
-                    b.HasKey("Id");
+                    b.Property<DateTime?>("LastStateChangeAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CurrentBattleId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("PrismId");
 
                     b.ToTable("Prisms");
                 });
@@ -1193,7 +1184,7 @@ namespace Intersect.Server.Migrations.Sqlite.Player
 
             modelBuilder.Entity("Intersect.Server.Database.Prisms.FactionAreaBonus", b =>
                 {
-                    b.HasOne("Intersect.Server.Database.Prisms.AlignmentPrism", null)
+                    b.HasOne("Intersect.Server.Database.Prisms.PrismEntity", null)
                         .WithMany()
                         .HasForeignKey("PrismId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1202,7 +1193,7 @@ namespace Intersect.Server.Migrations.Sqlite.Player
 
             modelBuilder.Entity("Intersect.Server.Database.Prisms.PrismBattle", b =>
                 {
-                    b.HasOne("Intersect.Server.Database.Prisms.AlignmentPrism", null)
+                    b.HasOne("Intersect.Server.Database.Prisms.PrismEntity", null)
                         .WithMany()
                         .HasForeignKey("PrismId")
                         .OnDelete(DeleteBehavior.Cascade)

@@ -8,6 +8,8 @@ using Intersect.Framework.Core.GameObjects.Maps.MapList;
 using Intersect.Editor.Forms;
 using Intersect.Editor.General;
 using Intersect.Editor.Core;
+using Intersect.Framework.Core.GameObjects.Animations;
+using Intersect.Editor.Localization;
 
 
 namespace Intersect.Editor.Forms.Editors;
@@ -26,6 +28,18 @@ public partial class FrmPrisms : Form
         nudY.Maximum = Options.Instance.Map.MapHeight - 1;
         nudX.ValueChanged += NudXY_ValueChanged;
         nudY.ValueChanged += NudXY_ValueChanged;
+
+        cmbIdleAnimation.Items.Clear();
+        cmbVulnerableAnimation.Items.Clear();
+        cmbUnderAttackAnimation.Items.Clear();
+        cmbIdleAnimation.Items.Add(Strings.General.None);
+        cmbVulnerableAnimation.Items.Add(Strings.General.None);
+        cmbUnderAttackAnimation.Items.Add(Strings.General.None);
+        var animNames = AnimationDescriptor.Names;
+        cmbIdleAnimation.Items.AddRange(animNames);
+        cmbVulnerableAnimation.Items.AddRange(animNames);
+        cmbUnderAttackAnimation.Items.AddRange(animNames);
+
         LoadList();
     }
 
@@ -94,6 +108,12 @@ public partial class FrmPrisms : Form
         nudAreaY.Value = p.Area.Y;
         nudAreaW.Value = p.Area.Width;
         nudAreaH.Value = p.Area.Height;
+
+        cmbIdleAnimation.SelectedIndex = AnimationDescriptor.ListIndex(p.IdleAnimationId) + 1;
+        cmbVulnerableAnimation.SelectedIndex = AnimationDescriptor.ListIndex(p.VulnerableAnimationId) + 1;
+        cmbUnderAttackAnimation.SelectedIndex = AnimationDescriptor.ListIndex(p.UnderAttackAnimationId) + 1;
+        chkTintByFaction.Checked = p.TintByFaction;
+        nudSpriteOffsetY.Value = p.SpriteOffsetY;
     }
 
     private void btnAdd_Click(object sender, EventArgs e)
@@ -254,6 +274,12 @@ public partial class FrmPrisms : Form
             Width = areaW,
             Height = areaH
         };
+
+        p.IdleAnimationId = AnimationDescriptor.IdFromList(cmbIdleAnimation.SelectedIndex - 1);
+        p.VulnerableAnimationId = AnimationDescriptor.IdFromList(cmbVulnerableAnimation.SelectedIndex - 1);
+        p.UnderAttackAnimationId = AnimationDescriptor.IdFromList(cmbUnderAttackAnimation.SelectedIndex - 1);
+        p.TintByFaction = chkTintByFaction.Checked;
+        p.SpriteOffsetY = (int)nudSpriteOffsetY.Value;
 
         var selectedId = p.Id;
         PrismConfig.Save();

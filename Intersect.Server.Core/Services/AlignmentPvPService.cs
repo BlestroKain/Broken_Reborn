@@ -15,6 +15,51 @@ internal static class AlignmentPvPService
     private const int UnfairLevelPenalty = 5;
     private static readonly TimeSpan RewardCooldown = TimeSpan.FromMinutes(5);
 
+    public static (bool ok, string reason) CanEngage(Player attacker, Player victim)
+    {
+        if (attacker == null || victim == null)
+        {
+            return (false, "");
+        }
+
+        if (attacker == victim)
+        {
+            return (false, "No puedes atacarte a ti mismo.");
+        }
+
+        if (attacker.Honor < 0 || victim.Honor < 0)
+        {
+            return (true, string.Empty);
+        }
+
+        if (attacker.Wings != WingState.On)
+        {
+            return (false, "Debes activar tus alas para combatir.");
+        }
+
+        if (victim.Wings != WingState.On)
+        {
+            return (false, "Ese jugador no tiene las alas activadas.");
+        }
+
+        if (attacker.Faction == Factions.Neutral)
+        {
+            return (false, "Debes pertenecer a una facción para combatir.");
+        }
+
+        if (victim.Faction == Factions.Neutral)
+        {
+            return (false, "No puedes atacar jugadores neutrales.");
+        }
+
+        if (attacker.Faction == victim.Faction)
+        {
+            return (false, "No puedes atacar a miembros de tu facción.");
+        }
+
+        return (true, string.Empty);
+    }
+
     public static void HandleKill(Player killer, Player victim)
     {
         if (killer == null || victim == null || killer == victim)

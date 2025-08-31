@@ -2100,6 +2100,20 @@ public abstract partial class Entity : IEntity
             return;
         }
 
+        if (this is Player attacker && enemy is Player victim)
+        {
+            var (ok, reason) = AlignmentPvPService.CanEngage(attacker, victim);
+            if (!ok)
+            {
+                if (!string.IsNullOrEmpty(reason))
+                {
+                    PacketSender.SendChatMsg(attacker, reason, ChatMessageType.Error);
+                }
+
+                return;
+            }
+        }
+
         //Let's save the entity's vitals before they takes damage to use in lifesteal/manasteal
         var enemyVitals = enemy.GetVitals();
         var invulnerable = enemy.CachedStatuses.Any(status => status.Type == SpellEffect.Invulnerable);

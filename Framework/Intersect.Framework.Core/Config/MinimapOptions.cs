@@ -122,7 +122,14 @@ public partial class MinimapOptions
         public Color MyEntity { get; set; } = Color.Red;
         public Color Npc { get; set; } = Color.Orange;
         public Color Event { get; set; } = Color.Blue;
-        public Dictionary<string, Color> Resource { get; set; } = new() { { "None", Color.White } };
+        public Dictionary<JobType, Color> Resource { get; set; } = new()
+        {
+            { JobType.None, Color.White },
+            { JobType.Lumberjack, Color.SaddleBrown },
+            { JobType.Mining, Color.Gray },
+            { JobType.Farming, Color.Green },
+            { JobType.Fishing, Color.CornflowerBlue },
+        };
         public Color Default { get; set; } = Color.Magenta;
     }
 
@@ -133,7 +140,14 @@ public partial class MinimapOptions
         public string MyEntity { get; set; } = "minimap_me.png";
         public string Npc { get; set; } = "minimap_npc.png";
         public string Event { get; set; } = "minimap_event.png";
-        public Dictionary<string, string> Resource { get; set; } = new() { { "None", "minimap_resource_none.png" } };
+        public Dictionary<JobType, string> Resource { get; set; } = new()
+        {
+            { JobType.None, "minimap_resource_none.png" },
+            { JobType.Lumberjack, "minimap_resource_wood.png" },
+            { JobType.Mining, "minimap_resource_mine.png" },
+            { JobType.Farming, "minimap_resource_herb.png" },
+            { JobType.Fishing, "minimap_resource_fish.png" },
+        };
         public string Default { get; set; } = "minimap_npc.png";
     }
 }

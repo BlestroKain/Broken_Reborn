@@ -174,7 +174,7 @@ public class MapFilters
             result.IntersectWith(set);
         }
 
-        return result;
+        return result.Where(e => IsFilterEnabled(e.Type));
     }
 }
 

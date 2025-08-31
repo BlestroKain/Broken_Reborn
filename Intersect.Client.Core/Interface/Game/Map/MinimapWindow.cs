@@ -8,6 +8,7 @@ using Intersect.Client.Framework.Gwen.Control.EventArguments;
 using Intersect.Client.General;
 using Intersect.Client.Localization;
 using Intersect.Client.Maps;
+using Intersect.Config;
 using Intersect.Enums;
 using Intersect.GameObjects;
 using System;
@@ -436,42 +437,16 @@ namespace Intersect.Client.Interface.Game.Map
                         }
                         break;
                     case EntityType.Resource:
-                        // This relies on users configuring it PROPERLY.
-                        var tool = ((Resource)entity).Descriptor?.Tool ?? -1;
-                        var texSet = false;
-                        var colSet = false;
-                        // Is the tool a valid one to get the string version for?
-                        if (tool >= 0 && tool < Options.Instance.Equipment.ToolTypes.Count)
+                        var job = ((Resource)entity).Descriptor?.Jobs ?? JobType.None;
+                        if (MapPreferences.Instance.ActiveFilters.TryGetValue(job.ToString(), out var enabled) && !enabled)
                         {
-                            // Get the actual tool type from the server configuration.
-                            var toolType = Options.Instance.Equipment.ToolTypes[tool];
-
-                            // Attempt to get our color from the plugin configuration.
-                            if (minimapColorOptions.Resource.TryGetValue(toolType, out color))
-                            {
-                                colSet = true;
-                            }
-                            // Attempt to get our texture from the plugin configuration.
-                            if (minimapImageOptions.Resource.TryGetValue(toolType, out texture))
-                            {
-                                texSet = true;
-                            }
+                            continue;
                         }
-                        // Is it a None tool?
-                        else if (tool == -1)
-                        {
-                            color = minimapColorOptions.Resource["None"];
-                            colSet = true;
-                            texture = minimapImageOptions.Resource["None"];
-                            texSet = true;
-                        }
-                        // Have we managed to set our color? If not, set to default.
-                        if (!colSet)
+                        if (!minimapColorOptions.Resource.TryGetValue(job, out color))
                         {
                             color = minimapColorOptions.Default;
                         }
-                        // Have we managed to set our texture? If not, set to blank.
-                        if (!texSet)
+                        if (!minimapImageOptions.Resource.TryGetValue(job, out texture))
                         {
                             texture = minimapImageOptions.Default;
                         }

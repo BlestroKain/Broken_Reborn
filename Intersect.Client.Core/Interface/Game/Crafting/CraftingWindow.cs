@@ -228,6 +228,11 @@ public partial class CraftingWindow : Window
         Dictionary<Guid, int> inventoryItemsByDescriptorId = [];
         foreach (var item in player.Inventory)
         {
+            if (item is null)
+            {
+                continue;
+            }
+
             var inventoryItemDescriptorId = item.ItemId;
             var currentQuantity = inventoryItemsByDescriptorId.GetValueOrDefault(inventoryItemDescriptorId, 0);
             inventoryItemsByDescriptorId[inventoryItemDescriptorId] = currentQuantity + item.Quantity;

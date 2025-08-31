@@ -193,7 +193,17 @@ public static partial class PacketSender
                 if (prism != null)
                 {
                     var nextStart = PrismService.GetNextVulnerabilityStart(prism, DateTime.UtcNow);
-                    prisms.Add(new PrismUpdatePacket(prism.MapId, prism.Owner, prism.State, prism.Hp, prism.MaxHp, nextStart));
+                    prisms.Add(
+                        new PrismUpdatePacket(
+                            prism.MapId,
+                            prism.Id,
+                            prism.Owner,
+                            prism.State,
+                            prism.Hp,
+                            prism.MaxHp,
+                            nextStart
+                        )
+                    );
                 }
             }
         }

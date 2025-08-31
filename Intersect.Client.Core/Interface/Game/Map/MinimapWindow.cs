@@ -11,6 +11,7 @@ using Intersect.Client.General;
 using Intersect.Client.Localization;
 using Intersect.Client.Core.Controls;
 using Intersect.Client.Maps;
+using Intersect.Client.MonoGame.NativeInterop;
 using Intersect.Config;
 using Intersect.Enums;
 using Intersect.GameObjects;
@@ -53,7 +54,8 @@ namespace Intersect.Client.Interface.Game.Map
         {
             DisableResizing();
             _zoomLevel = Options.Instance.Minimap.DefaultZoom;
-            _minimapTileSize = Options.Instance.Minimap.TileSize;
+            var dpi = Sdl2.GetDisplayDpi();
+            _minimapTileSize = Options.Instance.Minimap.GetScaledTileSize(dpi);
             _minimap = new ImagePanel(this, "MinimapContainer");
             _zoomInButton = new Button(_minimap, "ZoomInButton");
             _zoomOutButton = new Button(_minimap, "ZoomOutButton");

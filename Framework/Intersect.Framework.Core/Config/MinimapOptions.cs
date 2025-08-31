@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
@@ -95,10 +96,12 @@ public partial class MinimapOptions
             MaximumZoom = 100;
         }
 
-        if (DefaultZoom is < 0 or > 100)
+        if (MinimumZoom > MaximumZoom)
         {
-            DefaultZoom = 0;
+            MaximumZoom = MinimumZoom;
         }
+
+        DefaultZoom = Math.Clamp(DefaultZoom, MinimumZoom, MaximumZoom);
     }
 
     public class Colors

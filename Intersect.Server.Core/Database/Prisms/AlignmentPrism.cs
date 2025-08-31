@@ -84,5 +84,30 @@ public partial class AlignmentPrism
     /// Area influenced by the prism.
     /// </summary>
     public PrismArea Area { get; set; } = new();
+
+    /// <summary>
+    /// Animation to display while the prism is idle.
+    /// </summary>
+    public Guid? IdleAnimationId { get; set; } = Guid.Empty;
+
+    /// <summary>
+    /// Animation to display while the prism is vulnerable.
+    /// </summary>
+    public Guid? VulnerableAnimationId { get; set; } = Guid.Empty;
+
+    /// <summary>
+    /// Animation to display when the prism is under attack.
+    /// </summary>
+    public Guid? UnderAttackAnimationId { get; set; } = Guid.Empty;
+
+    /// <summary>
+    /// Indicates whether the prism sprite should be tinted by the owning faction.
+    /// </summary>
+    public bool TintByFaction { get; set; } = false;
+
+    /// <summary>
+    /// Vertical offset applied to the prism sprite.
+    /// </summary>
+    public int SpriteOffsetY { get; set; } = 0;
 }
 

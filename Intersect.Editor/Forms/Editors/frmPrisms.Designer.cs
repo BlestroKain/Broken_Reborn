@@ -40,6 +40,17 @@ namespace Intersect.Editor.Forms.Editors
         private System.Windows.Forms.Label lblAreaH;
         private Intersect.Editor.Forms.Controls.MapPicker mapPicker;
 
+        private DarkGroupBox grpVisual;
+        private DarkComboBox cmbIdleAnimation;
+        private DarkComboBox cmbVulnerableAnimation;
+        private DarkComboBox cmbUnderAttackAnimation;
+        private DarkCheckBox chkTintByFaction;
+        private DarkNumericUpDown nudSpriteOffsetY;
+        private System.Windows.Forms.Label lblIdleAnimation;
+        private System.Windows.Forms.Label lblVulnerableAnimation;
+        private System.Windows.Forms.Label lblUnderAttackAnimation;
+        private System.Windows.Forms.Label lblSpriteOffsetY;
+
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -100,6 +111,16 @@ namespace Intersect.Editor.Forms.Editors
             toolStripSeparator3 = new ToolStripSeparator();
             toolStripItemUndo = new ToolStripButton();
             mapPicker = new Intersect.Editor.Forms.Controls.MapPicker();
+            grpVisual = new DarkGroupBox();
+            cmbIdleAnimation = new DarkComboBox();
+            cmbVulnerableAnimation = new DarkComboBox();
+            cmbUnderAttackAnimation = new DarkComboBox();
+            chkTintByFaction = new DarkCheckBox();
+            nudSpriteOffsetY = new DarkNumericUpDown();
+            lblIdleAnimation = new Label();
+            lblVulnerableAnimation = new Label();
+            lblUnderAttackAnimation = new Label();
+            lblSpriteOffsetY = new Label();
             ((System.ComponentModel.ISupportInitialize)nudX).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudY).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudLevel).BeginInit();
@@ -109,6 +130,7 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)nudAreaY).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudAreaW).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudAreaH).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudSpriteOffsetY).BeginInit();
             toolStrip.SuspendLayout();
             SuspendLayout();
             // 
@@ -587,6 +609,118 @@ namespace Intersect.Editor.Forms.Editors
             mapPicker.Name = "mapPicker";
             mapPicker.Size = new Size(390, 439);
             mapPicker.TabIndex = 27;
+
+            // grpVisual
+            //
+            grpVisual.Controls.Add(lblIdleAnimation);
+            grpVisual.Controls.Add(cmbIdleAnimation);
+            grpVisual.Controls.Add(lblVulnerableAnimation);
+            grpVisual.Controls.Add(cmbVulnerableAnimation);
+            grpVisual.Controls.Add(lblUnderAttackAnimation);
+            grpVisual.Controls.Add(cmbUnderAttackAnimation);
+            grpVisual.Controls.Add(chkTintByFaction);
+            grpVisual.Controls.Add(lblSpriteOffsetY);
+            grpVisual.Controls.Add(nudSpriteOffsetY);
+            grpVisual.ForeColor = System.Drawing.Color.Gainsboro;
+            grpVisual.Location = new System.Drawing.Point(251, 270);
+            grpVisual.Name = "grpVisual";
+            grpVisual.Size = new Size(300, 192);
+            grpVisual.TabIndex = 28;
+            grpVisual.TabStop = false;
+            grpVisual.Text = "Visual";
+
+            // lblIdleAnimation
+            //
+            lblIdleAnimation.AutoSize = true;
+            lblIdleAnimation.Location = new System.Drawing.Point(6, 22);
+            lblIdleAnimation.Name = "lblIdleAnimation";
+            lblIdleAnimation.Size = new Size(88, 15);
+            lblIdleAnimation.TabIndex = 0;
+            lblIdleAnimation.Text = "Idle Animation";
+
+            // cmbIdleAnimation
+            //
+            cmbIdleAnimation.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            cmbIdleAnimation.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+            cmbIdleAnimation.DrawMode = DrawMode.OwnerDrawFixed;
+            cmbIdleAnimation.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbIdleAnimation.ForeColor = System.Drawing.Color.Gainsboro;
+            cmbIdleAnimation.Location = new System.Drawing.Point(9, 40);
+            cmbIdleAnimation.Name = "cmbIdleAnimation";
+            cmbIdleAnimation.Size = new Size(280, 24);
+            cmbIdleAnimation.TabIndex = 1;
+
+            // lblVulnerableAnimation
+            //
+            lblVulnerableAnimation.AutoSize = true;
+            lblVulnerableAnimation.Location = new System.Drawing.Point(6, 67);
+            lblVulnerableAnimation.Name = "lblVulnerableAnimation";
+            lblVulnerableAnimation.Size = new Size(123, 15);
+            lblVulnerableAnimation.TabIndex = 2;
+            lblVulnerableAnimation.Text = "Vulnerable Animation";
+
+            // cmbVulnerableAnimation
+            //
+            cmbVulnerableAnimation.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            cmbVulnerableAnimation.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+            cmbVulnerableAnimation.DrawMode = DrawMode.OwnerDrawFixed;
+            cmbVulnerableAnimation.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbVulnerableAnimation.ForeColor = System.Drawing.Color.Gainsboro;
+            cmbVulnerableAnimation.Location = new System.Drawing.Point(9, 85);
+            cmbVulnerableAnimation.Name = "cmbVulnerableAnimation";
+            cmbVulnerableAnimation.Size = new Size(280, 24);
+            cmbVulnerableAnimation.TabIndex = 3;
+
+            // lblUnderAttackAnimation
+            //
+            lblUnderAttackAnimation.AutoSize = true;
+            lblUnderAttackAnimation.Location = new System.Drawing.Point(6, 112);
+            lblUnderAttackAnimation.Name = "lblUnderAttackAnimation";
+            lblUnderAttackAnimation.Size = new Size(145, 15);
+            lblUnderAttackAnimation.TabIndex = 4;
+            lblUnderAttackAnimation.Text = "Under Attack Animation";
+
+            // cmbUnderAttackAnimation
+            //
+            cmbUnderAttackAnimation.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            cmbUnderAttackAnimation.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+            cmbUnderAttackAnimation.DrawMode = DrawMode.OwnerDrawFixed;
+            cmbUnderAttackAnimation.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbUnderAttackAnimation.ForeColor = System.Drawing.Color.Gainsboro;
+            cmbUnderAttackAnimation.Location = new System.Drawing.Point(9, 130);
+            cmbUnderAttackAnimation.Name = "cmbUnderAttackAnimation";
+            cmbUnderAttackAnimation.Size = new Size(280, 24);
+            cmbUnderAttackAnimation.TabIndex = 5;
+
+            // chkTintByFaction
+            //
+            chkTintByFaction.AutoSize = true;
+            chkTintByFaction.Location = new System.Drawing.Point(9, 160);
+            chkTintByFaction.Name = "chkTintByFaction";
+            chkTintByFaction.Size = new Size(105, 19);
+            chkTintByFaction.TabIndex = 6;
+            chkTintByFaction.Text = "Tint by faction";
+            chkTintByFaction.Checked = false;
+
+            // lblSpriteOffsetY
+            //
+            lblSpriteOffsetY.AutoSize = true;
+            lblSpriteOffsetY.Location = new System.Drawing.Point(170, 161);
+            lblSpriteOffsetY.Name = "lblSpriteOffsetY";
+            lblSpriteOffsetY.Size = new Size(87, 15);
+            lblSpriteOffsetY.TabIndex = 7;
+            lblSpriteOffsetY.Text = "Sprite OffsetY";
+
+            // nudSpriteOffsetY
+            //
+            nudSpriteOffsetY.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            nudSpriteOffsetY.ForeColor = System.Drawing.Color.Gainsboro;
+            nudSpriteOffsetY.Location = new System.Drawing.Point(260, 159);
+            nudSpriteOffsetY.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
+            nudSpriteOffsetY.Minimum = new decimal(new int[] { 1000, 0, 0, int.MinValue });
+            nudSpriteOffsetY.Name = "nudSpriteOffsetY";
+            nudSpriteOffsetY.Size = new Size(60, 23);
+            nudSpriteOffsetY.TabIndex = 8;
             // 
             // FrmPrisms
             // 
@@ -599,6 +733,7 @@ namespace Intersect.Editor.Forms.Editors
             Controls.Add(btnDelete);
             Controls.Add(btnAdd);
             Controls.Add(mapPicker);
+            Controls.Add(grpVisual);
             Controls.Add(lblAreaH);
             Controls.Add(nudAreaH);
             Controls.Add(lblAreaW);
@@ -638,6 +773,7 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)nudAreaY).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudAreaW).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudAreaH).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudSpriteOffsetY).EndInit();
             toolStrip.ResumeLayout(false);
             toolStrip.PerformLayout();
             ResumeLayout(false);

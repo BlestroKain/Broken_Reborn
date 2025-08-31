@@ -1,6 +1,5 @@
 using System;
 using System.Drawing;
-using System.Linq;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.General;
 using Intersect.Client.Maps;
@@ -56,22 +55,10 @@ public class PrismHud : ImagePanel
             return;
         }
 
-        var radius = Options.Instance.Prism.HudDisplayRadius;
-        if (radius > 0 && Globals.Me != null)
-        {
-            var prism = PrismConfig.Prisms.FirstOrDefault(p => p.MapId == map.Id);
-            if (prism != null)
-            {
-                var dx = Globals.Me.X - prism.X;
-                var dy = Globals.Me.Y - prism.Y;
-                if (Math.Sqrt(dx * dx + dy * dy) > radius)
-                {
-                    Hide();
-                    return;
-                }
-            }
-        }
-
+        // Prism positions are now provided by the server and the client no longer
+        // relies on local prism configuration data. Without direct access to the
+        // prism coordinates we cannot perform a radius check here, so simply
+        // display the HUD whenever the map contains prism information.
         Show();
 
         var color = map.PrismOwner switch

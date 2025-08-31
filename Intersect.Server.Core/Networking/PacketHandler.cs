@@ -1146,7 +1146,7 @@ internal sealed partial class PacketHandler
         else if (cmd == "/alignment" && msgSplit.Length >= 2 &&
                  string.Equals(msgSplit[0], "set", StringComparison.OrdinalIgnoreCase))
         {
-            if (!Enum.TryParse<Alignment>(msgSplit[1], true, out var desired))
+            if (!Enum.TryParse<Factions>(msgSplit[1], true, out var desired))
             {
                 PacketSender.SendChatMsg(player, Strings.Commands.invalid, ChatMessageType.Error, CustomColors.Alerts.Error);
                 return;
@@ -2911,7 +2911,7 @@ internal sealed partial class PacketHandler
                     // Are we already in a guild? or have a pending invite?
                     if (target.Guild == null && target.PendingGuildInvite == default)
                     {
-                        if (target.Faction != Alignment.Neutral && target.Faction != player.Faction)
+                        if (target.Faction != Factions.Neutral && target.Faction != player.Faction)
                         {
                             PacketSender.SendChatMsg(player, Strings.Guilds.InviteDifferentFaction, ChatMessageType.Guild, CustomColors.Alerts.Error);
                             return;
@@ -3122,7 +3122,7 @@ internal sealed partial class PacketHandler
         }
 
         var guildFaction = inviter?.Faction ?? guild.GetFaction();
-        if (player.Faction != Alignment.Neutral && player.Faction != guildFaction)
+        if (player.Faction != Factions.Neutral && player.Faction != guildFaction)
         {
             PacketSender.SendChatMsg(player, Strings.Guilds.DifferentFaction, ChatMessageType.Guild, CustomColors.Alerts.Error);
             player.PendingGuildInvite = default;
@@ -3130,7 +3130,7 @@ internal sealed partial class PacketHandler
             return;
         }
 
-        if (player.Faction == Alignment.Neutral)
+        if (player.Faction == Factions.Neutral)
         {
             AlignmentService.TrySetAlignment(
                 player,

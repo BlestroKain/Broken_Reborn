@@ -12,13 +12,13 @@ public static class AlignmentService
     public readonly record struct Result(
         bool Success,
         string? Message,
-        Alignment NewAlignment,
+        Factions NewAlignment,
         DateTime? NextAllowedChangeAt
     );
 
     public static Result TrySetAlignment(
         Player p,
-        Alignment desired,
+        Factions desired,
         AlignmentApplyOptions? apply = null
     )
     {
@@ -33,8 +33,8 @@ public static class AlignmentService
             return new Result(false, "same", p.Faction, nextAllowed);
         }
 
-        var guildFaction = p.Guild?.GetFaction() ?? Alignment.Neutral;
-        if (!apply.IgnoreGuildLock && guildFaction != Alignment.Neutral && desired != Alignment.Neutral && guildFaction != desired)
+        var guildFaction = p.Guild?.GetFaction() ?? Factions.Neutral;
+        if (!apply.IgnoreGuildLock && guildFaction != Factions.Neutral && desired != Factions.Neutral && guildFaction != desired)
         {
             return new Result(false, "guild", p.Faction, nextAllowed);
         }
@@ -51,7 +51,7 @@ public static class AlignmentService
 
         p.Faction = desired;
         p.LastFactionSwapAt = now;
-        if (desired == Alignment.Neutral)
+        if (desired == Factions.Neutral)
         {
             p.Wings = WingState.Off;
         }

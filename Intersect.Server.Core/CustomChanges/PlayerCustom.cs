@@ -19,7 +19,7 @@ namespace Intersect.Server.Entities
 {
     public partial class Player : Entity
     {
-        public Alignment Faction { get; set; }
+        public Factions Faction { get; set; }
 
         public WingState Wings { get; set; }
 

@@ -143,7 +143,7 @@ public static partial class PacketSender
         Network.SendPacket(new ToggleWingsPacket(state));
     }
 
-    public static void SendSetAlignment(Alignment alignment)
+    public static void SendSetAlignment(Factions alignment)
     {
         Network.SendPacket(new SetAlignmentRequestPacket(alignment));
     }

@@ -199,7 +199,7 @@ public partial class NPCDescriptor : DatabaseObject<NPCDescriptor>, IFolderable
 
     public int ResetRadius { get; set; }
 
-    public Alignment Faction { get; set; } = Alignment.Neutral;
+    public Factions Faction { get; set; } = Factions.Neutral;
 
     public bool SendToJailOnCapture { get; set; } = false;
 

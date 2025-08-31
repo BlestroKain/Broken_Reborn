@@ -8,7 +8,7 @@ public class AlignmentPrism
 {
     public Guid Id { get; set; }
 
-    public Alignment Owner { get; set; }
+    public Factions Owner { get; set; }
 
     public PrismState State { get; set; }
 

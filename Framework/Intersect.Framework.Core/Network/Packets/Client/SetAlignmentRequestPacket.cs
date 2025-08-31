@@ -11,12 +11,12 @@ public partial class SetAlignmentRequestPacket : IntersectPacket
     {
     }
 
-    public SetAlignmentRequestPacket(Alignment desired)
+    public SetAlignmentRequestPacket(Factions desired)
     {
         Desired = desired;
     }
 
     [Key(0)]
-    public Alignment Desired { get; set; }
+    public Factions Desired { get; set; }
 }
 

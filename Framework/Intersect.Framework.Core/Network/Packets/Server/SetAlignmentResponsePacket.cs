@@ -12,7 +12,7 @@ public partial class SetAlignmentResponsePacket : IntersectPacket
     {
     }
 
-    public SetAlignmentResponsePacket(bool success, string message, Alignment newAlignment, DateTime? nextAllowedChangeAt)
+    public SetAlignmentResponsePacket(bool success, string message, Factions newAlignment, DateTime? nextAllowedChangeAt)
     {
         Success = success;
         Message = message;
@@ -27,7 +27,7 @@ public partial class SetAlignmentResponsePacket : IntersectPacket
     public string Message { get; set; } = string.Empty;
 
     [Key(2)]
-    public Alignment NewAlignment { get; set; }
+    public Factions NewAlignment { get; set; }
 
     [Key(3)]
     public DateTime? NextAllowedChangeAt { get; set; }

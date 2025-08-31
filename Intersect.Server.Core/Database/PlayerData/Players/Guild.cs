@@ -82,7 +82,7 @@ public partial class Guild
     [JsonIgnore]
     public ConcurrentDictionary<Guid, GuildMember> Members { get; private set; } = new ConcurrentDictionary<Guid, GuildMember>();
 
-    public Alignment GetFaction()
+    public Factions GetFaction()
     {
         foreach (var member in Members.Keys)
         {
@@ -93,7 +93,7 @@ public partial class Guild
             }
         }
 
-        return Alignment.Neutral;
+        return Factions.Neutral;
     }
 
     /// <summary>
@@ -305,7 +305,7 @@ public partial class Guild
         }
 
         var guildFaction = initiator?.Faction ?? GetFaction();
-        if (player.Faction != Alignment.Neutral && player.Faction != guildFaction)
+        if (player.Faction != Factions.Neutral && player.Faction != guildFaction)
         {
             PacketSender.SendChatMsg(player, Strings.Guilds.DifferentFaction, ChatMessageType.Guild);
             if (initiator != null)
@@ -316,7 +316,7 @@ public partial class Guild
             return false;
         }
 
-        if (player.Faction == Alignment.Neutral && guildFaction != Alignment.Neutral)
+        if (player.Faction == Factions.Neutral && guildFaction != Factions.Neutral)
         {
             player.Faction = guildFaction;
             player.Save();
@@ -367,7 +367,7 @@ public partial class Guild
         player.GuildRank = rank;
         player.DonateXPGuild = 0;
         player.GuildExpPercentage = 0;
-        if (player.Faction == Alignment.Neutral)
+        if (player.Faction == Factions.Neutral)
         {
             AlignmentService.TrySetAlignment(
                 player,

@@ -1,6 +1,6 @@
 namespace Intersect.Enums;
 
-public enum Alignment
+public enum Factions
 {
     Neutral = 0,
 

@@ -1262,8 +1262,8 @@ public partial class Player : Entity
 
         if (killer is Npc npcKiller && MapController.Get(MapId)?.ZoneType == MapZone.Safe)
         {
-            var opposingFaction = npcKiller.Descriptor.Faction != Alignment.Neutral &&
-                                   Faction != Alignment.Neutral &&
+            var opposingFaction = npcKiller.Descriptor.Faction != Factions.Neutral &&
+                                   Faction != Factions.Neutral &&
                                    npcKiller.Descriptor.Faction != Faction;
             var outlaw = Honor < 0;
 

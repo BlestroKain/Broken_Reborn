@@ -40,7 +40,7 @@ internal static class AlignmentPvPService
             }
         }
 
-        if (victim.Faction == Alignment.Neutral)
+        if (victim.Faction == Factions.Neutral)
         {
             HonorService.AdjustHonor(killer, -NeutralPenalty);
             return;

@@ -7,7 +7,7 @@ public partial class SetAlignmentCommand : EventCommand
 {
     public override EventCommandType Type { get; } = EventCommandType.SetAlignment;
 
-    public Alignment Desired { get; set; } = Alignment.Neutral;
+    public Factions Desired { get; set; } = Factions.Neutral;
 
     public bool IgnoreCooldown { get; set; }
 
@@ -22,7 +22,7 @@ public partial class SetAlignmentCommand : EventCommand
 
     public void Deserialize(BinaryReader reader)
     {
-        Desired = (Alignment)reader.ReadInt32();
+        Desired = (Factions)reader.ReadInt32();
         IgnoreCooldown = reader.ReadBoolean();
         IgnoreGuildLock = reader.ReadBoolean();
     }

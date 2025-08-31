@@ -39,7 +39,7 @@ public partial class EventCommandSetAlignment : UserControl
 
     private void btnSave_Click(object sender, EventArgs e)
     {
-        mMyCommand.Desired = (Alignment)cmbAlignment.SelectedIndex;
+        mMyCommand.Desired = (Factions)cmbAlignment.SelectedIndex;
         mMyCommand.IgnoreCooldown = chkIgnoreCooldown.Checked;
         mMyCommand.IgnoreGuildLock = chkIgnoreGuildLock.Checked;
         mEventEditor.FinishCommandEdit();

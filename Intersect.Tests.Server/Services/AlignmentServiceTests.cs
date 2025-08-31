@@ -21,7 +21,7 @@ public class AlignmentServiceTests
         var player = new Player
         {
             Id = Guid.NewGuid(),
-            Faction = Alignment.Chaos,
+            Faction = Factions.Chaos,
             Wings = WingState.Off,
         };
 
@@ -34,7 +34,7 @@ public class AlignmentServiceTests
 
         AlignmentService.TrySetAlignment(
             player,
-            Alignment.Neutral,
+            Factions.Neutral,
             new AlignmentApplyOptions
             {
                 IgnoreCooldown = true,

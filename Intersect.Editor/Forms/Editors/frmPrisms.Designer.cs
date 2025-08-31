@@ -9,6 +9,7 @@ namespace Intersect.Editor.Forms.Editors
         private System.ComponentModel.IContainer components = null;
         private System.Windows.Forms.ListBox lstPrisms;
         private System.Windows.Forms.TextBox txtMapId;
+        private DarkButton btnPickPos;
         private DarkNumericUpDown nudX;
         private DarkNumericUpDown nudY;
         private DarkNumericUpDown nudLevel;
@@ -55,6 +56,7 @@ namespace Intersect.Editor.Forms.Editors
             var resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmPrisms));
             lstPrisms = new ListBox();
             txtMapId = new TextBox();
+            btnPickPos = new DarkButton();
             nudX = new DarkNumericUpDown();
             nudY = new DarkNumericUpDown();
             nudLevel = new DarkNumericUpDown();
@@ -128,9 +130,19 @@ namespace Intersect.Editor.Forms.Editors
             txtMapId.Name = "txtMapId";
             txtMapId.Size = new Size(233, 23);
             txtMapId.TabIndex = 1;
-            // 
+            //
+            // btnPickPos
+            //
+            btnPickPos.Location = new System.Drawing.Point(497, 38);
+            btnPickPos.Margin = new Padding(4, 3, 4, 3);
+            btnPickPos.Name = "btnPickPos";
+            btnPickPos.Size = new Size(60, 23);
+            btnPickPos.TabIndex = 2;
+            btnPickPos.Text = "...";
+            btnPickPos.Click += btnPickPos_Click;
+            //
             // nudX
-            // 
+            //
             nudX.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
             nudX.ForeColor = System.Drawing.Color.Gainsboro;
             nudX.Location = new System.Drawing.Point(257, 72);
@@ -597,6 +609,7 @@ namespace Intersect.Editor.Forms.Editors
             Controls.Add(nudX);
             Controls.Add(lblMapId);
             Controls.Add(txtMapId);
+            Controls.Add(btnPickPos);
             Controls.Add(lstPrisms);
             ForeColor = SystemColors.ControlLightLight;
             Margin = new Padding(4, 3, 4, 3);

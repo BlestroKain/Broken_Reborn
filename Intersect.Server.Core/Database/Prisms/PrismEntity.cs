@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Intersect.Framework.Core.GameObjects.Prisms;
 
@@ -11,6 +12,7 @@ namespace Intersect.Server.Database.Prisms;
 /// </summary>
 public class PrismEntity
 {
+    [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
     public Guid PrismId { get; set; }
 

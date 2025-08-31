@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Intersect.Client.Core;
-using Intersect.Client.Core.Controllers;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Input;
@@ -17,6 +16,9 @@ using Intersect.Client.Framework.GenericClasses;
 using Intersect.Enums;
 using Intersect.Client.Core.Controls;
 using Intersect.Client.Localization;
+using Intersect.Config;
+using Intersect.Client.Controllers;
+using Intersect.Framework.Core.GameObjects.NPCs;
 
 namespace Intersect.Client.Interface.Game.Map;
 
@@ -222,12 +224,13 @@ public class WorldMapWindow
 
     private void MinimapButton_Clicked(Base sender, MouseButtonState args)
     {
-        Interface.Interface.GameUi.GameMenu?.ToggleMinimapWindow();
+        Interface.GameUi.GameMenu?.ToggleMinimapWindow();
     }
 
     private static string GetMinimapKeyHint()
     {
-        if (!Controls.Controls.ActiveControls.TryGetMappingFor(Control.OpenMinimap, out var mapping) ||
+
+        if (!Controls.ActiveControls.TryGetMappingFor(Control.OpenMinimap, out var mapping) ||
             mapping.Bindings.Length == 0)
         {
             return string.Empty;
@@ -334,7 +337,7 @@ public class WorldMapWindow
             }
         }
 
-        protected override void Think()
+        protected  void Think()
         {
             base.Think();
             Waypoints?.Update();

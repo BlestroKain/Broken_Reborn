@@ -528,12 +528,12 @@ namespace Intersect.Client.Interface.Game.Map
 
         private void OpenWorldMapButton_Clicked(Base sender, MouseButtonState arguments)
         {
-            Interface.Interface.GameUi.GameMenu?.ToggleWorldMapWindow();
+          Interface.GameUi.GameMenu?.ToggleWorldMapWindow();
         }
 
         private static string GetMinimapKeyHint()
         {
-            if (!Controls.Controls.ActiveControls.TryGetMappingFor(Control.OpenMinimap, out var mapping) ||
+            if (!Controls.ActiveControls.TryGetMappingFor(Control.OpenMinimap, out var mapping) ||
                 mapping.Bindings.Length == 0)
             {
                 return string.Empty;

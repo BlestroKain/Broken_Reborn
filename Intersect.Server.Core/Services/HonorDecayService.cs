@@ -55,6 +55,9 @@ internal static class HonorDecayService
 
             online.Honor = HonorService.DecayTowardsZero(online.Honor, decayPercent);
             online.Grade = HonorService.CalculateGrade(online.Honor);
+
+            context.Players.Update(online);
+            await context.SaveChangesAsync().ConfigureAwait(false);
         }
 
         SetLastRun(now);

@@ -37,7 +37,7 @@ public static class PrismVisualManager
             Prisms[packet.MapId] = visual;
         }
 
-        visual.Update(packet.Owner, packet.State, packet.Hp, packet.MaxHp);
+        visual.Update(packet.PrismId, packet.Owner, packet.State, packet.Hp, packet.MaxHp);
     }
 
     public static void Draw(MapInstance map)
@@ -58,7 +58,7 @@ public static class PrismVisualManager
         {
             if (visual.HitTest(x, y))
             {
-                PacketSender.SendPrismAttack(visual.MapId);
+                PacketSender.SendPrismAttack(visual.MapId, visual.PrismId);
                 return true;
             }
         }

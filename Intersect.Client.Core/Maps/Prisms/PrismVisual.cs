@@ -42,6 +42,7 @@ public class PrismVisual
     }
 
     public Guid MapId => _info.MapId;
+    public Guid PrismId { get; private set; } = Guid.Empty;
     public int X => _info.X;
     public int Y => _info.Y;
     public bool TintByFaction => _info.TintByFaction;
@@ -59,8 +60,9 @@ public class PrismVisual
         _ => _idle,
     };
 
-    public void Update(Factions owner, PrismState state, int hp, int maxHp)
+    public void Update(Guid prismId, Factions owner, PrismState state, int hp, int maxHp)
     {
+        PrismId = prismId;
         Owner = owner;
         Hp = hp;
         MaxHp = maxHp;

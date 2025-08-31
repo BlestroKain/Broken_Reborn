@@ -10,9 +10,11 @@ using Intersect.Client.Interface.Game.Chat;
 using Intersect.Client.Interface.Game.Inventory;
 using Intersect.Client.Interface.Game.Job;
 using Intersect.Client.Interface.Game.Spells;
+using Intersect.Client.Interface.Game.Map;
 using Intersect.Client.Localization;
 using Intersect.Client.Networking;
 using Intersect.Enums;
+using Intersect.Config;
 
 // ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
 
@@ -32,6 +34,7 @@ public partial class MenuContainer : Panel
     private readonly ImagePanel _characterButtonContainer;
     private readonly Button _characterButton;
     private readonly CharacterWindow _characterWindow;
+    private readonly MinimapWindow _minimapWindow;
 
     private readonly ImagePanel _questsButtonContainer;
     private readonly Button _questsButton;
@@ -304,6 +307,8 @@ public partial class MenuContainer : Panel
         _mapItemWindow = new MapItemWindow(gameCanvas: gameCanvas);
         _guildWindow = new GuildWindow(gameCanvas: gameCanvas);
         mJobsWindow= new JobsWindow(gameCanvas: gameCanvas);
+        _minimapWindow = new MinimapWindow(gameCanvas);
+
     }
 
     //Methods
@@ -312,6 +317,7 @@ public partial class MenuContainer : Panel
         _inventoryWindow.Update();
         _spellsWindow.Update();
         _characterWindow.Update();
+        _minimapWindow.Update();
         _partyWindow.Update();
         _friendsWindow.Update();
         _questsWindow.Update(updateQuestLog);
@@ -346,6 +352,7 @@ public partial class MenuContainer : Panel
         _questsWindow.Hide();
         _spellsWindow.Hide();
         _guildWindow.Hide();
+        _minimapWindow.Hide();
         _factionWindow.Hide();
         mJobsWindow.Hide();
     }
@@ -361,6 +368,24 @@ public partial class MenuContainer : Panel
             HideWindows();
             _characterWindow.SetPlayer(player);
             _characterWindow.Show();
+        }
+    }
+
+    public void ToggleMinimapWindow()
+    {
+        if (!Options.Instance.Minimap.EnableMinimapWindow)
+        {
+            return;
+        }
+
+        if (_minimapWindow.IsVisible())
+        {
+            _minimapWindow.Hide();
+        }
+        else
+        {
+            HideWindows();
+            _minimapWindow.Show();
         }
     }
 
@@ -505,6 +530,7 @@ public partial class MenuContainer : Panel
 
         _guildWindow.Hide();
         _factionWindow.Hide();
+        _minimapWindow.Hide();
     }
 
     public bool HasWindowsOpen()
@@ -517,6 +543,7 @@ public partial class MenuContainer : Panel
                           _partyWindow.IsVisible() ||
                           _guildWindow.IsVisibleInTree ||
                           _factionWindow.IsVisibleInTree ||
+                          _minimapWindow.IsVisible() ||
         mJobsWindow.IsVisible();
         return windowsOpen;
     }

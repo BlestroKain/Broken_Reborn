@@ -10,8 +10,10 @@ using Intersect.Client.Framework.Sys;
 using Intersect.Client.Items;
 using Intersect.Client.Maps;
 using Intersect.Client.Plugins.Interfaces;
+using Intersect.Config;
 using Intersect.Core;
 using Intersect.Enums;
+using Intersect.Framework.Core.Collections;
 using Intersect.Framework.Core.GameObjects.Crafting;
 using Intersect.GameObjects;
 using Intersect.Network.Packets.Server;
@@ -77,6 +79,33 @@ public static partial class Globals
     public static long MapGridHeight;
 
     public static long MapGridWidth;
+
+    public static readonly Dictionary<Guid, BitGrid> MapDiscoveries = new();
+
+    public static void DiscoverTile(Guid mapId, int x, int y)
+    {
+        if (!MapDiscoveries.TryGetValue(mapId, out var grid))
+        {
+            grid = new BitGrid(Options.Instance.Map.MapWidth, Options.Instance.Map.MapHeight);
+            MapDiscoveries[mapId] = grid;
+        }
+
+        grid.Set(x, y);
+    }
+
+    public static bool IsTileDiscovered(Guid mapId, int x, int y)
+    {
+        return MapDiscoveries.TryGetValue(mapId, out var grid) && grid.Get(x, y);
+    }
+
+    public static void LoadDiscoveries(Dictionary<Guid, byte[]> data)
+    {
+        MapDiscoveries.Clear();
+        foreach (var kvp in data)
+        {
+            MapDiscoveries[kvp.Key] = new BitGrid(Options.Instance.Map.MapWidth, Options.Instance.Map.MapHeight, kvp.Value);
+        }
+    }
 
     //Local player information
     public static Player? Me;

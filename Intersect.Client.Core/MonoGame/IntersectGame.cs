@@ -27,6 +27,7 @@ using Intersect.Framework.SystemInformation;
 using Intersect.Framework.Utilities;
 using Microsoft.Extensions.Logging;
 using Exception = System.Exception;
+using Intersect.Client.Interface.Game.Map;
 
 namespace Intersect.Client.MonoGame;
 
@@ -104,6 +105,7 @@ internal partial class IntersectGame : Game
 
         // Load configuration.
         Globals.Database.LoadPreferences();
+        MapPreferences.Load();
 
         Window.IsBorderless = Context.StartupOptions.BorderlessWindow;
 

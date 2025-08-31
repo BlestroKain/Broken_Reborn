@@ -219,15 +219,20 @@ public partial class CraftingWindow : Window
         mItems.Clear();
         mValues.Clear();
 
-        if (Globals.Me is not { } player)
+        if (Globals.Me is not { Inventory: { } inventory })
         {
             return;
         }
 
         // Quickly Look through the inventory and create a catalog of what items we have, and how many
         Dictionary<Guid, int> inventoryItemsByDescriptorId = [];
-        foreach (var item in player.Inventory)
+        foreach (var item in inventory)
         {
+            if (item is null)
+            {
+                continue;
+            }
+
             var inventoryItemDescriptorId = item.ItemId;
             var currentQuantity = inventoryItemsByDescriptorId.GetValueOrDefault(inventoryItemDescriptorId, 0);
             inventoryItemsByDescriptorId[inventoryItemDescriptorId] = currentQuantity + item.Quantity;

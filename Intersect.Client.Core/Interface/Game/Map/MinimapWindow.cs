@@ -9,11 +9,13 @@ using Intersect.Client.General;
 using Intersect.Client.Localization;
 using Intersect.Client.Maps;
 using Intersect.Enums;
+using Intersect.GameObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Intersect;
 using Intersect.Framework.Core.GameObjects.Mapping.Tilesets;
+using Intersect.Framework.Core.GameObjects.Maps;
 namespace Intersect.Client.Interface.Game.Map
 {
     public sealed class MinimapWindow : Window
@@ -24,6 +26,7 @@ namespace Intersect.Client.Interface.Game.Map
         private bool _redrawEntities;
         private int _zoomLevel;
         private Dictionary<MapPosition, MapInstance?> _mapGrid = new();
+
         private Dictionary<MapPosition, Dictionary<Point, EntityInfo>> _entityInfoCache = new();
         private readonly Point _minimapTileSize;
         private readonly Dictionary<MapPosition, IGameRenderTexture> _minimapCache = new();
@@ -108,6 +111,11 @@ namespace Intersect.Client.Interface.Game.Map
             if (_renderTexture == null)
             {
                 Console.WriteLine("_renderTexture is null in UpdateMinimap.");
+                return;
+            }
+            if (_minimapTileSize == null)
+            {
+                Console.WriteLine("_minimapTileSize is null in UpdateMinimap.");
                 return;
             }
             var newGrid = CreateMapGridFromMap(mapInstance);
@@ -209,6 +217,7 @@ namespace Intersect.Client.Interface.Game.Map
                         var curTile = cachedMapGrid.Layers[layer][x, y];
                         if (curTile.TilesetId == Guid.Empty ||
                             !TilesetDescriptor.TryGet(curTile.TilesetId, out var tileSet))
+
                         {
                             continue;
                         }
@@ -221,6 +230,7 @@ namespace Intersect.Client.Interface.Game.Map
                             texture,
                             curTile.X * Options.Instance.Map.TileWidth + (Options.Instance.Map.TileWidth / 2),
                             curTile.Y * Options.Instance.Map.TileHeight + (Options.Instance.Map.TileHeight / 2),
+
                             1,
                             1,
                             x * _minimapTileSize.X,
@@ -333,6 +343,7 @@ namespace Intersect.Client.Interface.Game.Map
         private static Dictionary<MapPosition, MapInstance?> CreateMapGridFromMap(MapInstance map)
         {
             var grid = new Dictionary<MapPosition, MapInstance?>();
+
             for (var x = map.GridX - 1; x <= map.GridX + 1; x++)
             {
                 for (var y = map.GridY - 1; y <= map.GridY + 1; y++)
@@ -353,6 +364,7 @@ namespace Intersect.Client.Interface.Game.Map
                     if (mapInstanceAt != null)
                     {
                         grid.Add((MapPosition)(minimapX + (minimapY * 3)), mapInstanceAt);
+
                     }
                 }
             }
@@ -428,6 +440,7 @@ namespace Intersect.Client.Interface.Game.Map
                         {
                             // Get the actual tool type from the server configuration.
                             var toolType = Options.Instance.Equipment.ToolTypes[tool];
+
                             // Attempt to get our color from the plugin configuration.
                             if (minimapColorOptions.Resource.TryGetValue(toolType, out color))
                             {
@@ -485,6 +498,7 @@ namespace Intersect.Client.Interface.Game.Map
         {
             var sizeX = _minimapTileSize.X * Options.Instance.Map.MapWidth * multiplier;
             var sizeY = _minimapTileSize.Y * Options.Instance.Map.MapHeight * multiplier;
+
             return Graphics.Renderer.CreateRenderTexture(sizeX, sizeY);
         }
         private IGameRenderTexture GenerateBaseRenderTexture()

@@ -6,6 +6,7 @@ using Intersect.Client.Framework.Gwen.Input;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
 using Intersect.Client.Interface.Game.Map;
 using Intersect;
+using Intersect.Client.Framework.Input;
 
 namespace Intersect.Client.Interface.Game.Map;
 

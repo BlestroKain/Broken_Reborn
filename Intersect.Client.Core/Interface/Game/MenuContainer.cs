@@ -308,6 +308,7 @@ public partial class MenuContainer : Panel
         _guildWindow = new GuildWindow(gameCanvas: gameCanvas);
         mJobsWindow= new JobsWindow(gameCanvas: gameCanvas);
         _minimapWindow = new MinimapWindow(gameCanvas);
+
     }
 
     //Methods

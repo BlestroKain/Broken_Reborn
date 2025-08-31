@@ -66,6 +66,17 @@ public partial class MinimapOptions
     [OnDeserialized]
     internal void OnDeserializedMethod(StreamingContext context)
     {
+        if (RenderLayers.Count == 0)
+        {
+            RenderLayers.AddRange([
+                "Ground",
+                "Mask 1",
+                "Mask 2",
+                "Fringe 1",
+                "Fringe 2",
+            ]);
+        }
+
         Validate();
     }
 

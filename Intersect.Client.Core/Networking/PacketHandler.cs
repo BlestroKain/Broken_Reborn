@@ -12,6 +12,7 @@ using Intersect.Client.Items;
 using Intersect.Client.Localization;
 using Intersect.Client.Maps;
 using Intersect.Configuration;
+using Intersect.Config;
 using Intersect.Core;
 using Intersect.Enums;
 using Intersect.GameObjects;
@@ -38,6 +39,8 @@ using System.Linq;
 using Intersect.Framework.Core.GameObjects.Spells;
 using Intersect.Client.Interface.Game.Map;
 using Intersect;
+using System.Collections.Generic;
+using Intersect.Framework.Core.Collections;
 
 namespace Intersect.Client.Networking;
 
@@ -195,6 +198,7 @@ internal sealed partial class PacketHandler
     //JoinGamePacket
     public void HandlePacket(IPacketSender packetSender, JoinGamePacket packet)
     {
+        Globals.LoadDiscoveries(packet.MapDiscovery ?? new Dictionary<Guid, byte[]>());
         Main.JoinGame();
         Globals.JoiningGame = true;
     }

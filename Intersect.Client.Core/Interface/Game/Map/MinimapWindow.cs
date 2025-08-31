@@ -132,6 +132,13 @@ namespace Intersect.Client.Interface.Game.Map
                 Console.WriteLine("_minimapTileSize is null in UpdateMinimap.");
                 return;
             }
+            for (var dx = -1; dx <= 1; dx++)
+            {
+                for (var dy = -1; dy <= 1; dy++)
+                {
+                    Globals.DiscoverTile(mapInstance.Id, player.X + dx, player.Y + dy);
+                }
+            }
             var newGrid = CreateMapGridFromMap(mapInstance);
             if (!newGrid.SequenceEqual(_mapGrid))
             {
@@ -240,6 +247,9 @@ namespace Intersect.Client.Interface.Game.Map
                         {
                             continue;
                         }
+                        var color = Globals.IsTileDiscovered(cachedMapGrid.Id, x, y)
+                            ? Color.White
+                            : new Color(30, 30, 30, 255);
                         Graphics.Renderer.DrawTexture(
                             texture,
                             curTile.X * Options.Instance.Map.TileWidth + (Options.Instance.Map.TileWidth / 2),
@@ -251,7 +261,7 @@ namespace Intersect.Client.Interface.Game.Map
                             y * _minimapTileSize.Y,
                             _minimapTileSize.X,
                             _minimapTileSize.Y,
-                            Color.White,
+                            color,
                             cachedMinimap);
                     }
                 }

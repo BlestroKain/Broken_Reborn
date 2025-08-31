@@ -20,7 +20,6 @@ using Intersect.Config;
 using Intersect.Client.Controllers;
 using Intersect.Framework.Core.GameObjects.NPCs;
 
-
 namespace Intersect.Client.Interface.Game.Map;
 
 /// <summary>
@@ -230,6 +229,7 @@ public class WorldMapWindow
 
     private static string GetMinimapKeyHint()
     {
+
         if (!Controls.ActiveControls.TryGetMappingFor(Control.OpenMinimap, out var mapping) ||
             mapping.Bindings.Length == 0)
         {

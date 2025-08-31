@@ -1368,11 +1368,12 @@ public partial class Entity : IEntity
                         if (MyEquipment.TryGetValue(equipSlot, out var equippedIndexes) && equippedIndexes != null)
                         {
                             equipList = equippedIndexes
+
                                 .Where(i => i >= 0 && i < Options.Instance.Player.MaxInventory)
                                 .Select(i => Inventory[i]?.ItemId)
                                 .Where(id => id.HasValue)
                                 .Select(id => id.Value)
-                                .ToList();
+								 ToList();
                         }
                     }
                     else
@@ -2198,9 +2199,10 @@ public partial class Entity : IEntity
                     if (MyEquipment.TryGetValue(weaponSlot, out var myList) &&
                         myList.Count > 0 &&
                         myList[0] >= 0 &&
-                        myList[0] < Inventory.Length)
+                        myList[0] < Inventory.Length &&
+                        Inventory[myList[0]] != null)
                     {
-                        itemId = Inventory[myList[0]].ItemId;
+                        itemId = Inventory[myList[0]]!.ItemId;
                     }
                 }
                 else

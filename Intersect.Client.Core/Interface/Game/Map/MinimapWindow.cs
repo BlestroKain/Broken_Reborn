@@ -1,0 +1,1167 @@
+using Intersect.Client.Core;
+using Intersect.Client.Entities;
+using Intersect.Client.Framework.Content;
+using Intersect.Client.Framework.File_Management;
+using Intersect.Client.Framework.Graphics;
+using Intersect.Client.Framework.Gwen.Control;
+using Intersect.Client.Framework.Gwen.Control.EventArguments;
+using Intersect.Client.Framework.Gwen;
+using Intersect.Client.Framework.Input;
+using Intersect.Client.Framework.Gwen.Input;
+using Intersect.Client.Framework.GenericClasses;
+using Intersect.Client.General;
+using Intersect.Client.Localization;
+using Intersect.Client.Maps;
+using Intersect.Client.MonoGame.NativeInterop;
+using Intersect.Config;
+using Intersect.Enums;
+using Intersect.GameObjects;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Intersect;
+using Intersect.Framework.Core.GameObjects.Mapping.Tilesets;
+using Intersect.Framework.Core.GameObjects.Maps;
+using Intersect.Client.Networking;
+using Intersect.Client.Interface;
+using Intersect.Client.Framework.Gwen.ControlInternal;
+namespace Intersect.Client.Interface.Game.Map
+{
+    public sealed class MinimapWindow : Window
+    {
+        private IGameRenderTexture _renderTexture;
+        private IGameTexture _whiteTexture;
+        private bool _redrawMaps;
+        private bool _redrawEntities;
+        private int _zoomLevel;
+        private int _viewX;
+        private int _viewY;
+        private Dictionary<MapPosition, MapInstance?> _mapGrid = DictionaryPool<MapPosition, MapInstance?>.Rent();
+
+        // Cached entity information per map id
+        private Dictionary<Guid, List<EntityLocation>> _entityInfoCache = DictionaryPool<Guid, List<EntityLocation>>.Rent();
+        private readonly Dictionary<Guid, List<MapPoi>> _poisByMap = new();
+        private Point _minimapTileSize;
+        private float _dpi;
+        // Cache of mini tiles and dynamic overlays by map id
+        private readonly Dictionary<Guid, IGameRenderTexture> _minimapCache = new();
+        private readonly Dictionary<Guid, IGameRenderTexture> _entityCache = new();
+        private readonly Dictionary<Guid, MapPosition> _mapPosition = new();
+        private MinimapPanel _minimap;                 // children resolved after LoadJsonUi
+        private Button _zoomInButton;
+        private Button _zoomOutButton;
+#if DEBUG
+        private Label _zoomLabel;
+#endif
+        private static readonly GameContentManager ContentManager = Globals.ContentManager;
+        private volatile bool _initialized;
+        private bool _isClickThrough;
+
+        public static WaypointLayer? Waypoints { get; private set; }
+
+        public bool IsClickThrough
+        {
+            get => _isClickThrough;
+            set
+            {
+                _isClickThrough = value;
+                SetMouseInputEnabledRecursive(this, !value);
+            }
+        }
+
+        private static void SetMouseInputEnabledRecursive(Base component, bool enabled)
+        {
+            component.MouseInputEnabled = enabled;
+
+            foreach (var child in component.Children)
+            {
+                SetMouseInputEnabledRecursive(child, enabled);
+            }
+        }
+
+        internal static float ClampIconScale(float scale)
+        {
+            return Math.Max(0.8f, scale);
+        }
+
+        // Throttle dynamic overlay updates to ~4Hz
+        private DateTime _lastOverlayUpdate = DateTime.MinValue;
+        private static readonly TimeSpan OverlayInterval = TimeSpan.FromMilliseconds(250);
+        private DateTime _lastWheelTime = DateTime.MinValue;
+        private static readonly TimeSpan WheelDebounce = TimeSpan.FromMilliseconds(125);
+        private DateTime _lastDiscoverySync = DateTime.MinValue;
+        private static readonly TimeSpan DiscoverySyncInterval = TimeSpan.FromSeconds(30);
+        // Constructors
+        public MinimapWindow(Base parent) : base(parent, Strings.Minimap.Title, false, "MinimapWindow")
+        {
+            IsResizable = false;
+            SetZoom(Options.Instance.Minimap.DefaultZoom, false);
+            _dpi = Sdl2.GetDisplayDpi();
+            _minimapTileSize = Options.Instance.Minimap.GetScaledTileSize(_dpi);
+            // UI controls are resolved in EnsureInitialized() after LoadJsonUi
+            _whiteTexture = Graphics.Renderer.WhitePixel;
+            _renderTexture = GenerateBaseRenderTexture();
+        }
+        protected override void EnsureInitialized()
+        {
+            if (_initialized)
+            {
+                return;
+            }
+
+            LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+
+            _minimap = FindChildByName<MinimapPanel>("MinimapContainer", true);
+            if (_minimap == null)
+            {
+                _minimap = new MinimapPanel(this, "MinimapContainer")
+                {
+                    Dock = Pos.Fill,
+                };
+            }
+
+            _zoomInButton = FindChildByName<Button>("ZoomInButton", true);
+            _zoomOutButton = FindChildByName<Button>("ZoomOutButton", true);
+
+#if DEBUG
+            _zoomLabel = FindChildByName<Label>(nameof(_zoomLabel), true);
+            if (_zoomLabel != null)
+            {
+                _zoomLabel.AutoSizeToContents = true;
+                _zoomLabel.Text = $"{_zoomLevel}%";
+            }
+#endif
+
+            if (_zoomInButton != null)
+            {
+                _zoomInButton.Clicked += MZoomInButton_Clicked;
+                _zoomInButton.SetToolTipText(Strings.Minimap.ZoomIn);
+            }
+
+            if (_zoomOutButton != null)
+            {
+                _zoomOutButton.Clicked += MZoomOutButton_Clicked;
+                _zoomOutButton.SetToolTipText(Strings.Minimap.ZoomOut);
+            }
+
+            Waypoints = new WaypointLayer(_minimap);
+
+            AttachInputHandlers();
+
+            _initialized = true;
+        }
+        // Public Methods
+        public void Update()
+        {
+            if (!IsVisible() || !_initialized)
+            {
+                return;
+            }
+
+            var dpi = Sdl2.GetDisplayDpi();
+            if (Math.Abs(dpi - _dpi) > float.Epsilon)
+            {
+                _dpi = dpi;
+                _minimapTileSize = Options.Instance.Minimap.GetScaledTileSize(_dpi);
+                _renderTexture?.Dispose();
+                _renderTexture = GenerateBaseRenderTexture();
+                foreach (var tex in _minimapCache.Values)
+                {
+                    tex.Dispose();
+                }
+                _minimapCache.Clear();
+                foreach (var tex in _entityCache.Values)
+                {
+                    tex.Dispose();
+                }
+                _entityCache.Clear();
+                _redrawMaps = true;
+                _redrawEntities = true;
+            }
+
+            var now = DateTime.UtcNow;
+            if (now - _lastOverlayUpdate >= OverlayInterval)
+            {
+                Waypoints?.Update();
+                UpdateMinimap(Globals.Me);
+                _lastOverlayUpdate = now;
+            }
+
+            DrawMinimap();
+        }
+
+        public void SetPois(IEnumerable<MapPoi> pois)
+        {
+            _poisByMap.Clear();
+
+            foreach (var poi in pois)
+            {
+                if (!_poisByMap.TryGetValue(poi.MapId, out var list))
+                {
+                    list = new List<MapPoi>();
+                    _poisByMap[poi.MapId] = list;
+                }
+
+                list.Add(poi);
+            }
+
+            _redrawEntities = true;
+        }
+        public void Show()
+        {
+            var minimapOptions = Options.Instance.Minimap;
+            var minZoom = minimapOptions.MinimumZoom;
+            var maxZoom = minimapOptions.MaximumZoom;
+            var prefZoom = MapPreferences.Instance.MinimapZoom;
+
+            if (prefZoom <= 0)
+            {
+                prefZoom = minimapOptions.DefaultZoom;
+            }
+
+            var clampedPref = Math.Clamp(prefZoom, minZoom, maxZoom);
+
+            SetZoom(clampedPref, persist: true);
+            IsHidden = false;
+            AttachInputHandlers();
+        }
+        public bool IsVisible()
+        {
+            return !IsHidden;
+        }
+        public void Hide()
+        {
+            DetachInputHandlers();
+            IsHidden = true;
+        }
+
+        public void SetZoom(int newLevel, bool persist = true)
+        {
+            var min = Math.Min(Options.Instance.Minimap.MinimumZoom, Options.Instance.Minimap.MaximumZoom);
+            var max = Math.Max(Options.Instance.Minimap.MinimumZoom, Options.Instance.Minimap.MaximumZoom);
+            newLevel = Math.Clamp(newLevel, min, max);
+
+            if (_zoomLevel == newLevel)
+            {
+                return;
+            }
+
+            _zoomLevel = newLevel;
+#if DEBUG
+            if (_zoomLabel != null)
+            {
+                _zoomLabel.Text = $"{_zoomLevel}%";
+            }
+#endif
+
+            if (persist)
+            {
+                MapPreferences.UpdateMinimapZoom(_zoomLevel);
+            }
+        }
+
+        private void AttachInputHandlers()
+        {
+            if (_minimap == null)
+            {
+                return;
+            }
+
+            _minimap.Clicked -= Minimap_Clicked;
+            _minimap.MouseWheeled -= Minimap_MouseWheeled;
+            _minimap.Clicked += Minimap_Clicked;
+            _minimap.MouseWheeled += Minimap_MouseWheeled;
+        }
+
+        private void DetachInputHandlers()
+        {
+            if (_minimap == null)
+            {
+                return;
+            }
+
+            _minimap.Clicked -= Minimap_Clicked;
+            _minimap.MouseWheeled -= Minimap_MouseWheeled;
+        }
+
+        private void Minimap_Clicked(Base sender, MouseButtonState arguments)
+        {
+            // Intentionally left blank; subscribing prevents other panels from consuming the click.
+        }
+
+        private void Minimap_MouseWheeled(Base sender, ValueChangedEventArgs<int> arguments)
+        {
+            HandleMouseWheel(arguments.Value);
+        }
+
+        private void HandleMouseWheel(int delta)
+        {
+            if (delta == 0)
+                            {
+                                return;
+                            }
+            if (IsClickThrough)
+            {
+                return;
+            }
+
+            if (InterfaceController.HasModal)
+            {
+                return;
+            }
+
+            var now = DateTime.UtcNow;
+            if (now - _lastWheelTime < WheelDebounce)
+            {
+                return;
+            }
+
+            _lastWheelTime = now;
+
+            var step = Math.Max(1, Options.Instance.Minimap.ZoomStep);
+            if (delta > 0)
+            {
+                SetZoom(_zoomLevel - step);
+            }
+            else if (delta < 0)
+            {
+                SetZoom(_zoomLevel + step);
+            }
+        }
+
+        protected override void OnMouseDown(MouseButton mouseButton, Point mousePosition, bool userAction = true)
+        {
+            if (IsClickThrough)
+            {
+                return;
+            }
+
+            base.OnMouseDown(mouseButton, mousePosition, userAction);
+        }
+
+        protected override void OnMouseUp(MouseButton mouseButton, Point mousePosition, bool userAction = true)
+        {
+            if (IsClickThrough)
+            {
+                return;
+            }
+
+            base.OnMouseUp(mouseButton, mousePosition, userAction);
+        }
+
+        // Private Methods
+        private void UpdateMinimap(Player player)
+        {
+            if (player == null)
+            {
+                Console.WriteLine("Player is null in UpdateMinimap.");
+                return;
+            }
+            if (player.MapInstance == null)
+            {
+                Console.WriteLine("player.MapInstance is null in UpdateMinimap.");
+                return;
+            }
+            if (player.MapInstance.Id == Guid.Empty)
+            {
+                Console.WriteLine("player.MapInstance.Id is empty in UpdateMinimap.");
+                return;
+            }
+            if (!MapInstance.TryGet(player.MapInstance.Id, out var mapInstance))
+            {
+                Console.WriteLine("MapInstance.TryGet failed in UpdateMinimap.");
+                return;
+            }
+            if (_renderTexture == null)
+            {
+                Console.WriteLine("_renderTexture is null in UpdateMinimap.");
+                return;
+            }
+         
+            var now = DateTime.UtcNow;
+            if (now - _lastDiscoverySync >= DiscoverySyncInterval)
+            {
+                SyncDiscoveries();
+            }
+
+            var radius = Options.Instance.Map.DiscoveryRadius;
+            var radiusSq = radius * radius;
+            for (var dx = -radius; dx <= radius; dx++)
+            {
+                for (var dy = -radius; dy <= radius; dy++)
+                {
+                    if (dx * dx + dy * dy > radiusSq)
+                    {
+                        continue;
+                    }
+
+                    Globals.DiscoverTile(mapInstance.Id, player.X + dx, player.Y + dy);
+                }
+            }
+            var newGrid = CreateMapGridFromMap(mapInstance);
+            var changed = _mapGrid.Count != newGrid.Count;
+            if (!changed)
+            {
+                foreach (var kv in newGrid)
+                {
+                    if (!_mapGrid.TryGetValue(kv.Key, out var old) || old?.Id != kv.Value?.Id)
+                    {
+                        changed = true;
+                        break;
+                    }
+                }
+            }
+
+            if (changed)
+            {
+                var oldIds = _mapGrid.Values
+                    .Where(static m => m != null)
+                    .Select(static m => m!.Id)
+                    .ToHashSet();
+                var newIds = newGrid.Values
+                    .Where(static m => m != null)
+                    .Select(static m => m!.Id)
+                    .ToHashSet();
+                foreach (var removedId in oldIds.Except(newIds).ToArray())
+                {
+                    if (_minimapCache.TryGetValue(removedId, out var minimapTex))
+                    {
+                        minimapTex.Dispose();
+                        _minimapCache.Remove(removedId);
+                    }
+
+                    if (_entityCache.TryGetValue(removedId, out var entityTex))
+                    {
+                        entityTex.Dispose();
+                        _entityCache.Remove(removedId);
+                    }
+                }
+
+                DictionaryPool<MapPosition, MapInstance?>.Return(_mapGrid);
+                _mapGrid = newGrid;
+                _mapPosition.Clear();
+                foreach (var map in _mapGrid)
+                {
+                    if (map.Value != null)
+                    {
+                        _mapPosition[map.Value.Id] = map.Key;
+                    }
+                }
+                _redrawMaps = true;
+                SyncDiscoveries();
+                Globals.LoadDiscoveries(Globals.MapDiscoveries.ToDictionary(k => k.Key, v => v.Value.Data));
+            }
+            else
+            {
+                DictionaryPool<MapPosition, MapInstance?>.Return(newGrid);
+            }
+
+            var visibleEntities = new Dictionary<Guid, Dictionary<Guid, Entity>>();
+            foreach (var mapId in _mapPosition.Keys)
+            {
+                if (MapInstance.TryGet(mapId, out var localMap))
+                {
+                    visibleEntities[mapId] = localMap.LocalEntities;
+                }
+            }
+
+            var newLocations = GenerateEntityInfo(visibleEntities, player);
+            if (UpdateEntityInfoCache(newLocations))
+            {
+                _redrawEntities = true;
+            }
+            // Update our minimap display area
+            var centerX = (_renderTexture.Width / 3) + (player.X * _minimapTileSize.X);
+            var centerY = (_renderTexture.Height / 3) + (player.Y * _minimapTileSize.Y);
+            var displayW = (int)(_renderTexture.Width * (_zoomLevel / 100f));
+            var displayH = (int)(_renderTexture.Height * (_zoomLevel / 100f));
+            var targetX = Math.Clamp(centerX - (displayW / 2), 0, _renderTexture.Width - displayW);
+            var targetY = Math.Clamp(centerY - (displayH / 2), 0, _renderTexture.Height - displayH);
+            _viewX = (int)(_viewX + (targetX - _viewX) * 0.15f);
+            _viewY = (int)(_viewY + (targetY - _viewY) * 0.15f);
+            _viewX = Math.Clamp(_viewX, 0, _renderTexture.Width - displayW);
+            _viewY = Math.Clamp(_viewY, 0, _renderTexture.Height - displayH);
+            _minimap.SetTextureRect(_viewX, _viewY, displayW, displayH);
+        }
+        private void DrawMinimap()
+        {
+            if (!_redrawEntities && !_redrawMaps)
+            {
+                return;
+            }
+            // Solo asegurar que la textura base esté asignada; NO toques el TextureRect aquí.
+            if (_minimap.Texture != _renderTexture)
+            {
+                _minimap.Texture = _renderTexture;
+            }
+
+            foreach (var kv in _mapGrid)
+            {
+                if (kv.Value == null)
+                {
+                    continue;
+                }
+
+                if (_redrawMaps)
+                {
+                    GenerateMinimapCacheFor(kv.Value);
+                }
+
+                if (_redrawEntities)
+                {
+                    GenerateEntityCacheFor(kv.Value);
+                }
+
+                DrawMinimapCacheToTexture(kv.Value, kv.Key);
+            }
+            if (_redrawMaps)
+            {
+                _redrawMaps = false;
+            }
+            if (_redrawEntities)
+            {
+                _redrawEntities = false;
+            }
+        }
+        private void GenerateMinimapCacheFor(MapInstance map)
+        {
+            if (!_minimapCache.TryGetValue(map.Id, out var cachedMinimap))
+            {
+                cachedMinimap = GenerateMapRenderTexture();
+                _minimapCache[map.Id] = cachedMinimap;
+            }
+
+            cachedMinimap.Clear(Color.Transparent);
+
+            foreach (var layer in Options.Instance.Minimap.RenderLayers)
+            {
+                for (var x = 0; x < Options.Instance.Map.MapWidth; x++)
+                {
+                    for (var y = 0; y < Options.Instance.Map.MapHeight; y++)
+                    {
+                        var curTile = map.Layers[layer][x, y];
+                        if (curTile.TilesetId == Guid.Empty || !TilesetDescriptor.TryGet(curTile.TilesetId, out var tileSet))
+                        {
+                            continue;
+                        }
+
+                        var texture = ContentManager.GetTexture(TextureType.Tileset, tileSet.Name);
+                        if (texture == null)
+                        {
+                            continue;
+                        }
+
+                        var color = Globals.IsTileDiscovered(map.Id, x, y)
+                            ? Color.White
+                            : new Color(30, 30, 30, 255);
+
+                        Graphics.Renderer.DrawTexture(
+                            texture,
+                            curTile.X * Options.Instance.Map.TileWidth + (Options.Instance.Map.TileWidth / 2),
+                            curTile.Y * Options.Instance.Map.TileHeight + (Options.Instance.Map.TileHeight / 2),
+                            1,
+                            1,
+                            x * _minimapTileSize.X,
+                            y * _minimapTileSize.Y,
+                            _minimapTileSize.X,
+                            _minimapTileSize.Y,
+                            color,
+                            cachedMinimap);
+                    }
+                }
+            }
+        }
+        private void GenerateEntityCacheFor(MapInstance map)
+        {
+            if (!_entityCache.TryGetValue(map.Id, out var cachedEntity))
+            {
+                cachedEntity = GenerateMapRenderTexture();
+                _entityCache[map.Id] = cachedEntity;
+            }
+
+            cachedEntity.Clear(Color.Transparent);
+
+            if (!_entityInfoCache.TryGetValue(map.Id, out var cachedEntityInfo))
+            {
+                return;
+            }
+
+            var scale = ClampIconScale(Options.Instance.Minimap.IconScale);
+
+            foreach (var entity in cachedEntityInfo)
+            {
+                var texture = _whiteTexture;
+                var color = entity.Info.Color;
+
+                if (!string.IsNullOrWhiteSpace(entity.Info.Texture))
+                {
+                    var found = ContentManager.GetTexture(TextureType.Misc, entity.Info.Texture);
+                    if (found != null)
+                    {
+                        texture = found;
+                        color = Color.White;
+                    }
+                }
+
+                var drawWidth = (int)(_minimapTileSize.X * scale);
+                var drawHeight = (int)(_minimapTileSize.Y * scale);
+                var drawX = entity.Position.X * _minimapTileSize.X + (_minimapTileSize.X - drawWidth) / 2;
+                var drawY = entity.Position.Y * _minimapTileSize.Y + (_minimapTileSize.Y - drawHeight) / 2;
+
+                Graphics.Renderer.DrawTexture(
+                    texture,
+                    0,
+                    0,
+                    texture.Width,
+                    texture.Height,
+                    drawX,
+                    drawY,
+                    drawWidth,
+                    drawHeight,
+                    color,
+                    cachedEntity,
+                    GameBlendModes.Add);
+            }
+
+            if (_poisByMap.TryGetValue(map.Id, out var pois))
+            {
+                var minimapOptions = Options.Instance.Minimap;
+                var poiScale = minimapOptions.PoiIconScale;
+
+                foreach (var poi in pois)
+                {
+                    if (!minimapOptions.PoiIcons.TryGetValue(poi.PoiType, out var icon))
+                    {
+                        minimapOptions.PoiIcons.TryGetValue("Default", out icon);
+                    }
+
+                    var texture = !string.IsNullOrEmpty(icon)
+                        ? ContentManager.GetTexture(TextureType.Misc, icon)
+                        : null;
+
+                    if (texture == null)
+                    {
+                        continue;
+                    }
+
+                    var drawWidth = (int)(_minimapTileSize.X * poiScale);
+                    var drawHeight = (int)(_minimapTileSize.Y * poiScale);
+                    var drawX = poi.X * _minimapTileSize.X + (_minimapTileSize.X - drawWidth) / 2;
+                    var drawY = poi.Y * _minimapTileSize.Y + (_minimapTileSize.Y - drawHeight) / 2;
+
+                    Graphics.Renderer.DrawTexture(
+                        texture,
+                        0,
+                        0,
+                        texture.Width,
+                        texture.Height,
+                        drawX,
+                        drawY,
+                        drawWidth,
+                        drawHeight,
+                        Color.White,
+                        cachedEntity,
+                        GameBlendModes.Add);
+                }
+            }
+        }
+        private void DrawMinimapCacheToTexture(MapInstance map, MapPosition position)
+        {
+            if (!_minimapCache.TryGetValue(map.Id, out var value))
+            {
+                return;
+            }
+
+            var x = 0;
+            var y = 0;
+            switch (position)
+            {
+                case MapPosition.TopLeft:
+                    break;
+                case MapPosition.TopMiddle:
+                    x = value.Width;
+                    break;
+                case MapPosition.TopRight:
+                    x = value.Width * 2;
+                    break;
+                case MapPosition.MiddleLeft:
+                    y = value.Height;
+                    break;
+                case MapPosition.Middle:
+                    x = value.Width;
+                    y = value.Height;
+                    break;
+                case MapPosition.MiddleRight:
+                    x = value.Width * 2;
+                    y = value.Height;
+                    break;
+                case MapPosition.BottomLeft:
+                    y = value.Height * 2;
+                    break;
+                case MapPosition.BottomMiddle:
+                    x = value.Width;
+                    y = value.Height * 2;
+                    break;
+                case MapPosition.BottomRight:
+                    x = value.Width * 2;
+                    y = value.Height * 2;
+                    break;
+            }
+
+            if (_minimapCache.TryGetValue(map.Id, out var cachedMinimap))
+            {
+                Graphics.Renderer.DrawTexture(
+                    cachedMinimap,
+                    0,
+                    0,
+                    cachedMinimap.Width,
+                    cachedMinimap.Height,
+                    x,
+                    y,
+                    cachedMinimap.Width,
+                    cachedMinimap.Height,
+                    Color.White,
+                    _renderTexture);
+            }
+
+            if (_entityCache.TryGetValue(map.Id, out var cachedEntity))
+            {
+                Graphics.Renderer.DrawTexture(
+                    cachedEntity,
+                    0,
+                    0,
+                    cachedEntity.Width,
+                    cachedEntity.Height,
+                    x,
+                    y,
+                    cachedEntity.Width,
+                    cachedEntity.Height,
+                    Color.White,
+                    _renderTexture);
+            }
+        }
+        private static Dictionary<MapPosition, MapInstance?> CreateMapGridFromMap(MapInstance map)
+        {
+            var grid = DictionaryPool<MapPosition, MapInstance?>.Rent();
+
+            for (var x = map.GridX - 1; x <= map.GridX + 1; x++)
+            {
+                for (var y = map.GridY - 1; y <= map.GridY + 1; y++)
+                {
+                    if (x < 0 || x >= Globals.MapGridWidth ||
+                        y < 0 || y >= Globals.MapGridHeight)
+                    {
+                        continue;
+                    }
+                    var currentGridValue = Globals.MapGrid[x, y];
+                    if (currentGridValue == Guid.Empty)
+                    {
+                        continue;
+                    }
+                    int minimapX = x - (map.GridX - 1);
+                    int minimapY = y - (map.GridY - 1);
+                    var mapInstanceAt = MapInstance.Get(currentGridValue);
+                    if (mapInstanceAt != null)
+                    {
+                        grid.Add((MapPosition)(minimapX + (minimapY * 3)), mapInstanceAt);
+
+                    }
+                }
+            }
+
+            return grid;
+        }
+        private Dictionary<Guid, List<EntityLocation>> GenerateEntityInfo(Dictionary<Guid, Dictionary<Guid, Entity>> entities, Player player)
+        {
+            var entityInfo = DictionaryPool<Guid, List<EntityLocation>>.Rent();
+            var minimapOptions = Options.Instance.Minimap;
+            var minimapColorOptions = minimapOptions.MinimapColors;
+            var minimapImageOptions = minimapOptions.MinimapImages;
+
+            foreach (var mapId in _mapPosition.Keys)
+            {
+                if (!entities.TryGetValue(mapId, out var mapEntities))
+                {
+                    continue;
+                }
+
+                foreach (var entity in mapEntities.Values)
+                {
+                    if (entity.IsHidden)
+                    {
+                        continue;
+                    }
+
+                    var color = Color.Transparent;
+                    var texture = string.Empty;
+
+                    switch (entity.Type)
+                    {
+                        case EntityType.Player:
+                            if (entity.IsStealthed)
+                            {
+                                color = Color.Transparent;
+                                texture = string.Empty;
+                            }
+                            else if (entity.Id == player.Id)
+                            {
+                                color = minimapColorOptions.MyEntity;
+                                texture = minimapImageOptions.MyEntity;
+                            }
+                            else if (player.IsInMyParty(entity.Id))
+                            {
+                                color = minimapColorOptions.PartyMember;
+                                texture = minimapImageOptions.PartyMember;
+                            }
+                            else
+                            {
+                                color = minimapColorOptions.Player;
+                                texture = minimapImageOptions.Player;
+                            }
+
+                            break;
+
+                        case EntityType.Event:
+                            continue;
+
+                        case EntityType.GlobalEntity:
+                            if (entity.IsStealthed)
+                            {
+                                color = Color.Transparent;
+                                texture = string.Empty;
+                            }
+                            else
+                            {
+                                color = minimapColorOptions.Npc;
+                                texture = minimapImageOptions.Npc;
+                            }
+
+                            break;
+
+                        case EntityType.Resource:
+                            var job = ((Resource)entity).Descriptor?.Jobs ?? JobType.None;
+
+                            if (!minimapColorOptions.Resource.TryGetValue(job, out color))
+                            {
+                                color = minimapColorOptions.Default;
+                            }
+
+                            if (!minimapImageOptions.Resource.TryGetValue(job, out texture))
+                            {
+                                texture = minimapImageOptions.Default;
+                            }
+
+                            break;
+
+                        case EntityType.Projectile:
+                            continue;
+
+                        default:
+                            color = minimapColorOptions.Default;
+                            texture = minimapImageOptions.Default;
+                            break;
+                    }
+
+                    if (color == Color.Transparent && string.IsNullOrEmpty(texture))
+                    {
+                        continue;
+                    }
+
+                    if (!entityInfo.TryGetValue(entity.MapInstance.Id, out var list))
+                    {
+                        list = ListPool<EntityLocation>.Rent();
+                        entityInfo.Add(entity.MapInstance.Id, list);
+                    }
+
+                    list.Add(new EntityLocation
+                    {
+                        Position = new Point(entity.X, entity.Y),
+                        Info = new EntityInfo { Color = color, Texture = texture }
+                    });
+                }
+            }
+
+            if (Options.Instance.Minimap.ShowWaypoints && Waypoints != null)
+            {
+                var mapWidthPixels = Options.Instance.Map.MapWidth * Options.Instance.Map.TileWidth;
+                var mapHeightPixels = Options.Instance.Map.MapHeight * Options.Instance.Map.TileHeight;
+
+                foreach (var (position, scope) in Waypoints.Enumerate())
+                {
+                    var mapX = position.X / mapWidthPixels;
+                    var mapY = position.Y / mapHeightPixels;
+
+                    if (mapX < 0 || mapY < 0 || mapX >= Globals.MapGridWidth || mapY >= Globals.MapGridHeight)
+                    {
+                        continue;
+                    }
+
+                    var mapId = Globals.MapGrid[mapX, mapY];
+                    if (mapId == Guid.Empty)
+                    {
+                        continue;
+                    }
+
+                    var tileX = (position.X % mapWidthPixels) / Options.Instance.Map.TileWidth;
+                    var tileY = (position.Y % mapHeightPixels) / Options.Instance.Map.TileHeight;
+
+                    if (!entityInfo.TryGetValue(mapId, out var list))
+                    {
+                        list = ListPool<EntityLocation>.Rent();
+                        entityInfo.Add(mapId, list);
+                    }
+
+                    list.Add(new EntityLocation
+                    {
+                        Position = new Point(tileX, tileY),
+                        Info = new EntityInfo { Color = WaypointLayer.ScopeToColor(scope), Texture = string.Empty }
+                    });
+                }
+            }
+
+            foreach (var list in entityInfo.Values)
+            {
+                list.Sort(EntityLocationComparer.Instance);
+            }
+
+            return entityInfo;
+        }
+
+        private bool UpdateEntityInfoCache(Dictionary<Guid, List<EntityLocation>> newInfo)
+        {
+        
+            var changed = _entityInfoCache.Count != newInfo.Count;
+            if (!changed)
+            {
+                foreach (var kv in newInfo)
+                {
+                    if (!_entityInfoCache.TryGetValue(kv.Key, out var oldList) || oldList.Count != kv.Value.Count ||
+                        !oldList.SequenceEqual(kv.Value))
+                    {
+                        changed = true;
+                        break;
+                    }
+                }
+            }
+
+            if (changed)
+            {
+                ReleaseEntityInfo(_entityInfoCache);
+                DictionaryPool<Guid, List<EntityLocation>>.Return(_entityInfoCache);
+                _entityInfoCache = newInfo;
+            }
+            else
+            {
+                ReleaseEntityInfo(newInfo);
+                DictionaryPool<Guid, List<EntityLocation>>.Return(newInfo);
+            }
+
+            return changed;
+        }
+
+        private static void ReleaseEntityInfo(Dictionary<Guid, List<EntityLocation>> info)
+        {
+            foreach (var list in info.Values)
+            {
+                ListPool<EntityLocation>.Return(list);
+            }
+
+            info.Clear();
+        }
+        private IGameRenderTexture GenerateRenderTexture(int multiplier)
+        {
+            var sizeX = _minimapTileSize.X * Options.Instance.Map.MapWidth * multiplier;
+            var sizeY = _minimapTileSize.Y * Options.Instance.Map.MapHeight * multiplier;
+
+            return Graphics.Renderer.CreateRenderTexture(sizeX, sizeY);
+        }
+        private IGameRenderTexture GenerateBaseRenderTexture()
+        {
+            return GenerateRenderTexture(3);
+        }
+        private IGameRenderTexture GenerateMapRenderTexture()
+        {
+            return GenerateRenderTexture(1);
+        }
+
+        private void SyncDiscoveries()
+        {
+            PacketSender.SendMapDiscoveriesRequest(
+                Globals.MapDiscoveries.ToDictionary(k => k.Key, v => v.Value.Data)
+            );
+            _lastDiscoverySync = DateTime.UtcNow;
+        }
+
+        
+        private void MZoomOutButton_Clicked(Base sender, MouseButtonState arguments)
+        {
+            var step = Math.Max(1, Options.Instance.Minimap.ZoomStep);
+            SetZoom(_zoomLevel + step);
+        }
+        private void MZoomInButton_Clicked(Base sender, MouseButtonState arguments)
+        {
+            var step = Math.Max(1, Options.Instance.Minimap.ZoomStep);
+            SetZoom(_zoomLevel - step);
+        }
+
+        private sealed class MinimapPanel : ImagePanel
+        {
+            public event GwenEventHandler<ValueChangedEventArgs<int>>? MouseWheeled;
+
+            public MinimapPanel(Base parent, string? name = null) : base(parent, name)
+            {
+            }
+
+            protected override bool OnMouseWheeled(int delta)
+            {
+                if (!IsVisibleInTree || IsDisabledByTree || InterfaceController.HasModal)
+                {
+                    return false;
+                }
+
+                MouseWheeled?.Invoke(this, new ValueChangedEventArgs<int> { Value = delta });
+                return true;
+            }
+        }
+
+        private enum MapPosition
+        {
+            TopLeft,
+            TopMiddle,
+            TopRight,
+            MiddleLeft,
+            Middle,
+            MiddleRight,
+            BottomLeft,
+            BottomMiddle,
+            BottomRight,
+        }
+
+        private sealed class EntityInfo
+        {
+            public Color Color { get; set; }
+            public string Texture { get; set; } = string.Empty;
+        }
+
+        private readonly struct EntityLocation : IEquatable<EntityLocation>
+        {
+            public Point Position { get; init; }
+            public EntityInfo Info { get; init; }
+
+            public bool Equals(EntityLocation other)
+            {
+                return Position.Equals(other.Position) &&
+                       Info.Color.A == other.Info.Color.A &&
+                       Info.Color.R == other.Info.Color.R &&
+                       Info.Color.G == other.Info.Color.G &&
+                       Info.Color.B == other.Info.Color.B &&
+                       Info.Texture == other.Info.Texture;
+            }
+
+            public override bool Equals(object? obj)
+            {
+                return obj is EntityLocation other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(Position, Info.Color.A, Info.Color.R, Info.Color.G, Info.Color.B, Info.Texture);
+            }
+        }
+
+        private sealed class EntityLocationComparer : IComparer<EntityLocation>
+        {
+            public static readonly EntityLocationComparer Instance = new();
+
+            public int Compare(EntityLocation x, EntityLocation y)
+            {
+                var result = x.Position.X.CompareTo(y.Position.X);
+                if (result != 0)
+                {
+                    return result;
+                }
+
+                result = x.Position.Y.CompareTo(y.Position.Y);
+                if (result != 0)
+                {
+                    return result;
+                }
+
+                result = x.Info.Color.A.CompareTo(y.Info.Color.A);
+                if (result != 0)
+                {
+                    return result;
+                }
+
+                result = x.Info.Color.R.CompareTo(y.Info.Color.R);
+                if (result != 0)
+                {
+                    return result;
+                }
+
+                result = x.Info.Color.G.CompareTo(y.Info.Color.G);
+                if (result != 0)
+                {
+                    return result;
+                }
+
+                result = x.Info.Color.B.CompareTo(y.Info.Color.B);
+                if (result != 0)
+                {
+                    return result;
+                }
+
+                return string.Compare(x.Info.Texture, y.Info.Texture, StringComparison.Ordinal);
+            }
+        }
+
+        private static class InterfaceController
+        {
+            public static bool HasModal => Interface.GameUi.GameCanvas.Children.Any(child => child is Modal);
+        }
+
+        private static class DictionaryPool<TKey, TValue>
+        {
+            private static readonly Stack<Dictionary<TKey, TValue>> Pool = new();
+
+            public static Dictionary<TKey, TValue> Rent()
+            {
+                lock (Pool)
+                {
+                    return Pool.Count > 0 ? Pool.Pop() : new Dictionary<TKey, TValue>();
+                }
+            }
+
+            public static void Return(Dictionary<TKey, TValue> dictionary)
+            {
+                dictionary.Clear();
+                lock (Pool)
+                {
+                    Pool.Push(dictionary);
+                }
+            }
+        }
+
+        private static class ListPool<T>
+        {
+            private static readonly Stack<List<T>> Pool = new();
+
+            public static List<T> Rent()
+            {
+                lock (Pool)
+                {
+                    return Pool.Count > 0 ? Pool.Pop() : new List<T>();
+                }
+            }
+
+            public static void Return(List<T> list)
+            {
+                list.Clear();
+                lock (Pool)
+                {
+                    Pool.Push(list);
+                }
+            }
+        }
+    }
+}

@@ -17,6 +17,7 @@ using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Config;
 using Intersect.Framework.Core.GameObjects.Maps.Attributes;
+using Intersect.Framework.Core.Collections;
 using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.GameObjects.Spells;
@@ -94,6 +95,29 @@ public partial class Player : Entity
 
     [NotMapped]
     public bool SpellPointsChanged { get; set; }
+
+    [JsonIgnore, Column("MapDiscovery")]
+    public string MapDiscoveryJson
+    {
+        get => JsonConvert.SerializeObject(MapDiscoveries.ToDictionary(k => k.Key, v => v.Value.Data));
+        set => MapDiscoveries = JsonConvert.DeserializeObject<Dictionary<Guid, byte[]>>(value ?? "{}")?
+            .ToDictionary(k => k.Key, v => new BitGrid(Options.Instance.Map.MapWidth, Options.Instance.Map.MapHeight, v.Value))
+            ?? new();
+    }
+
+    [NotMapped, JsonIgnore]
+    public Dictionary<Guid, BitGrid> MapDiscoveries { get; set; } = new();
+
+    public void DiscoverTile(Guid mapId, int x, int y)
+    {
+        if (!MapDiscoveries.TryGetValue(mapId, out var grid))
+        {
+            grid = new BitGrid(Options.Instance.Map.MapWidth, Options.Instance.Map.MapHeight);
+            MapDiscoveries[mapId] = grid;
+        }
+
+        grid.Set(x, y);
+    }
 
    
     [Column("Equipment"), JsonIgnore]
@@ -795,6 +819,29 @@ public partial class Player : Entity
             Monitor.TryEnter(EntityLock, ref lockObtained);
             if (lockObtained)
             {
+                var mapOptions = Options.Instance.Map;
+                var radius = mapOptions.DiscoveryRadius;
+                var radiusSq = radius * radius;
+                for (var dx = -radius; dx <= radius; dx++)
+                {
+                    for (var dy = -radius; dy <= radius; dy++)
+                    {
+                        if (dx * dx + dy * dy > radiusSq)
+                        {
+                            continue;
+                        }
+
+                        var tx = X + dx;
+                        var ty = Y + dy;
+
+                        if (tx < 0 || ty < 0 || tx >= mapOptions.MapWidth || ty >= mapOptions.MapHeight)
+                        {
+                            continue;
+                        }
+
+                        DiscoverTile(MapId, tx, ty);
+                    }
+                }
                 if (Client == null) //Client logged out
                 {
                     if (CombatTimer < Timing.Global.Milliseconds)

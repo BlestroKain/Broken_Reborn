@@ -204,6 +204,8 @@ public partial record Options
 
     public MapOptions Map { get; set; } = new();
 
+    public MinimapOptions Minimap { get; set; } = new();
+
     public PlayerOptions Player { get; set; } = new();
     public JobOptions JobOpts { get; set; } = new();
     public PartyOptions Party { get; set; } = new();

@@ -29,6 +29,8 @@ using Intersect.Network.Packets.Server;
 using Intersect.Server.Core;
 using Intersect.Server.Services;
 using Microsoft.Extensions.Logging;
+using Intersect.Framework.Core.Collections;
+using Intersect.Config;
 using ChatMsgPacket = Intersect.Network.Packets.Client.ChatMsgPacket;
 using LoginPacket = Intersect.Network.Packets.Client.LoginPacket;
 using PartyInvitePacket = Intersect.Network.Packets.Client.PartyInvitePacket;
@@ -505,6 +507,92 @@ internal sealed partial class PacketHandler
             PacketSender.SendPing(client, false);
         }
     }
+
+    // MapDiscoveriesRequestPacket handler (server side)
+    // Mantiene el mismo contrato que ya usas: Dictionary<Guid, byte[]> Discoveries.
+    public void HandlePacket(Client client, MapDiscoveriesRequestPacket packet)
+    {
+        if (client?.Entity is not Player player || packet?.Discoveries == null || packet.Discoveries.Count == 0)
+        {
+            return;
+        }
+
+        // Límite de entradas y de bytes totales (defensa).
+        const int maxEntries = 32;
+        const int maxTotalBytes = 1_000_000; // ~1 MB por request; ajusta si lo necesitas.
+
+        var entries = 0;
+        var totalBytes = 0;
+
+        var mapOptions = Options.Instance.Map;
+        var expectedSize = (mapOptions.MapWidth * mapOptions.MapHeight + 7) / 8;
+
+        // Coleccionaremos los mapas que efectivamente apliquemos para responder al cliente.
+        var applied = new Dictionary<Guid, byte[]>(capacity: Math.Min(packet.Discoveries.Count, maxEntries));
+
+        foreach (var (mapId, data) in packet.Discoveries)
+        {
+            if (entries >= maxEntries)
+            {
+                break;
+            }
+
+            if (mapId == Guid.Empty || data == null)
+            {
+                continue;
+            }
+
+            // ¿El mapa existe en el mundo?
+            if (!MapController.Lookup.Keys.Contains(mapId))
+            {
+                continue;
+            }
+
+            // Tamaño correcto (grid compacta de W*H bits)
+            if (data.Length != expectedSize)
+            {
+                continue;
+            }
+
+            // Control de bytes totales del request
+            totalBytes += data.Length;
+            if (totalBytes > maxTotalBytes)
+            {
+                break;
+            }
+
+            // MERGE: si ya existe grid del jugador, OR para acumular descubrimientos.
+            if (player.MapDiscoveries.TryGetValue(mapId, out var existing))
+            {
+                // Evita alocar si data es igual tamaño/forma (ya lo es por expectedSize).
+                var incoming = new BitGrid(mapOptions.MapWidth, mapOptions.MapHeight, data);
+                existing.OrWith(incoming);
+                // Devolvemos al cliente el estado resultante para asegurar convergencia.
+                applied[mapId] = existing.Data;
+            }
+            else
+            {
+                // Nuevo mapa para este jugador.
+                var grid = new BitGrid(mapOptions.MapWidth, mapOptions.MapHeight, data);
+                player.MapDiscoveries[mapId] = grid;
+                applied[mapId] = grid.Data;
+            }
+
+            entries++;
+        }
+
+        // Si aplicamos algo, devolvemos una respuesta compacta al cliente
+        // para confirmar/sincronizar (el lado cliente ya sabe procesarla).
+        if (applied.Count > 0)
+        {
+            var response = new MapDiscoveriesResponsePacket
+            {
+                Discoveries = applied
+            };
+            client.Send(response);
+        }
+    }
+
 
     //LoginPacket
     public void HandlePacket(Client client, LoginPacket packet)

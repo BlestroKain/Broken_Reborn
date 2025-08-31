@@ -1248,6 +1248,7 @@ public static partial class Strings
             {"openparties", @"Open Parties:"},
             {"openspells", @"Open Spells:"},
             {"openfriends", @"Open Friends:"},
+            {"openminimap", @"Open Minimap:"},
             {"openguild", @"Open Guild:"},
             {"opensettings", @"Open Settings:"},
             {"opendebugger", @"Open Debugger:"},
@@ -3221,6 +3222,18 @@ If you are sure you want to hand over your guild enter '\c{{#ff8080}}{02}\c{{}}'
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString BUY = @"[BUY]";
+    }
+
+    public partial struct Minimap
+    {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Title = @"Minimap";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString ZoomIn = @"Zoom In";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString ZoomOut = @"Zoom Out";
     }
 
     public partial struct EscapeMenu

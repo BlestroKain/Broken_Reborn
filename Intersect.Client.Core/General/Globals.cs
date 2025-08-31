@@ -10,9 +10,10 @@ using Intersect.Client.Framework.Sys;
 using Intersect.Client.Items;
 using Intersect.Client.Maps;
 using Intersect.Client.Plugins.Interfaces;
+using Intersect.Config;
 using Intersect.Core;
 using Intersect.Enums;
-using Intersect.Config;
+using Intersect.Framework.Core.Collections;
 using Intersect.Framework.Core.GameObjects.Crafting;
 using Intersect.GameObjects;
 using Intersect.Network.Packets.Server;
@@ -78,7 +79,7 @@ public static partial class Globals
     public static long MapGridHeight;
 
     public static long MapGridWidth;
-
+  
     //Local player information
     public static Player? Me;
 

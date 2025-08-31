@@ -153,9 +153,9 @@ public static partial class Input
             {
                 gameUi.UnfocusChat = true;
             }
-            else if (gameUi.CloseAllWindows())
+            else if (gameUi.CloseMostRecentWindow())
             {
-                // We've closed our windows, don't do anything else. :)
+                // We've closed our window, don't do anything else. :)
             }
             else if (Globals.Me is {} me && me.TargetId != default && me.Status.All(s => s.Type != SpellEffect.Taunt))
             {
@@ -352,6 +352,10 @@ public static partial class Input
 
                         case Control.OpenGuild:
                             _ = Interface.Interface.GameUi.GameMenu?.ToggleGuildWindow();
+                            break;
+
+                        case Control.OpenMinimap:
+                            Interface.Interface.GameUi.ToggleMinimap();
                             break;
 
                         case Control.TargetParty1:

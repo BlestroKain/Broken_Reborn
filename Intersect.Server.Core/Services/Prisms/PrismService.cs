@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Intersect.Config;
 using Intersect.Framework.Core.GameObjects.Prisms;
 using Intersect.Server.Core;
+using Intersect.Server.Database.Prisms;
 using Intersect.Server.Entities;
 using Intersect.Server.Maps;
 using Intersect.Server.Metrics;
@@ -17,39 +18,43 @@ internal static class PrismService
 {
     public static ILogger Logger { get; set; } = NullLogger.Instance;
 
-    public static AlignmentPrism PlacePrism(Player player, MapInstance map)
+    public static PrismRuntime PlacePrism(Player player, MapInstance map)
     {
         var options = Options.Instance.Prism;
         var maxHp = options.BaseHp + options.HpPerLevel * Math.Max(0, player?.Level - 1 ?? 0);
         var now = DateTime.UtcNow;
 
-        var prism = new AlignmentPrism
+        var descriptor = new PrismDescriptor
         {
             Id = Guid.NewGuid(),
-            Owner = player.Faction,
-            State = PrismState.Placed,
             MapId = map.MapId,
             X = player?.X ?? 0,
             Y = player?.Y ?? 0,
-            PlacedAt = now,
-            MaturationEndsAt = now.AddSeconds(options.MaturationSeconds),
-            Level = player.Level,
+        };
+
+        var entity = new PrismEntity
+        {
+            PrismId = descriptor.Id,
+            Owner = player.Faction,
+            State = PrismState.Placed,
             MaxHp = maxHp,
             Hp = maxHp,
             LastHitAt = null,
+            LastStateChangeAt = now,
             CurrentBattleId = null,
         };
 
-        map.ControllingPrism = prism;
+        var runtime = new PrismRuntime(descriptor, entity);
+        map.ControllingPrism = runtime;
         Logger.LogInformation(
             "Prism {PrismId} placed on map {MapId} by {PlayerId} at {Time}",
-            prism.Id,
+            runtime.Id,
             map.MapId,
             player?.Id,
             now
         );
         Broadcast(map);
-        return prism;
+        return runtime;
     }
 
     public static void TickState(MapInstance map)
@@ -83,12 +88,9 @@ internal static class PrismService
         switch (prism.State)
         {
             case PrismState.Placed:
-                if (prism.MaturationEndsAt.HasValue && now >= prism.MaturationEndsAt.Value)
-                {
-                    prism.State = inWindow ? PrismState.Vulnerable : PrismState.Dominated;
-                    changed = true;
-                }
-
+                // Placed prisms immediately transition based on vulnerability windows
+                prism.State = inWindow ? PrismState.Vulnerable : PrismState.Dominated;
+                changed = true;
                 break;
 
             case PrismState.Vulnerable:
@@ -139,6 +141,7 @@ internal static class PrismService
 
         if (changed)
         {
+            prism.LastStateChangeAt = now;
             Logger.LogInformation(
                 "Prism {PrismId} state changed from {OldState} to {NewState} at {Time}",
                 prism.Id,
@@ -182,7 +185,7 @@ internal static class PrismService
         }
     }
 
-    public static bool IsInVulnerabilityWindow(AlignmentPrism prism, DateTime time)
+    public static bool IsInVulnerabilityWindow(PrismRuntime prism, DateTime time)
     {
         if (prism.Windows == null || prism.Windows.Count == 0)
         {
@@ -192,7 +195,7 @@ internal static class PrismService
         return prism.Windows.Any(window => window.Contains(time));
     }
 
-    public static DateTime? GetNextVulnerabilityStart(AlignmentPrism prism, DateTime now)
+    public static DateTime? GetNextVulnerabilityStart(PrismRuntime prism, DateTime now)
     {
         if (prism.Windows == null || prism.Windows.Count == 0)
         {

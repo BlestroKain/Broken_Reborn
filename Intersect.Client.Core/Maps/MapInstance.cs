@@ -27,6 +27,7 @@ using Intersect.Network.Packets.Server;
 using Intersect.Utilities;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Intersect.Client.Maps.Prisms;
 
 namespace Intersect.Client.Maps;
 
@@ -992,6 +993,7 @@ public partial class MapInstance : MapDescriptor, IGameObject<Guid, MapInstance>
                 );
             }
         }
+        PrismVisualManager.Draw(this);
 
         //Add lights to our darkness texture
         foreach (var light in Lights)

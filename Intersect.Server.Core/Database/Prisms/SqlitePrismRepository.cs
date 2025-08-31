@@ -14,7 +14,7 @@ public sealed class SqlitePrismRepository : IPrismRepository
         _context = context;
     }
 
-    public DbSet<AlignmentPrism> Prisms => _context.Prisms;
+    public DbSet<PrismEntity> Prisms => _context.Prisms;
 
     public DbSet<FactionAreaBonus> FactionAreaBonuses => _context.FactionAreaBonuses;
 

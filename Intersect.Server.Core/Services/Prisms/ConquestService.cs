@@ -7,9 +7,9 @@ using Intersect.Framework.Core.GameObjects.Prisms;
 using Intersect.Config;
 using Intersect.Server.Core.Services;
 using Intersect.Server.Database.Prisms;
-using GameAlignmentPrism = Intersect.Framework.Core.GameObjects.Prisms.AlignmentPrism;
 using Intersect.Server.Entities;
 using Intersect.Server.Maps;
+using Intersect.Server.Services.Prisms;
 using Microsoft.EntityFrameworkCore;
 using Intersect.Server.Metrics;
 using Microsoft.Extensions.Logging;
@@ -40,7 +40,7 @@ public sealed class ConquestService : IConquestService
 
     private void DistributeRewards(
         MapInstance map,
-        GameAlignmentPrism prism,
+        PrismRuntime prism,
         Func<PrismCombatService.Contribution, bool> filter,
         int honor
     )

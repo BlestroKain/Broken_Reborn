@@ -2476,6 +2476,7 @@ internal sealed partial class PacketHandler
         if (Globals.Me != null)
         {
             Globals.Me.Faction = packet.NewAlignment;
+            Globals.Me.NextFactionChangeAt = packet.NextAllowedChangeAt;
         }
 
         if (!string.IsNullOrWhiteSpace(packet.Message))
@@ -2485,6 +2486,8 @@ internal sealed partial class PacketHandler
                 alertType: packet.Success ? AlertType.Information : AlertType.Error
             );
         }
+
+        Interface.Interface.GameUi.GameMenu?.RefreshFactionWindow();
     }
 
 }

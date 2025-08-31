@@ -417,6 +417,11 @@ public partial class MenuContainer : Panel
         }
     }
 
+    public void RefreshFactionWindow()
+    {
+        _factionWindow.Refresh();
+    }
+
     public void ToggleInventoryWindow()
     {
         if (_inventoryWindow.IsVisibleInTree)

@@ -5,7 +5,7 @@ using Intersect.Client.Framework.Graphics;
 using Intersect.Client.General;
 using Intersect.Client.Maps;
 using Intersect.Client.Networking;
-using Intersect.Config;
+using Intersect.Framework.Core.GameObjects.Prisms;
 using Intersect.Network.Packets.Server;
 
 namespace Intersect.Client.Maps.Prisms;
@@ -25,24 +25,24 @@ public static class PrismVisualManager
 
     public static void Update(PrismUpdatePacket packet)
     {
-        if (!Prisms.TryGetValue(packet.MapId, out var visual))
+        if (!Prisms.TryGetValue(packet.Id, out var visual))
         {
-            var info = PrismConfig.Prisms.FirstOrDefault(p => p.MapId == packet.MapId);
-            if (info == null)
+            var descriptor = PrismDescriptorStore.Get(packet.Id);
+            if (descriptor == null)
             {
                 return;
             }
 
-            visual = new PrismVisual(info);
-            Prisms[packet.MapId] = visual;
+            visual = new PrismVisual(descriptor);
+            Prisms[packet.Id] = visual;
         }
 
-        visual.Update(packet.PrismId, packet.Owner, packet.State, packet.Hp, packet.MaxHp);
+        visual.Update(packet.MapId, packet.X, packet.Y, packet.Owner, packet.State, packet.Hp, packet.MaxHp);
     }
 
     public static void Draw(MapInstance map)
     {
-        if (Prisms.TryGetValue(map.Id, out var visual))
+        foreach (var visual in Prisms.Values.Where(v => v.MapId == map.Id))
         {
             visual.Draw(map);
         }
@@ -58,7 +58,7 @@ public static class PrismVisualManager
         {
             if (visual.HitTest(x, y))
             {
-                PacketSender.SendPrismAttack(visual.MapId, visual.PrismId);
+                PacketSender.SendPrismAttack(visual.MapId, visual.Id);
                 return true;
             }
         }

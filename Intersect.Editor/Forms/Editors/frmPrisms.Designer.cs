@@ -1,4 +1,6 @@
 using DarkUI.Controls;
+using System;
+using System.Linq;
 using System.Windows.Forms;
 using Intersect.Framework.Core.GameObjects.Prisms;
 
@@ -142,9 +144,9 @@ namespace Intersect.Editor.Forms.Editors
             btnPickPos.TabIndex = 2;
             btnPickPos.Text = "...";
             btnPickPos.Click += btnPickPos_Click;
-            // 
+//
             // nudX
-            // 
+            //
             nudX.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
             nudX.ForeColor = System.Drawing.Color.Gainsboro;
             nudX.Location = new System.Drawing.Point(257, 72);
@@ -203,8 +205,9 @@ namespace Intersect.Editor.Forms.Editors
     DayOfWeek.Saturday
     };
             colDay.HeaderText = "Day";
-            colDay.Items.AddRange(new object[] { DayOfWeek.Sunday, DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday });
-            colDay.Name = "colDay";
+            colDay.Items.AddRange(Enum.GetValues(typeof(DayOfWeek)).Cast<object>().ToArray());
+            var colStart = new DataGridViewTextBoxColumn();
+            colStart.Name = "colStart";
             // 
             // colStart
             // 
@@ -237,14 +240,16 @@ namespace Intersect.Editor.Forms.Editors
     PrismModuleType.Crafting,
     PrismModuleType.GuardBoost
     };
-            colType.HeaderText = "Type";
-            colType.Items.AddRange(new object[] { PrismModuleType.Vision, PrismModuleType.Prospecting, PrismModuleType.Crafting, PrismModuleType.GuardBoost });
-            colType.Name = "colType";
+       
             // 
             // colLevel
             // 
-            colLevel.HeaderText = "Level";
+               colType.HeaderText = "Type";
+  colType.Items.AddRange(Enum.GetValues(typeof(PrismModuleType)).Cast<object>().ToArray());
+            var colLevel = new DataGridViewTextBoxColumn();
             colLevel.Name = "colLevel";
+            colLevel.HeaderText = "Level";
+           
             // 
             // nudAreaX
             // 

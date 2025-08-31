@@ -36,6 +36,8 @@ internal static class PrismService
             Level = player.Level,
             MaxHp = maxHp,
             Hp = maxHp,
+            LastHitAt = null,
+            CurrentBattleId = null,
         };
 
         map.ControllingPrism = prism;

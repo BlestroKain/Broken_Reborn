@@ -361,11 +361,16 @@ internal static class Bootstrapper
                 Id = prism.Id,
                 MapId = prism.MapId,
                 Faction = (int)prism.Owner,
+                State = prism.State,
                 X = prism.X,
                 Y = prism.Y,
+                PlacedAt = prism.PlacedAt,
+                MaturationEndsAt = prism.MaturationEndsAt,
                 Level = prism.Level,
                 Hp = prism.Hp,
+                LastHitAt = prism.LastHitAt,
                 MaxHp = prism.MaxHp,
+                CurrentBattleId = prism.CurrentBattleId,
                 Windows = prism.Windows
                     .Select(w => new VulnerabilityWindow { Day = w.Day, Start = w.Start, End = w.End })
                     .ToList(),

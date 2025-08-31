@@ -165,6 +165,12 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
         {
             var jsonOptions = new JsonSerializerOptions();
 
+            entity.Property(p => p.State);
+            entity.Property(p => p.PlacedAt);
+            entity.Property(p => p.MaturationEndsAt);
+            entity.Property(p => p.LastHitAt);
+            entity.Property(p => p.CurrentBattleId);
+
             entity.Property(p => p.Windows)
                 .HasConversion(
                     v => JsonSerializer.Serialize(v, jsonOptions),

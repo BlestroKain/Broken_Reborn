@@ -110,6 +110,7 @@ public partial class GameInterface : MutableInterface
 
     public PlayerStatusWindow PlayerStatusWindow;
 
+
     private SettingsWindow GetOrCreateSettingsWindow()
     {
         _settingsWindow ??= new SettingsWindow(GameCanvas)
@@ -159,6 +160,7 @@ public partial class GameInterface : MutableInterface
     }
 
     public MenuContainer GameMenu { get; private set; }
+
 
     public void InitGameGui()
     {

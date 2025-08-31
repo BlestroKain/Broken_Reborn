@@ -863,6 +863,20 @@ public static partial class CommandPrinter
             : Strings.EventCommandList.female);
     }
 
+    private static string GetCommandText(SetAlignmentCommand command, MapInstance map)
+    {
+        var faction = command.Desired switch
+        {
+            Factions.Neutral => Strings.EventCommandList.neutral.ToString(),
+            Factions.Serolf => Strings.EventCommandList.serolf.ToString(),
+            Factions.Nidraj => Strings.EventCommandList.nidraj.ToString(),
+            _ => Strings.EventCommandList.neutral.ToString(),
+        };
+
+        return
+            $"Set Alignment → {faction} (ignoreCooldown={command.IgnoreCooldown}, ignoreGuildLock={command.IgnoreGuildLock})";
+    }
+
     private static string GetCommandText(SetAccessCommand command, MapInstance map)
     {
         switch (command.Access)

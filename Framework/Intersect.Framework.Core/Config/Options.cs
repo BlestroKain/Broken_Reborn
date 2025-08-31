@@ -224,6 +224,9 @@ public partial record Options
 
     public ItemOptions Items { get; set; } = new();
 
+    public AlignmentOptions Alignment { get; set; } = new();
+
+
     #endregion Other Game Properties
 
     #endregion Configuration Properties
@@ -266,6 +269,7 @@ public partial record Options
         instance.FixAnimatedSprites();
 
         SaveToDisk();
+
 
         return true;
     }
@@ -316,6 +320,7 @@ public partial record Options
             var loadedOptions = JsonConvert.DeserializeObject<Options>(data, PublicSerializerSettings);
             Instance = loadedOptions;
             OptionsLoaded?.Invoke(loadedOptions);
+
         }
         catch (Exception exception)
         {

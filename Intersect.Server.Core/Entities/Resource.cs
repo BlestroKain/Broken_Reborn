@@ -12,6 +12,8 @@ using Intersect.Server.Framework.Items;
 using Intersect.Server.Maps;
 using Intersect.Server.Networking;
 using Intersect.Utilities;
+using Intersect.Server.Core;
+using System.Linq;
 
 namespace Intersect.Server.Entities;
 
@@ -183,6 +185,8 @@ public partial class Resource : Entity
             selectedTile ??= tiles[Randomization.Next(0, tiles.Count)];
 
             var itemSource = AsItemSource();
+            var player = killer as Player;
+            
 
             // Drop items
             foreach (var item in Items)
@@ -192,12 +196,14 @@ public partial class Resource : Entity
                     var mapId = selectedTile.GetMapId();
                     if (MapController.TryGetInstanceFromMap(mapId, MapInstanceId, out var mapInstance))
                     {
+                        var quantity = item.Quantity;
+                      
                         mapInstance.SpawnItem(
                             itemSource,
                             selectedTile.GetX(),
                             selectedTile.GetY(),
                             item,
-                            item.Quantity,
+                            quantity,
                             killer.Id
                         );
                     }

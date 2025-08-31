@@ -74,4 +74,16 @@ public partial class PlayerEntityPacket : EntityPacket
 
     [Key(42)]
     public int SpellPoints { get; set; }
+
+    [Key(43)]
+    public Factions Faction { get; set; }
+
+    [Key(44)]
+    public WingState Wings { get; set; }
+
+    [Key(45)]
+    public int Honor { get; set; }
+
+    [Key(46)]
+    public int Grade { get; set; }
 }

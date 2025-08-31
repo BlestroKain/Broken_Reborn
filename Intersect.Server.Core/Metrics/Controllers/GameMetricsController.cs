@@ -26,6 +26,7 @@ public partial class GameMetricsController : MetricsController
 
     public Histogram MapTotalUpdateTime { get; private set; }
 
+
     public GameMetricsController() : base(CONTEXT)
     {
         Cps = new Histogram(nameof(Cps), this);

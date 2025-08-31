@@ -2002,6 +2002,20 @@ public partial class Player : Entity
                 return friendly;
             }
 
+            if (!friendly)
+            {
+                var (ok, reason) = AlignmentPvPService.CanEngage(this, player);
+                if (!ok)
+                {
+                    if (!string.IsNullOrEmpty(reason))
+                    {
+                        PacketSender.SendChatMsg(this, reason, ChatMessageType.Error);
+                    }
+
+                    return false;
+                }
+            }
+
             // Only count safe zones and friendly fire if its a dangerous spell! (If one has been used)
             // Projectiles are ignored here, because we can always fire those.. Whether they hit or not is a problem for later.
             if (!friendly && (spell?.Combat?.TargetType != SpellTargetType.Self && spell?.Combat?.TargetType != SpellTargetType.AoE && spell?.SpellType == SpellType.CombatSpell))

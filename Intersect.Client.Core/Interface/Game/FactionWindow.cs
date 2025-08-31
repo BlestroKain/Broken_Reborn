@@ -28,6 +28,7 @@ public sealed class FactionWindow : Window
     private readonly Label _factionLabel;
     private readonly Label _honorLabel;
     private readonly Label _gradeLabel;
+    private readonly Label _cooldownLabel;
     private readonly Button _wingsButton;
     // Honor bar
     private readonly Base _honorBarBg;
@@ -124,6 +125,15 @@ public sealed class FactionWindow : Window
         };
         _gradeLabel.SetPosition(0, y);
         _gradeLabel.SetSize(content.Width, RowHMedium);
+        y += RowHMedium + 4;
+
+        _cooldownLabel = new Label(content, "CooldownLabel")
+        {
+            Text = string.Empty,
+            TextColor = Color.FromArgb(210, 210, 210)
+        };
+        _cooldownLabel.SetPosition(0, y);
+        _cooldownLabel.SetSize(content.Width, RowHMedium);
         y += RowHMedium + 6;
 
         // Botón Wings
@@ -168,6 +178,16 @@ public sealed class FactionWindow : Window
 
         var grade = (FactionGrade)Math.Clamp(me.Grade, 0, (int)FactionGrade.Legend);
         _gradeLabel.Text = $"Grado: {grade}";
+
+        if (me.NextFactionChangeAt.HasValue)
+        {
+            _cooldownLabel.Text = $"Próximo cambio: {me.NextFactionChangeAt:dd/MM HH:mm}";
+            _cooldownLabel.Show();
+        }
+        else
+        {
+            _cooldownLabel.Hide();
+        }
 
         LayoutHonorBar(me.Honor);
         UpdateWingsButton(me.Wings);

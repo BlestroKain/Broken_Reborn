@@ -74,6 +74,8 @@ public partial class Player : Entity, IPlayer
 
     public DateTime LastFactionSwapAt { get; set; }
 
+    public DateTime? NextFactionChangeAt { get; set; }
+
     IReadOnlyList<IFriendInstance> IPlayer.Friends => Friends;
 
     public List<IFriendInstance> Friends { get; set; } = [];

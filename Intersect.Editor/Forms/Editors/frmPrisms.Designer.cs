@@ -22,8 +22,10 @@ namespace Intersect.Editor.Forms.Editors
         private DarkNumericUpDown nudAreaW;
         private DarkNumericUpDown nudAreaH;
         private DarkButton btnAdd;
+        private DarkButton btnDuplicate;
         private DarkButton btnDelete;
         private DarkButton btnSave;
+        private DarkButton btnRevert;
         private DarkButton btnWindowAdd;
         private DarkButton btnWindowEdit;
         private DarkButton btnWindowDelete;
@@ -83,8 +85,10 @@ namespace Intersect.Editor.Forms.Editors
             nudAreaW = new DarkNumericUpDown();
             nudAreaH = new DarkNumericUpDown();
             btnAdd = new DarkButton();
+            btnDuplicate = new DarkButton();
             btnDelete = new DarkButton();
             btnSave = new DarkButton();
+            btnRevert = new DarkButton();
             btnWindowAdd = new DarkButton();
             btnWindowEdit = new DarkButton();
             btnWindowDelete = new DarkButton();
@@ -318,37 +322,59 @@ namespace Intersect.Editor.Forms.Editors
             nudAreaH.Value = new decimal(new int[] { 0, 0, 0, 0 });
             // 
             // btnAdd
-            // 
+            //
             btnAdd.Location = new System.Drawing.Point(12, 475);
             btnAdd.Margin = new Padding(4, 3, 4, 3);
             btnAdd.Name = "btnAdd";
             btnAdd.Padding = new Padding(6);
             btnAdd.Size = new Size(70, 27);
             btnAdd.TabIndex = 21;
-            btnAdd.Text = "Add";
+            btnAdd.Text = "New";
             btnAdd.Click += btnAdd_Click;
-            // 
+            //
+            // btnDuplicate
+            //
+            btnDuplicate.Location = new System.Drawing.Point(93, 475);
+            btnDuplicate.Margin = new Padding(4, 3, 4, 3);
+            btnDuplicate.Name = "btnDuplicate";
+            btnDuplicate.Padding = new Padding(6);
+            btnDuplicate.Size = new Size(70, 27);
+            btnDuplicate.TabIndex = 22;
+            btnDuplicate.Text = "Duplicate";
+            btnDuplicate.Click += btnDuplicate_Click;
+            //
             // btnDelete
-            // 
-            btnDelete.Location = new System.Drawing.Point(93, 475);
+            //
+            btnDelete.Location = new System.Drawing.Point(174, 475);
             btnDelete.Margin = new Padding(4, 3, 4, 3);
             btnDelete.Name = "btnDelete";
             btnDelete.Padding = new Padding(6);
             btnDelete.Size = new Size(70, 27);
-            btnDelete.TabIndex = 22;
+            btnDelete.TabIndex = 23;
             btnDelete.Text = "Delete";
             btnDelete.Click += btnDelete_Click;
-            // 
+            //
             // btnSave
-            // 
-            btnSave.Location = new System.Drawing.Point(175, 475);
+            //
+            btnSave.Location = new System.Drawing.Point(255, 475);
             btnSave.Margin = new Padding(4, 3, 4, 3);
             btnSave.Name = "btnSave";
             btnSave.Padding = new Padding(6);
             btnSave.Size = new Size(70, 27);
-            btnSave.TabIndex = 23;
+            btnSave.TabIndex = 24;
             btnSave.Text = "Save";
             btnSave.Click += btnSave_Click;
+            //
+            // btnRevert
+            //
+            btnRevert.Location = new System.Drawing.Point(336, 475);
+            btnRevert.Margin = new Padding(4, 3, 4, 3);
+            btnRevert.Name = "btnRevert";
+            btnRevert.Padding = new Padding(6);
+            btnRevert.Size = new Size(70, 27);
+            btnRevert.TabIndex = 25;
+            btnRevert.Text = "Revert";
+            btnRevert.Click += btnRevert_Click;
             // 
             // btnWindowAdd
             // 
@@ -753,7 +779,9 @@ namespace Intersect.Editor.Forms.Editors
             ClientSize = new Size(997, 579);
             Controls.Add(toolStrip);
             Controls.Add(btnSave);
+            Controls.Add(btnRevert);
             Controls.Add(btnDelete);
+            Controls.Add(btnDuplicate);
             Controls.Add(btnAdd);
             Controls.Add(mapPicker);
             Controls.Add(grpVisual);

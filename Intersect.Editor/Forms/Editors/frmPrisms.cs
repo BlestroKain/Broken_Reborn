@@ -18,6 +18,8 @@ public partial class FrmPrisms : Form
 {
     private const int MaxModules = 3;
     private List<PrismDescriptor> _sortedPrisms = new();
+    private bool _dirty;
+
     public FrmPrisms()
     {
         InitializeComponent();
@@ -29,6 +31,7 @@ public partial class FrmPrisms : Form
         nudY.Maximum = Options.Instance.Map.MapHeight - 1;
         nudX.ValueChanged += NudXY_ValueChanged;
         nudY.ValueChanged += NudXY_ValueChanged;
+
         cmbIdleAnimation.Items.Clear();
         cmbVulnerableAnimation.Items.Clear();
         cmbUnderAttackAnimation.Items.Clear();
@@ -39,7 +42,36 @@ public partial class FrmPrisms : Form
         cmbIdleAnimation.Items.AddRange(animNames);
         cmbVulnerableAnimation.Items.AddRange(animNames);
         cmbUnderAttackAnimation.Items.AddRange(animNames);
+
+        // Hook dirty events
+        txtMapId.TextChanged += MarkDirty;
+        nudX.ValueChanged += MarkDirty;
+        nudY.ValueChanged += MarkDirty;
+        nudLevel.ValueChanged += MarkDirty;
+        nudAreaX.ValueChanged += MarkDirty;
+        nudAreaY.ValueChanged += MarkDirty;
+        nudAreaW.ValueChanged += MarkDirty;
+        nudAreaH.ValueChanged += MarkDirty;
+        cmbIdleAnimation.SelectedIndexChanged += MarkDirty;
+        cmbVulnerableAnimation.SelectedIndexChanged += MarkDirty;
+        cmbUnderAttackAnimation.SelectedIndexChanged += MarkDirty;
+        chkTintByFaction.CheckedChanged += MarkDirty;
+        nudSpriteOffsetY.ValueChanged += MarkDirty;
+        dgvWindows.CellValueChanged += (_, _) => MarkDirty(null, EventArgs.Empty);
+        dgvWindows.RowsRemoved += (_, _) => MarkDirty(null, EventArgs.Empty);
+        dgvWindows.RowsAdded += (_, _) => MarkDirty(null, EventArgs.Empty);
+        dgvModules.CellValueChanged += (_, _) => MarkDirty(null, EventArgs.Empty);
+        dgvModules.RowsRemoved += (_, _) => MarkDirty(null, EventArgs.Empty);
+        dgvModules.RowsAdded += (_, _) => MarkDirty(null, EventArgs.Empty);
+
         LoadList();
+    }
+
+    private void MarkDirty(object? sender, EventArgs e)
+    {
+        _dirty = true;
+        btnSave.Enabled = true;
+        btnRevert.Enabled = true;
     }
 
     private void LoadList()
@@ -112,6 +144,9 @@ public partial class FrmPrisms : Form
         cmbUnderAttackAnimation.SelectedIndex = AnimationDescriptor.ListIndex(p.UnderAttackAnimationId ?? Guid.Empty) + 1;
         chkTintByFaction.Checked = p.TintByFaction;
         nudSpriteOffsetY.Value = p.SpriteOffsetY;
+        _dirty = false;
+        btnSave.Enabled = false;
+        btnRevert.Enabled = false;
     }
 
     private void btnAdd_Click(object sender, EventArgs e)
@@ -120,6 +155,7 @@ public partial class FrmPrisms : Form
         PrismConfig.Prisms.Add(prism);
         LoadList();
         lstPrisms.SelectedIndex = _sortedPrisms.IndexOf(prism);
+        MarkDirty(null, EventArgs.Empty);
     }
 
     private void btnDelete_Click(object sender, EventArgs e)
@@ -132,6 +168,7 @@ public partial class FrmPrisms : Form
 
         PrismConfig.Prisms.Remove(p);
         LoadList();
+        MarkDirty(null, EventArgs.Empty);
     }
 
     private void btnSave_Click(object sender, EventArgs e)
@@ -280,10 +317,41 @@ public partial class FrmPrisms : Form
         {
             lstPrisms.SelectedIndex = index;
         }
+        _dirty = false;
+        btnSave.Enabled = false;
+        btnRevert.Enabled = false;
+    }
+
+    private void btnDuplicate_Click(object sender, EventArgs e)
+    {
+        var p = SelectedPrism;
+        if (p == null)
+        {
+            return;
+        }
+
+        var json = Newtonsoft.Json.JsonConvert.SerializeObject(p);
+        var copy = Newtonsoft.Json.JsonConvert.DeserializeObject<PrismDescriptor>(json);
+        if (copy == null)
+        {
+            return;
+        }
+
+        copy.Id = Guid.NewGuid();
+        PrismConfig.Prisms.Add(copy);
+        LoadList();
+        lstPrisms.SelectedIndex = _sortedPrisms.IndexOf(copy);
+        MarkDirty(null, EventArgs.Empty);
+    }
+
+    private void btnRevert_Click(object sender, EventArgs e)
+    {
+        LoadSelected();
     }
     private void btnWindowAdd_Click(object sender, EventArgs e)
     {
         dgvWindows.Rows.Add(DayOfWeek.Monday, "00:00", "01:00");
+        MarkDirty(null, EventArgs.Empty);
     }
 
     private void btnWindowEdit_Click(object sender, EventArgs e)
@@ -303,11 +371,13 @@ public partial class FrmPrisms : Form
                 dgvWindows.Rows.Remove(row);
             }
         }
+        MarkDirty(null, EventArgs.Empty);
     }
 
     private void btnModuleAdd_Click(object sender, EventArgs e)
     {
         dgvModules.Rows.Add(PrismModuleType.Vision, 1);
+        MarkDirty(null, EventArgs.Empty);
     }
 
     private void btnModuleDelete_Click(object sender, EventArgs e)
@@ -319,6 +389,7 @@ public partial class FrmPrisms : Form
                 dgvModules.Rows.Remove(row);
             }
         }
+        MarkDirty(null, EventArgs.Empty);
     }
 
     private void btnAreaSelect_Click(object sender, EventArgs e)
@@ -338,6 +409,7 @@ public partial class FrmPrisms : Form
         {
             nudAreaX.Value = selector.GetX();
             nudAreaY.Value = selector.GetY();
+            MarkDirty(null, EventArgs.Empty);
         }
     }
 
@@ -372,6 +444,7 @@ public partial class FrmPrisms : Form
             nudY.Value = Math.Max(nudY.Minimum, Math.Min(nudY.Maximum, y));
 
             mapPicker.SelectTile(pickedMap, x, y);
+            MarkDirty(null, EventArgs.Empty);
         }
     }
 
@@ -386,6 +459,7 @@ public partial class FrmPrisms : Form
 
         ApplyMapBounds(mapId);
         mapPicker.SelectTile(mapId, (int)nudX.Value, (int)nudY.Value);
+        MarkDirty(null, EventArgs.Empty);
     }
 
     private void ApplyMapBounds(Guid mapId)
@@ -403,5 +477,6 @@ public partial class FrmPrisms : Form
         ApplyMapBounds(mapId);
         nudX.Value = Math.Max(nudX.Minimum, Math.Min(nudX.Maximum, x));
         nudY.Value = Math.Max(nudY.Minimum, Math.Min(nudY.Maximum, y));
+        MarkDirty(null, EventArgs.Empty);
     }
 }

@@ -51,11 +51,17 @@ public partial class MinimapOptions
     /// Configures which map layers the minimap will render.
     /// </summary>
     public List<string> RenderLayers { get; set; } = [
+     
         "Ground",
         "Mask 1",
         "Mask 2",
+        "Mask 3",
+        "Mask 4",
         "Fringe 1",
         "Fringe 2",
+        "Fringe 3",
+              "Fringe 4",
+        "Fringe 5"
     ];
 
     [OnDeserializing]
@@ -70,11 +76,16 @@ public partial class MinimapOptions
         if (RenderLayers.Count == 0)
         {
             RenderLayers.AddRange([
-                "Ground",
-                "Mask 1",
-                "Mask 2",
-                "Fringe 1",
-                "Fringe 2",
+               "Ground",
+        "Mask 1",
+        "Mask 2",
+        "Mask 3",
+        "Mask 4",
+        "Fringe 1",
+        "Fringe 2",
+        "Fringe 3",
+              "Fringe 4",
+        "Fringe 5"
             ]);
         }
 

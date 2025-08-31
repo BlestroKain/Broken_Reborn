@@ -25,6 +25,10 @@ public class WorldMapWindow
     private float _zoom = 1f;
     private const float MinZoom = 0.25f;
     private const float MaxZoom = 4f;
+    private readonly int _baseWidth;
+    private readonly int _baseHeight;
+    private DateTime _lastWheelTime = DateTime.MinValue;
+    private static readonly TimeSpan WheelDebounce = TimeSpan.FromMilliseconds(125);
 
     private bool _dragging;
     private Point _dragOrigin;
@@ -46,15 +50,19 @@ public class WorldMapWindow
         _window.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
 
         // Apply stored preferences for zoom and position.
-        var baseWidth = _canvas.Width;
-        var baseHeight = _canvas.Height;
+        _baseWidth = _canvas.Width;
+        _baseHeight = _canvas.Height;
         _zoom = Math.Clamp(MapPreferences.Instance.WorldMapZoom, MinZoom, MaxZoom);
         _canvas.SetBounds(
             MapPreferences.Instance.WorldMapPosition.X,
             MapPreferences.Instance.WorldMapPosition.Y,
-            (int)(baseWidth * _zoom),
-            (int)(baseHeight * _zoom)
+            (int)(_baseWidth * _zoom),
+            (int)(_baseHeight * _zoom)
         );
+        ClampPosition();
+        MapPreferences.Instance.WorldMapZoom = _zoom;
+        MapPreferences.Instance.WorldMapPosition = new Point(_canvas.X, _canvas.Y);
+        MapPreferences.Save();
     }
 
     private void OnMapClicked(Point pos)
@@ -80,8 +88,16 @@ public class WorldMapWindow
     internal void EndDrag()
     {
         _dragging = false;
+        ClampPosition();
         MapPreferences.Instance.WorldMapPosition = new Point(_canvas.X, _canvas.Y);
         MapPreferences.Save();
+    }
+
+    private int ClampX(int x) => Math.Clamp(x, _window.Width - (int)(_baseWidth * _zoom), 0);
+    private int ClampY(int y) => Math.Clamp(y, _window.Height - (int)(_baseHeight * _zoom), 0);
+    private void ClampPosition()
+    {
+        _canvas.SetPosition(ClampX(_canvas.X), ClampY(_canvas.Y));
     }
 
     internal void DragBy(int dx, int dy)
@@ -90,20 +106,32 @@ public class WorldMapWindow
         {
             return;
         }
-
-        _canvas.SetPosition(_canvasOrigin.X + dx, _canvasOrigin.Y + dy);
+        var targetX = ClampX(_canvasOrigin.X + dx);
+        var targetY = ClampY(_canvasOrigin.Y + dy);
+        var newX = (int)(_canvas.X + (targetX - _canvas.X) * 0.2f);
+        var newY = (int)(_canvas.Y + (targetY - _canvas.Y) * 0.2f);
+        _canvas.SetPosition(newX, newY);
+        ClampPosition();
     }
 
     internal void Zoom(int delta, int x, int y)
     {
+        var now = DateTime.UtcNow;
+        if (now - _lastWheelTime < WheelDebounce)
+        {
+            return;
+        }
+        _lastWheelTime = now;
+
         var oldZoom = _zoom;
+        var step = Options.Instance.Minimap.ZoomStep / 100f;
         if (delta > 0)
         {
-            _zoom = Math.Min(MaxZoom, _zoom + 0.1f);
+            _zoom = Math.Clamp(_zoom + step, MinZoom, MaxZoom);
         }
         else if (delta < 0)
         {
-            _zoom = Math.Max(MinZoom, _zoom - 0.1f);
+            _zoom = Math.Clamp(_zoom - step, MinZoom, MaxZoom);
         }
 
         if (Math.Abs(_zoom - oldZoom) < 0.001f)
@@ -112,16 +140,16 @@ public class WorldMapWindow
         }
 
         var scale = _zoom / oldZoom;
-        var newWidth = (int)(_canvas.Width * scale);
-        var newHeight = (int)(_canvas.Height * scale);
         var relX = x - _canvas.X;
         var relY = y - _canvas.Y;
-        _canvas.SetBounds(
-            _canvas.X - (int)(relX * (scale - 1f)),
-            _canvas.Y - (int)(relY * (scale - 1f)),
-            newWidth,
-            newHeight
-        );
+        var newWidth = (int)(_baseWidth * _zoom);
+        var newHeight = (int)(_baseHeight * _zoom);
+        var newX = _canvas.X - (int)(relX * (scale - 1f));
+        var newY = _canvas.Y - (int)(relY * (scale - 1f));
+
+        _canvas.SetBounds(newX, newY, newWidth, newHeight);
+        ClampPosition();
+
         MapPreferences.Instance.WorldMapZoom = _zoom;
         MapPreferences.Instance.WorldMapPosition = new Point(_canvas.X, _canvas.Y);
         MapPreferences.Save();

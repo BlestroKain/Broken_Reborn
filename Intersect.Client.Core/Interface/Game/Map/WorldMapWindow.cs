@@ -9,6 +9,7 @@ using Intersect.Client.Framework.Gwen.Control.EventArguments;
 using Intersect.Client.Interface.Game.Map;
 using Intersect;
 using Intersect.Client.Framework.Input;
+using Intersect.Config;
 
 namespace Intersect.Client.Interface.Game.Map;
 
@@ -43,7 +44,28 @@ public class WorldMapWindow
         _canvas = new MapCanvas(this, _window, "MapImage");
         _legend = new MapLegend(_window);
         _filters = new MapFilters(_window);
+        _filters.AddFilter(JobType.Lumberjack.ToString(), "Madera");
+        _filters.AddFilter(JobType.Mining.ToString(), "Mina");
+        _filters.AddFilter(JobType.Farming.ToString(), "Hierbas");
+        _filters.AddFilter(JobType.Fishing.ToString(), "Pesca");
         _filters.SearchSubmitted += OnSearchSubmitted;
+        var colors = Options.Instance.Minimap.MinimapColors.Resource;
+        if (colors.TryGetValue(JobType.Lumberjack, out var lumberjackColor))
+        {
+            _legend.AddEntry("Madera", lumberjackColor);
+        }
+        if (colors.TryGetValue(JobType.Mining, out var miningColor))
+        {
+            _legend.AddEntry("Mina", miningColor);
+        }
+        if (colors.TryGetValue(JobType.Farming, out var farmingColor))
+        {
+            _legend.AddEntry("Hierbas", farmingColor);
+        }
+        if (colors.TryGetValue(JobType.Fishing, out var fishingColor))
+        {
+            _legend.AddEntry("Pesca", fishingColor);
+        }
 
         _tooltip = new Label(_window, "Tooltip");
         _tooltip.IsHidden = true;

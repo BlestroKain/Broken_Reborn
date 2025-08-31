@@ -44,6 +44,17 @@ public class WorldMapWindow
         _waypoint.IsHidden = true;
 
         _window.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+
+        // Apply stored preferences for zoom and position.
+        var baseWidth = _canvas.Width;
+        var baseHeight = _canvas.Height;
+        _zoom = Math.Clamp(MapPreferences.Instance.WorldMapZoom, MinZoom, MaxZoom);
+        _canvas.SetBounds(
+            MapPreferences.Instance.WorldMapPosition.X,
+            MapPreferences.Instance.WorldMapPosition.Y,
+            (int)(baseWidth * _zoom),
+            (int)(baseHeight * _zoom)
+        );
     }
 
     private void OnMapClicked(Point pos)
@@ -69,6 +80,8 @@ public class WorldMapWindow
     internal void EndDrag()
     {
         _dragging = false;
+        MapPreferences.Instance.WorldMapPosition = new Point(_canvas.X, _canvas.Y);
+        MapPreferences.Save();
     }
 
     internal void DragBy(int dx, int dy)
@@ -109,6 +122,9 @@ public class WorldMapWindow
             newWidth,
             newHeight
         );
+        MapPreferences.Instance.WorldMapZoom = _zoom;
+        MapPreferences.Instance.WorldMapPosition = new Point(_canvas.X, _canvas.Y);
+        MapPreferences.Save();
     }
 
     private class MapCanvas : ImagePanel

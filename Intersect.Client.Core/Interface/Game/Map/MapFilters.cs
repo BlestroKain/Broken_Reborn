@@ -3,6 +3,7 @@ using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
 
+
 namespace Intersect.Client.Interface.Game.Map;
 
 /// <summary>
@@ -35,6 +36,24 @@ public class MapFilters
     {
         var cb = new Checkbox(_panel) { Text = label, IsChecked = true };
         cb.Dock = Pos.Top;
+
+        // Apply stored preference if available.
+        if (MapPreferences.Instance.ActiveFilters.TryGetValue(key, out var enabled))
+        {
+            cb.IsChecked = enabled;
+        }
+        else
+        {
+            MapPreferences.Instance.ActiveFilters[key] = cb.IsChecked;
+            MapPreferences.Save();
+        }
+
+        cb.CheckChanged += (_, args) =>
+        {
+            MapPreferences.Instance.ActiveFilters[key] = cb.IsChecked;
+            MapPreferences.Save();
+        };
+
         _filters[key] = cb;
     }
 

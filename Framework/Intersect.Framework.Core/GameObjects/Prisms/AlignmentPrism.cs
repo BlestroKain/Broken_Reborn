@@ -36,6 +36,16 @@ public class AlignmentPrism
 
     public PrismArea Area { get; set; } = new();
 
+    public Guid? IdleAnimationId { get; set; } = Guid.Empty;
+
+    public Guid? VulnerableAnimationId { get; set; } = Guid.Empty;
+
+    public Guid? UnderAttackAnimationId { get; set; } = Guid.Empty;
+
+    public bool TintByFaction { get; set; } = false;
+
+    public int SpriteOffsetY { get; set; } = 0;
+
     public Guid? CurrentBattleId { get; set; }
 }
 

@@ -5,6 +5,7 @@ using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.General;
+using Intersect.Client.Interface;
 using Intersect.Client.Networking;
 using Intersect.Enums;
 
@@ -18,11 +19,12 @@ public partial class FactionWindow : Window
     private readonly Label _honorLabel;
     private readonly Label _gradeLabel;
     private readonly Button _wingsButton;
+    private readonly Button _conquestButton;
 
     public FactionWindow(Canvas gameCanvas) : base(gameCanvas, nameof(FactionWindow), false, nameof(FactionWindow))
     {
         IsResizable = false;
-        SetSize(250, 120);
+        SetSize(250, 150);
 
         _honorLabel = new Label(this, "HonorLabel");
         _honorLabel.SetPosition(10, 10);
@@ -45,6 +47,11 @@ public partial class FactionWindow : Window
             me.Wings = newState;
             PacketSender.SendToggleWings(newState);
         };
+
+        _conquestButton = new Button(this, "ConquestButton");
+        _conquestButton.SetPosition(10, 100);
+        _conquestButton.SetText("Conquest");
+        _conquestButton.Clicked += (s, e) => Interface.GameUi.GameMenu?.ToggleConquestWindow();
     }
 
     /// <summary>

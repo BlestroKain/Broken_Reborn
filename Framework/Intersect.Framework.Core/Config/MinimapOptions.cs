@@ -17,6 +17,26 @@ public partial class MinimapOptions
     /// </summary>
     public Point TileSize { get; set; } = new(8, 8);
 
+    private const float BaseDpi = 96f;
+    private const int MinTileLength = 4;
+    private const int MaxTileLength = 32;
+
+    /// <summary>
+    /// Returns the minimap tile size scaled for the provided DPI and
+    /// clamped to a sensible visible range.
+    /// </summary>
+    public Point GetScaledTileSize(float dpi)
+    {
+        var scale = dpi / BaseDpi;
+        var scaledX = (int)MathF.Round(TileSize.X * scale);
+        var scaledY = (int)MathF.Round(TileSize.Y * scale);
+
+        scaledX = Math.Clamp(scaledX, MinTileLength, MaxTileLength);
+        scaledY = Math.Clamp(scaledY, MinTileLength, MaxTileLength);
+
+        return new Point(scaledX, scaledY);
+    }
+
     /// <summary>
     /// Configures the minimum zoom level (0 - 100)
     /// </summary>

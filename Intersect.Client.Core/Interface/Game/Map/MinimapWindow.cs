@@ -70,6 +70,11 @@ namespace Intersect.Client.Interface.Game.Map
         }
         public void Show()
         {
+            _zoomLevel = Math.Clamp(
+                MapPreferences.Instance.MinimapZoom,
+                Options.Instance.Minimap.MinimumZoom,
+                Options.Instance.Minimap.MaximumZoom
+            );
             IsHidden = false;
         }
         public bool IsVisible()
@@ -511,13 +516,21 @@ namespace Intersect.Client.Interface.Game.Map
         }
         private void MZoomOutButton_Clicked(Base sender, MouseButtonState arguments)
         {
-            _zoomLevel = Math.Min(_zoomLevel + Options.Instance.Minimap.ZoomStep,
-                Options.Instance.Minimap.MaximumZoom);
+            _zoomLevel = Math.Min(
+                _zoomLevel + Options.Instance.Minimap.ZoomStep,
+                Options.Instance.Minimap.MaximumZoom
+            );
+            MapPreferences.Instance.MinimapZoom = _zoomLevel;
+            MapPreferences.Save();
         }
         private void MZoomInButton_Clicked(Base sender, MouseButtonState arguments)
         {
-            _zoomLevel = Math.Max(_zoomLevel - Options.Instance.Minimap.ZoomStep,
-                Options.Instance.Minimap.MinimumZoom);
+            _zoomLevel = Math.Max(
+                _zoomLevel - Options.Instance.Minimap.ZoomStep,
+                Options.Instance.Minimap.MinimumZoom
+            );
+            MapPreferences.Instance.MinimapZoom = _zoomLevel;
+            MapPreferences.Save();
         }
         private enum MapPosition
         {

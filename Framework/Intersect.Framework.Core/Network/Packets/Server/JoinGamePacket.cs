@@ -17,6 +17,6 @@ public partial class JoinGamePacket : AbstractTimedPacket
         MapDiscovery = discovery;
     }
 
-    [Key(0)]
+    [Key(3)]
     public Dictionary<Guid, byte[]> MapDiscovery { get; set; }
 }

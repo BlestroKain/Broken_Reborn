@@ -14,7 +14,9 @@ namespace Intersect.Client.Maps.Prisms;
 
 public class PrismVisual
 {
-    private readonly PrismDescriptor _info;
+    private readonly Guid _id;
+    private readonly bool _tintByFaction;
+    private readonly int _spriteOffsetY;
     private readonly AnimationDescriptor? _idle;
     private readonly AnimationDescriptor? _vulnerable;
     private readonly AnimationDescriptor? _underAttack;
@@ -22,31 +24,33 @@ public class PrismVisual
     private long _stateStart = Timing.Global.Milliseconds;
     private FloatRect _bounds;
 
-    public PrismVisual(PrismDescriptor info)
+    public PrismVisual(PrismDescriptor descriptor)
     {
-        _info = info;
-        if (info.IdleAnimationId.HasValue && info.IdleAnimationId != Guid.Empty)
+        _id = descriptor.Id;
+        _tintByFaction = descriptor.TintByFaction;
+        _spriteOffsetY = descriptor.SpriteOffsetY;
+        if (descriptor.IdleAnimationId.HasValue && descriptor.IdleAnimationId != Guid.Empty)
         {
-            _idle = AnimationDescriptor.Get(info.IdleAnimationId.Value);
+            _idle = AnimationDescriptor.Get(descriptor.IdleAnimationId.Value);
         }
 
-        if (info.VulnerableAnimationId.HasValue && info.VulnerableAnimationId != Guid.Empty)
+        if (descriptor.VulnerableAnimationId.HasValue && descriptor.VulnerableAnimationId != Guid.Empty)
         {
-            _vulnerable = AnimationDescriptor.Get(info.VulnerableAnimationId.Value);
+            _vulnerable = AnimationDescriptor.Get(descriptor.VulnerableAnimationId.Value);
         }
 
-        if (info.UnderAttackAnimationId.HasValue && info.UnderAttackAnimationId != Guid.Empty)
+        if (descriptor.UnderAttackAnimationId.HasValue && descriptor.UnderAttackAnimationId != Guid.Empty)
         {
-            _underAttack = AnimationDescriptor.Get(info.UnderAttackAnimationId.Value);
+            _underAttack = AnimationDescriptor.Get(descriptor.UnderAttackAnimationId.Value);
         }
     }
 
-    public Guid MapId => _info.MapId;
-    public Guid PrismId { get; private set; } = Guid.Empty;
-    public int X => _info.X;
-    public int Y => _info.Y;
-    public bool TintByFaction => _info.TintByFaction;
-    public int SpriteOffsetY => _info.SpriteOffsetY;
+    public Guid Id => _id;
+    public Guid MapId { get; private set; } = Guid.Empty;
+    public int X { get; private set; }
+    public int Y { get; private set; }
+    public bool TintByFaction => _tintByFaction;
+    public int SpriteOffsetY => _spriteOffsetY;
 
     public Factions Owner { get; private set; } = Factions.Neutral;
     public PrismState State { get; private set; } = PrismState.Placed;
@@ -60,9 +64,11 @@ public class PrismVisual
         _ => _idle,
     };
 
-    public void Update(Guid prismId, Factions owner, PrismState state, int hp, int maxHp)
+    public void Update(Guid mapId, int x, int y, Factions owner, PrismState state, int hp, int maxHp)
     {
-        PrismId = prismId;
+        MapId = mapId;
+        X = x;
+        Y = y;
         Owner = owner;
         Hp = hp;
         MaxHp = maxHp;

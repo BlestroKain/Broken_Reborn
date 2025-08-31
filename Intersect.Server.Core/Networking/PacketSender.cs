@@ -195,8 +195,10 @@ public static partial class PacketSender
                     var nextStart = PrismService.GetNextVulnerabilityStart(prism, DateTime.UtcNow);
                     prisms.Add(
                         new PrismUpdatePacket(
-                            prism.MapId,
                             prism.Id,
+                            prism.MapId,
+                            prism.Pos.X,
+                            prism.Pos.Y,
                             prism.Owner,
                             prism.State,
                             prism.Hp,

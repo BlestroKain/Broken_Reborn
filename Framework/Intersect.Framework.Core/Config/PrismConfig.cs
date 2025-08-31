@@ -35,6 +35,7 @@ public static class PrismConfig
         {
             Prisms = new();
             Save();
+            PrismDescriptorStore.Load(Prisms);
             ApplicationContext.Context.Value?.Logger.LogInformation(
                 "Created prism configuration at {PrismPath}",
                 PrismPath
@@ -52,6 +53,8 @@ public static class PrismConfig
         {
             Prisms = JsonConvert.DeserializeObject<List<PrismDescriptor>>(json) ?? new();
         }
+
+        PrismDescriptorStore.Load(Prisms);
     }
 
     /// <summary>

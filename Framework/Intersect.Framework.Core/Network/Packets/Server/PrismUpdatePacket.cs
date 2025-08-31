@@ -1,6 +1,5 @@
 using System;
 using Intersect.Enums;
-using Intersect.Framework.Core.GameObjects.Prisms;
 using MessagePack;
 
 namespace Intersect.Network.Packets.Server;
@@ -14,42 +13,52 @@ public partial class PrismUpdatePacket : IntersectPacket
     }
 
     public PrismUpdatePacket(
+        Guid id,
         Guid mapId,
-        Guid prismId,
+        int x,
+        int y,
         Factions owner,
         PrismState state,
         int hp,
         int maxHp,
-        DateTime? nextVulnerabilityStart
+        DateTime? nextWindow
     )
     {
+        Id = id;
         MapId = mapId;
-        PrismId = prismId;
+        X = x;
+        Y = y;
         Owner = owner;
         State = state;
         Hp = hp;
         MaxHp = maxHp;
-        NextVulnerabilityStart = nextVulnerabilityStart;
+        NextWindow = nextWindow;
     }
 
     [Key(0)]
-    public Guid MapId { get; set; }
+    public Guid Id { get; set; }
 
     [Key(1)]
-    public Guid PrismId { get; set; }
+    public Guid MapId { get; set; }
 
     [Key(2)]
-    public Factions Owner { get; set; }
+    public int X { get; set; }
 
     [Key(3)]
-    public PrismState State { get; set; }
+    public int Y { get; set; }
 
     [Key(4)]
-    public int Hp { get; set; }
+    public Factions Owner { get; set; }
 
     [Key(5)]
-    public int MaxHp { get; set; }
+    public PrismState State { get; set; }
 
     [Key(6)]
-    public DateTime? NextVulnerabilityStart { get; set; }
+    public int Hp { get; set; }
+
+    [Key(7)]
+    public int MaxHp { get; set; }
+
+    [Key(8)]
+    public DateTime? NextWindow { get; set; }
 }

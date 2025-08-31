@@ -354,6 +354,10 @@ public static partial class Input
                             _ = Interface.Interface.GameUi.GameMenu?.ToggleGuildWindow();
                             break;
 
+                        case Control.OpenMinimap:
+                            Interface.Interface.GameUi.GameMenu?.ToggleMinimapWindow();
+                            break;
+
                         case Control.TargetParty1:
                             Globals.Me?.TargetPartyMember(0);
                             break;

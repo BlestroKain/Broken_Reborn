@@ -15,7 +15,7 @@ public static class PrismConfig
     /// <summary>
     ///     Collection of configured prisms.
     /// </summary>
-    public static List<AlignmentPrism> Prisms { get; private set; } = new();
+    public static List<PrismDescriptor> Prisms { get; private set; } = new();
 
     private static string PrismPath => Path.Combine(Options.ResourcesDirectory, "Config", "prisms.json");
 
@@ -23,7 +23,7 @@ public static class PrismConfig
     {
         public int Version { get; set; } = 1;
 
-        public List<AlignmentPrism> Prisms { get; set; } = new();
+        public List<PrismDescriptor> Prisms { get; set; } = new();
     }
 
     /// <summary>
@@ -50,7 +50,7 @@ public static class PrismConfig
         }
         else
         {
-            Prisms = JsonConvert.DeserializeObject<List<AlignmentPrism>>(json) ?? new();
+            Prisms = JsonConvert.DeserializeObject<List<PrismDescriptor>>(json) ?? new();
         }
     }
 

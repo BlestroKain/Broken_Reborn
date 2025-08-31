@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Intersect.Client.Core;
+using Intersect.Client.Core.Controllers;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Input;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
+using Intersect.Client.Framework.GenericClasses;
 using Intersect.Client.Interface.Game.Map;
 using Intersect;
 using Intersect.Client.Framework.Input;
@@ -13,6 +15,7 @@ using Intersect.Client.General;
 using Intersect.Client.Networking;
 using Intersect.Client.Framework.GenericClasses;
 using Intersect.Enums;
+
 
 namespace Intersect.Client.Interface.Game.Map;
 
@@ -74,9 +77,7 @@ public class WorldMapWindow
 
     private void OnMapClicked(Point pos)
     {
-        _tooltip.Text = $"{pos.X}, {pos.Y}";
-        _tooltip.SetPosition(pos.X + 5, pos.Y + 5);
-        _tooltip.IsHidden = false;
+        _tooltip.IsHidden = true;
     }
 
     private void OnMapDoubleClicked(Point pos)
@@ -188,25 +189,28 @@ public class WorldMapWindow
         }
         _searchHighlights.Clear();
 
-        var results = _filters.Search(query).ToList();
+        var results = _filters.Search(query)
+            .Where(r => r.NpcId == null || BestiaryController.HasUnlock(r.NpcId.Value, BestiaryUnlock.Kill))
+            .ToList();
         if (results.Count == 0)
         {
             return;
         }
 
         var first = results[0];
-        CenterOn(first.Position);
+        var center = new Point(first.Area.X + first.Area.Width / 2, first.Area.Y + first.Area.Height / 2);
+        CenterOn(center);
 
         _tooltip.Text = first.Name;
-        _tooltip.SetPosition(first.Position.X + 5, first.Position.Y + 5);
+        _tooltip.SetPosition(center.X + 5, center.Y + 5);
         _tooltip.IsHidden = false;
 
         foreach (var result in results)
         {
-            var circle = new ImagePanel(_canvas, "SearchHighlight");
-            circle.SetBounds(result.Position.X - 8, result.Position.Y - 8, 16, 16);
-            circle.IsHidden = false;
-            _searchHighlights.Add(circle);
+            var area = new ImagePanel(_canvas, "SearchHighlight");
+            area.SetBounds(result.Area.X, result.Area.Y, result.Area.Width, result.Area.Height);
+            area.IsHidden = false;
+            _searchHighlights.Add(area);
         }
     }
 

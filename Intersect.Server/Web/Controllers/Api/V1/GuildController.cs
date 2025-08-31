@@ -13,6 +13,7 @@ using Intersect.Server.Web.Types.Guild;
 using Intersect.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace Intersect.Server.Web.Controllers.Api.V1
 {
@@ -38,6 +39,34 @@ namespace Intersect.Server.Web.Controllers.Api.V1
             limit = Math.Max(Math.Min(limit, pageSize), 1);
 
             var values = Guild.List(search?.Length > 2 ? search : null, sortBy, sortDirection, page * pageSize, pageSize, out int total);
+
+            if (limit != pageSize)
+            {
+                values = values.Take(limit).ToList();
+            }
+
+            return Ok(new DataPage<KeyValuePair<Guild, int>>(
+                Total: total,
+                Page: page,
+                PageSize: pageSize,
+                Count: values.Count,
+                Values: values
+            ));
+        }
+
+        [HttpGet("honor")]
+        [ProducesResponseType(typeof(DataPage<KeyValuePair<Guild, int>>), (int)HttpStatusCode.OK, ContentTypes.Json)]
+        public IActionResult Honor(
+            [FromQuery] int page = 0,
+            [FromQuery] int pageSize = 0,
+            [FromQuery] int limit = PagingInfo.MaxPageSize
+        )
+        {
+            page = Math.Max(page, 0);
+            pageSize = Math.Max(Math.Min(pageSize, PagingInfo.MaxPageSize), PagingInfo.MinPageSize);
+            limit = Math.Max(Math.Min(limit, pageSize), 1);
+
+            var values = Guild.TopByHonor(page * pageSize, pageSize, out int total);
 
             if (limit != pageSize)
             {

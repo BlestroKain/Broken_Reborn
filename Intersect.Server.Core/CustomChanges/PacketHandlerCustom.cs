@@ -584,5 +584,23 @@ internal sealed partial class PacketHandler
         PacketSender.SendSpellPoints(player);
     }
 
+    public void HandlePacket(Client client, ToggleWingsPacket packet)
+    {
+        var player = client?.Entity;
+        if (player == null)
+        {
+            return;
+        }
+
+        if (packet.State == WingState.On && player.Faction == Factions.Neutral)
+        {
+            PacketSender.SendChatMsg(player, Strings.Alignment.WingsNeutral, ChatMessageType.Error, CustomColors.Alerts.Error);
+            return;
+        }
+
+        player.Wings = packet.State;
+        PacketSender.SendEntityDataToProximity(player);
+    }
+
 
 }

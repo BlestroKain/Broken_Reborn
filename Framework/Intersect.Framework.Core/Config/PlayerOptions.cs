@@ -48,6 +48,11 @@ public partial class PlayerOptions
     public int ExpLossOnDeathPercent { get; set; } = 0;
 
     /// <summary>
+    /// Percentage between 0 and 100 applied weekly to move player honor toward zero.
+    /// </summary>
+    public int HonorDecayPercent { get; set; } = 0;
+
+    /// <summary>
     /// Number of hotbar slots a player has.
     /// </summary>
     public int HotbarSlotCount { get; set; } = DefaultHotbarSlotCount;

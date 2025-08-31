@@ -429,6 +429,41 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.ToTable("Player_Items");
                 });
 
+            modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.KillLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AttackerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AttackerIp")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AttackerUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("VictimId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("VictimIp")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("VictimUserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AttackerId");
+
+                    b.HasIndex("VictimId");
+
+                    b.ToTable("Player_KillLogs");
+                });
+
             modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.MailBox", b =>
                 {
                     b.Property<Guid>("Id")
@@ -649,11 +684,17 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.Property<string>("Face")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Faction")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("FooterLabelJson")
                         .HasColumnType("TEXT")
                         .HasColumnName("FooterLabel");
 
                     b.Property<int>("Gender")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Grade")
                         .HasColumnType("INTEGER");
 
                     b.Property<float>("GuildExpPercentage")
@@ -672,6 +713,9 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                         .HasColumnType("TEXT")
                         .HasColumnName("HeaderLabel");
 
+                    b.Property<int>("Honor")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("InstanceType")
                         .HasColumnType("INTEGER");
 
@@ -686,6 +730,9 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.Property<string>("JsonColor")
                         .HasColumnType("TEXT")
                         .HasColumnName("Color");
+
+                    b.Property<DateTime>("LastFactionSwapAt")
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("LastOnline")
                         .HasColumnType("TEXT");
@@ -770,6 +817,9 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.Property<string>("VitalsJson")
                         .HasColumnType("TEXT")
                         .HasColumnName("Vitals");
+
+                    b.Property<int>("Wings")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("X")
                         .HasColumnType("INTEGER");
@@ -942,6 +992,25 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.Navigation("Bag");
 
                     b.Navigation("Player");
+                });
+
+            modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.KillLog", b =>
+                {
+                    b.HasOne("Intersect.Server.Entities.Player", "Attacker")
+                        .WithMany()
+                        .HasForeignKey("AttackerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Intersect.Server.Entities.Player", "Victim")
+                        .WithMany()
+                        .HasForeignKey("VictimId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Attacker");
+
+                    b.Navigation("Victim");
                 });
 
             modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.MailBox", b =>

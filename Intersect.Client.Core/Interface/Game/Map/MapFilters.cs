@@ -5,6 +5,7 @@ using Intersect;
 using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
+using Intersect.Client.Framework.GenericClasses;
 
 
 namespace Intersect.Client.Interface.Game.Map;
@@ -80,7 +81,13 @@ public class MapFilters
     /// <summary>
     /// Represents an item that can be searched for on the world map.
     /// </summary>
-    public record MapSearchEntry(string Name, string Type, IReadOnlyList<string> Tags, Point Position);
+    public record MapSearchEntry(
+        string Name,
+        string Type,
+        IReadOnlyList<string> Tags,
+        Rectangle Area,
+        Guid? NpcId = null
+    );
 
     private static IEnumerable<string> Tokenize(string text)
     {

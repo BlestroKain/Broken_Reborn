@@ -154,6 +154,16 @@ public static partial class PacketSender
         Network.SendPacket(new ActivateEventPacket(eventId));
     }
 
+    public static void SendWaypointSet(int x, int y, WaypointScope scope)
+    {
+        Network.SendPacket(new WaypointSetPacket(x, y, scope));
+    }
+
+    public static void SendWaypointClear(WaypointScope scope)
+    {
+        Network.SendPacket(new WaypointClearPacket(scope));
+    }
+
     public static void SendEventResponse(byte response, Dialog ed)
     {
         Globals.EventDialogs.Remove(ed);

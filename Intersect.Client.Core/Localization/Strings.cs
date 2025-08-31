@@ -3101,6 +3101,12 @@ If you are sure you want to hand over your guild enter '\c{{#ff8080}}{02}\c{{}}'
         public static LocalizedString ZoomOut = @"Zoom Out";
     }
 
+    public partial struct WorldMap
+    {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Title = @"World Map";
+    }
+
     public partial struct EscapeMenu
     {
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

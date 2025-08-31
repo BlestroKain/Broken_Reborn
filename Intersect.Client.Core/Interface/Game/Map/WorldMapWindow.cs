@@ -15,6 +15,8 @@ using Intersect.Client.General;
 using Intersect.Client.Networking;
 using Intersect.Client.Framework.GenericClasses;
 using Intersect.Enums;
+using Intersect.Client.Core.Controls;
+using Intersect.Client.Localization;
 
 namespace Intersect.Client.Interface.Game.Map;
 
@@ -30,6 +32,7 @@ public class WorldMapWindow
     private readonly Label _tooltip;
     private readonly List<ImagePanel> _searchHighlights = new();
     public static WaypointLayer? Waypoints { get; private set; }
+    private readonly Button _minimapButton;
 
     private float _zoom = 1f;
     private const float MinZoom = 0.25f;
@@ -54,6 +57,10 @@ public class WorldMapWindow
         _filters.AddFilter(JobType.Farming.ToString(), "Hierbas");
         _filters.AddFilter(JobType.Fishing.ToString(), "Pesca");
         _filters.SearchSubmitted += OnSearchSubmitted;
+        _minimapButton = new Button(_window, "MinimapButton");
+        _minimapButton.Clicked += MinimapButton_Clicked;
+        var keyHint = GetMinimapKeyHint();
+        _minimapButton.SetToolTipText(string.IsNullOrEmpty(keyHint) ? Strings.Minimap.Title : $"{Strings.Minimap.Title} ({keyHint})");
         var colors = Options.Instance.Minimap.MinimapColors.Resource;
         if (colors.TryGetValue(JobType.Lumberjack, out var lumberjackColor))
         {
@@ -93,6 +100,18 @@ public class WorldMapWindow
         MapPreferences.Instance.WorldMapZoom = _zoom;
         MapPreferences.Instance.WorldMapPosition = new Point(_canvas.X, _canvas.Y);
         MapPreferences.Save();
+    }
+
+    public bool IsVisible() => !_window.IsHidden;
+
+    public void Show()
+    {
+        _window.IsHidden = false;
+    }
+
+    public void Hide()
+    {
+        _window.IsHidden = true;
     }
 
     private void OnMapClicked(Point pos)
@@ -199,6 +218,28 @@ public class WorldMapWindow
         _canvas.SetPosition(targetX, targetY);
         MapPreferences.Instance.WorldMapPosition = new Point(_canvas.X, _canvas.Y);
         MapPreferences.Save();
+    }
+
+    private void MinimapButton_Clicked(Base sender, MouseButtonState args)
+    {
+        Interface.Interface.GameUi.GameMenu?.ToggleMinimapWindow();
+    }
+
+    private static string GetMinimapKeyHint()
+    {
+        if (!Controls.Controls.ActiveControls.TryGetMappingFor(Control.OpenMinimap, out var mapping) ||
+            mapping.Bindings.Length == 0)
+        {
+            return string.Empty;
+        }
+
+        var binding = mapping.Bindings[0];
+        if (binding.Key == Keys.None)
+        {
+            return string.Empty;
+        }
+
+        return Strings.Keys.FormatKeyName(binding.Modifier, binding.Key);
     }
 
     private void OnSearchSubmitted(string query)

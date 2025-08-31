@@ -51,6 +51,14 @@ public class MapPicker : UserControl
         UpdateImage();
     }
 
+    public void SelectTile(Guid mapId, int x, int y)
+    {
+        SetMap(mapId);
+        _hoverX = x;
+        _hoverY = y;
+        _picture.Invalidate();
+    }
+
     private void UpdateImage()
     {
         if (_mapImage == null)

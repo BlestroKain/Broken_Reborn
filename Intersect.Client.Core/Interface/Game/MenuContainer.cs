@@ -35,6 +35,7 @@ public partial class MenuContainer : Panel
     private readonly Button _characterButton;
     private readonly CharacterWindow _characterWindow;
     private readonly MinimapWindow _minimapWindow;
+    private readonly WorldMapWindow _worldMapWindow;
 
     private readonly ImagePanel _questsButtonContainer;
     private readonly Button _questsButton;
@@ -308,6 +309,7 @@ public partial class MenuContainer : Panel
         _guildWindow = new GuildWindow(gameCanvas: gameCanvas);
         mJobsWindow= new JobsWindow(gameCanvas: gameCanvas);
         _minimapWindow = new MinimapWindow(gameCanvas);
+        _worldMapWindow = new WorldMapWindow(gameCanvas);
 
     }
 
@@ -353,6 +355,7 @@ public partial class MenuContainer : Panel
         _spellsWindow.Hide();
         _guildWindow.Hide();
         _minimapWindow.Hide();
+        _worldMapWindow.Hide();
         _factionWindow.Hide();
         mJobsWindow.Hide();
     }
@@ -388,6 +391,21 @@ public partial class MenuContainer : Panel
             _minimapWindow.Show();
         }
     }
+
+    public void ToggleWorldMapWindow()
+    {
+        if (_worldMapWindow.IsVisible())
+        {
+            _worldMapWindow.Hide();
+        }
+        else
+        {
+            HideWindows();
+            _worldMapWindow.Show();
+        }
+    }
+
+    public bool IsWorldMapVisible() => _worldMapWindow.IsVisible();
 
     public bool ToggleFriendsWindow()
     {

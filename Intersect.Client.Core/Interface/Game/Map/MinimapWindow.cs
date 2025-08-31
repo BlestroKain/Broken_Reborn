@@ -5,8 +5,11 @@ using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Graphics;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
+using Intersect.Client.Framework.Input;
+using Intersect.Client.Framework.GenericClasses;
 using Intersect.Client.General;
 using Intersect.Client.Localization;
+using Intersect.Client.Core.Controls;
 using Intersect.Client.Maps;
 using Intersect.Config;
 using Intersect.Enums;
@@ -36,6 +39,7 @@ namespace Intersect.Client.Interface.Game.Map
         private readonly ImagePanel _minimap;
         private readonly Button _zoomInButton;
         private readonly Button _zoomOutButton;
+        private readonly Button _worldMapButton;
         private static readonly GameContentManager ContentManager = Globals.ContentManager;
         private volatile bool _initialized;
         // Constructors
@@ -47,10 +51,14 @@ namespace Intersect.Client.Interface.Game.Map
             _minimap = new ImagePanel(this, "MinimapContainer");
             _zoomInButton = new Button(_minimap, "ZoomInButton");
             _zoomOutButton = new Button(_minimap, "ZoomOutButton");
+            _worldMapButton = new Button(_minimap, "WorldMapButton");
             _zoomInButton.Clicked += MZoomInButton_Clicked;
             _zoomInButton.SetToolTipText(Strings.Minimap.ZoomIn);
             _zoomOutButton.Clicked += MZoomOutButton_Clicked;
             _zoomOutButton.SetToolTipText(Strings.Minimap.ZoomOut);
+            _worldMapButton.Clicked += OpenWorldMapButton_Clicked;
+            var keyHint = GetMinimapKeyHint();
+            _worldMapButton.SetToolTipText(string.IsNullOrEmpty(keyHint) ? Strings.WorldMap.Title : $"{Strings.WorldMap.Title} ({keyHint})");
             _whiteTexture = Graphics.Renderer.WhitePixel;
             _renderTexture = GenerateBaseRenderTexture();
         }
@@ -506,6 +514,28 @@ namespace Intersect.Client.Interface.Game.Map
             );
             MapPreferences.Instance.MinimapZoom = _zoomLevel;
             MapPreferences.Save();
+        }
+
+        private void OpenWorldMapButton_Clicked(Base sender, MouseButtonState arguments)
+        {
+            Interface.Interface.GameUi.GameMenu?.ToggleWorldMapWindow();
+        }
+
+        private static string GetMinimapKeyHint()
+        {
+            if (!Controls.Controls.ActiveControls.TryGetMappingFor(Control.OpenMinimap, out var mapping) ||
+                mapping.Bindings.Length == 0)
+            {
+                return string.Empty;
+            }
+
+            var binding = mapping.Bindings[0];
+            if (binding.Key == Keys.None)
+            {
+                return string.Empty;
+            }
+
+            return Strings.Keys.FormatKeyName(binding.Modifier, binding.Key);
         }
         private enum MapPosition
         {

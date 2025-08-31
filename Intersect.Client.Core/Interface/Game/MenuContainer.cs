@@ -49,6 +49,8 @@ public partial class MenuContainer : Panel
     private readonly Button _guildButton;
     private readonly GuildWindow _guildWindow;
 
+    private readonly FactionWindow _factionWindow;
+
     private readonly ImagePanel _escapeMenuButtonContainer;
     private readonly Button _escapeMenuButton;
     private readonly JobsWindow mJobsWindow;
@@ -197,6 +199,9 @@ public partial class MenuContainer : Panel
         _guildButton.SetToolTipText(text: Strings.Guilds.Guild);
         _guildButton.Clicked += GuildBtn_Clicked;
 
+        _factionWindow = new FactionWindow(gameCanvas) { IsHidden = true };
+
+
         _escapeMenuButtonContainer = new ImagePanel(parent: this, name: nameof(_escapeMenuButtonContainer))
         {
             Dock = Pos.Left,
@@ -308,6 +313,7 @@ public partial class MenuContainer : Panel
         _questsWindow.Hide();
         _spellsWindow.Hide();
         _guildWindow.Hide();
+        _factionWindow.Hide();
         mJobsWindow.Hide();
     }
 
@@ -362,6 +368,25 @@ public partial class MenuContainer : Panel
     public void HideGuildWindow()
     {
         _guildWindow.Hide();
+    }
+
+    public void ToggleFactionWindow()
+    {
+        if (_factionWindow.IsVisibleInTree)
+        {
+            _factionWindow.Hide();
+        }
+        else
+        {
+            HideWindows();
+            _factionWindow.Refresh();
+            _factionWindow.Show();
+        }
+    }
+
+    public void RefreshFactionWindow()
+    {
+        _factionWindow.Refresh();
     }
 
     public void ToggleInventoryWindow()
@@ -446,6 +471,7 @@ public partial class MenuContainer : Panel
         _partyWindow.Hide();
 
         _guildWindow.Hide();
+        _factionWindow.Hide();
     }
 
     public bool HasWindowsOpen()
@@ -457,9 +483,11 @@ public partial class MenuContainer : Panel
                           _spellsWindow.IsVisibleInTree ||
                           _partyWindow.IsVisible() ||
                           _guildWindow.IsVisibleInTree ||
+                          _factionWindow.IsVisibleInTree ||
         mJobsWindow.IsVisible();
         return windowsOpen;
     }
+
 
     //Input Handlers
     private void EscapeMenuButtonClicked(Base sender, MouseButtonState arguments)

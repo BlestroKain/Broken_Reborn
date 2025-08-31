@@ -79,6 +79,7 @@ partial class frmSets
         lblARP = new Label();
         lblVit = new Label();
         lblWis = new Label();
+        lblTierCount = new Label();
         grpItemsSets = new DarkUI.Controls.DarkGroupBox();
         cmbItems = new DarkUI.Controls.DarkComboBox();
         btnRemove = new DarkUI.Controls.DarkButton();

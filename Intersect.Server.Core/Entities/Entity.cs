@@ -27,6 +27,8 @@ using Intersect.Utilities;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Stat = Intersect.Enums.Stat;
+using Intersect.Server.Services;
+using Intersect.Server.Core;
 
 namespace Intersect.Server.Entities;
 
@@ -2098,6 +2100,20 @@ public abstract partial class Entity : IEntity
             return;
         }
 
+        if (this is Player attacker && enemy is Player victim)
+        {
+            var (ok, reason) = AlignmentPvPService.CanEngage(attacker, victim);
+            if (!ok)
+            {
+                if (!string.IsNullOrEmpty(reason))
+                {
+                    PacketSender.SendChatMsg(attacker, reason, ChatMessageType.Error);
+                }
+
+                return;
+            }
+        }
+
         //Let's save the entity's vitals before they takes damage to use in lifesteal/manasteal
         var enemyVitals = enemy.GetVitals();
         var invulnerable = enemy.CachedStatuses.Any(status => status.Type == SpellEffect.Invulnerable);
@@ -3156,6 +3172,11 @@ public abstract partial class Entity : IEntity
         // Run events and other things.
         killer?.KilledEntity(this);
 
+        if (killer is Player attacker && this is Player victim)
+        {
+            AlignmentPvPService.HandleKill(attacker, victim);
+        }
+
         if (dropItems)
         {
             var lootGenerated = new List<Player>();
@@ -3268,6 +3289,7 @@ public abstract partial class Entity : IEntity
 
             var playerKiller = killer as Player;
             var dropRateModifier = 1 + (playerKiller?.GetEquipmentBonusEffect(ItemEffect.Luck) / 100f ?? 0);
+         
             if (!ShouldDropItem(killer, itemDescriptor, drop, dropRateModifier, out Guid lootOwner))
             {
                 continue;

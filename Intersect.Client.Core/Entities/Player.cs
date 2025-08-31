@@ -64,6 +64,18 @@ public partial class Player : Entity, IPlayer
 
     public long ExperienceToNextLevel { get; set; } = 0;
 
+    public Factions Faction { get; set; }
+
+    public WingState Wings { get; set; }
+
+    public int Honor { get; set; }
+
+    public int Grade { get; set; }
+
+    public DateTime LastFactionSwapAt { get; set; }
+
+    public DateTime? NextFactionChangeAt { get; set; }
+
     IReadOnlyList<IFriendInstance> IPlayer.Friends => Friends;
 
     public List<IFriendInstance> Friends { get; set; } = [];
@@ -430,6 +442,11 @@ public partial class Player : Entity, IPlayer
                 Interface.Interface.EnqueueInGame(ui => ui.SpellsWindow?.Refresh());
             }
         }
+
+        Faction = playerPacket.Faction;
+        Wings = playerPacket.Wings;
+        Honor = playerPacket.Honor;
+        Grade = playerPacket.Grade;
 
         if (this == Globals.Me && TargetBox == null && Interface.Interface.HasInGameUI)
         {
@@ -2758,6 +2775,29 @@ public partial class Player : Entity, IPlayer
         PacketSender.SendNeedMapForGrid();
     }
 
+    public override void Draw()
+    {
+        base.Draw();
+
+        if (Grade > 0)
+        {
+            DrawEquipment($"aura_{Grade}.png", Color.White);
+        }
+
+        if (Wings is WingState.On)
+        {
+            DrawEquipment(GetWingTexture(), Color.White);
+        }
+    }
+
+    private string GetWingTexture() =>
+        Faction switch
+        {
+            Factions.Serolf => "wings_serolf.png",
+            Factions.Nidraj => "wings_nidraj.png",
+            _ => "wings.png",
+        };
+
     public override void DrawEquipment(string filename, Color renderColor)
     {
         //check if player is stunned or snared, if so don't let them move.
@@ -2836,6 +2876,13 @@ public partial class Player : Entity, IPlayer
                 backgroundColor = hostileColors.Background;
             }
         }
+
+        textColor = Faction switch
+        {
+            Factions.Serolf => Color.Blue,
+            Factions.Nidraj => Color.Red,
+            _ => textColor,
+        };
 
         if (borderColor is not { A: > 0 })
         {

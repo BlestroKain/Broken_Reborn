@@ -123,6 +123,9 @@ public static partial class Strings
         public readonly LocalizedString WingsOn = @"No puedes cambiar de facción mientras tus alas estén activadas.";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString WingsNeutral = @"No puedes activar tus alas mientras estés en la facción neutral.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public readonly LocalizedString SwapCooldown = @"Podrás cambiar el {fecha}.";
     }
 

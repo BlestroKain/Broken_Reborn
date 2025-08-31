@@ -592,6 +592,12 @@ internal sealed partial class PacketHandler
             return;
         }
 
+        if (packet.State == WingState.On && player.Faction == Factions.Neutral)
+        {
+            PacketSender.SendChatMsg(player, Strings.Alignment.WingsNeutral, ChatMessageType.Error, CustomColors.Alerts.Error);
+            return;
+        }
+
         player.Wings = packet.State;
         PacketSender.SendEntityDataToProximity(player);
     }

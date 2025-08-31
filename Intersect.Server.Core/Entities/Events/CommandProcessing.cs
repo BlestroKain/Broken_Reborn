@@ -21,6 +21,7 @@ using Intersect.Server.Localization;
 using Intersect.Server.Maps;
 using Intersect.Server.Networking;
 using Intersect.Utilities;
+using Intersect.Server.Services;
 
 namespace Intersect.Server.Entities.Events;
 
@@ -2374,5 +2375,43 @@ public static partial class CommandProcessing
     )
     {
         player.SendMail();
+    }
+
+    private static void ProcessCommand(
+        SetAlignmentCommand command,
+        Player player,
+        Event instance,
+        CommandInstance stackInfo,
+        Stack<CommandInstance> callStack
+    )
+    {
+        var options = new AlignmentApplyOptions
+        {
+            IgnoreCooldown = command.IgnoreCooldown,
+            IgnoreGuildLock = command.IgnoreGuildLock,
+        };
+
+        var result = AlignmentService.TrySetAlignment(player, command.Desired, options);
+        if (result.Success)
+        {
+            var message = Strings.Alignment.ChangedTo.ToString(player.Faction);
+            if (result.NextAllowedChangeAt.HasValue)
+            {
+                var cooldown = AlignmentService.GetMessage("cooldown", result.NextAllowedChangeAt);
+                if (!string.IsNullOrEmpty(cooldown))
+                {
+                    message += $" {cooldown}";
+                }
+            }
+
+            PacketSender.SendChatMsg(player, message, ChatMessageType.Notice);
+            PacketSender.SendEntityDataToProximity(player);
+        }
+        else
+        {
+            var message = AlignmentService.GetMessage(result.Message!, result.NextAllowedChangeAt)
+                          ?? "Unable to change alignment.";
+            PacketSender.SendChatMsg(player, message, ChatMessageType.Error);
+        }
     }
 }

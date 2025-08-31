@@ -48,7 +48,7 @@ namespace Intersect.Server.Entities
             }
             Guild?.UpdateMemberList();
         }
-       
+
     }
 
 }

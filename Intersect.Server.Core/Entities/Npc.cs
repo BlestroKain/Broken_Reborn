@@ -1476,12 +1476,14 @@ public partial class Npc : Entity
                 return !otherNpc.CanNpcCombat(this);
             case Player otherPlayer:
                 var conditionLists = Descriptor.PlayerFriendConditions;
-                if ((conditionLists?.Count ?? 0) == 0)
-                {
-                    return false;
-                }
+                var allyByConditions = (conditionLists?.Count ?? 0) > 0 &&
+                                       Conditions.MeetsConditionLists(conditionLists, otherPlayer, null);
 
-                return Conditions.MeetsConditionLists(conditionLists, otherPlayer, null);
+                var allyByFaction = Descriptor.Faction != Factions.Neutral &&
+                                    otherPlayer.Faction == Descriptor.Faction &&
+                                    otherPlayer.Honor >= 0;
+
+                return allyByConditions || allyByFaction;
             default:
                 return base.IsAllyOf(otherEntity);
         }
@@ -1489,9 +1491,24 @@ public partial class Npc : Entity
 
     public bool ShouldAttackPlayerOnSight(Player en)
     {
+        // Outlaws are always attacked regardless of NPC faction
+        if (en.Honor < 0)
+        {
+            return true;
+        }
+
         if (IsAllyOf(en))
         {
             return false;
+        }
+
+        if (Descriptor.Faction != Factions.Neutral)
+        {
+            // Guards only attack opposing faction players when their wings are enabled
+            if (en.Faction != Factions.Neutral && en.Faction != Descriptor.Faction && en.Wings == WingState.On)
+            {
+                return true;
+            }
         }
 
         if (Descriptor.Aggressive)

@@ -40,6 +40,9 @@ public enum Control
 
     OpenFriends,
 
+    OpenFaction,
+
+
     OpenBestiary,
 
     OpenGuild,

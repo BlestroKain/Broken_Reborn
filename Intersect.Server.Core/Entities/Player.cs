@@ -26,6 +26,7 @@ using Intersect.GameObjects;
 using Intersect.Network;
 using Intersect.Network.Packets.Server;
 using Intersect.Server.Core.MapInstancing;
+using Intersect.Server.Core.Services;
 using Intersect.Server.Database;
 using Intersect.Server.Database.Logging.Entities;
 using Intersect.Server.Database.PlayerData;
@@ -37,12 +38,14 @@ using Intersect.Server.Framework.Items;
 using Intersect.Server.Localization;
 using Intersect.Server.Maps;
 using Intersect.Server.Networking;
+using Intersect.Server.Core;
 using Intersect.Utilities;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Stat = Intersect.Enums.Stat;
 using Intersect.Framework.Core.GameObjects.Guild;
 using System.Linq;
+using Intersect.Server.Services;
 
 namespace Intersect.Server.Entities;
 
@@ -92,6 +95,7 @@ public partial class Player : Entity
     [NotMapped]
     public bool SpellPointsChanged { get; set; }
 
+   
     [Column("Equipment"), JsonIgnore]
     public string EquipmentJson
     {
@@ -1166,17 +1170,22 @@ public partial class Player : Entity
         pkt.GuildRank = GuildRank;
         if (Guild != null)
         {
-            pkt.GuildBackgroundFile = Guild.LogoBackground;
-            pkt.GuildBackgroundR = Guild.BackgroundR;
-            pkt.GuildBackgroundG = Guild.BackgroundG;
-            pkt.GuildBackgroundB = Guild.BackgroundB;
+        pkt.GuildBackgroundFile = Guild.LogoBackground;
+        pkt.GuildBackgroundR = Guild.BackgroundR;
+        pkt.GuildBackgroundG = Guild.BackgroundG;
+        pkt.GuildBackgroundB = Guild.BackgroundB;
 
-            pkt.GuildSymbolFile = Guild.LogoSymbol;
-            pkt.GuildSymbolR = Guild.SymbolR;
-            pkt.GuildSymbolG = Guild.SymbolG;
-            pkt.GuildSymbolB = Guild.SymbolB;
+        pkt.GuildSymbolFile = Guild.LogoSymbol;
+        pkt.GuildSymbolR = Guild.SymbolR;
+        pkt.GuildSymbolG = Guild.SymbolG;
+        pkt.GuildSymbolB = Guild.SymbolB;
 
         }
+
+        pkt.Faction = Faction;
+        pkt.Wings = Wings;
+        pkt.Honor = Honor;
+        pkt.Grade = Grade;
 
         if (forPlayer == this)
         {
@@ -1239,6 +1248,27 @@ public partial class Player : Entity
             evt.Value.PlayerHasDied = true;
         }
 
+        Guid jailMapId = Guid.Empty;
+        byte jailX = 0;
+        byte jailY = 0;
+        var sendToJail = false;
+
+        if (killer is Npc npcKiller && MapController.Get(MapId)?.ZoneType == MapZone.Safe)
+        {
+            var opposingFaction = npcKiller.Descriptor.Faction != Factions.Neutral &&
+                                   Faction != Factions.Neutral &&
+                                   npcKiller.Descriptor.Faction != Faction;
+            var outlaw = Honor < 0;
+
+            if ((opposingFaction || outlaw) && npcKiller.Descriptor.SendToJailOnCapture)
+            {
+                jailMapId = npcKiller.Descriptor.JailMapId;
+                jailX = npcKiller.Descriptor.JailX;
+                jailY = npcKiller.Descriptor.JailY;
+                sendToJail = jailMapId != Guid.Empty;
+            }
+        }
+
         // Remove player from ALL threat lists.
         foreach (var instance in MapController.GetSurroundingMapInstances(Map.Id, MapInstanceId, true))
         {
@@ -1270,6 +1300,10 @@ public partial class Player : Entity
         }
         PacketSender.SendEntityDie(this);
         Respawn();
+        if (sendToJail)
+        {
+            Warp(jailMapId, jailX, jailY);
+        }
         PacketSender.SendInventory(this);
         PacketSender.SendPlayerSpells(this);
         PacketSender.SendSpellPoints(this);
@@ -1645,6 +1679,15 @@ public partial class Player : Entity
         }
     }
 
+    public void HandlePlayerKill(Player victim)
+    {
+
+        AlignmentPvPService.HandleKill(this, victim);
+    }
+
+    public void AdjustHonor(int amount) => HonorService.AdjustHonor(this, amount);
+
+
     public void UpdateQuestKillTasks(Entity en)
     {
         //If any quests demand that this Npc be killed then let's handle it
@@ -1957,6 +2000,20 @@ public partial class Player : Entity
             if (player.InParty(this) || this == player || (!Options.Instance.Guild.AllowGuildMemberPvp && friendly != (player.Guild != null && player.Guild == this.Guild)))
             {
                 return friendly;
+            }
+
+            if (!friendly)
+            {
+                var (ok, reason) = AlignmentPvPService.CanEngage(this, player);
+                if (!ok)
+                {
+                    if (!string.IsNullOrEmpty(reason))
+                    {
+                        PacketSender.SendChatMsg(this, reason, ChatMessageType.Error);
+                    }
+
+                    return false;
+                }
             }
 
             // Only count safe zones and friendly fire if its a dangerous spell! (If one has been used)
@@ -4422,6 +4479,7 @@ public partial class Player : Entity
                     quantity = 1;
                 }
 
+               
                 if (TryGiveItem(craftItem.Id, quantity))
                 {
                     PacketSender.SendChatMsg(

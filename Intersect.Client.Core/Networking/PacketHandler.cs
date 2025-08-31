@@ -2525,7 +2525,7 @@ internal sealed partial class PacketHandler
         map.PrismState = packet.State;
         map.PrismHp = packet.Hp;
         map.PrismMaxHp = packet.MaxHp;
-        map.PrismNextVulnerabilityStart = packet.NextVulnerabilityStart;
+        map.PrismNextVulnerabilityStart = packet.NextWindow;
     }
 
 }

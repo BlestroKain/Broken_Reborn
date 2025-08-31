@@ -42,6 +42,7 @@ public class PrismVisual
     }
 
     public Guid MapId => _info.MapId;
+    public Guid PrismId => _info.Id;
     public int X => _info.X;
     public int Y => _info.Y;
     public bool TintByFaction => _info.TintByFaction;

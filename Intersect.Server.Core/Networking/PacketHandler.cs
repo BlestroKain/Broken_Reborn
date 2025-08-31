@@ -1467,13 +1467,18 @@ internal sealed partial class PacketHandler
             return;
         }
 
+        if (packet.MapId != player.MapId)
+        {
+            return;
+        }
+
         if (!MapController.TryGetInstanceFromMap(player.MapId, player.MapInstanceId, out var mapInstance))
         {
             return;
         }
 
         var prism = mapInstance.ControllingPrism;
-        if (prism == null || prism.Owner == player.Faction)
+        if (prism == null || prism.Owner == player.Faction || prism.Id != packet.PrismId)
         {
             return;
         }

@@ -10,11 +10,15 @@ public partial class PrismAttackPacket : IntersectPacket
     {
     }
 
-    public PrismAttackPacket(Guid mapId)
+    public PrismAttackPacket(Guid mapId, Guid prismId)
     {
         MapId = mapId;
+        PrismId = prismId;
     }
 
     [Key(0)]
     public Guid MapId { get; set; }
+
+    [Key(1)]
+    public Guid PrismId { get; set; }
 }

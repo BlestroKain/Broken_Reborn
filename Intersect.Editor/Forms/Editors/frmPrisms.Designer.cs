@@ -206,11 +206,9 @@ namespace Intersect.Editor.Forms.Editors
     };
             colDay.HeaderText = "Day";
             colDay.Items.AddRange(Enum.GetValues(typeof(DayOfWeek)).Cast<object>().ToArray());
-            var colStart = new DataGridViewTextBoxColumn();
-            colStart.Name = "colStart";
-            // 
+            //
             // colStart
-            // 
+            //
             colStart.HeaderText = "Start";
             colStart.Name = "colStart";
             // 
@@ -234,21 +232,19 @@ namespace Intersect.Editor.Forms.Editors
             // colType
             // 
             colType.DataSource = new PrismModuleType[]
-    {
-    PrismModuleType.Vision,
-    PrismModuleType.Prospecting,
-    PrismModuleType.Crafting,
-    PrismModuleType.GuardBoost
-    };
-       
-            // 
+            {
+                PrismModuleType.Vision,
+                PrismModuleType.Prospecting,
+                PrismModuleType.Crafting,
+                PrismModuleType.GuardBoost
+            };
+            colType.HeaderText = "Type";
+            colType.Items.AddRange(Enum.GetValues(typeof(PrismModuleType)).Cast<object>().ToArray());
+            //
             // colLevel
-            // 
-               colType.HeaderText = "Type";
-  colType.Items.AddRange(Enum.GetValues(typeof(PrismModuleType)).Cast<object>().ToArray());
-            var colLevel = new DataGridViewTextBoxColumn();
-            colLevel.Name = "colLevel";
+            //
             colLevel.HeaderText = "Level";
+            colLevel.Name = "colLevel";
            
             // 
             // nudAreaX

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Intersect.Client.Core;
 using Intersect.Client.Framework.File_Management;
+using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Input;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
@@ -18,6 +19,7 @@ using Intersect.Client.Core.Controls;
 using Intersect.Client.Localization;
 using Intersect.Config;
 using Intersect.Client.Controllers;
+using Intersect.Client.Interface;
 using Intersect.Framework.Core.GameObjects.NPCs;
 
 namespace Intersect.Client.Interface.Game.Map;
@@ -31,7 +33,12 @@ public class WorldMapWindow
     private readonly MapCanvas _canvas;
     private readonly MapLegend _legend;
     private readonly MapFilters _filters;
-    private readonly Label _tooltip;
+    private readonly ImagePanel _tooltip;
+    private readonly Label _tooltipLabel;
+    private readonly Button _navigateButton;
+    private readonly Button _openWindowButton;
+    private MapFilters.MapSearchEntry? _activeEntry;
+    private Point _activeEntryCenter;
     private readonly List<ImagePanel> _searchHighlights = new();
     public static WaypointLayer? Waypoints { get; private set; }
     private readonly Button _minimapButton;
@@ -81,8 +88,13 @@ public class WorldMapWindow
             _legend.AddEntry("Pesca", fishingColor);
         }
 
-        _tooltip = new Label(_window, "Tooltip");
+        _tooltip = new ImagePanel(_window, "Tooltip");
         _tooltip.IsHidden = true;
+        _tooltipLabel = new Label(_tooltip, "Name") { Dock = Pos.Top };
+        _navigateButton = new Button(_tooltip, "NavigateButton") { Text = Strings.WorldMap.Navigate, Dock = Pos.Top };
+        _openWindowButton = new Button(_tooltip, "OpenWindowButton") { Text = Strings.WorldMap.OpenWindow, Dock = Pos.Top };
+        _navigateButton.Clicked += NavigateButton_Clicked;
+        _openWindowButton.Clicked += OpenWindowButton_Clicked;
 
         Waypoints = new WaypointLayer(_canvas);
 
@@ -119,6 +131,7 @@ public class WorldMapWindow
     private void OnMapClicked(Point pos)
     {
         _tooltip.IsHidden = true;
+        _activeEntry = null;
     }
 
     private void OnMapDoubleClicked(Point pos)
@@ -265,7 +278,9 @@ public class WorldMapWindow
         var center = new Point(first.Area.X + first.Area.Width / 2, first.Area.Y + first.Area.Height / 2);
         CenterOn(center);
 
-        _tooltip.Text = first.Name;
+        _activeEntry = first;
+        _activeEntryCenter = center;
+        _tooltipLabel.Text = first.Name;
         _tooltip.SetPosition(center.X + 5, center.Y + 5);
         _tooltip.IsHidden = false;
 
@@ -276,6 +291,42 @@ public class WorldMapWindow
             area.IsHidden = false;
             _searchHighlights.Add(area);
         }
+    }
+
+    private void NavigateButton_Clicked(Base sender, MouseButtonState args)
+    {
+        CenterOn(_activeEntryCenter);
+        Waypoints?.AddWaypoint(_activeEntryCenter, WaypointScope.Local);
+    }
+
+    private void OpenWindowButton_Clicked(Base sender, MouseButtonState args)
+    {
+        if (_activeEntry == null)
+        {
+            return;
+        }
+
+        var type = _activeEntry.Type.ToLowerInvariant();
+        Interface.EnqueueInGame(gameInterface =>
+        {
+            switch (type)
+            {
+                case "bank":
+                case "banco":
+                    gameInterface.NotifyOpenBank();
+                    break;
+                case "shop":
+                case "market":
+                case "mercado":
+                    gameInterface.NotifyOpenShop();
+                    break;
+                case "crafting":
+                case "workshop":
+                case "taller":
+                    gameInterface.NotifyOpenCraftingTable(false);
+                    break;
+            }
+        });
     }
 
     private class MapCanvas : ImagePanel

@@ -3105,6 +3105,12 @@ If you are sure you want to hand over your guild enter '\c{{#ff8080}}{02}\c{{}}'
     {
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString Title = @"World Map";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Navigate = @"Navigate";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString OpenWindow = @"Open Window";
     }
 
     public partial struct EscapeMenu

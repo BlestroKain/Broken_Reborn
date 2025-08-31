@@ -11,7 +11,11 @@ using Intersect.Client.Framework.GenericClasses;
 using Intersect.Client.Interface.Game.Map;
 using Intersect;
 using Intersect.Client.Framework.Input;
-using Intersect.Framework.Core.GameObjects.NPCs;
+using Intersect.Client.General;
+using Intersect.Client.Networking;
+using Intersect.Client.Framework.GenericClasses;
+using Intersect.Enums;
+
 
 namespace Intersect.Client.Interface.Game.Map;
 
@@ -25,8 +29,8 @@ public class WorldMapWindow
     private readonly MapLegend _legend;
     private readonly MapFilters _filters;
     private readonly Label _tooltip;
-    private readonly ImagePanel _waypoint;
     private readonly List<ImagePanel> _searchHighlights = new();
+    public static WaypointLayer? Waypoints { get; private set; }
 
     private float _zoom = 1f;
     private const float MinZoom = 0.25f;
@@ -51,8 +55,7 @@ public class WorldMapWindow
         _tooltip = new Label(_window, "Tooltip");
         _tooltip.IsHidden = true;
 
-        _waypoint = new ImagePanel(_canvas, "Waypoint");
-        _waypoint.IsHidden = true;
+        Waypoints = new WaypointLayer(_canvas);
 
         _window.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
 
@@ -79,8 +82,17 @@ public class WorldMapWindow
 
     private void OnMapDoubleClicked(Point pos)
     {
-        _waypoint.SetPosition(pos.X - _waypoint.Width / 2, pos.Y - _waypoint.Height / 2);
-        _waypoint.IsHidden = false;
+        var shift = Globals.InputManager.IsKeyDown(Keys.Shift);
+        if (shift)
+        {
+            Waypoints?.AddWaypoint(pos, WaypointScope.Party);
+            PacketSender.SendWaypointSet(pos.X, pos.Y, WaypointScope.Party);
+            PacketSender.SendWaypointSet(pos.X, pos.Y, WaypointScope.Guild);
+        }
+        else
+        {
+            Waypoints?.AddWaypoint(pos, WaypointScope.Local);
+        }
     }
 
     internal void BeginDrag(Point pos)
@@ -259,6 +271,12 @@ public class WorldMapWindow
             {
                 _window.OnMapDoubleClicked(mousePosition);
             }
+        }
+
+        protected override void Think()
+        {
+            base.Think();
+            Waypoints?.Update();
         }
     }
 }

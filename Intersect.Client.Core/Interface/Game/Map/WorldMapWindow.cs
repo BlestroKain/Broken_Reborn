@@ -231,7 +231,7 @@ public class WorldMapWindow
     {
 
         if (!Controls.ActiveControls.TryGetMappingFor(Control.OpenMinimap, out var mapping) ||
-            mapping.Bindings.Length == 0)
+            mapping.Bindings.Count == 0)
         {
             return string.Empty;
         }

@@ -101,7 +101,7 @@ public partial class Player : Entity
     {
         get => JsonConvert.SerializeObject(MapDiscoveries.ToDictionary(k => k.Key, v => v.Value.Data));
         set => MapDiscoveries = JsonConvert.DeserializeObject<Dictionary<Guid, byte[]>>(value ?? "{}")?
-            .ToDictionary(k => k.Key, v => new BitGrid(Options.Instance.Map.MapWidth, Options.Instance.Map.MapHeight, v))
+            .ToDictionary(k => k.Key, v => new BitGrid(Options.Instance.Map.MapWidth, Options.Instance.Map.MapHeight, v.Value))
             ?? new();
     }
 

@@ -5,9 +5,6 @@ using Intersect.Server.Database.PlayerData.Players;
 using Intersect.Server.Database.PlayerData.SeedData;
 using Intersect.Server.Entities;
 using Microsoft.EntityFrameworkCore;
-using Intersect.Server.Database.Prisms;
-
-using PrismEntity = Intersect.Server.Database.Prisms.PrismEntity;
 
 namespace Intersect.Server.Database.PlayerData;
 
@@ -56,13 +53,6 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
     public DbSet<MailBox> Player_MailBox { get; set; }
     public DbSet<KillLog> Player_KillLogs { get; set; }
 
-    public DbSet<PrismEntity> Prisms { get; set; }
-
-    public DbSet<PrismBattle> PrismBattles { get; set; }
-
-    public DbSet<PrismContribution> PrismContributions { get; set; }
-
-    public DbSet<FactionAreaBonus> FactionAreaBonuses { get; set; }
 
     internal async ValueTask Commit(
         bool commit = false,
@@ -158,16 +148,6 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
         modelBuilder.Entity<KillLog>().HasOne(k => k.Attacker).WithMany().OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<KillLog>().HasOne(k => k.Victim).WithMany().OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<PrismEntity>(entity =>
-        {
-            entity.Property(p => p.State);
-            entity.Property(p => p.LastHitAt);
-            entity.Property(p => p.LastStateChangeAt);
-            entity.Property(p => p.CurrentBattleId);
-        });
-        modelBuilder.Entity<PrismBattle>().HasOne<PrismEntity>().WithMany().HasForeignKey(b => b.PrismId);
-        modelBuilder.Entity<FactionAreaBonus>().HasOne<PrismEntity>().WithMany().HasForeignKey(b => b.PrismId);
-        modelBuilder.Entity<PrismContribution>().HasOne<PrismBattle>().WithMany().HasForeignKey(c => c.BattleId);
     }
 
     public void Seed()

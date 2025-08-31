@@ -42,7 +42,6 @@ public enum Control
 
     OpenFaction,
 
-    OpenConquest,
 
     OpenBestiary,
 

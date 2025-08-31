@@ -226,7 +226,6 @@ public partial record Options
 
     public AlignmentOptions Alignment { get; set; } = new();
 
-    public PrismOptions Prism { get; set; } = new();
 
     #endregion Other Game Properties
 
@@ -271,8 +270,6 @@ public partial record Options
 
         SaveToDisk();
 
-        // Load prism configuration after ensuring the resources directory exists
-        PrismConfig.Load();
 
         return true;
     }
@@ -324,8 +321,6 @@ public partial record Options
             Instance = loadedOptions;
             OptionsLoaded?.Invoke(loadedOptions);
 
-            // Ensure prism definitions are loaded locally
-            PrismConfig.Load();
         }
         catch (Exception exception)
         {

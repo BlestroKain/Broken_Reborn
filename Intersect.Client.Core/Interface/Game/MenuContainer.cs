@@ -51,7 +51,6 @@ public partial class MenuContainer : Panel
 
     private readonly FactionWindow _factionWindow;
 
-    private readonly ConquestWindow _conquestWindow;
 
     private readonly ImagePanel _wingsButtonContainer;
     private readonly Button _wingsButton;
@@ -206,7 +205,6 @@ public partial class MenuContainer : Panel
 
         _factionWindow = new FactionWindow(gameCanvas) { IsHidden = true };
 
-        _conquestWindow = new ConquestWindow(gameCanvas) { IsHidden = true };
 
         _wingsButtonContainer = new ImagePanel(parent: this, name: nameof(_wingsButtonContainer))
         {
@@ -349,7 +347,6 @@ public partial class MenuContainer : Panel
         _spellsWindow.Hide();
         _guildWindow.Hide();
         _factionWindow.Hide();
-        _conquestWindow.Hide();
         mJobsWindow.Hide();
     }
 
@@ -417,20 +414,6 @@ public partial class MenuContainer : Panel
             HideWindows();
             _factionWindow.Refresh();
             _factionWindow.Show();
-        }
-    }
-
-    public void ToggleConquestWindow()
-    {
-        if (_conquestWindow.IsVisibleInTree)
-        {
-            _conquestWindow.Hide();
-        }
-        else
-        {
-            HideWindows();
-            _conquestWindow.Refresh();
-            _conquestWindow.Show();
         }
     }
 
@@ -517,7 +500,6 @@ public partial class MenuContainer : Panel
 
         _guildWindow.Hide();
         _factionWindow.Hide();
-        _conquestWindow.Hide();
     }
 
     public bool HasWindowsOpen()
@@ -530,12 +512,10 @@ public partial class MenuContainer : Panel
                           _partyWindow.IsVisible() ||
                           _guildWindow.IsVisibleInTree ||
                           _factionWindow.IsVisibleInTree ||
-                          _conquestWindow.IsVisibleInTree ||
         mJobsWindow.IsVisible();
         return windowsOpen;
     }
 
-    public ConquestWindow ConquestWindow => _conquestWindow;
 
     //Input Handlers
     private void EscapeMenuButtonClicked(Base sender, MouseButtonState arguments)

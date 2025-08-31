@@ -148,10 +148,6 @@ public static partial class PacketSender
         Network.SendPacket(new SetAlignmentRequestPacket(alignment));
     }
 
-    public static void SendPrismAttack(Guid mapId, Guid prismId)
-    {
-        Network.SendPacket(new PrismAttackPacket(mapId, prismId));
-    }
 
     public static void SendActivateEvent(Guid eventId)
     {

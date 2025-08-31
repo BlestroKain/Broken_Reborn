@@ -21,9 +21,6 @@ internal partial record ServerCommandLineOptions : ICommandLineOptions
     [Option('P', "no-port-check", Default = false, Required = false)]
     public bool NoNetworkCheck { get; init; }
 
-    [Option("syncPrisms", Default = false, Required = false)]
-    public bool SyncPrisms { get; init; }
-
     [Option('p', "port", Default = (ushort)0, Required = false)]
     public ushort Port { get; init; }
 

@@ -29,7 +29,6 @@ using Newtonsoft.Json;
 using Stat = Intersect.Enums.Stat;
 using Intersect.Server.Services;
 using Intersect.Server.Core;
-using Intersect.Server.Services.Prisms;
 
 namespace Intersect.Server.Entities;
 

@@ -74,11 +74,6 @@ internal static class Bootstrapper
 
         Console.WriteLine("Pre-context setup finished.");
 
-        if (parsedArguments.CommandLineOptions.SyncPrisms)
-        {
-            Options.Instance.Prism.SyncOnStartup = true;
-        }
-
         var (loggerFactory, logger) = new LoggerConfiguration().CreateLoggerForIntersect(
             entryAssembly,
             "Server",

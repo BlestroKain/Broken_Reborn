@@ -27,9 +27,7 @@ using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.Security;
 using Intersect.Network.Packets.Server;
 using Intersect.Server.Core;
-using Intersect.Framework.Core.GameObjects.Prisms;
 using Intersect.Server.Services;
-using Intersect.Server.Services.Prisms;
 using Microsoft.Extensions.Logging;
 using ChatMsgPacket = Intersect.Network.Packets.Client.ChatMsgPacket;
 using LoginPacket = Intersect.Network.Packets.Client.LoginPacket;
@@ -1453,50 +1451,6 @@ internal sealed partial class PacketHandler
         }
     }
 
-    //PrismAttackPacket
-    public void HandlePacket(Client client, PrismAttackPacket packet)
-    {
-        var player = client?.Entity;
-        if (player == null)
-        {
-            return;
-        }
-
-        if (player.Wings != WingState.On)
-        {
-            return;
-        }
-
-        if (packet.MapId != player.MapId)
-        {
-            return;
-        }
-
-        if (!MapController.TryGetInstanceFromMap(player.MapId, player.MapInstanceId, out var mapInstance))
-        {
-            return;
-        }
-
-        var prism = mapInstance.ControllingPrism;
-        if (prism == null || prism.Owner == player.Faction || prism.Id != packet.PrismId)
-        {
-            return;
-        }
-
-        var distance = player.GetDistanceTo(mapInstance.GetController(), prism.X, prism.Y);
-        if (distance > 1)
-        {
-            return;
-        }
-
-        var now = DateTime.UtcNow;
-        if (!PrismCombatService.CanDamage(prism, now))
-        {
-            return;
-        }
-
-        PrismCombatService.ApplyDamage(mapInstance, prism, 1, player);
-    }
 
     //DirectionPacket
     public void HandlePacket(Client client, DirectionPacket packet)

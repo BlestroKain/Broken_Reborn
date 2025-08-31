@@ -39,7 +39,6 @@ using Intersect.Server.Localization;
 using Intersect.Server.Maps;
 using Intersect.Server.Networking;
 using Intersect.Server.Core;
-using Intersect.Server.Services.Prisms;
 using Intersect.Utilities;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -1238,12 +1237,6 @@ public partial class Player : Entity
     {
         CastTime = 0;
         CastTarget = null;
-
-        if (MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var mapInstance)
-            && mapInstance.ControllingPrism != null)
-        {
-            PrismCombatService.RecordDeath(mapInstance.ControllingPrism, this);
-        }
 
         //Flag death to the client
         PlayDeathAnimation();

@@ -13,7 +13,6 @@ using Intersect.Server.Maps;
 using Intersect.Server.Networking;
 using Intersect.Utilities;
 using Intersect.Server.Core;
-using Intersect.Server.Services.Prisms;
 using System.Linq;
 
 namespace Intersect.Server.Entities;

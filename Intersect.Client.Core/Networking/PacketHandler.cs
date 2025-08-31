@@ -36,6 +36,8 @@ using Intersect.Localization;
 using Microsoft.Extensions.Logging;
 using System.Linq;
 using Intersect.Framework.Core.GameObjects.Spells;
+using Intersect.Client.Interface.Game.Map;
+using Intersect;
 
 namespace Intersect.Client.Networking;
 
@@ -2488,6 +2490,18 @@ internal sealed partial class PacketHandler
         }
 
         Interface.Interface.GameUi.GameMenu?.RefreshFactionWindow();
+    }
+
+    //WaypointSetPacket
+    public void HandlePacket(IPacketSender packetSender, Intersect.Network.Packets.Server.WaypointSetPacket packet)
+    {
+        WorldMapWindow.Waypoints?.AddWaypoint(new Point(packet.X, packet.Y), packet.Scope);
+    }
+
+    //WaypointClearPacket
+    public void HandlePacket(IPacketSender packetSender, Intersect.Network.Packets.Server.WaypointClearPacket packet)
+    {
+        WorldMapWindow.Waypoints?.Clear(packet.Scope);
     }
 
 }

@@ -354,6 +354,26 @@ public static partial class Input
                             _ = Interface.Interface.GameUi.GameMenu?.ToggleGuildWindow();
                             break;
 
+                        case Control.OpenMinimap:
+                        {
+                            var gameMenu = Interface.Interface.GameUi.GameMenu;
+                            if (gameMenu == null)
+                            {
+                                break;
+                            }
+
+                            if (gameMenu.IsWorldMapVisible())
+                            {
+                                gameMenu.ToggleWorldMapWindow();
+                            }
+                            else
+                            {
+                                gameMenu.ToggleMinimapWindow();
+                            }
+
+                            break;
+                        }
+
                         case Control.TargetParty1:
                             Globals.Me?.TargetPartyMember(0);
                             break;

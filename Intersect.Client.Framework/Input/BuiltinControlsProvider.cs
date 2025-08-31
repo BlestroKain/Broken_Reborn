@@ -29,6 +29,7 @@ internal sealed class BuiltinControlsProvider : IControlsProvider
         { Control.OpenFaction, new ControlMapping(new ControlBinding(Keys.None, Keys.H), ControlBinding.Default) },
         { Control.OpenBestiary, new ControlMapping(new ControlBinding(Keys.None, Keys.B), ControlBinding.Default) },
         { Control.OpenGuild, new ControlMapping(new ControlBinding(Keys.None, Keys.G), ControlBinding.Default) },
+        { Control.OpenMinimap, new ControlMapping(new ControlBinding(Keys.None, Keys.M), ControlBinding.Default) },
         { Control.OpenSettings, new ControlMapping(new ControlBinding(Keys.None, Keys.O), ControlBinding.Default) },
         { Control.OpenDebugger, new ControlMapping(new ControlBinding(Keys.None, Keys.F2), ControlBinding.Default) },
         { Control.OpenAdminPanel, new ControlMapping(new ControlBinding(Keys.None, Keys.Insert), ControlBinding.Default) },

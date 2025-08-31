@@ -10,6 +10,7 @@ using Intersect.Client.Interface.Game.Chat;
 using Intersect.Client.Interface.Game.Inventory;
 using Intersect.Client.Interface.Game.Job;
 using Intersect.Client.Interface.Game.Spells;
+using Intersect.Client.Interface.Game.Map;
 using Intersect.Client.Localization;
 using Intersect.Client.Networking;
 using Intersect.Enums;
@@ -304,6 +305,7 @@ public partial class MenuContainer : Panel
         _mapItemWindow = new MapItemWindow(gameCanvas: gameCanvas);
         _guildWindow = new GuildWindow(gameCanvas: gameCanvas);
         mJobsWindow= new JobsWindow(gameCanvas: gameCanvas);
+
     }
 
     //Methods
@@ -505,6 +507,7 @@ public partial class MenuContainer : Panel
 
         _guildWindow.Hide();
         _factionWindow.Hide();
+        Interface.GameUi.MapUIManager.CloseWorldMap();
     }
 
     public bool HasWindowsOpen()
@@ -517,8 +520,68 @@ public partial class MenuContainer : Panel
                           _partyWindow.IsVisible() ||
                           _guildWindow.IsVisibleInTree ||
                           _factionWindow.IsVisibleInTree ||
+                          Interface.GameUi.MapUIManager.IsWorldMapOpen ||
         mJobsWindow.IsVisible();
         return windowsOpen;
+    }
+
+    public bool CloseMostRecentWindow()
+    {
+        if (_characterWindow.IsVisible())
+        {
+            _characterWindow.Hide();
+            return true;
+        }
+
+        if (_friendsWindow.IsVisible)
+        {
+            _friendsWindow.Hide();
+            return true;
+        }
+
+        if (_inventoryWindow.IsVisibleInTree)
+        {
+            _inventoryWindow.Hide();
+            return true;
+        }
+
+        if (_questsWindow.IsVisible())
+        {
+            _questsWindow.Hide();
+            return true;
+        }
+
+        if (_spellsWindow.IsVisibleInTree)
+        {
+            _spellsWindow.Hide();
+            return true;
+        }
+
+        if (_partyWindow.IsVisible())
+        {
+            _partyWindow.Hide();
+            return true;
+        }
+
+        if (_guildWindow.IsVisibleInTree)
+        {
+            _guildWindow.Hide();
+            return true;
+        }
+
+        if (_factionWindow.IsVisibleInTree)
+        {
+            _factionWindow.Hide();
+            return true;
+        }
+
+        if (mJobsWindow.IsVisible())
+        {
+            mJobsWindow.Hide();
+            return true;
+        }
+
+        return false;
     }
 
 

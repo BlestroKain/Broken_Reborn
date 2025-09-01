@@ -937,4 +937,16 @@ internal sealed class MapUIManager
     {
         _minimapWindow.Hide();
     }
+
+    public void ToggleMinimap()
+    {
+        if (_minimapWindow.IsVisible())
+        {
+            _minimapWindow.Hide();
+        }
+        else
+        {
+            OpenMinimap();
+        }
+    }
 }

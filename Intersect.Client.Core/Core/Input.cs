@@ -153,10 +153,6 @@ public static partial class Input
             {
                 gameUi.UnfocusChat = true;
             }
-            else if (gameUi.MapUIManager.IsWorldMapOpen)
-            {
-                gameUi.MapUIManager.CloseWorldMap();
-            }
             else if (gameUi.CloseMostRecentWindow())
             {
                 // We've closed our window, don't do anything else. :)
@@ -359,7 +355,7 @@ public static partial class Input
                             break;
 
                         case Control.OpenMinimap:
-                            Interface.Interface.GameUi.MapUIManager.ToggleWorldMap();
+                            Interface.Interface.GameUi.MapUIManager.ToggleMinimap();
                             break;
 
                         case Control.TargetParty1:

@@ -14,11 +14,13 @@ using Intersect.Client.Interface.Game.Guilds;
 using Intersect.Client.Interface.Game.Hotbar;
 using Intersect.Client.Interface.Game.Inventory;
 using Intersect.Client.Interface.Game.Mail;
+using Intersect.Client.Interface.Game.Map;
 using Intersect.Client.Interface.Game.Shop;
 using Intersect.Client.Interface.Game.Trades;
 using Intersect.Client.Interface.Menu;
 using Intersect.Client.Interface.Shared;
 using Intersect.Client.Networking;
+using Intersect.Config;
 using Intersect.Core;
 using Intersect.Enums;
 using Intersect.GameObjects;
@@ -161,11 +163,14 @@ public partial class GameInterface : MutableInterface
 
     public MenuContainer GameMenu { get; private set; }
 
+    internal MapUIManager MapUIManager { get; private set; }
+
 
     public void InitGameGui()
     {
         mChatBox = new Chatbox(GameCanvas, this);
         GameMenu = new MenuContainer(GameCanvas);
+        MapUIManager = new MapUIManager(GameCanvas, GameMenu);
         Hotbar = new HotBarWindow(GameCanvas);
         PlayerBox = new EntityBox(GameCanvas, EntityType.Player, Globals.Me, true);
         PlayerBox.SetEntity(Globals.Me);
@@ -453,6 +458,7 @@ public partial class GameInterface : MutableInterface
         }
 
         GameMenu?.Update(mShouldUpdateQuestLog);
+        MapUIManager.Update();
         mShouldUpdateQuestLog = false;
         Hotbar?.Update();
         EscapeMenu.Update();
@@ -734,6 +740,18 @@ public partial class GameInterface : MutableInterface
             closedWindows = true;
         }
 
+        if (MapUIManager.IsWorldMapOpen)
+        {
+            MapUIManager.CloseWorldMap();
+            closedWindows = true;
+        }
+
+        if (MapUIManager.IsMinimapOpen)
+        {
+            MapUIManager.CloseMinimap();
+            closedWindows = true;
+        }
+
         if (GameMenu != null && GameMenu.HasWindowsOpen())
         {
             GameMenu.CloseAllWindows();
@@ -757,6 +775,8 @@ public partial class GameInterface : MutableInterface
         CloseCraftingTable();
         CloseShop();
         CloseTrading();
+        MapUIManager.CloseWorldMap();
+        MapUIManager.CloseMinimap();
         _bestiaryWindow?.Hide();
         _bestiaryWindow = null;
         GameCanvas.Dispose();
@@ -798,4 +818,66 @@ public partial class GameInterface : MutableInterface
         mMailBoxWindow?.Hide();
     }
 
+}
+
+internal sealed class MapUIManager
+{
+    private readonly MinimapWindow _minimapWindow;
+    private readonly WorldMapWindow _worldMapWindow;
+    private readonly MenuContainer _menu;
+
+    public MapUIManager(Canvas canvas, MenuContainer menu)
+    {
+        _menu = menu;
+        _minimapWindow = new MinimapWindow(canvas);
+        _worldMapWindow = new WorldMapWindow(canvas);
+    }
+
+    public bool IsWorldMapOpen => _worldMapWindow.IsVisible();
+
+    public bool IsMinimapOpen => _minimapWindow.IsVisible();
+
+    public void Update()
+    {
+        _minimapWindow.Update();
+    }
+
+    public void OpenWorldMap()
+    {
+        _menu.HideWindows();
+        _worldMapWindow.Show();
+    }
+
+    public void CloseWorldMap()
+    {
+        _worldMapWindow.Hide();
+    }
+
+    public void ToggleWorldMap()
+    {
+        if (_worldMapWindow.IsVisible())
+        {
+            _worldMapWindow.Hide();
+        }
+        else
+        {
+            OpenWorldMap();
+        }
+    }
+
+    public void OpenMinimap()
+    {
+        if (!Options.Instance.Minimap.EnableMinimapWindow)
+        {
+            return;
+        }
+
+        _menu.HideWindows();
+        _minimapWindow.Show();
+    }
+
+    public void CloseMinimap()
+    {
+        _minimapWindow.Hide();
+    }
 }

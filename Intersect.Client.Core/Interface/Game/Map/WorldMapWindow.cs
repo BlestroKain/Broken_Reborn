@@ -237,7 +237,7 @@ public class WorldMapWindow
 
     private void MinimapButton_Clicked(Base sender, MouseButtonState args)
     {
-        Interface.GameUi.GameMenu?.ToggleMinimapWindow();
+        Interface.GameUi.MapUIManager.OpenMinimap();
     }
 
     private static string GetMinimapKeyHint()

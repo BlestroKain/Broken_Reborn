@@ -507,7 +507,6 @@ public partial class MenuContainer : Panel
 
         _guildWindow.Hide();
         _factionWindow.Hide();
-        Interface.GameUi.MapUIManager.CloseWorldMap();
     }
 
     public bool HasWindowsOpen()
@@ -520,7 +519,6 @@ public partial class MenuContainer : Panel
                           _partyWindow.IsVisible() ||
                           _guildWindow.IsVisibleInTree ||
                           _factionWindow.IsVisibleInTree ||
-                          Interface.GameUi.MapUIManager.IsWorldMapOpen ||
         mJobsWindow.IsVisible();
         return windowsOpen;
     }

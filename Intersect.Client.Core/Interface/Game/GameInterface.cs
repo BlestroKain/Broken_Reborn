@@ -172,7 +172,7 @@ public partial class GameInterface : MutableInterface
     {
         mChatBox = new Chatbox(GameCanvas, this);
         GameMenu = new MenuContainer(GameCanvas);
-        MapUIManager = new MapUIManager(GameCanvas, GameMenu);
+        MapUIManager = new MapUIManager(GameCanvas);
         Hotbar = new HotBarWindow(GameCanvas);
         PlayerBox = new EntityBox(GameCanvas, EntityType.Player, Globals.Me, true);
         PlayerBox.SetEntity(Globals.Me);
@@ -743,12 +743,6 @@ public partial class GameInterface : MutableInterface
             closedWindows = true;
         }
 
-        if (MapUIManager.IsWorldMapOpen)
-        {
-            MapUIManager.CloseWorldMap();
-            closedWindows = true;
-        }
-
         if (GameMenu != null && GameMenu.HasWindowsOpen())
         {
             GameMenu.CloseAllWindows();
@@ -824,7 +818,6 @@ public partial class GameInterface : MutableInterface
         CloseCraftingTable();
         CloseShop();
         CloseTrading();
-        MapUIManager.CloseWorldMap();
         MapUIManager.CloseMinimap();
         _bestiaryWindow?.Hide();
         _bestiaryWindow = null;
@@ -872,20 +865,14 @@ public partial class GameInterface : MutableInterface
 internal sealed class MapUIManager
 {
     private readonly MinimapWindow _minimapWindow;
-    private readonly WorldMapWindow _worldMapWindow;
-    private readonly MenuContainer _menu;
 
-    public MapUIManager(Canvas canvas, MenuContainer menu)
+    public MapUIManager(Canvas canvas)
     {
-        _menu = menu;
         _minimapWindow = new MinimapWindow(canvas)
         {
             IsClickThrough = true,
         };
-        _worldMapWindow = new WorldMapWindow(canvas);
     }
-
-    public bool IsWorldMapOpen => _worldMapWindow.IsVisible();
 
     public bool IsMinimapOpen => _minimapWindow.IsVisible();
 
@@ -898,29 +885,6 @@ internal sealed class MapUIManager
     public void Update()
     {
         _minimapWindow.Update();
-    }
-
-    public void OpenWorldMap()
-    {
-        _menu.HideWindows();
-        _worldMapWindow.Show();
-    }
-
-    public void CloseWorldMap()
-    {
-        _worldMapWindow.Hide();
-    }
-
-    public void ToggleWorldMap()
-    {
-        if (_worldMapWindow.IsVisible())
-        {
-            _worldMapWindow.Hide();
-        }
-        else
-        {
-            OpenWorldMap();
-        }
     }
 
     public void OpenMinimap()

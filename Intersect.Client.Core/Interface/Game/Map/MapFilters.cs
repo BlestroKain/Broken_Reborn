@@ -58,14 +58,12 @@ public class MapFilters
         }
         else
         {
-            MapPreferences.Instance.ActiveFilters[key] = cb.IsChecked;
-            MapPreferences.Save();
+            MapPreferences.UpdateFilter(key, cb.IsChecked);
         }
 
         cb.CheckChanged += (_, args) =>
         {
-            MapPreferences.Instance.ActiveFilters[key] = cb.IsChecked;
-            MapPreferences.Save();
+            MapPreferences.UpdateFilter(key, cb.IsChecked);
         };
 
         _filters[key] = cb;

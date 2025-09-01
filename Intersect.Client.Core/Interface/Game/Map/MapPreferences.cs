@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Intersect;
 using Intersect.Client.General;
 using Intersect.Client.Framework.Database;
 using Newtonsoft.Json;
@@ -67,6 +68,47 @@ public class MapPreferences
     {
         var json = JsonConvert.SerializeObject(Instance);
         Globals.Database.SavePreference(PreferenceKey, json);
+    }
+
+    /// <summary>
+    /// Update the minimap zoom preference and persist it.
+    /// </summary>
+    /// <param name="zoom">New minimap zoom level.</param>
+    public static void UpdateMinimapZoom(int zoom)
+    {
+        Instance.MinimapZoom = zoom;
+        Save();
+    }
+
+    /// <summary>
+    /// Update the world map canvas position preference and persist it.
+    /// </summary>
+    /// <param name="position">New position for the world map canvas.</param>
+    public static void UpdateWorldMapPosition(Point position)
+    {
+        Instance.WorldMapPosition = position;
+        Save();
+    }
+
+    /// <summary>
+    /// Update the world map zoom preference and persist it.
+    /// </summary>
+    /// <param name="zoom">New world map zoom level.</param>
+    public static void UpdateWorldMapZoom(float zoom)
+    {
+        Instance.WorldMapZoom = zoom;
+        Save();
+    }
+
+    /// <summary>
+    /// Update a world map filter preference and persist it.
+    /// </summary>
+    /// <param name="key">Filter identifier.</param>
+    /// <param name="enabled">Whether the filter is enabled.</param>
+    public static void UpdateFilter(string key, bool enabled)
+    {
+        Instance.ActiveFilters[key] = enabled;
+        Save();
     }
 }
 

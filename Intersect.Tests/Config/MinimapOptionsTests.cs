@@ -22,9 +22,9 @@ public class MinimapOptionsTests
         }));
     }
 
-    [TestCase((byte)10, (byte)50, (byte)5, (byte)10)]
-    [TestCase((byte)10, (byte)50, (byte)55, (byte)50)]
-    public void Validate_ClampsDefaultZoom(byte minimum, byte maximum, byte defaultZoom, byte expected)
+    [TestCase(20, 220, 10, 20)]
+    [TestCase(20, 220, 250, 220)]
+    public void Validate_ClampsDefaultZoom(int minimum, int maximum, int defaultZoom, int expected)
     {
         var options = new MinimapOptions
         {

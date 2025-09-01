@@ -181,6 +181,11 @@ public partial class MapOptions
     /// </summary>
     public bool ZDimensionVisible { get; set; }
 
+    /// <summary>
+    /// Radius, in tiles, around the player that will be marked as discovered.
+    /// </summary>
+    public int DiscoveryRadius { get; set; } = 8;
+
     #endregion Configurable Properties
 
     [OnDeserialized]

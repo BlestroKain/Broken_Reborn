@@ -21,6 +21,7 @@ using System.Linq;
 using Intersect;
 using Intersect.Framework.Core.GameObjects.Mapping.Tilesets;
 using Intersect.Framework.Core.GameObjects.Maps;
+using Intersect.Client.Networking;
 namespace Intersect.Client.Interface.Game.Map
 {
     public sealed class MinimapWindow : Window
@@ -60,6 +61,8 @@ namespace Intersect.Client.Interface.Game.Map
         // Throttle dynamic overlay updates to ~4Hz
         private DateTime _lastOverlayUpdate = DateTime.MinValue;
         private static readonly TimeSpan OverlayInterval = TimeSpan.FromMilliseconds(250);
+        private DateTime _lastDiscoverySync = DateTime.MinValue;
+        private static readonly TimeSpan DiscoverySyncInterval = TimeSpan.FromSeconds(30);
         // Constructors
         public MinimapWindow(Base parent) : base(parent, Strings.Minimap.Title, false, "MinimapWindow")
         {
@@ -180,10 +183,23 @@ namespace Intersect.Client.Interface.Game.Map
                 Console.WriteLine("_minimapTileSize is null in UpdateMinimap.");
                 return;
             }
-            for (var dx = -1; dx <= 1; dx++)
+            var now = DateTime.UtcNow;
+            if (now - _lastDiscoverySync >= DiscoverySyncInterval)
             {
-                for (var dy = -1; dy <= 1; dy++)
+                SyncDiscoveries();
+            }
+
+            var radius = Options.Instance.Map.DiscoveryRadius;
+            var radiusSq = radius * radius;
+            for (var dx = -radius; dx <= radius; dx++)
+            {
+                for (var dy = -radius; dy <= radius; dy++)
                 {
+                    if (dx * dx + dy * dy > radiusSq)
+                    {
+                        continue;
+                    }
+
                     Globals.DiscoverTile(mapInstance.Id, player.X + dx, player.Y + dy);
                 }
             }
@@ -213,6 +229,8 @@ namespace Intersect.Client.Interface.Game.Map
                     }
                 }
                 _redrawMaps = true;
+                SyncDiscoveries();
+                Globals.LoadDiscoveries(Globals.MapDiscoveries.ToDictionary(k => k.Key, v => v.Value.Data));
             }
 
             var newLocations = GenerateEntityInfo(allEntities, player);
@@ -664,6 +682,14 @@ namespace Intersect.Client.Interface.Game.Map
         private IGameRenderTexture GenerateMapRenderTexture()
         {
             return GenerateRenderTexture(1);
+        }
+
+        private void SyncDiscoveries()
+        {
+            PacketSender.SendMapDiscoveries(
+                Globals.MapDiscoveries.ToDictionary(k => k.Key, v => v.Value.Data)
+            );
+            _lastDiscoverySync = DateTime.UtcNow;
         }
         private void MZoomOutButton_Clicked(Base sender, MouseButtonState arguments)
         {

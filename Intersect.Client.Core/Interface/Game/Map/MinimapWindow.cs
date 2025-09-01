@@ -140,7 +140,19 @@ namespace Intersect.Client.Interface.Game.Map
         }
         public void Show()
         {
-            SetZoom(MapPreferences.Instance.MinimapZoom, false);
+            var minimapOptions = Options.Instance.Minimap;
+            var minZoom = minimapOptions.MinimumZoom;
+            var maxZoom = minimapOptions.MaximumZoom;
+            var prefZoom = MapPreferences.Instance.MinimapZoom;
+
+            if (prefZoom <= 0)
+            {
+                prefZoom = minimapOptions.DefaultZoom;
+            }
+
+            var clampedPref = Math.Clamp(prefZoom, minZoom, maxZoom);
+
+            SetZoom(clampedPref, persist: true);
             IsHidden = false;
         }
         public bool IsVisible()

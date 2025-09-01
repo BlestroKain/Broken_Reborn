@@ -252,6 +252,7 @@ public sealed class WorldMapWindow : Window
         if (shift)
         {
             Waypoints?.AddWaypoint(pos, WaypointScope.Party);
+            Waypoints?.AddWaypoint(pos, WaypointScope.Guild);
             PacketSender.SendWaypointSet(pos.X, pos.Y, WaypointScope.Party);
             PacketSender.SendWaypointSet(pos.X, pos.Y, WaypointScope.Guild);
         }

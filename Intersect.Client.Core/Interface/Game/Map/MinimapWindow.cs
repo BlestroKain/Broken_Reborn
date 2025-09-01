@@ -112,6 +112,8 @@ namespace Intersect.Client.Interface.Game.Map
                 return;
             }
 
+            WorldMapWindow.Waypoints?.Update();
+
             var dpi = Sdl2.GetDisplayDpi();
             if (Math.Abs(dpi - _dpi) > float.Epsilon)
             {
@@ -677,6 +679,44 @@ namespace Intersect.Client.Interface.Game.Map
                     Position = new Point(entity.X, entity.Y),
                     Info = new EntityInfo { Color = color, Texture = texture }
                 });
+            }
+
+            if (Options.Instance.Minimap.ShowWaypoints && WorldMapWindow.Waypoints != null)
+            {
+                var mapWidthPixels = Options.Instance.Map.MapWidth * Options.Instance.Map.TileWidth;
+                var mapHeightPixels = Options.Instance.Map.MapHeight * Options.Instance.Map.TileHeight;
+
+                foreach (var (position, scope) in WorldMapWindow.Waypoints.Enumerate())
+                {
+                    var mapX = position.X / mapWidthPixels;
+                    var mapY = position.Y / mapHeightPixels;
+
+                    if (mapX < 0 || mapY < 0 || mapX >= Globals.MapGridWidth || mapY >= Globals.MapGridHeight)
+                    {
+                        continue;
+                    }
+
+                    var mapId = Globals.MapGrid[mapX, mapY];
+                    if (mapId == Guid.Empty)
+                    {
+                        continue;
+                    }
+
+                    var tileX = (position.X % mapWidthPixels) / Options.Instance.Map.TileWidth;
+                    var tileY = (position.Y % mapHeightPixels) / Options.Instance.Map.TileHeight;
+
+                    if (!entityInfo.TryGetValue(mapId, out var list))
+                    {
+                        list = ListPool<EntityLocation>.Rent();
+                        entityInfo.Add(mapId, list);
+                    }
+
+                    list.Add(new EntityLocation
+                    {
+                        Position = new Point(tileX, tileY),
+                        Info = new EntityInfo { Color = WaypointLayer.ScopeToColor(scope), Texture = string.Empty }
+                    });
+                }
             }
 
             return entityInfo;

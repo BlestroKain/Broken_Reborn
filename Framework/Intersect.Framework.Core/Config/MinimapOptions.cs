@@ -13,6 +13,11 @@ public partial class MinimapOptions
     public bool EnableMinimapWindow { get; set; }
 
     /// <summary>
+    /// Determines whether waypoints should be drawn on the minimap.
+    /// </summary>
+    public bool ShowWaypoints { get; set; } = true;
+
+    /// <summary>
     /// Configures the size at which each minimap tile is rendered.
     /// </summary>
     public Point TileSize { get; set; } = new(8, 8);

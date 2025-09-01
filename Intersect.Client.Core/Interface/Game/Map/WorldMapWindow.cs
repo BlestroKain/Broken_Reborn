@@ -43,6 +43,9 @@ public sealed class WorldMapWindow : Window
     private Point _activeEntryCenter;
     private readonly List<ImagePanel> _searchHighlights = new();
     private readonly Stack<ImagePanel> _highlightPool = new();
+    private readonly List<MapFilters.MapSearchEntry> _searchResults = new();
+    private int _searchResultIndex;
+    private string _lastSearchQuery = string.Empty;
 
     public static WaypointLayer? Waypoints { get; private set; }
 
@@ -79,6 +82,7 @@ public sealed class WorldMapWindow : Window
         _navigateButton.Clicked += NavigateButton_Clicked;
         _openWindowButton.Clicked += OpenWindowButton_Clicked;
         _minimapButton.Clicked += MinimapButton_Clicked;
+        Input.KeyDown += OnKeyDown;
 
         // Waypoints sobre el canvas (se finaliza al EnsureInitialized).
         Waypoints = new WaypointLayer(_canvas);
@@ -359,8 +363,35 @@ public sealed class WorldMapWindow : Window
         return Strings.Keys.FormatKeyName(binding.Modifier, binding.Key);
     }
 
+    private void OnKeyDown(Keys modifier, Keys key)
+    {
+        if (key != Keys.Enter || _searchResults.Count == 0 || _filters.SearchFocused)
+        {
+            return;
+        }
+
+        OnSearchSubmitted(_lastSearchQuery);
+    }
+
     private void OnSearchSubmitted(string query)
     {
+        if (_searchResults.Count > 0 && query.Equals(_lastSearchQuery, StringComparison.OrdinalIgnoreCase))
+        {
+            _searchResultIndex = (_searchResultIndex + 1) % _searchResults.Count;
+            var entry = _searchResults[_searchResultIndex];
+            var center = new Point(entry.Area.X + entry.Area.Width / 2, entry.Area.Y + entry.Area.Height / 2);
+            CenterOn(center);
+
+            _activeEntry = entry;
+            _activeEntryCenter = center;
+            _tooltipLabel.Text = entry.Name;
+            _tooltip.SetPosition(center.X + 5, center.Y + 5);
+            _tooltip.IsHidden = false;
+            return;
+        }
+
+        _lastSearchQuery = query;
+
         foreach (var highlight in _searchHighlights)
         {
             highlight.IsHidden = true;
@@ -368,6 +399,7 @@ public sealed class WorldMapWindow : Window
             _highlightPool.Push(highlight);
         }
         _searchHighlights.Clear();
+        _searchResults.Clear();
 
         var results = _filters.Search(query)
             .Where(r => r.NpcId == null || BestiaryController.HasUnlock(r.NpcId.Value, BestiaryUnlock.Kill))
@@ -376,7 +408,10 @@ public sealed class WorldMapWindow : Window
         if (results.Count == 0)
             return;
 
-        var first = results[0];
+        _searchResults.AddRange(results);
+        _searchResultIndex = 0;
+
+        var first = _searchResults[_searchResultIndex];
         var center = new Point(first.Area.X + first.Area.Width / 2, first.Area.Y + first.Area.Height / 2);
         CenterOn(center);
 
@@ -386,7 +421,7 @@ public sealed class WorldMapWindow : Window
         _tooltip.SetPosition(center.X + 5, center.Y + 5);
         _tooltip.IsHidden = false;
 
-        foreach (var result in results)
+        foreach (var result in _searchResults)
         {
             var area = _highlightPool.Count > 0 ? _highlightPool.Pop() : new ImagePanel(_canvas, "SearchHighlight");
             area.Parent = _canvas;

@@ -203,6 +203,12 @@ internal sealed partial class PacketHandler
         Globals.JoiningGame = true;
     }
 
+    //MapDiscoveriesPacket
+    public void HandlePacket(IPacketSender packetSender, MapDiscoveriesPacket packet)
+    {
+        Globals.LoadDiscoveries(packet.Discoveries ?? new Dictionary<Guid, byte[]>());
+    }
+
     public void HandlePacket(IPacketSender packetSender, MapAreaPacket packet)
     {
         foreach (var map in packet.Maps)
@@ -354,6 +360,10 @@ internal sealed partial class PacketHandler
     public void HandlePacket(IPacketSender packetSender, MapPacket packet)
     {
         HandleMap(packetSender, packet);
+        if (packet.MapId == Globals.Me?.MapId)
+        {
+            Globals.LoadDiscoveries(Globals.MapDiscoveries.ToDictionary(k => k.Key, v => v.Value.Data));
+        }
         Player.FetchNewMaps();
     }
 

@@ -29,6 +29,8 @@ using Intersect.Network.Packets.Server;
 using Intersect.Server.Core;
 using Intersect.Server.Services;
 using Microsoft.Extensions.Logging;
+using Intersect.Framework.Core.Collections;
+using Intersect.Config;
 using ChatMsgPacket = Intersect.Network.Packets.Client.ChatMsgPacket;
 using LoginPacket = Intersect.Network.Packets.Client.LoginPacket;
 using PartyInvitePacket = Intersect.Network.Packets.Client.PartyInvitePacket;
@@ -503,6 +505,52 @@ internal sealed partial class PacketHandler
         if (!packet.Responding)
         {
             PacketSender.SendPing(client, false);
+        }
+    }
+
+    //MapDiscoveriesPacket
+    public void HandlePacket(Client client, MapDiscoveriesPacket packet)
+    {
+        if (client?.Entity is not Player player || packet.Discoveries == null)
+        {
+            return;
+        }
+
+        const int maxEntries = 32;
+        if (packet.Discoveries.Count > maxEntries)
+        {
+            return;
+        }
+
+        var mapOptions = Options.Instance.Map;
+        var expectedSize = (mapOptions.MapWidth * mapOptions.MapHeight + 7) / 8;
+
+        var processed = 0;
+        foreach (var kvp in packet.Discoveries)
+        {
+            if (processed >= maxEntries)
+            {
+                break;
+            }
+
+            if (!MapController.Lookup.Keys.Contains(kvp.Key))
+            {
+                continue;
+            }
+
+            var data = kvp.Value;
+            if (data == null || data.Length != expectedSize)
+            {
+                continue;
+            }
+
+            player.MapDiscoveries[kvp.Key] = new BitGrid(
+                mapOptions.MapWidth,
+                mapOptions.MapHeight,
+                data
+            );
+
+            processed++;
         }
     }
 

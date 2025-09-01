@@ -817,7 +817,29 @@ public partial class Player : Entity
             Monitor.TryEnter(EntityLock, ref lockObtained);
             if (lockObtained)
             {
-                DiscoverTile(MapId, X, Y);
+                var mapOptions = Options.Instance.Map;
+                var radius = mapOptions.DiscoveryRadius;
+                var radiusSq = radius * radius;
+                for (var dx = -radius; dx <= radius; dx++)
+                {
+                    for (var dy = -radius; dy <= radius; dy++)
+                    {
+                        if (dx * dx + dy * dy > radiusSq)
+                        {
+                            continue;
+                        }
+
+                        var tx = X + dx;
+                        var ty = Y + dy;
+
+                        if (tx < 0 || ty < 0 || tx >= mapOptions.MapWidth || ty >= mapOptions.MapHeight)
+                        {
+                            continue;
+                        }
+
+                        DiscoverTile(MapId, tx, ty);
+                    }
+                }
                 if (Client == null) //Client logged out
                 {
                     if (CombatTimer < Timing.Global.Milliseconds)

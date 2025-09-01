@@ -13,6 +13,7 @@ using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Models;
 using Intersect.Network.Packets.Client;
 using System.Collections.Generic;
+using System;
 using Intersect.Network.Packets;
 using AdminAction = Intersect.Admin.Actions.AdminAction;
 
@@ -35,6 +36,11 @@ public static partial class PacketSender
     public static void SendLogout(bool characterSelect = false)
     {
         Network.SendPacket(new LogoutPacket(characterSelect));
+    }
+
+    public static void SendMapDiscoveries(Dictionary<Guid, byte[]> discoveries)
+    {
+        Network.SendPacket(new MapDiscoveriesPacket(discoveries));
     }
 
     public static void SendNeedMap(params ObjectCacheKey<MapDescriptor>[] cacheKeys)

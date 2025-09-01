@@ -122,9 +122,8 @@ public sealed class WorldMapWindow : Window
             (int)(_baseHeight * _zoom)
         );
         ClampPosition();
-        MapPreferences.Instance.WorldMapZoom = _zoom;
-        MapPreferences.Instance.WorldMapPosition = new Point(_canvas.X, _canvas.Y);
-        MapPreferences.Save();
+        MapPreferences.UpdateWorldMapZoom(_zoom);
+        MapPreferences.UpdateWorldMapPosition(new Point(_canvas.X, _canvas.Y));
 
         // Tooltip oculto por defecto
         _tooltip.IsHidden = true;
@@ -273,8 +272,7 @@ public sealed class WorldMapWindow : Window
     {
         _dragging = false;
         ClampPosition();
-        MapPreferences.Instance.WorldMapPosition = new Point(_canvas.X, _canvas.Y);
-        MapPreferences.Save();
+        MapPreferences.UpdateWorldMapPosition(new Point(_canvas.X, _canvas.Y));
     }
 
     private int ClampX(int x) => Math.Clamp(x, Width - (int)(_baseWidth * _zoom), 0);
@@ -325,9 +323,8 @@ public sealed class WorldMapWindow : Window
         _canvas.SetBounds(newX, newY, newWidth, newHeight);
         ClampPosition();
 
-        MapPreferences.Instance.WorldMapZoom = _zoom;
-        MapPreferences.Instance.WorldMapPosition = new Point(_canvas.X, _canvas.Y);
-        MapPreferences.Save();
+        MapPreferences.UpdateWorldMapZoom(_zoom);
+        MapPreferences.UpdateWorldMapPosition(new Point(_canvas.X, _canvas.Y));
     }
 
     private void CenterOn(Point pos)
@@ -335,8 +332,7 @@ public sealed class WorldMapWindow : Window
         var targetX = ClampX(Width / 2 - pos.X);
         var targetY = ClampY(Height / 2 - pos.Y);
         _canvas.SetPosition(targetX, targetY);
-        MapPreferences.Instance.WorldMapPosition = new Point(_canvas.X, _canvas.Y);
-        MapPreferences.Save();
+        MapPreferences.UpdateWorldMapPosition(new Point(_canvas.X, _canvas.Y));
     }
 
     private void MinimapButton_Clicked(Base sender, MouseButtonState args)

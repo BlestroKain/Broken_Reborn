@@ -210,8 +210,7 @@ namespace Intersect.Client.Interface.Game.Map
                 );
             }
 
-            MapPreferences.Instance.MinimapZoom = _zoomLevel;
-            MapPreferences.Save();
+            MapPreferences.UpdateMinimapZoom(_zoomLevel);
 
             return true;
         }
@@ -767,8 +766,7 @@ namespace Intersect.Client.Interface.Game.Map
                 _zoomLevel + Options.Instance.Minimap.ZoomStep,
                 Options.Instance.Minimap.MaximumZoom
             );
-            MapPreferences.Instance.MinimapZoom = _zoomLevel;
-            MapPreferences.Save();
+            MapPreferences.UpdateMinimapZoom(_zoomLevel);
         }
         private void MZoomInButton_Clicked(Base sender, MouseButtonState arguments)
         {
@@ -776,8 +774,7 @@ namespace Intersect.Client.Interface.Game.Map
                 _zoomLevel - Options.Instance.Minimap.ZoomStep,
                 Options.Instance.Minimap.MinimumZoom
             );
-            MapPreferences.Instance.MinimapZoom = _zoomLevel;
-            MapPreferences.Save();
+            MapPreferences.UpdateMinimapZoom(_zoomLevel);
         }
 
         private void OpenWorldMapButton_Clicked(Base sender, MouseButtonState arguments)

@@ -203,8 +203,8 @@ internal sealed partial class PacketHandler
         Globals.JoiningGame = true;
     }
 
-    //MapDiscoveriesPacket
-    public void HandlePacket(IPacketSender packetSender, MapDiscoveriesPacket packet)
+    //MapDiscoveriesResponsePacket
+    public void HandlePacket(IPacketSender packetSender, MapDiscoveriesResponsePacket packet)
     {
         Globals.LoadDiscoveries(packet.Discoveries ?? new Dictionary<Guid, byte[]>());
     }

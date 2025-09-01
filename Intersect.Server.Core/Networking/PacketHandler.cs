@@ -508,8 +508,8 @@ internal sealed partial class PacketHandler
         }
     }
 
-     //MapDiscoveriesPacket
-    public void HandlePacket(Client client, MapDiscoveriesPacket packet)
+     //MapDiscoveriesRequestPacket
+    public void HandlePacket(Client client, MapDiscoveriesRequestPacket packet)
     {
         if (client?.Entity is not Player player || packet.Discoveries == null)
         {

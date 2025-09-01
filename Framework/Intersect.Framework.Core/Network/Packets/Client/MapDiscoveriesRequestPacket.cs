@@ -6,13 +6,13 @@ using MessagePack;
 namespace Intersect.Network.Packets.Client;
 
 [MessagePackObject]
-public partial class MapDiscoveriesPacket : IntersectPacket
+public partial class MapDiscoveriesRequestPacket : IntersectPacket
 {
-    public MapDiscoveriesPacket()
+    public MapDiscoveriesRequestPacket()
     {
     }
 
-    public MapDiscoveriesPacket(Dictionary<Guid, byte[]> discoveries)
+    public MapDiscoveriesRequestPacket(Dictionary<Guid, byte[]> discoveries)
     {
         Discoveries = discoveries;
     }

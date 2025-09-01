@@ -38,9 +38,9 @@ public static partial class PacketSender
         Network.SendPacket(new LogoutPacket(characterSelect));
     }
 
-    public static void SendMapDiscoveries(Dictionary<Guid, byte[]> discoveries)
+    public static void SendMapDiscoveriesRequest(Dictionary<Guid, byte[]> discoveries)
     {
-        Network.SendPacket(new MapDiscoveriesPacket(discoveries));
+        Network.SendPacket(new MapDiscoveriesRequestPacket(discoveries));
     }
 
     public static void SendNeedMap(params ObjectCacheKey<MapDescriptor>[] cacheKeys)

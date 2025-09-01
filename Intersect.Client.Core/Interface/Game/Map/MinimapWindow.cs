@@ -796,7 +796,7 @@ namespace Intersect.Client.Interface.Game.Map
 
         private void SyncDiscoveries()
         {
-            PacketSender.SendMapDiscoveries(
+            PacketSender.SendMapDiscoveriesRequest(
                 Globals.MapDiscoveries.ToDictionary(k => k.Key, v => v.Value.Data)
             );
             _lastDiscoverySync = DateTime.UtcNow;

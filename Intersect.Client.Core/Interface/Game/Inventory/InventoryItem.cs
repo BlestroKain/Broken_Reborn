@@ -465,34 +465,7 @@ public partial class InventoryItem : SlotItem
                         inventoryItem.SlotIndex < 0 || inventoryItem.SlotIndex >= player.Inventory.Length)
                         return false;
 
-                    // Solo el origen debe existir; el destino puede estar vacío
-                    if (player.Inventory[SlotIndex] == null)
-                        return false;
-
-                    // Validación de índice y existencia del slot
-                    if (SlotIndex < 0 || SlotIndex >= player.Inventory.Length ||
-                        inventoryItem.SlotIndex < 0 || inventoryItem.SlotIndex >= player.Inventory.Length)
-                    {
-                        return false;
-                    }
-
-                    if (player.Inventory[SlotIndex] == null || player.Inventory[inventoryItem.SlotIndex] == null)
-                    {
-                        return false;
-                    }
-
-                    // Validación de índice y existencia del slot
-                    if (SlotIndex < 0 || SlotIndex >= player.Inventory.Length ||
-                        inventoryItem.SlotIndex < 0 || inventoryItem.SlotIndex >= player.Inventory.Length)
-                    {
-                        return false;
-                    }
-
-                    if (player.Inventory[SlotIndex] == null || player.Inventory[inventoryItem.SlotIndex] == null)
-                    {
-                        return false;
-                    }
-
+                    // Permitimos que el destino esté vacío: sólo verificamos el origen
                     player.SwapItems(SlotIndex, inventoryItem.SlotIndex);
                     return true;
 

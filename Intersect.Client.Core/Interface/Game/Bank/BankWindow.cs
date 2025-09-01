@@ -1,3 +1,4 @@
+using System;
 using Intersect.Client.Core;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen;
@@ -5,6 +6,7 @@ using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
 using Intersect.Client.General;
 using Intersect.Client.Interface.Game.Inventory;
+using Intersect.Client.Items;
 using Intersect.Client.Localization;
 using Intersect.Client.Networking;
 using Intersect.Client.Utilities;
@@ -27,9 +29,10 @@ public partial class BankWindow : Window
     private SortCriterion _criterion = SortCriterion.TypeThenName;
     private string? _lastQuery;
     private bool _lastAsc;
-    private bool _sortAscending;
+    private bool _sortAscending = true;
     private ItemType? _selectedType;
     private string? _selectedSubtype;
+    private bool _slotsDirty;
 
     //Init
     public BankWindow(Canvas gameCanvas) : base(
@@ -66,52 +69,32 @@ public partial class BankWindow : Window
         _searchBox = new TextBox(topPanel, "SearchBox");
         _searchBox.SetSize(130, 24);
         _searchBox.SetPosition(0, 8);
-        _searchBox.TextChanged += (s, e) => ApplyFilters();
 
         _sortButton = new Button(topPanel, "SortButton");
-        _sortButton.SetSize(50, 24);
+        _sortButton.SetSize(100, 24);
         _sortButton.SetPosition(140, 8);
-        _sortButton.SetText("Sort");
-        _sortButton.Clicked += (_, _) =>
-        {
-            _sortAscending = !_sortAscending;
-            PacketSender.SendBankSortPacket(); // Evita reapertura
-        };
+        UpdateSortButtonText();
+        _sortButton.Clicked += SortButton_Clicked;
 
         _typeBox = new ComboBox(topPanel, "TypeFilter");
         _typeBox.SetSize(100, 24);
         _typeBox.SetPosition(200, 8);
         var allType = _typeBox.AddItem("All", userData: null);
-        allType.Selected += (_, _) =>
-        {
-            _selectedType = null;
-            UpdateSubtypeOptions();
-            ApplyFilters();
-        };
+        _typeBox.SelectedItem = allType;
         foreach (var type in Enum.GetValues<ItemType>())
         {
             if (type == ItemType.None) continue;
-            var item = _typeBox.AddItem(type.ToString(), userData: type);
-            item.Selected += (_, _) =>
-            {
-                _selectedType = (ItemType)item.UserData;
-                UpdateSubtypeOptions();
-                ApplyFilters();
-            };
+            _typeBox.AddItem(type.ToString(), userData: type);
         }
 
         _subtypeBox = new ComboBox(topPanel, "SubtypeFilter");
         _subtypeBox.SetSize(100, 24);
         _subtypeBox.SetPosition(310, 8);
         var allSub = _subtypeBox.AddItem("All", userData: null);
-        allSub.Selected += (_, _) =>
-        {
-            _selectedSubtype = null;
-            ApplyFilters();
-        };
+        _subtypeBox.SelectedItem = allSub;
 
         _valueLabel = new Label(topPanel, "ValueLabel");
-        _valueLabel.SetPosition(420, 11);
+        _valueLabel.SetPosition(380, 11);
         _valueLabel.SetText("Bank Value: 0");
         _valueLabel.TextColor = Color.White;
         _valueLabel.FontSize = 10;
@@ -132,6 +115,11 @@ public partial class BankWindow : Window
             ItemFont = GameContentManager.Current.GetFont(name: "sourcesansproblack"),
             ItemFontSize = 10,
         };
+
+        _lastQuery = _searchBox.Text;
+        _selectedType = (ItemType?)_typeBox.SelectedItem?.UserData;
+        _selectedSubtype = (string?)_subtypeBox.SelectedItem?.UserData;
+        _lastAsc = _sortAscending;
     }
 
     protected override void EnsureInitialized()
@@ -157,7 +145,45 @@ public partial class BankWindow : Window
         {
             return;
         }
-        ApplyFilters();
+
+        var query = _searchBox.Text;
+        var asc = _sortAscending;
+        var type = (ItemType?)_typeBox.SelectedItem?.UserData;
+        var subtype = (string?)_subtypeBox.SelectedItem?.UserData;
+
+        var changed = _slotsDirty;
+
+        if (type != _selectedType)
+        {
+            _selectedType = type;
+            UpdateSubtypeOptions();
+            subtype = (string?)_subtypeBox.SelectedItem?.UserData;
+            changed = true;
+        }
+
+        if (subtype != _selectedSubtype)
+        {
+            _selectedSubtype = subtype;
+            changed = true;
+        }
+
+        if (query != _lastQuery)
+        {
+            _lastQuery = query;
+            changed = true;
+        }
+
+        if (asc != _lastAsc)
+        {
+            _lastAsc = asc;
+            changed = true;
+        }
+
+        if (changed)
+        {
+            ApplyFilters();
+            _slotsDirty = false;
+        }
 
         for (var i = 0; i < Items.Count; i++)
         {
@@ -172,17 +198,60 @@ public partial class BankWindow : Window
 
     private void SortButton_Clicked(Base sender, MouseButtonState arguments)
     {
-        PacketSender.SendBankSortPacket();
+        if (_sortAscending)
+        {
+            _sortAscending = false;
+        }
+        else
+        {
+            _sortAscending = true;
+            _criterion = _criterion switch
+            {
+                SortCriterion.TypeThenName => SortCriterion.Name,
+                SortCriterion.Name => SortCriterion.Quantity,
+                SortCriterion.Quantity => SortCriterion.Price,
+                _ => SortCriterion.TypeThenName,
+            };
+        }
+
+        UpdateSortButtonText();
+        SortItems(sender, arguments);
+    }
+
+    private void UpdateSortButtonText()
+    {
+        var arrow = _sortAscending ? "▲" : "▼";
+        _sortButton.SetText($"{Strings.Inventory.Sort}: {_criterion} {arrow}");
+    }
+
+    private void SortItems(Base sender, MouseButtonState arguments)
+    {
+        if (Globals.BankSlots is null)
+        {
+            return;
+        }
+
+        var bank = Globals.BankSlots;
+        var max = Math.Min(Globals.BankSlotCount, bank.Length);
+
+        for (var pass = 0; pass < max - 1; pass++)
+        {
+            for (var i = 0; i < max - pass - 1; i++)
+            {
+                if (ItemListHelper.CompareItems(bank[i], bank[i + 1], _criterion, _sortAscending) > 0)
+                {
+                    PacketSender.SendMoveBankItems(i, i + 1);
+                    (bank[i], bank[i + 1]) = (bank[i + 1], bank[i]);
+                }
+            }
+        }
+
+        ApplyFilters();
     }
     private void UpdateSubtypeOptions()
     {
         _subtypeBox.ClearItems();
         var all = _subtypeBox.AddItem("All", userData: null);
-        all.Selected += (_, _) =>
-        {
-            _selectedSubtype = null;
-            ApplyFilters();
-        };
 
         if (_selectedType.HasValue &&
             Options.Instance.Items.ItemSubtypes.TryGetValue(_selectedType.Value, out var subtypes))
@@ -190,26 +259,23 @@ public partial class BankWindow : Window
             foreach (var st in subtypes)
             {
                 var local = st;
-                var item = _subtypeBox.AddItem(local, userData: local);
-                item.Selected += (_, _) =>
-                {
-                    _selectedSubtype = (string?)item.UserData;
-                    ApplyFilters();
-                };
+                _subtypeBox.AddItem(local, userData: local);
             }
         }
 
         _subtypeBox.SelectedItem = all;
     }
 
-    // InventoryWindow.cs
     private void ApplyFilters()
     {
         if (Globals.BankSlots is null)
+        {
             return;
+        }
 
-        // 1) Calcular los que coinciden con la búsqueda y filtros
-        var matched = Items.Where(i =>
+        var searchText = _searchBox?.Text ?? string.Empty;
+
+        var matchedSet = Items.Where(i =>
         {
             var slot = Globals.BankSlots[i.SlotIndex];
             var descriptor = slot?.Descriptor;
@@ -229,30 +295,34 @@ public partial class BankWindow : Window
                 return false;
             }
 
-            return SearchHelper.Matches(_searchBox.Text, descriptor.Name);
-        });
+            return SearchHelper.Matches(searchText, descriptor.Name);
+        }).ToHashSet();
 
-        // 2) Reordenar: primero coincidentes, luego no-coincidentes
-        var matchedList = matched.ToList();
-        var matchedSet = matchedList.ToHashSet();
-        var nonMatched = Items.Where(i => !matchedSet.Contains(i));
+        var filterActive = !string.IsNullOrWhiteSpace(searchText) ||
+                           _selectedType.HasValue ||
+                           !string.IsNullOrEmpty(_selectedSubtype);
 
-        var arranged = matchedList.Concat(nonMatched).ToList();
-
-        // 3) "Vaciar" visualmente los que NO coinciden (sin ocultarlos)
-        foreach (var it in Items)
+        foreach (var item in Items)
         {
-            if (it is BankItem b)
-                b.SetFilterMatch(matchedSet.Contains(it));
-            // Importante: NO tocar it.IsHidden
+            if (item is BankItem bankItem)
+            {
+                var isMatch = matchedSet.Contains(item);
+                var show = isMatch || !filterActive;
+                bankItem.IsVisibleInParent = show;
+                bankItem.SetFilterMatch(isMatch);
+                bankItem.Update();
+            }
         }
 
-        // 4) Siempre poblar con TODA la lista para mantener el grid y permitir drop en cualquier slot
-        PopulateSlotContainer.Populate(_slotContainer, arranged);
+        var visibleItems = Items.Where(i => i.IsVisibleInParent).ToList();
+        PopulateSlotContainer.Populate(_slotContainer, visibleItems);
     }
 
 
-    public void Refresh() => ApplyFilters();
+    public void Refresh()
+    {
+        _slotsDirty = true;
+    }
 
     public override void Hide()
     {

@@ -806,7 +806,12 @@ public partial class EntityBox
                     {
                         if (invIndex >= 0 && invIndex < Options.Instance.Player.MaxInventory)
                         {
-                            equipment[slotIndex].Add(player.Inventory[invIndex].ItemId);
+                            var inventoryItem = player.Inventory[invIndex];
+
+                            if (inventoryItem != null)
+                            {
+                                equipment[slotIndex].Add(inventoryItem.ItemId);
+                            }
                         }
                     }
                 }

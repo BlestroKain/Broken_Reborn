@@ -176,5 +176,15 @@ public class MapFilters
 
         return result.Where(e => IsFilterEnabled(e.Type));
     }
+
+    /// <summary>
+    /// Sets the location of the filter panel.
+    /// </summary>
+    public void SetPosition(int x, int y) => _panel.SetPosition(x, y);
+
+    /// <summary>
+    /// Sets the size of the filter panel.
+    /// </summary>
+    public void SetSize(int width, int height) => _panel.SetSize(width, height);
 }
 

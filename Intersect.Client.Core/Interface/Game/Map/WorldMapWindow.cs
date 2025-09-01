@@ -138,12 +138,17 @@ public sealed class WorldMapWindow : Window
         _initialized = true;
 
     }
-    protected override void OnResized(int x, int y, int width, int height)
+
+    protected override void OnResized(Base control, EventArgs args)
     {
-        base.OnResized(x, y, width, height);
-        if (!_initialized) return;
+        base.OnResized(control, args);
+        if (!_initialized)
+        {
+            return;
+        }
+
         ApplyLayout();
-        // Recalcular clamp con el tamaño nuevo
+        // Recalculate clamp with new size
         ClampPosition();
     }
 

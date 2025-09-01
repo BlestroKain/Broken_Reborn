@@ -29,5 +29,25 @@ public class MapLegend
         label.Dock = Pos.Top;
         _entries.Add(label);
     }
+
+    /// <summary>
+    /// Exposes the underlying panel's position for layout logic.
+    /// </summary>
+    public int Y => _panel.Y;
+
+    /// <summary>
+    /// Exposes the underlying panel's height for layout logic.
+    /// </summary>
+    public int Height => _panel.Height;
+
+    /// <summary>
+    /// Sets the location of the legend panel.
+    /// </summary>
+    public void SetPosition(int x, int y) => _panel.SetPosition(x, y);
+
+    /// <summary>
+    /// Sets the size of the legend panel.
+    /// </summary>
+    public void SetSize(int width, int height) => _panel.SetSize(width, height);
 }
 

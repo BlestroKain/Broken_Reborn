@@ -849,10 +849,11 @@ public partial class MapInstance : IMapInstance
                     VisibleToAll = Options.Instance.Loot.ShowUnownedItems || owner == Guid.Empty
                 };
 
-                // If this is a piece of equipment, set up the stat buffs for it.
+                // If this is a piece of equipment, copy its properties so enchantments and other
+                // modifiers persist when the item is dropped.
                 if (itemDescriptor.ItemType == ItemType.Equipment)
                 {
-                    mapItem.SetupStatBuffs(item);
+                    mapItem.SetupProperties(item);
                 }
 
                 if (mapItem.TileIndex > Options.Instance.Map.MapHeight * Options.Instance.Map.MapWidth || mapItem.TileIndex < 0)

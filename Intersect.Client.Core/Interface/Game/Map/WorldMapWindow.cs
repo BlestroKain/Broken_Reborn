@@ -379,13 +379,13 @@ public sealed class WorldMapWindow : Window
         {
             _searchResultIndex = (_searchResultIndex + 1) % _searchResults.Count;
             var entry = _searchResults[_searchResultIndex];
-            var center = new Point(entry.Area.X + entry.Area.Width / 2, entry.Area.Y + entry.Area.Height / 2);
-            CenterOn(center);
+            var entryCenter = new Point(entry.Area.X + entry.Area.Width / 2, entry.Area.Y + entry.Area.Height / 2);
+            CenterOn(entryCenter);
 
             _activeEntry = entry;
-            _activeEntryCenter = center;
+            _activeEntryCenter = entryCenter;
             _tooltipLabel.Text = entry.Name;
-            _tooltip.SetPosition(center.X + 5, center.Y + 5);
+            _tooltip.SetPosition(entryCenter.X + 5, entryCenter.Y + 5);
             _tooltip.IsHidden = false;
             return;
         }

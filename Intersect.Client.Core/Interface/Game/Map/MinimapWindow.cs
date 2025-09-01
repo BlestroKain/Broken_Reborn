@@ -49,6 +49,8 @@ namespace Intersect.Client.Interface.Game.Map
         private volatile bool _initialized;
         private bool _isClickThrough;
 
+        public static WaypointLayer? Waypoints { get; private set; }
+
         public bool IsClickThrough
         {
             get => _isClickThrough;
@@ -90,6 +92,7 @@ namespace Intersect.Client.Interface.Game.Map
             _zoomOutButton.SetToolTipText(Strings.Minimap.ZoomOut);
             _whiteTexture = Graphics.Renderer.WhitePixel;
             _renderTexture = GenerateBaseRenderTexture();
+            Waypoints = new WaypointLayer(_minimap);
         }
         protected override void EnsureInitialized()
         {
@@ -128,7 +131,7 @@ namespace Intersect.Client.Interface.Game.Map
             var now = DateTime.UtcNow;
             if (now - _lastOverlayUpdate >= OverlayInterval)
             {
-                WorldMapWindow.Waypoints?.Update();
+                Waypoints?.Update();
                 UpdateMinimap(Globals.Me, Globals.Entities);
                 _lastOverlayUpdate = now;
             }
@@ -668,12 +671,12 @@ namespace Intersect.Client.Interface.Game.Map
                 });
             }
 
-            if (Options.Instance.Minimap.ShowWaypoints && WorldMapWindow.Waypoints != null)
+            if (Options.Instance.Minimap.ShowWaypoints && Waypoints != null)
             {
                 var mapWidthPixels = Options.Instance.Map.MapWidth * Options.Instance.Map.TileWidth;
                 var mapHeightPixels = Options.Instance.Map.MapHeight * Options.Instance.Map.TileHeight;
 
-                foreach (var (position, scope) in WorldMapWindow.Waypoints.Enumerate())
+                foreach (var (position, scope) in Waypoints.Enumerate())
                 {
                     var mapX = position.X / mapWidthPixels;
                     var mapY = position.Y / mapHeightPixels;

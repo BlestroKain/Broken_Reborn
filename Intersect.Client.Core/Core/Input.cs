@@ -355,14 +355,7 @@ public static partial class Input
                             break;
 
                         case Control.OpenMinimap:
-                            if (Interface.Interface.GameUi.MapUIManager.IsMinimapOpen)
-                            {
-                                Interface.Interface.GameUi.MapUIManager.CloseMinimap();
-                            }
-                            else
-                            {
-                                Interface.Interface.GameUi.MapUIManager.OpenMinimap();
-                            }
+                            Interface.Interface.GameUi.MapUIManager?.ToggleMinimap();
                             break;
 
                         case Control.TargetParty1:

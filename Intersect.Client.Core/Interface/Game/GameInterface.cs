@@ -829,7 +829,10 @@ internal sealed class MapUIManager
     public MapUIManager(Canvas canvas, MenuContainer menu)
     {
         _menu = menu;
-        _minimapWindow = new MinimapWindow(canvas);
+        _minimapWindow = new MinimapWindow(canvas)
+        {
+            IsClickThrough = true,
+        };
         _worldMapWindow = new WorldMapWindow(canvas);
     }
 
@@ -872,7 +875,6 @@ internal sealed class MapUIManager
             return;
         }
 
-        _menu.HideWindows();
         _minimapWindow.Show();
     }
 

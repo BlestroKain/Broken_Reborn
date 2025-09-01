@@ -35,7 +35,10 @@ namespace Intersect.Client.Interface.Game.Map
 
         // Cached entity/POI information per map id
         private Dictionary<Guid, List<EntityLocation>> _entityInfoCache = new();
-        private readonly Point _minimapTileSize;
+        private Point _minimapTileSize;
+        private float _dpi;
+        private DateTime _lastWheelTime = DateTime.MinValue;
+        private static readonly TimeSpan WheelDebounce = TimeSpan.FromMilliseconds(125);
         // Cache of mini tiles and dynamic overlays by map id
         private readonly Dictionary<Guid, IGameRenderTexture> _minimapCache = new();
         private readonly Dictionary<Guid, IGameRenderTexture> _entityCache = new();
@@ -70,8 +73,8 @@ namespace Intersect.Client.Interface.Game.Map
             Layer = "HUDTop";
             AlwaysOnTop = true;
             _zoomLevel = Options.Instance.Minimap.DefaultZoom;
-            var dpi = Sdl2.GetDisplayDpi();
-            _minimapTileSize = Options.Instance.Minimap.GetScaledTileSize(dpi);
+            _dpi = Sdl2.GetDisplayDpi();
+            _minimapTileSize = Options.Instance.Minimap.GetScaledTileSize(_dpi);
             _minimap = new ImagePanel(this, "MinimapContainer");
             _zoomInButton = new Button(_minimap, "ZoomInButton");
             _zoomOutButton = new Button(_minimap, "ZoomOutButton");
@@ -97,6 +100,27 @@ namespace Intersect.Client.Interface.Game.Map
             if (!IsVisible() || !_initialized)
             {
                 return;
+            }
+
+            var dpi = Sdl2.GetDisplayDpi();
+            if (Math.Abs(dpi - _dpi) > float.Epsilon)
+            {
+                _dpi = dpi;
+                _minimapTileSize = Options.Instance.Minimap.GetScaledTileSize(_dpi);
+                _renderTexture?.Dispose();
+                _renderTexture = GenerateBaseRenderTexture();
+                foreach (var tex in _minimapCache.Values)
+                {
+                    tex.Dispose();
+                }
+                _minimapCache.Clear();
+                foreach (var tex in _entityCache.Values)
+                {
+                    tex.Dispose();
+                }
+                _entityCache.Clear();
+                _redrawMaps = true;
+                _redrawEntities = true;
             }
 
             var now = DateTime.UtcNow;
@@ -144,6 +168,42 @@ namespace Intersect.Client.Interface.Game.Map
             }
 
             base.OnMouseUp(mouseButton, mousePosition, userAction);
+        }
+
+        protected override bool OnMouseWheeled(int delta)
+        {
+            if (IsClickThrough)
+            {
+                return false;
+            }
+
+            var now = DateTime.UtcNow;
+            if (now - _lastWheelTime < WheelDebounce)
+            {
+                return true;
+            }
+
+            _lastWheelTime = now;
+
+            if (delta > 0)
+            {
+                _zoomLevel = Math.Max(
+                    _zoomLevel - Options.Instance.Minimap.ZoomStep,
+                    Options.Instance.Minimap.MinimumZoom
+                );
+            }
+            else if (delta < 0)
+            {
+                _zoomLevel = Math.Min(
+                    _zoomLevel + Options.Instance.Minimap.ZoomStep,
+                    Options.Instance.Minimap.MaximumZoom
+                );
+            }
+
+            MapPreferences.Instance.MinimapZoom = _zoomLevel;
+            MapPreferences.Save();
+
+            return true;
         }
         // Private Methods
         private void UpdateMinimap(Player player, Dictionary<Guid, Entity> allEntities)

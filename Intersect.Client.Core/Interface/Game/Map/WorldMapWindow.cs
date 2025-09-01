@@ -115,20 +115,18 @@ public sealed class WorldMapWindow : Window
         _filters.AddFilter(JobType.Farming.ToString(), "Hierbas");
         _filters.AddFilter(JobType.Fishing.ToString(), "Pesca");
 
-        // Preferencias guardadas (zoom y posición)
+        // Valores iniciales del canvas
         _baseWidth = _canvas.Width;
         _baseHeight = _canvas.Height;
 
-        _zoom = Math.Clamp(MapPreferences.Instance.WorldMapZoom, MinZoom, MaxZoom);
+        _zoom = 1f;
         _canvas.SetBounds(
-            MapPreferences.Instance.WorldMapPosition.X,
-            MapPreferences.Instance.WorldMapPosition.Y,
+            0,
+            0,
             (int)(_baseWidth * _zoom),
             (int)(_baseHeight * _zoom)
         );
         ClampPosition();
-        MapPreferences.UpdateWorldMapZoom(_zoom);
-        MapPreferences.UpdateWorldMapPosition(new Point(_canvas.X, _canvas.Y));
 
         // Tooltip oculto por defecto
         _tooltip.IsHidden = true;
@@ -278,7 +276,6 @@ public sealed class WorldMapWindow : Window
     {
         _dragging = false;
         ClampPosition();
-        MapPreferences.UpdateWorldMapPosition(new Point(_canvas.X, _canvas.Y));
     }
 
     private int ClampX(int x) => Math.Clamp(x, Width - (int)(_baseWidth * _zoom), 0);
@@ -328,9 +325,6 @@ public sealed class WorldMapWindow : Window
 
         _canvas.SetBounds(newX, newY, newWidth, newHeight);
         ClampPosition();
-
-        MapPreferences.UpdateWorldMapZoom(_zoom);
-        MapPreferences.UpdateWorldMapPosition(new Point(_canvas.X, _canvas.Y));
     }
 
     private void CenterOn(Point pos)
@@ -338,7 +332,6 @@ public sealed class WorldMapWindow : Window
         var targetX = ClampX(Width / 2 - pos.X);
         var targetY = ClampY(Height / 2 - pos.Y);
         _canvas.SetPosition(targetX, targetY);
-        MapPreferences.UpdateWorldMapPosition(new Point(_canvas.X, _canvas.Y));
     }
 
     private void MinimapButton_Clicked(Base sender, MouseButtonState args)

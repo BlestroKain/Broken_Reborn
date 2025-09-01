@@ -628,10 +628,6 @@ namespace Intersect.Client.Interface.Game.Map
 
                     case EntityType.Resource:
                         var job = ((Resource)entity).Descriptor?.Jobs ?? JobType.None;
-                        if (MapPreferences.Instance.ActiveFilters.TryGetValue(job.ToString(), out var enabled) && !enabled)
-                        {
-                            continue;
-                        }
 
                         if (!minimapColorOptions.Resource.TryGetValue(job, out color))
                         {

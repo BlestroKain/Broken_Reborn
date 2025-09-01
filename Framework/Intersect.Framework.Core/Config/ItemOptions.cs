@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 using Intersect.Framework.Core.GameObjects.Items;
 using Newtonsoft.Json;
@@ -30,7 +31,33 @@ public class ItemOptions
     public Dictionary<ItemType, List<string>> ItemSubtypes { get; set; } = new()
 {
     { ItemType.Consumable, new() { "Drink", "Food", "Potion", "Scroll","spell" } },
-    { ItemType.Equipment, new() { "Axe", "Bow", "Dagger", "Hammer", "Spear", "Staff", "Sword", "Wand" } },
+    {
+        ItemType.Equipment,
+        new()
+        {
+            "Axe",
+            "Bow",
+            "Dagger",
+            "Hammer",
+            "Spear",
+            "Staff",
+            "Sword",
+            "Wand",
+            // Equipment slots
+            "Helmet",
+            "Armor",
+            "Weapon",
+            "Shield",
+            "Boots",
+            "Pants",
+            "Cape",
+            "Belt",
+            "Necklace",
+            "Accessory",
+            "Ring",
+            "Karma",
+        }
+    },
     { ItemType.Resource, new()
         {
             "Blood", "Bone", "Cereal", "Claw", "Craft","Crystal", "Ear", "Essence", "Eye", "Fabric", "Feather", "Fiber", "Fish",
@@ -45,6 +72,23 @@ public class ItemOptions
     {
         rarityName = RarityTiers.Skip(rarityLevel).FirstOrDefault();
         return rarityName != default;
+    }
+
+    public void MergeEquipmentSlots(IEnumerable<string> slots)
+    {
+        if (!ItemSubtypes.TryGetValue(ItemType.Equipment, out var list) || list == null)
+        {
+            list = [];
+            ItemSubtypes[ItemType.Equipment] = list;
+        }
+
+        foreach (var slot in slots)
+        {
+            if (!list.Any(s => s.Equals(slot, StringComparison.OrdinalIgnoreCase)))
+            {
+                list.Add(slot);
+            }
+        }
     }
 
 

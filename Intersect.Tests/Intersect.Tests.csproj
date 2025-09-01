@@ -14,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Intersect (Core)\Intersect.Core.csproj" />
     <ProjectReference Include="..\Intersect.Server.Core\Intersect.Server.Core.csproj" />
+    <ProjectReference Include="..\Intersect.Client.Core\Intersect.Client.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

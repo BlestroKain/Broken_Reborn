@@ -508,7 +508,6 @@ public partial class MenuContainer : Panel
         _guildWindow.Hide();
         _factionWindow.Hide();
         Interface.GameUi.MapUIManager.CloseWorldMap();
-        Interface.GameUi.MapUIManager.CloseMinimap();
     }
 
     public bool HasWindowsOpen()
@@ -522,9 +521,67 @@ public partial class MenuContainer : Panel
                           _guildWindow.IsVisibleInTree ||
                           _factionWindow.IsVisibleInTree ||
                           Interface.GameUi.MapUIManager.IsWorldMapOpen ||
-                          Interface.GameUi.MapUIManager.IsMinimapOpen ||
         mJobsWindow.IsVisible();
         return windowsOpen;
+    }
+
+    public bool CloseMostRecentWindow()
+    {
+        if (_characterWindow.IsVisible())
+        {
+            _characterWindow.Hide();
+            return true;
+        }
+
+        if (_friendsWindow.IsVisible)
+        {
+            _friendsWindow.Hide();
+            return true;
+        }
+
+        if (_inventoryWindow.IsVisibleInTree)
+        {
+            _inventoryWindow.Hide();
+            return true;
+        }
+
+        if (_questsWindow.IsVisible())
+        {
+            _questsWindow.Hide();
+            return true;
+        }
+
+        if (_spellsWindow.IsVisibleInTree)
+        {
+            _spellsWindow.Hide();
+            return true;
+        }
+
+        if (_partyWindow.IsVisible())
+        {
+            _partyWindow.Hide();
+            return true;
+        }
+
+        if (_guildWindow.IsVisibleInTree)
+        {
+            _guildWindow.Hide();
+            return true;
+        }
+
+        if (_factionWindow.IsVisibleInTree)
+        {
+            _factionWindow.Hide();
+            return true;
+        }
+
+        if (mJobsWindow.IsVisible())
+        {
+            mJobsWindow.Hide();
+            return true;
+        }
+
+        return false;
     }
 
 

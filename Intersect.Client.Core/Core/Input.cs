@@ -153,9 +153,13 @@ public static partial class Input
             {
                 gameUi.UnfocusChat = true;
             }
-            else if (gameUi.CloseAllWindows())
+            else if (gameUi.MapUIManager.IsWorldMapOpen)
             {
-                // We've closed our windows, don't do anything else. :)
+                gameUi.MapUIManager.CloseWorldMap();
+            }
+            else if (gameUi.CloseMostRecentWindow())
+            {
+                // We've closed our window, don't do anything else. :)
             }
             else if (Globals.Me is {} me && me.TargetId != default && me.Status.All(s => s.Type != SpellEffect.Taunt))
             {

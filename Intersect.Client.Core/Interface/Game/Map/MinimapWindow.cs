@@ -80,7 +80,7 @@ namespace Intersect.Client.Interface.Game.Map
         public MinimapWindow(Base parent) : base(parent, Strings.Minimap.Title, false, "MinimapWindow")
         {
             IsResizable = false;
-            _zoomLevel = Options.Instance.Minimap.DefaultZoom;
+            SetZoom(Options.Instance.Minimap.DefaultZoom, false);
             _dpi = Sdl2.GetDisplayDpi();
             _minimapTileSize = Options.Instance.Minimap.GetScaledTileSize(_dpi);
             _minimap = new ImagePanel(this, "MinimapContainer");
@@ -140,11 +140,7 @@ namespace Intersect.Client.Interface.Game.Map
         }
         public void Show()
         {
-            _zoomLevel = Math.Clamp(
-                MapPreferences.Instance.MinimapZoom,
-                Options.Instance.Minimap.MinimumZoom,
-                Options.Instance.Minimap.MaximumZoom
-            );
+            SetZoom(MapPreferences.Instance.MinimapZoom, false);
             IsHidden = false;
         }
         public bool IsVisible()
@@ -154,6 +150,27 @@ namespace Intersect.Client.Interface.Game.Map
         public void Hide()
         {
             IsHidden = true;
+        }
+
+        public void SetZoom(int newLevel, bool persist = true)
+        {
+            newLevel = Math.Clamp(
+                newLevel,
+                Options.Instance.Minimap.MinimumZoom,
+                Options.Instance.Minimap.MaximumZoom
+            );
+
+            if (_zoomLevel == newLevel)
+            {
+                return;
+            }
+
+            _zoomLevel = newLevel;
+
+            if (persist)
+            {
+                MapPreferences.UpdateMinimapZoom(_zoomLevel);
+            }
         }
 
         protected override void OnMouseDown(MouseButton mouseButton, Point mousePosition, bool userAction = true)
@@ -191,22 +208,16 @@ namespace Intersect.Client.Interface.Game.Map
 
             _lastWheelTime = now;
 
+            var step = Options.Instance.Minimap.ZoomStep;
+
             if (delta > 0)
             {
-                _zoomLevel = Math.Max(
-                    _zoomLevel - Options.Instance.Minimap.ZoomStep,
-                    Options.Instance.Minimap.MinimumZoom
-                );
+                SetZoom(_zoomLevel - step);
             }
             else if (delta < 0)
             {
-                _zoomLevel = Math.Min(
-                    _zoomLevel + Options.Instance.Minimap.ZoomStep,
-                    Options.Instance.Minimap.MaximumZoom
-                );
+                SetZoom(_zoomLevel + step);
             }
-
-            MapPreferences.UpdateMinimapZoom(_zoomLevel);
 
             return true;
         }
@@ -794,19 +805,13 @@ namespace Intersect.Client.Interface.Game.Map
         }
         private void MZoomOutButton_Clicked(Base sender, MouseButtonState arguments)
         {
-            _zoomLevel = Math.Min(
-                _zoomLevel + Options.Instance.Minimap.ZoomStep,
-                Options.Instance.Minimap.MaximumZoom
-            );
-            MapPreferences.UpdateMinimapZoom(_zoomLevel);
+            var step = Options.Instance.Minimap.ZoomStep;
+            SetZoom(_zoomLevel + step);
         }
         private void MZoomInButton_Clicked(Base sender, MouseButtonState arguments)
         {
-            _zoomLevel = Math.Max(
-                _zoomLevel - Options.Instance.Minimap.ZoomStep,
-                Options.Instance.Minimap.MinimumZoom
-            );
-            MapPreferences.UpdateMinimapZoom(_zoomLevel);
+            var step = Options.Instance.Minimap.ZoomStep;
+            SetZoom(_zoomLevel - step);
         }
         private enum MapPosition
         {

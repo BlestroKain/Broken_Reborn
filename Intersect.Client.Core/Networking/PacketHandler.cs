@@ -2515,7 +2515,7 @@ internal sealed partial class PacketHandler
     //WaypointClearPacket
     public void HandlePacket(IPacketSender packetSender, Intersect.Network.Packets.Server.WaypointClearPacket packet)
     {
-        WorldMapWindow.Waypoints?.Clear(packet.Scope);
+        WorldMapWindow.Waypoints?.Clear(packet.Scope, true);
     }
 
 }

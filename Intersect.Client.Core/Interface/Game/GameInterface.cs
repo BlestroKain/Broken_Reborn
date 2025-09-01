@@ -27,6 +27,8 @@ using Intersect.GameObjects;
 using Microsoft.Extensions.Logging;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Client.Interface.Game.Spells;
+using Intersect.Client.Framework.Gwen.ControlInternal;
+using System.Linq;
 
 namespace Intersect.Client.Interface.Game;
 
@@ -459,6 +461,7 @@ public partial class GameInterface : MutableInterface
 
         GameMenu?.Update(mShouldUpdateQuestLog);
         MapUIManager.Update();
+        MapUIManager.MinimapClickThrough = !GameCanvas.Children.Any(child => child is Modal);
         mShouldUpdateQuestLog = false;
         Hotbar?.Update();
         EscapeMenu.Update();
@@ -746,12 +749,6 @@ public partial class GameInterface : MutableInterface
             closedWindows = true;
         }
 
-        if (MapUIManager.IsMinimapOpen)
-        {
-            MapUIManager.CloseMinimap();
-            closedWindows = true;
-        }
-
         if (GameMenu != null && GameMenu.HasWindowsOpen())
         {
             GameMenu.CloseAllWindows();
@@ -765,6 +762,58 @@ public partial class GameInterface : MutableInterface
         }
 
         return closedWindows;
+    }
+
+    public bool CloseMostRecentWindow()
+    {
+        if (_bagWindow != null && _bagWindow.IsVisibleInTree)
+        {
+            CloseBagWindow();
+            return true;
+        }
+
+        if (mTradingWindow != null && mTradingWindow.IsVisible())
+        {
+            CloseTrading();
+            return true;
+        }
+
+        if (_bankWindow is { IsVisibleInTree: true })
+        {
+            CloseBank();
+            return true;
+        }
+
+        if (mCraftingWindow is { IsVisibleInTree: true, IsCrafting: false })
+        {
+            CloseCraftingTable();
+            return true;
+        }
+
+        if (_shopWindow is { IsVisibleInTree: true })
+        {
+            CloseShop();
+            return true;
+        }
+
+        if (_bestiaryWindow is { IsVisibleInTree: true })
+        {
+            _bestiaryWindow.Hide();
+            return true;
+        }
+
+        if (GameMenu != null && GameMenu.CloseMostRecentWindow())
+        {
+            return true;
+        }
+
+        if (TargetContextMenu.IsVisibleInTree)
+        {
+            TargetContextMenu.ToggleHidden();
+            return true;
+        }
+
+        return false;
     }
 
     //Dispose
@@ -829,13 +878,22 @@ internal sealed class MapUIManager
     public MapUIManager(Canvas canvas, MenuContainer menu)
     {
         _menu = menu;
-        _minimapWindow = new MinimapWindow(canvas);
+        _minimapWindow = new MinimapWindow(canvas)
+        {
+            IsClickThrough = true,
+        };
         _worldMapWindow = new WorldMapWindow(canvas);
     }
 
     public bool IsWorldMapOpen => _worldMapWindow.IsVisible();
 
     public bool IsMinimapOpen => _minimapWindow.IsVisible();
+
+    public bool MinimapClickThrough
+    {
+        get => _minimapWindow.IsClickThrough;
+        set => _minimapWindow.IsClickThrough = value;
+    }
 
     public void Update()
     {
@@ -872,7 +930,6 @@ internal sealed class MapUIManager
             return;
         }
 
-        _menu.HideWindows();
         _minimapWindow.Show();
     }
 

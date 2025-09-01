@@ -58,14 +58,12 @@ public class MapFilters
         }
         else
         {
-            MapPreferences.Instance.ActiveFilters[key] = cb.IsChecked;
-            MapPreferences.Save();
+            MapPreferences.UpdateFilter(key, cb.IsChecked);
         }
 
         cb.CheckChanged += (_, args) =>
         {
-            MapPreferences.Instance.ActiveFilters[key] = cb.IsChecked;
-            MapPreferences.Save();
+            MapPreferences.UpdateFilter(key, cb.IsChecked);
         };
 
         _filters[key] = cb;
@@ -176,5 +174,15 @@ public class MapFilters
 
         return result.Where(e => IsFilterEnabled(e.Type));
     }
+
+    /// <summary>
+    /// Sets the location of the filter panel.
+    /// </summary>
+    public void SetPosition(int x, int y) => _panel.SetPosition(x, y);
+
+    /// <summary>
+    /// Sets the size of the filter panel.
+    /// </summary>
+    public void SetSize(int width, int height) => _panel.SetSize(width, height);
 }
 

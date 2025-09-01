@@ -34,8 +34,11 @@ namespace Intersect.Client.Interface.Game.Map
         private Dictionary<MapPosition, MapInstance?> _mapGrid = new();
 
         // Cached entity/POI information per map id
-        private Dictionary<Guid, List<EntityLocation>> _entityInfoCache = new();
-        private readonly Point _minimapTileSize;
+        private Dictionary<Guid, List<EntityLocation>> _entityInfoCache = DictionaryPool<Guid, List<EntityLocation>>.Rent();
+        private Point _minimapTileSize;
+        private float _dpi;
+        private DateTime _lastWheelTime = DateTime.MinValue;
+        private static readonly TimeSpan WheelDebounce = TimeSpan.FromMilliseconds(125);
         // Cache of mini tiles and dynamic overlays by map id
         private readonly Dictionary<Guid, IGameRenderTexture> _minimapCache = new();
         private readonly Dictionary<Guid, IGameRenderTexture> _entityCache = new();
@@ -46,6 +49,27 @@ namespace Intersect.Client.Interface.Game.Map
         private readonly Button _worldMapButton;
         private static readonly GameContentManager ContentManager = Globals.ContentManager;
         private volatile bool _initialized;
+        private bool _isClickThrough;
+
+        public bool IsClickThrough
+        {
+            get => _isClickThrough;
+            set
+            {
+                _isClickThrough = value;
+                SetMouseInputEnabledRecursive(this, !value);
+            }
+        }
+
+        private static void SetMouseInputEnabledRecursive(Base component, bool enabled)
+        {
+            component.MouseInputEnabled = enabled;
+
+            foreach (var child in component.Children)
+            {
+                SetMouseInputEnabledRecursive(child, enabled);
+            }
+        }
 
         // Throttle dynamic overlay updates to ~4Hz
         private DateTime _lastOverlayUpdate = DateTime.MinValue;
@@ -56,9 +80,11 @@ namespace Intersect.Client.Interface.Game.Map
         public MinimapWindow(Base parent) : base(parent, Strings.Minimap.Title, false, "MinimapWindow")
         {
             DisableResizing();
+            Layer = "HUDTop";
+            AlwaysOnTop = true;
             _zoomLevel = Options.Instance.Minimap.DefaultZoom;
-            var dpi = Sdl2.GetDisplayDpi();
-            _minimapTileSize = Options.Instance.Minimap.GetScaledTileSize(dpi);
+            _dpi = Sdl2.GetDisplayDpi();
+            _minimapTileSize = Options.Instance.Minimap.GetScaledTileSize(_dpi);
             _minimap = new ImagePanel(this, "MinimapContainer");
             _zoomInButton = new Button(_minimap, "ZoomInButton");
             _zoomOutButton = new Button(_minimap, "ZoomOutButton");
@@ -86,9 +112,31 @@ namespace Intersect.Client.Interface.Game.Map
                 return;
             }
 
+            var dpi = Sdl2.GetDisplayDpi();
+            if (Math.Abs(dpi - _dpi) > float.Epsilon)
+            {
+                _dpi = dpi;
+                _minimapTileSize = Options.Instance.Minimap.GetScaledTileSize(_dpi);
+                _renderTexture?.Dispose();
+                _renderTexture = GenerateBaseRenderTexture();
+                foreach (var tex in _minimapCache.Values)
+                {
+                    tex.Dispose();
+                }
+                _minimapCache.Clear();
+                foreach (var tex in _entityCache.Values)
+                {
+                    tex.Dispose();
+                }
+                _entityCache.Clear();
+                _redrawMaps = true;
+                _redrawEntities = true;
+            }
+
             var now = DateTime.UtcNow;
             if (now - _lastOverlayUpdate >= OverlayInterval)
             {
+                WorldMapWindow.Waypoints?.Update();
                 UpdateMinimap(Globals.Me, Globals.Entities);
                 _lastOverlayUpdate = now;
             }
@@ -111,6 +159,61 @@ namespace Intersect.Client.Interface.Game.Map
         public void Hide()
         {
             IsHidden = true;
+        }
+
+        protected override void OnMouseDown(MouseButton mouseButton, Point mousePosition, bool userAction = true)
+        {
+            if (IsClickThrough)
+            {
+                return;
+            }
+
+            base.OnMouseDown(mouseButton, mousePosition, userAction);
+        }
+
+        protected override void OnMouseUp(MouseButton mouseButton, Point mousePosition, bool userAction = true)
+        {
+            if (IsClickThrough)
+            {
+                return;
+            }
+
+            base.OnMouseUp(mouseButton, mousePosition, userAction);
+        }
+
+        protected override bool OnMouseWheeled(int delta)
+        {
+            if (IsClickThrough)
+            {
+                return false;
+            }
+
+            var now = DateTime.UtcNow;
+            if (now - _lastWheelTime < WheelDebounce)
+            {
+                return true;
+            }
+
+            _lastWheelTime = now;
+
+            if (delta > 0)
+            {
+                _zoomLevel = Math.Max(
+                    _zoomLevel - Options.Instance.Minimap.ZoomStep,
+                    Options.Instance.Minimap.MinimumZoom
+                );
+            }
+            else if (delta < 0)
+            {
+                _zoomLevel = Math.Min(
+                    _zoomLevel + Options.Instance.Minimap.ZoomStep,
+                    Options.Instance.Minimap.MaximumZoom
+                );
+            }
+
+            MapPreferences.UpdateMinimapZoom(_zoomLevel);
+
+            return true;
         }
         // Private Methods
         private void UpdateMinimap(Player player, Dictionary<Guid, Entity> allEntities)
@@ -468,7 +571,7 @@ namespace Intersect.Client.Interface.Game.Map
         }
         private Dictionary<Guid, List<EntityLocation>> GenerateEntityInfo(Dictionary<Guid, Entity> entities, Player player)
         {
-            var entityInfo = new Dictionary<Guid, List<EntityLocation>>();
+            var entityInfo = DictionaryPool<Guid, List<EntityLocation>>.Rent();
             var minimapOptions = Options.Instance.Minimap;
             var minimapColorOptions = minimapOptions.MinimapColors;
             var minimapImageOptions = minimapOptions.MinimapImages;
@@ -577,6 +680,44 @@ namespace Intersect.Client.Interface.Game.Map
                 });
             }
 
+            if (Options.Instance.Minimap.ShowWaypoints && WorldMapWindow.Waypoints != null)
+            {
+                var mapWidthPixels = Options.Instance.Map.MapWidth * Options.Instance.Map.TileWidth;
+                var mapHeightPixels = Options.Instance.Map.MapHeight * Options.Instance.Map.TileHeight;
+
+                foreach (var (position, scope) in WorldMapWindow.Waypoints.Enumerate())
+                {
+                    var mapX = position.X / mapWidthPixels;
+                    var mapY = position.Y / mapHeightPixels;
+
+                    if (mapX < 0 || mapY < 0 || mapX >= Globals.MapGridWidth || mapY >= Globals.MapGridHeight)
+                    {
+                        continue;
+                    }
+
+                    var mapId = Globals.MapGrid[mapX, mapY];
+                    if (mapId == Guid.Empty)
+                    {
+                        continue;
+                    }
+
+                    var tileX = (position.X % mapWidthPixels) / Options.Instance.Map.TileWidth;
+                    var tileY = (position.Y % mapHeightPixels) / Options.Instance.Map.TileHeight;
+
+                    if (!entityInfo.TryGetValue(mapId, out var list))
+                    {
+                        list = ListPool<EntityLocation>.Rent();
+                        entityInfo.Add(mapId, list);
+                    }
+
+                    list.Add(new EntityLocation
+                    {
+                        Position = new Point(tileX, tileY),
+                        Info = new EntityInfo { Color = WaypointLayer.ScopeToColor(scope), Texture = string.Empty }
+                    });
+                }
+            }
+
             return entityInfo;
         }
 
@@ -616,11 +757,13 @@ namespace Intersect.Client.Interface.Game.Map
             if (changed)
             {
                 ReleaseEntityInfo(_entityInfoCache);
+                DictionaryPool<Guid, List<EntityLocation>>.Return(_entityInfoCache);
                 _entityInfoCache = newInfo;
             }
             else
             {
                 ReleaseEntityInfo(newInfo);
+                DictionaryPool<Guid, List<EntityLocation>>.Return(newInfo);
             }
 
             return changed;
@@ -664,8 +807,7 @@ namespace Intersect.Client.Interface.Game.Map
                 _zoomLevel + Options.Instance.Minimap.ZoomStep,
                 Options.Instance.Minimap.MaximumZoom
             );
-            MapPreferences.Instance.MinimapZoom = _zoomLevel;
-            MapPreferences.Save();
+            MapPreferences.UpdateMinimapZoom(_zoomLevel);
         }
         private void MZoomInButton_Clicked(Base sender, MouseButtonState arguments)
         {
@@ -673,8 +815,7 @@ namespace Intersect.Client.Interface.Game.Map
                 _zoomLevel - Options.Instance.Minimap.ZoomStep,
                 Options.Instance.Minimap.MinimumZoom
             );
-            MapPreferences.Instance.MinimapZoom = _zoomLevel;
-            MapPreferences.Save();
+            MapPreferences.UpdateMinimapZoom(_zoomLevel);
         }
 
         private void OpenWorldMapButton_Clicked(Base sender, MouseButtonState arguments)
@@ -721,6 +862,28 @@ namespace Intersect.Client.Interface.Game.Map
         {
             public Point Position;
             public EntityInfo Info;
+        }
+
+        private static class DictionaryPool<TKey, TValue>
+        {
+            private static readonly Stack<Dictionary<TKey, TValue>> Pool = new();
+
+            public static Dictionary<TKey, TValue> Rent()
+            {
+                lock (Pool)
+                {
+                    return Pool.Count > 0 ? Pool.Pop() : new Dictionary<TKey, TValue>();
+                }
+            }
+
+            public static void Return(Dictionary<TKey, TValue> dictionary)
+            {
+                dictionary.Clear();
+                lock (Pool)
+                {
+                    Pool.Push(dictionary);
+                }
+            }
         }
 
         private static class ListPool<T>

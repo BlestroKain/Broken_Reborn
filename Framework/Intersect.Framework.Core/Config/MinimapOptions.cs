@@ -25,6 +25,8 @@ public partial class MinimapOptions
     private const float BaseDpi = 96f;
     private const int MinTileLength = 4;
     private const int MaxTileLength = 32;
+    private const int MinZoomLimit = 1;
+    private const int MaxZoomLimit = 1000;
 
     /// <summary>
     /// Returns the minimap tile size scaled for the provided DPI and
@@ -43,24 +45,24 @@ public partial class MinimapOptions
     }
 
     /// <summary>
-    /// Configures the minimum zoom level (0 - 100)
+    /// Configures the minimum zoom level.
     /// </summary>
-    public byte MinimumZoom { get; set; } = 5;
+    public int MinimumZoom { get; set; } = 20;
 
     /// <summary>
-    /// Configures the maximum zoom level (0 - 100)
+    /// Configures the maximum zoom level.
     /// </summary>
-    public byte MaximumZoom { get; set; } = 100;
+    public int MaximumZoom { get; set; } = 220;
 
     /// <summary>
-    /// Configures the default zoom level (0 - 100)
+    /// Configures the default zoom level.
     /// </summary>
-    public byte DefaultZoom { get; set; } = 25;
+    public int DefaultZoom { get; set; } = 100;
 
     /// <summary>
     /// Configures the amount to zoom by each step.
     /// </summary>
-    public byte ZoomStep { get; set; } = 5;
+    public int ZoomStep { get; set; } = 10;
 
     /// <summary>
     /// Configures the images used within the minimap. If any are left blank the system will default to its color.
@@ -122,15 +124,8 @@ public partial class MinimapOptions
     /// </summary>
     public void Validate()
     {
-        if (MinimumZoom is < 0 or > 100)
-        {
-            MinimumZoom = 0;
-        }
-
-        if (MaximumZoom is < 0 or > 100)
-        {
-            MaximumZoom = 100;
-        }
+        MinimumZoom = Math.Clamp(MinimumZoom, MinZoomLimit, MaxZoomLimit);
+        MaximumZoom = Math.Clamp(MaximumZoom, MinZoomLimit, MaxZoomLimit);
 
         if (MinimumZoom > MaximumZoom)
         {

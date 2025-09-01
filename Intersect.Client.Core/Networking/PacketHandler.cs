@@ -2509,13 +2509,13 @@ internal sealed partial class PacketHandler
     //WaypointSetPacket
     public void HandlePacket(IPacketSender packetSender, Intersect.Network.Packets.Server.WaypointSetPacket packet)
     {
-        WorldMapWindow.Waypoints?.AddWaypoint(new Point(packet.X, packet.Y), packet.Scope);
+        MinimapWindow.Waypoints?.AddWaypoint(new Point(packet.X, packet.Y), packet.Scope);
     }
 
     //WaypointClearPacket
     public void HandlePacket(IPacketSender packetSender, Intersect.Network.Packets.Server.WaypointClearPacket packet)
     {
-        WorldMapWindow.Waypoints?.Clear(packet.Scope, true);
+        MinimapWindow.Waypoints?.Clear(packet.Scope, true);
     }
 
 }

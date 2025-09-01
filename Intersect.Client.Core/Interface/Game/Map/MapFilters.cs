@@ -76,6 +76,8 @@ public class MapFilters
 
     public string SearchText => _searchBox.Text;
 
+    public bool SearchFocused => _searchBox.HasFocus;
+
     /// <summary>
     /// Represents an item that can be searched for on the world map.
     /// </summary>

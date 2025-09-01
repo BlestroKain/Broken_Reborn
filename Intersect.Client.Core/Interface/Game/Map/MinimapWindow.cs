@@ -45,6 +45,17 @@ namespace Intersect.Client.Interface.Game.Map
         private readonly Button _worldMapButton;
         private static readonly GameContentManager ContentManager = Globals.ContentManager;
         private volatile bool _initialized;
+        private bool _isClickThrough;
+
+        public bool IsClickThrough
+        {
+            get => _isClickThrough;
+            set
+            {
+                _isClickThrough = value;
+                MouseInputEnabled = !value;
+            }
+        }
 
         // Throttle dynamic overlay updates to ~4Hz
         private DateTime _lastOverlayUpdate = DateTime.MinValue;
@@ -53,6 +64,8 @@ namespace Intersect.Client.Interface.Game.Map
         public MinimapWindow(Base parent) : base(parent, Strings.Minimap.Title, false, "MinimapWindow")
         {
             DisableResizing();
+            Layer = "HUDTop";
+            AlwaysOnTop = true;
             _zoomLevel = Options.Instance.Minimap.DefaultZoom;
             var dpi = Sdl2.GetDisplayDpi();
             _minimapTileSize = Options.Instance.Minimap.GetScaledTileSize(dpi);
@@ -108,6 +121,26 @@ namespace Intersect.Client.Interface.Game.Map
         public void Hide()
         {
             IsHidden = true;
+        }
+
+        protected override void OnMouseDown(MouseButton mouseButton, Point mousePosition, bool userAction = true)
+        {
+            if (IsClickThrough)
+            {
+                return;
+            }
+
+            base.OnMouseDown(mouseButton, mousePosition, userAction);
+        }
+
+        protected override void OnMouseUp(MouseButton mouseButton, Point mousePosition, bool userAction = true)
+        {
+            if (IsClickThrough)
+            {
+                return;
+            }
+
+            base.OnMouseUp(mouseButton, mousePosition, userAction);
         }
         // Private Methods
         private void UpdateMinimap(Player player, Dictionary<Guid, Entity> allEntities)

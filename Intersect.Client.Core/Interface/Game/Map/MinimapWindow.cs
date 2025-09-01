@@ -653,7 +653,7 @@ namespace Intersect.Client.Interface.Game.Map
 
         private void OpenWorldMapButton_Clicked(Base sender, MouseButtonState arguments)
         {
-          Interface.GameUi.GameMenu?.ToggleWorldMapWindow();
+          Interface.GameUi.MapUIManager.ToggleWorldMap();
         }
 
         private static string GetMinimapKeyHint()

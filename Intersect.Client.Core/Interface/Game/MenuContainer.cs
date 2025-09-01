@@ -14,7 +14,6 @@ using Intersect.Client.Interface.Game.Map;
 using Intersect.Client.Localization;
 using Intersect.Client.Networking;
 using Intersect.Enums;
-using Intersect.Config;
 
 // ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
 
@@ -34,8 +33,6 @@ public partial class MenuContainer : Panel
     private readonly ImagePanel _characterButtonContainer;
     private readonly Button _characterButton;
     private readonly CharacterWindow _characterWindow;
-    private readonly MinimapWindow _minimapWindow;
-    private readonly WorldMapWindow _worldMapWindow;
 
     private readonly ImagePanel _questsButtonContainer;
     private readonly Button _questsButton;
@@ -308,8 +305,6 @@ public partial class MenuContainer : Panel
         _mapItemWindow = new MapItemWindow(gameCanvas: gameCanvas);
         _guildWindow = new GuildWindow(gameCanvas: gameCanvas);
         mJobsWindow= new JobsWindow(gameCanvas: gameCanvas);
-        _minimapWindow = new MinimapWindow(gameCanvas);
-        _worldMapWindow = new WorldMapWindow(gameCanvas);
 
     }
 
@@ -319,7 +314,6 @@ public partial class MenuContainer : Panel
         _inventoryWindow.Update();
         _spellsWindow.Update();
         _characterWindow.Update();
-        _minimapWindow.Update();
         _partyWindow.Update();
         _friendsWindow.Update();
         _questsWindow.Update(updateQuestLog);
@@ -354,8 +348,6 @@ public partial class MenuContainer : Panel
         _questsWindow.Hide();
         _spellsWindow.Hide();
         _guildWindow.Hide();
-        _minimapWindow.Hide();
-        _worldMapWindow.Hide();
         _factionWindow.Hide();
         mJobsWindow.Hide();
     }
@@ -373,39 +365,6 @@ public partial class MenuContainer : Panel
             _characterWindow.Show();
         }
     }
-
-    public void ToggleMinimapWindow()
-    {
-        if (!Options.Instance.Minimap.EnableMinimapWindow)
-        {
-            return;
-        }
-
-        if (_minimapWindow.IsVisible())
-        {
-            _minimapWindow.Hide();
-        }
-        else
-        {
-            HideWindows();
-            _minimapWindow.Show();
-        }
-    }
-
-    public void ToggleWorldMapWindow()
-    {
-        if (_worldMapWindow.IsVisible())
-        {
-            _worldMapWindow.Hide();
-        }
-        else
-        {
-            HideWindows();
-            _worldMapWindow.Show();
-        }
-    }
-
-    public bool IsWorldMapVisible() => _worldMapWindow.IsVisible();
 
     public bool ToggleFriendsWindow()
     {
@@ -548,7 +507,8 @@ public partial class MenuContainer : Panel
 
         _guildWindow.Hide();
         _factionWindow.Hide();
-        _minimapWindow.Hide();
+        Interface.GameUi.MapUIManager.CloseWorldMap();
+        Interface.GameUi.MapUIManager.CloseMinimap();
     }
 
     public bool HasWindowsOpen()
@@ -561,7 +521,8 @@ public partial class MenuContainer : Panel
                           _partyWindow.IsVisible() ||
                           _guildWindow.IsVisibleInTree ||
                           _factionWindow.IsVisibleInTree ||
-                          _minimapWindow.IsVisible() ||
+                          Interface.GameUi.MapUIManager.IsWorldMapOpen ||
+                          Interface.GameUi.MapUIManager.IsMinimapOpen ||
         mJobsWindow.IsVisible();
         return windowsOpen;
     }

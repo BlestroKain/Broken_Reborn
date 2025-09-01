@@ -57,7 +57,17 @@ namespace Intersect.Client.Interface.Game.Map
             set
             {
                 _isClickThrough = value;
-                MouseInputEnabled = !value;
+                SetMouseInputEnabledRecursive(this, !value);
+            }
+        }
+
+        private static void SetMouseInputEnabledRecursive(Base component, bool enabled)
+        {
+            component.MouseInputEnabled = enabled;
+
+            foreach (var child in component.Children)
+            {
+                SetMouseInputEnabledRecursive(child, enabled);
             }
         }
 

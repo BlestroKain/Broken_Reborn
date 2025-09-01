@@ -20,6 +20,12 @@ public sealed class WaypointLayer
 
     private readonly Base _parent;
     private readonly List<Waypoint> _waypoints = new();
+    private readonly Stack<Waypoint> _waypointPool = new();
+    private readonly Stack<ImagePanel> _panelPool = new();
+
+    // Throttle dynamic overlay updates to ~4Hz
+    private DateTime _lastUpdate = DateTime.MinValue;
+    private static readonly TimeSpan OverlayInterval = TimeSpan.FromMilliseconds(250);
 
     public WaypointLayer(Base parent)
     {
@@ -28,23 +34,24 @@ public sealed class WaypointLayer
 
     public void AddWaypoint(Point pos, WaypointScope scope)
     {
-        var panel = new ImagePanel(_parent, "Waypoint");
+        var panel = _panelPool.Count > 0 ? _panelPool.Pop() : new ImagePanel(_parent, "Waypoint");
+        panel.Parent = _parent;
         panel.SetPosition(pos.X - panel.Width / 2, pos.Y - panel.Height / 2);
         panel.RenderColor = ScopeToColor(scope);
         panel.IsHidden = false;
-        _waypoints.Add(new Waypoint
-        {
-            Panel = panel,
-            Expire = DateTime.UtcNow + GetTtl(scope),
-            Scope = scope,
-        });
+
+        var wp = _waypointPool.Count > 0 ? _waypointPool.Pop() : new Waypoint();
+        wp.Panel = panel;
+        wp.Expire = DateTime.UtcNow + GetTtl(scope);
+        wp.Scope = scope;
+        _waypoints.Add(wp);
     }
 
     public void Clear(WaypointScope scope, bool fromServer = false)
     {
         foreach (var wp in _waypoints.Where(w => w.Scope == scope).ToList())
         {
-            wp.Panel.Dispose();
+            ReturnWaypoint(wp);
             _waypoints.Remove(wp);
         }
 
@@ -57,12 +64,18 @@ public sealed class WaypointLayer
     public void Update()
     {
         var now = DateTime.UtcNow;
+        if (now - _lastUpdate < OverlayInterval)
+        {
+            return;
+        }
+        _lastUpdate = now;
+
         HashSet<WaypointScope> expiredScopes = new();
         foreach (var wp in _waypoints.ToList())
         {
             if (now >= wp.Expire)
             {
-                wp.Panel.Dispose();
+                ReturnWaypoint(wp);
                 _waypoints.Remove(wp);
                 if (wp.Scope != WaypointScope.Local)
                 {
@@ -75,6 +88,14 @@ public sealed class WaypointLayer
         {
             PacketSender.SendWaypointClear(scope);
         }
+    }
+
+    private void ReturnWaypoint(Waypoint wp)
+    {
+        wp.Panel.IsHidden = true;
+        wp.Panel.Parent = null;
+        _panelPool.Push(wp.Panel);
+        _waypointPool.Push(wp);
     }
 
     public static Color ScopeToColor(WaypointScope scope) => scope switch

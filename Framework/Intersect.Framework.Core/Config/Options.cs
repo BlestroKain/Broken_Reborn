@@ -3,6 +3,8 @@ using Intersect.Config;
 using Intersect.Config.Guilds;
 using Intersect.Core;
 using Intersect.Framework.Annotations;
+using Intersect.Framework.Core.GameObjects.Items;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -249,6 +251,12 @@ public partial record Options
         }
     }
 
+    internal void SyncEquipmentItemSubtypes()
+    {
+        var slots = Equipment?.EquipmentSlots?.Select(es => es.Name) ?? Enumerable.Empty<string>();
+        Items?.MergeEquipmentSlots(slots);
+    }
+
     public static bool LoadFromDisk()
     {
         var instance = EnsureCreated();
@@ -262,6 +270,7 @@ public partial record Options
         {
             var rawJson = File.ReadAllText(pathToServerConfig);
             instance = JsonConvert.DeserializeObject<Options>(rawJson, PrivateSerializerSettings) ?? instance;
+            instance.SyncEquipmentItemSubtypes();
             Instance = instance;
         }
 
@@ -277,6 +286,7 @@ public partial record Options
     internal static Options EnsureCreated()
     {
         Options instance = new();
+        instance.SyncEquipmentItemSubtypes();
         Instance = instance;
         return instance;
     }

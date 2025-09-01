@@ -841,7 +841,9 @@ public partial class Entity : IEntity
                     items = MyEquipment.TryGetValue(z, out var invList)
                         ? invList
                             .Where(i => i >= 0 && i < Options.Instance.Player.MaxInventory)
-                            .Select(i => Inventory[i].ItemId)
+                            .Select(i => Inventory[i]?.ItemId)
+                            .Where(id => id.HasValue)
+                            .Select(id => id.Value)
                             .ToList()
                         : new List<Guid>();
                 }
@@ -1367,7 +1369,9 @@ public partial class Entity : IEntity
                         {
                             equipList = equippedIndexes
                                 .Where(i => i >= 0 && i < Options.Instance.Player.MaxInventory)
-                                .Select(i => Inventory[i].ItemId)
+                                .Select(i => Inventory[i]?.ItemId)
+                                .Where(id => id.HasValue)
+                                .Select(id => id.Value)
                                 .ToList();
                         }
                     }

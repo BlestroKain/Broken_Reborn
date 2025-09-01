@@ -1,6 +1,9 @@
+using System;
+using System.Collections.Generic;
 using Intersect.Server.Database;
 using Intersect.Server.Database.PlayerData.Players;
 using Newtonsoft.Json;
+using Intersect.Framework.Core.GameObjects.Items;
 
 namespace Intersect.Server.Maps;
 
@@ -59,18 +62,34 @@ public partial class MapItem : Item
     }
 
     /// <summary>
-    /// Sets up the Stat Buffs on this map item from a supplied item.
+    ///     Copies the relevant <see cref="ItemProperties"/> from the supplied item to this map item instance so
+    ///     that dropped items retain their enchantment and other property values.
     /// </summary>
-    /// <param name="item">The item to take the Stat Buffs from and apply them to this MapItem.</param>
-    public void SetupStatBuffs(Item item)
+    /// <param name="item">The inventory item whose properties should be mirrored on this map item.</param>
+    public void SetupProperties(Item item)
     {
+        if (item?.Properties == null)
+        {
+            return;
+        }
+
+        // Ensure we have an ItemProperties object to work with
+        Properties ??= new ItemProperties();
+
+        Properties.EnchantmentLevel = item.Properties.EnchantmentLevel;
+        Properties.MageSink = item.Properties.MageSink;
+
         if (Properties.StatModifiers != null && item.Properties.StatModifiers != null)
         {
-            for (var i = 0; i < Properties.StatModifiers.Length; ++i)
-            {
-                Properties.StatModifiers[i] = item.Properties.StatModifiers.Length > i ? item.Properties.StatModifiers[i] : 0;
-            }
+            Array.Copy(item.Properties.StatModifiers, Properties.StatModifiers, Properties.StatModifiers.Length);
         }
+
+        if (Properties.VitalModifiers != null && item.Properties.VitalModifiers != null)
+        {
+            Array.Copy(item.Properties.VitalModifiers, Properties.VitalModifiers, Properties.VitalModifiers.Length);
+        }
+
+        Properties.EnchantmentRolls = new Dictionary<int, int[]>(item.Properties.EnchantmentRolls);
     }
 
 }

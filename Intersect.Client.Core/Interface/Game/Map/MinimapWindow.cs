@@ -45,6 +45,9 @@ namespace Intersect.Client.Interface.Game.Map
         private readonly ImagePanel _minimap;
         private readonly Button _zoomInButton;
         private readonly Button _zoomOutButton;
+#if DEBUG
+        private readonly Label _zoomLabel;
+#endif
         private static readonly GameContentManager ContentManager = Globals.ContentManager;
         private volatile bool _initialized;
         private bool _isClickThrough;
@@ -90,6 +93,13 @@ namespace Intersect.Client.Interface.Game.Map
             _zoomInButton.SetToolTipText(Strings.Minimap.ZoomIn);
             _zoomOutButton.Clicked += MZoomOutButton_Clicked;
             _zoomOutButton.SetToolTipText(Strings.Minimap.ZoomOut);
+#if DEBUG
+            _zoomLabel = new Label(_minimap, nameof(_zoomLabel))
+            {
+                AutoSizeToContents = true,
+                Text = $"{_zoomLevel}%",
+            };
+#endif
             _whiteTexture = Graphics.Renderer.WhitePixel;
             _renderTexture = GenerateBaseRenderTexture();
             Waypoints = new WaypointLayer(_minimap);
@@ -178,6 +188,9 @@ namespace Intersect.Client.Interface.Game.Map
             }
 
             _zoomLevel = newLevel;
+#if DEBUG
+            _zoomLabel.Text = $"{_zoomLevel}%";
+#endif
 
             if (persist)
             {

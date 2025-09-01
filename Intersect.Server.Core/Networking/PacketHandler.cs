@@ -508,7 +508,7 @@ internal sealed partial class PacketHandler
         }
     }
 
-    //MapDiscoveriesPacket
+     //MapDiscoveriesPacket
     public void HandlePacket(Client client, MapDiscoveriesPacket packet)
     {
         if (client?.Entity is not Player player || packet.Discoveries == null)
@@ -516,17 +516,44 @@ internal sealed partial class PacketHandler
             return;
         }
 
-        foreach (var kvp in packet.Discoveries)
+        const int maxEntries = 32;
+        if (packet.Discoveries.Count > maxEntries)
         {
-            player.MapDiscoveries[kvp.Key] = new BitGrid(
-                Options.Instance.Map.MapWidth,
-                Options.Instance.Map.MapHeight,
-                kvp.Value
-            );
+            return;
         }
 
-        player.Save();
+        var mapOptions = Options.Instance.Map;
+        var expectedSize = (mapOptions.MapWidth * mapOptions.MapHeight + 7) / 8;
+
+        var processed = 0;
+        foreach (var kvp in packet.Discoveries)
+        {
+            if (processed >= maxEntries)
+            {
+                break;
+            }
+
+            if (!MapController.Lookup.Keys.Contains(kvp.Key))
+            {
+                continue;
+            }
+
+            var data = kvp.Value;
+            if (data == null || data.Length != expectedSize)
+            {
+                continue;
+            }
+
+            player.MapDiscoveries[kvp.Key] = new BitGrid(
+                mapOptions.MapWidth,
+                mapOptions.MapHeight,
+                data
+            );
+
+            processed++;
+        }
     }
+
 
     //LoginPacket
     public void HandlePacket(Client client, LoginPacket packet)

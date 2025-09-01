@@ -42,6 +42,7 @@ public sealed class WorldMapWindow : Window
     private MapFilters.MapSearchEntry? _activeEntry;
     private Point _activeEntryCenter;
     private readonly List<ImagePanel> _searchHighlights = new();
+    private readonly Stack<ImagePanel> _highlightPool = new();
 
     public static WaypointLayer? Waypoints { get; private set; }
 
@@ -360,7 +361,12 @@ public sealed class WorldMapWindow : Window
 
     private void OnSearchSubmitted(string query)
     {
-        foreach (var highlight in _searchHighlights) highlight.Dispose();
+        foreach (var highlight in _searchHighlights)
+        {
+            highlight.IsHidden = true;
+            highlight.Parent = null;
+            _highlightPool.Push(highlight);
+        }
         _searchHighlights.Clear();
 
         var results = _filters.Search(query)
@@ -382,7 +388,8 @@ public sealed class WorldMapWindow : Window
 
         foreach (var result in results)
         {
-            var area = new ImagePanel(_canvas, "SearchHighlight");
+            var area = _highlightPool.Count > 0 ? _highlightPool.Pop() : new ImagePanel(_canvas, "SearchHighlight");
+            area.Parent = _canvas;
             area.SetBounds(result.Area.X, result.Area.Y, result.Area.Width, result.Area.Height);
             area.IsHidden = false;
             _searchHighlights.Add(area);

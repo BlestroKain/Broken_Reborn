@@ -34,7 +34,7 @@ namespace Intersect.Client.Interface.Game.Map
         private Dictionary<MapPosition, MapInstance?> _mapGrid = new();
 
         // Cached entity/POI information per map id
-        private Dictionary<Guid, List<EntityLocation>> _entityInfoCache = new();
+        private Dictionary<Guid, List<EntityLocation>> _entityInfoCache = DictionaryPool<Guid, List<EntityLocation>>.Rent();
         private Point _minimapTileSize;
         private float _dpi;
         private DateTime _lastWheelTime = DateTime.MinValue;
@@ -112,8 +112,6 @@ namespace Intersect.Client.Interface.Game.Map
                 return;
             }
 
-            WorldMapWindow.Waypoints?.Update();
-
             var dpi = Sdl2.GetDisplayDpi();
             if (Math.Abs(dpi - _dpi) > float.Epsilon)
             {
@@ -138,6 +136,7 @@ namespace Intersect.Client.Interface.Game.Map
             var now = DateTime.UtcNow;
             if (now - _lastOverlayUpdate >= OverlayInterval)
             {
+                WorldMapWindow.Waypoints?.Update();
                 UpdateMinimap(Globals.Me, Globals.Entities);
                 _lastOverlayUpdate = now;
             }
@@ -572,7 +571,7 @@ namespace Intersect.Client.Interface.Game.Map
         }
         private Dictionary<Guid, List<EntityLocation>> GenerateEntityInfo(Dictionary<Guid, Entity> entities, Player player)
         {
-            var entityInfo = new Dictionary<Guid, List<EntityLocation>>();
+            var entityInfo = DictionaryPool<Guid, List<EntityLocation>>.Rent();
             var minimapOptions = Options.Instance.Minimap;
             var minimapColorOptions = minimapOptions.MinimapColors;
             var minimapImageOptions = minimapOptions.MinimapImages;
@@ -758,11 +757,13 @@ namespace Intersect.Client.Interface.Game.Map
             if (changed)
             {
                 ReleaseEntityInfo(_entityInfoCache);
+                DictionaryPool<Guid, List<EntityLocation>>.Return(_entityInfoCache);
                 _entityInfoCache = newInfo;
             }
             else
             {
                 ReleaseEntityInfo(newInfo);
+                DictionaryPool<Guid, List<EntityLocation>>.Return(newInfo);
             }
 
             return changed;
@@ -861,6 +862,28 @@ namespace Intersect.Client.Interface.Game.Map
         {
             public Point Position;
             public EntityInfo Info;
+        }
+
+        private static class DictionaryPool<TKey, TValue>
+        {
+            private static readonly Stack<Dictionary<TKey, TValue>> Pool = new();
+
+            public static Dictionary<TKey, TValue> Rent()
+            {
+                lock (Pool)
+                {
+                    return Pool.Count > 0 ? Pool.Pop() : new Dictionary<TKey, TValue>();
+                }
+            }
+
+            public static void Return(Dictionary<TKey, TValue> dictionary)
+            {
+                dictionary.Clear();
+                lock (Pool)
+                {
+                    Pool.Push(dictionary);
+                }
+            }
         }
 
         private static class ListPool<T>

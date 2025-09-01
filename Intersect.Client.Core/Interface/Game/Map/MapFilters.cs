@@ -50,22 +50,6 @@ public class MapFilters
     {
         var cb = new Checkbox(_panel) { Text = label, IsChecked = true };
         cb.Dock = Pos.Top;
-
-        // Apply stored preference if available.
-        if (MapPreferences.Instance.ActiveFilters.TryGetValue(key, out var enabled))
-        {
-            cb.IsChecked = enabled;
-        }
-        else
-        {
-            MapPreferences.UpdateFilter(key, cb.IsChecked);
-        }
-
-        cb.CheckChanged += (_, args) =>
-        {
-            MapPreferences.UpdateFilter(key, cb.IsChecked);
-        };
-
         _filters[key] = cb;
     }
 

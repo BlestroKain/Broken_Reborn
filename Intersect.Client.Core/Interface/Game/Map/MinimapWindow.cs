@@ -36,8 +36,6 @@ namespace Intersect.Client.Interface.Game.Map
         private Dictionary<Guid, List<EntityLocation>> _entityInfoCache = DictionaryPool<Guid, List<EntityLocation>>.Rent();
         private Point _minimapTileSize;
         private float _dpi;
-        private DateTime _lastWheelTime = DateTime.MinValue;
-        private static readonly TimeSpan WheelDebounce = TimeSpan.FromMilliseconds(125);
         // Cache of mini tiles and dynamic overlays by map id
         private readonly Dictionary<Guid, IGameRenderTexture> _minimapCache = new();
         private readonly Dictionary<Guid, IGameRenderTexture> _entityCache = new();
@@ -86,7 +84,7 @@ namespace Intersect.Client.Interface.Game.Map
             SetZoom(Options.Instance.Minimap.DefaultZoom, false);
             _dpi = Sdl2.GetDisplayDpi();
             _minimapTileSize = Options.Instance.Minimap.GetScaledTileSize(_dpi);
-            _minimap = new ImagePanel(this, "MinimapContainer");
+            _minimap = new MinimapPanel(this, "MinimapContainer");
             _zoomInButton = new Button(_minimap, "ZoomInButton");
             _zoomOutButton = new Button(_minimap, "ZoomOutButton");
             _zoomInButton.Clicked += MZoomInButton_Clicked;
@@ -218,34 +216,6 @@ namespace Intersect.Client.Interface.Game.Map
             base.OnMouseUp(mouseButton, mousePosition, userAction);
         }
 
-        protected override bool OnMouseWheeled(int delta)
-        {
-            if (IsClickThrough)
-            {
-                return false;
-            }
-
-            var now = DateTime.UtcNow;
-            if (now - _lastWheelTime < WheelDebounce)
-            {
-                return true;
-            }
-
-            _lastWheelTime = now;
-
-            var step = Options.Instance.Minimap.ZoomStep;
-
-            if (delta > 0)
-            {
-                SetZoom(_zoomLevel - step);
-            }
-            else if (delta < 0)
-            {
-                SetZoom(_zoomLevel + step);
-            }
-
-            return true;
-        }
         // Private Methods
         private void UpdateMinimap(Player player, Dictionary<Guid, Entity> allEntities)
         {
@@ -827,6 +797,47 @@ namespace Intersect.Client.Interface.Game.Map
                 Globals.MapDiscoveries.ToDictionary(k => k.Key, v => v.Value.Data)
             );
             _lastDiscoverySync = DateTime.UtcNow;
+        }
+
+        private sealed class MinimapPanel : ImagePanel
+        {
+            private readonly MinimapWindow _window;
+            private DateTime _lastWheelTime = DateTime.MinValue;
+            private static readonly TimeSpan WheelDebounce = TimeSpan.FromMilliseconds(125);
+
+            public MinimapPanel(MinimapWindow window, string name) : base(window, name)
+            {
+                _window = window;
+            }
+
+            protected override bool OnMouseWheeled(int delta)
+            {
+                if (_window.IsClickThrough)
+                {
+                    return false;
+                }
+
+                var now = DateTime.UtcNow;
+                if (now - _lastWheelTime < WheelDebounce)
+                {
+                    return true;
+                }
+
+                _lastWheelTime = now;
+
+                var step = Options.Instance.Minimap.ZoomStep;
+
+                if (delta > 0)
+                {
+                    _window.SetZoom(_window._zoomLevel - step);
+                }
+                else if (delta < 0)
+                {
+                    _window.SetZoom(_window._zoomLevel + step);
+                }
+
+                return true;
+            }
         }
         private void MZoomOutButton_Clicked(Base sender, MouseButtonState arguments)
         {

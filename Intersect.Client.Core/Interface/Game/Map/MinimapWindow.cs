@@ -312,27 +312,27 @@ namespace Intersect.Client.Interface.Game.Map
             // Update our minimap display area
             var centerX = (_renderTexture.Width / 3) + (player.X * _minimapTileSize.X);
             var centerY = (_renderTexture.Height / 3) + (player.Y * _minimapTileSize.Y);
-            var displayWidth = (int)(_renderTexture.Width * (_zoomLevel / 100f));
-            var displayHeight = (int)(_renderTexture.Height * (_zoomLevel / 100f));
-            var x = centerX - (displayWidth / 2);
-            if (x + displayWidth > _renderTexture.Width)
+            var displayW = (int)(_renderTexture.Width * (_zoomLevel / 100f));
+            var displayH = (int)(_renderTexture.Height * (_zoomLevel / 100f));
+            var x = centerX - (displayW / 2);
+            if (x + displayW > _renderTexture.Width)
             {
-                x = _renderTexture.Width - displayWidth;
+                x = _renderTexture.Width - displayW;
             }
             if (x < 0)
             {
                 x = 0;
             }
-            var y = centerY - (displayHeight / 2);
-            if (y + displayHeight > _renderTexture.Height)
+            var y = centerY - (displayH / 2);
+            if (y + displayH > _renderTexture.Height)
             {
-                y = _renderTexture.Height - displayHeight;
+                y = _renderTexture.Height - displayH;
             }
             if (y < 0)
             {
                 y = 0;
             }
-            _minimap.SetTextureRect(x, y, displayWidth, displayHeight);
+            _minimap.SetTextureRect(x, y, displayW, displayH);
         }
         private void DrawMinimap()
         {

@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
@@ -2022,7 +2023,15 @@ public static partial class DbInterface
                     var serverVar = variable.Value;
                     if (serverVar != null)
                     {
-                        context.ServerVariables.Update(variable.Value);
+                        var exists = context.ServerVariables.Any(v => v.Id == serverVar.Id);
+                        if (exists)
+                        {
+                            context.ServerVariables.Update(serverVar);
+                        }
+                        else
+                        {
+                            context.ServerVariables.Add(serverVar);
+                        }
                     }
                     UpdatedServerVariables.TryRemove(variable.Key, out ServerVariableDescriptor obj);
                 }

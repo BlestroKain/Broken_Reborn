@@ -73,6 +73,11 @@ namespace Intersect.Client.Interface.Game.Map
             }
         }
 
+        internal static float ClampIconScale(float scale)
+        {
+            return Math.Max(0.8f, scale);
+        }
+
         // Throttle dynamic overlay updates to ~4Hz
         private DateTime _lastOverlayUpdate = DateTime.MinValue;
         private static readonly TimeSpan OverlayInterval = TimeSpan.FromMilliseconds(250);
@@ -453,7 +458,7 @@ namespace Intersect.Client.Interface.Game.Map
                 return;
             }
 
-            var iconScale = Options.Instance.Minimap.IconScale;
+            var scale = ClampIconScale(Options.Instance.Minimap.IconScale);
 
             foreach (var entity in cachedEntityInfo)
             {
@@ -470,8 +475,8 @@ namespace Intersect.Client.Interface.Game.Map
                     }
                 }
 
-                var drawWidth = (int)(_minimapTileSize.X * iconScale);
-                var drawHeight = (int)(_minimapTileSize.Y * iconScale);
+                var drawWidth = (int)(_minimapTileSize.X * scale);
+                var drawHeight = (int)(_minimapTileSize.Y * scale);
                 var drawX = entity.Position.X * _minimapTileSize.X + (_minimapTileSize.X - drawWidth) / 2;
                 var drawY = entity.Position.Y * _minimapTileSize.Y + (_minimapTileSize.Y - drawHeight) / 2;
 

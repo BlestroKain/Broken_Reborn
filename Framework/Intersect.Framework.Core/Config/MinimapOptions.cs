@@ -65,7 +65,8 @@ public partial class MinimapOptions
     public int ZoomStep { get; set; } = 10;
 
     /// <summary>
-    /// Scales entity icons when drawn on the minimap.
+    /// Scales entity icons when drawn on the minimap. Values below 0.8 are
+    /// clamped to 0.8 to keep icons visible.
     /// </summary>
     public float IconScale { get; set; } = 1.25f;
 

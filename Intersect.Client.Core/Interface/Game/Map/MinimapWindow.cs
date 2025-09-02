@@ -30,7 +30,7 @@ namespace Intersect.Client.Interface.Game.Map
         private bool _redrawMaps;
         private bool _redrawEntities;
         private int _zoomLevel;
-        private Dictionary<MapPosition, MapInstance?> _mapGrid = new();
+        private Dictionary<MapPosition, MapInstance?> _mapGrid = DictionaryPool<MapPosition, MapInstance?>.Rent();
 
         // Cached entity information per map id
         private Dictionary<Guid, List<EntityLocation>> _entityInfoCache = DictionaryPool<Guid, List<EntityLocation>>.Rent();
@@ -146,7 +146,7 @@ namespace Intersect.Client.Interface.Game.Map
             if (now - _lastOverlayUpdate >= OverlayInterval)
             {
                 Waypoints?.Update();
-                UpdateMinimap(Globals.Me, Globals.Entities);
+                UpdateMinimap(Globals.Me);
                 _lastOverlayUpdate = now;
             }
 
@@ -198,11 +198,9 @@ namespace Intersect.Client.Interface.Game.Map
 
         public void SetZoom(int newLevel, bool persist = true)
         {
-            newLevel = Math.Clamp(
-                newLevel,
-                Options.Instance.Minimap.MinimumZoom,
-                Options.Instance.Minimap.MaximumZoom
-            );
+            var min = Math.Min(Options.Instance.Minimap.MinimumZoom, Options.Instance.Minimap.MaximumZoom);
+            var max = Math.Max(Options.Instance.Minimap.MinimumZoom, Options.Instance.Minimap.MaximumZoom);
+            newLevel = Math.Clamp(newLevel, min, max);
 
             if (_zoomLevel == newLevel)
             {
@@ -241,16 +239,11 @@ namespace Intersect.Client.Interface.Game.Map
         }
 
         // Private Methods
-        private void UpdateMinimap(Player player, Dictionary<Guid, Entity> allEntities)
+        private void UpdateMinimap(Player player)
         {
             if (player == null)
             {
                 Console.WriteLine("Player is null in UpdateMinimap.");
-                return;
-            }
-            if (allEntities == null)
-            {
-                Console.WriteLine("allEntities is null in UpdateMinimap.");
                 return;
             }
             if (player.MapInstance == null)
@@ -314,6 +307,30 @@ namespace Intersect.Client.Interface.Game.Map
 
             if (changed)
             {
+                var oldIds = _mapGrid.Values
+                    .Where(static m => m != null)
+                    .Select(static m => m!.Id)
+                    .ToHashSet();
+                var newIds = newGrid.Values
+                    .Where(static m => m != null)
+                    .Select(static m => m!.Id)
+                    .ToHashSet();
+                foreach (var removedId in oldIds.Except(newIds).ToArray())
+                {
+                    if (_minimapCache.TryGetValue(removedId, out var minimapTex))
+                    {
+                        minimapTex.Dispose();
+                        _minimapCache.Remove(removedId);
+                    }
+
+                    if (_entityCache.TryGetValue(removedId, out var entityTex))
+                    {
+                        entityTex.Dispose();
+                        _entityCache.Remove(removedId);
+                    }
+                }
+
+                DictionaryPool<MapPosition, MapInstance?>.Return(_mapGrid);
                 _mapGrid = newGrid;
                 _mapPosition.Clear();
                 foreach (var map in _mapGrid)
@@ -327,8 +344,21 @@ namespace Intersect.Client.Interface.Game.Map
                 SyncDiscoveries();
                 Globals.LoadDiscoveries(Globals.MapDiscoveries.ToDictionary(k => k.Key, v => v.Value.Data));
             }
+            else
+            {
+                DictionaryPool<MapPosition, MapInstance?>.Return(newGrid);
+            }
 
-            var newLocations = GenerateEntityInfo(allEntities, player);
+            var visibleEntities = new Dictionary<Guid, Dictionary<Guid, Entity>>();
+            foreach (var mapId in _mapPosition.Keys)
+            {
+                if (MapInstance.TryGet(mapId, out var localMap))
+                {
+                    visibleEntities[mapId] = localMap.LocalEntities;
+                }
+            }
+
+            var newLocations = GenerateEntityInfo(visibleEntities, player);
             if (UpdateEntityInfoCache(newLocations))
             {
                 _redrawEntities = true;
@@ -338,24 +368,8 @@ namespace Intersect.Client.Interface.Game.Map
             var centerY = (_renderTexture.Height / 3) + (player.Y * _minimapTileSize.Y);
             var displayW = (int)(_renderTexture.Width * (_zoomLevel / 100f));
             var displayH = (int)(_renderTexture.Height * (_zoomLevel / 100f));
-            var x = centerX - (displayW / 2);
-            if (x + displayW > _renderTexture.Width)
-            {
-                x = _renderTexture.Width - displayW;
-            }
-            if (x < 0)
-            {
-                x = 0;
-            }
-            var y = centerY - (displayH / 2);
-            if (y + displayH > _renderTexture.Height)
-            {
-                y = _renderTexture.Height - displayH;
-            }
-            if (y < 0)
-            {
-                y = 0;
-            }
+            var x = Math.Clamp(centerX - (displayW / 2), 0, _renderTexture.Width - displayW);
+            var y = Math.Clamp(centerY - (displayH / 2), 0, _renderTexture.Height - displayH);
             _minimap.SetTextureRect(x, y, displayW, displayH);
         }
         private void DrawMinimap()
@@ -614,7 +628,7 @@ namespace Intersect.Client.Interface.Game.Map
         }
         private static Dictionary<MapPosition, MapInstance?> CreateMapGridFromMap(MapInstance map)
         {
-            var grid = new Dictionary<MapPosition, MapInstance?>();
+            var grid = DictionaryPool<MapPosition, MapInstance?>.Rent();
 
             for (var x = map.GridX - 1; x <= map.GridX + 1; x++)
             {
@@ -643,111 +657,114 @@ namespace Intersect.Client.Interface.Game.Map
 
             return grid;
         }
-        private Dictionary<Guid, List<EntityLocation>> GenerateEntityInfo(Dictionary<Guid, Entity> entities, Player player)
+        private Dictionary<Guid, List<EntityLocation>> GenerateEntityInfo(Dictionary<Guid, Dictionary<Guid, Entity>> entities, Player player)
         {
             var entityInfo = DictionaryPool<Guid, List<EntityLocation>>.Rent();
             var minimapOptions = Options.Instance.Minimap;
             var minimapColorOptions = minimapOptions.MinimapColors;
             var minimapImageOptions = minimapOptions.MinimapImages;
 
-            foreach (var entity in entities.Values)
+            foreach (var mapId in _mapPosition.Keys)
             {
-                if (!_mapPosition.ContainsKey(entity.MapInstance.Id))
+                if (!entities.TryGetValue(mapId, out var mapEntities))
                 {
                     continue;
                 }
 
-                if (entity.IsHidden)
+                foreach (var entity in mapEntities.Values)
                 {
-                    continue;
-                }
-
-                var color = Color.Transparent;
-                var texture = string.Empty;
-
-                switch (entity.Type)
-                {
-                    case EntityType.Player:
-                        if (entity.IsStealthed)
-                        {
-                            color = Color.Transparent;
-                            texture = string.Empty;
-                        }
-                        else if (entity.Id == player.Id)
-                        {
-                            color = minimapColorOptions.MyEntity;
-                            texture = minimapImageOptions.MyEntity;
-                        }
-                        else if (player.IsInMyParty(entity.Id))
-                        {
-                            color = minimapColorOptions.PartyMember;
-                            texture = minimapImageOptions.PartyMember;
-                        }
-                        else
-                        {
-                            color = minimapColorOptions.Player;
-                            texture = minimapImageOptions.Player;
-                        }
-
-                        break;
-
-                    case EntityType.Event:
+                    if (entity.IsHidden)
+                    {
                         continue;
+                    }
 
-                    case EntityType.GlobalEntity:
-                        if (entity.IsStealthed)
-                        {
-                            color = Color.Transparent;
-                            texture = string.Empty;
-                        }
-                        else
-                        {
-                            color = minimapColorOptions.Npc;
-                            texture = minimapImageOptions.Npc;
-                        }
+                    var color = Color.Transparent;
+                    var texture = string.Empty;
 
-                        break;
+                    switch (entity.Type)
+                    {
+                        case EntityType.Player:
+                            if (entity.IsStealthed)
+                            {
+                                color = Color.Transparent;
+                                texture = string.Empty;
+                            }
+                            else if (entity.Id == player.Id)
+                            {
+                                color = minimapColorOptions.MyEntity;
+                                texture = minimapImageOptions.MyEntity;
+                            }
+                            else if (player.IsInMyParty(entity.Id))
+                            {
+                                color = minimapColorOptions.PartyMember;
+                                texture = minimapImageOptions.PartyMember;
+                            }
+                            else
+                            {
+                                color = minimapColorOptions.Player;
+                                texture = minimapImageOptions.Player;
+                            }
 
-                    case EntityType.Resource:
-                        var job = ((Resource)entity).Descriptor?.Jobs ?? JobType.None;
+                            break;
 
-                        if (!minimapColorOptions.Resource.TryGetValue(job, out color))
-                        {
+                        case EntityType.Event:
+                            continue;
+
+                        case EntityType.GlobalEntity:
+                            if (entity.IsStealthed)
+                            {
+                                color = Color.Transparent;
+                                texture = string.Empty;
+                            }
+                            else
+                            {
+                                color = minimapColorOptions.Npc;
+                                texture = minimapImageOptions.Npc;
+                            }
+
+                            break;
+
+                        case EntityType.Resource:
+                            var job = ((Resource)entity).Descriptor?.Jobs ?? JobType.None;
+
+                            if (!minimapColorOptions.Resource.TryGetValue(job, out color))
+                            {
+                                color = minimapColorOptions.Default;
+                            }
+
+                            if (!minimapImageOptions.Resource.TryGetValue(job, out texture))
+                            {
+                                texture = minimapImageOptions.Default;
+                            }
+
+                            break;
+
+                        case EntityType.Projectile:
+                            continue;
+
+                        default:
                             color = minimapColorOptions.Default;
-                        }
-
-                        if (!minimapImageOptions.Resource.TryGetValue(job, out texture))
-                        {
                             texture = minimapImageOptions.Default;
-                        }
+                            break;
+                    }
 
-                        break;
-
-                    case EntityType.Projectile:
+                    if (color == Color.Transparent && string.IsNullOrEmpty(texture))
+                    {
                         continue;
+                    }
 
-                    default:
-                        color = minimapColorOptions.Default;
-                        texture = minimapImageOptions.Default;
-                        break;
+                    if (!entityInfo.TryGetValue(entity.MapInstance.Id, out var list))
+                    {
+                        list = ListPool<EntityLocation>.Rent();
+                        entityInfo.Add(entity.MapInstance.Id, list);
+                    }
+
+                    list.Add(new EntityLocation
+                    {
+                        Position = new Point(entity.X, entity.Y),
+                        Info = new EntityInfo { Color = color, Texture = texture }
+                    });
                 }
-
-                if (color == Color.Transparent && string.IsNullOrEmpty(texture))
-                {
-                    continue;
-                }
-
-                if (!entityInfo.TryGetValue(entity.MapInstance.Id, out var list))
-                {
-                    list = ListPool<EntityLocation>.Rent();
-                    entityInfo.Add(entity.MapInstance.Id, list);
-                }
-
-                list.Add(new EntityLocation
-                {
-                    Position = new Point(entity.X, entity.Y),
-                    Info = new EntityInfo { Color = color, Texture = texture }
-                });
             }
 
             if (Options.Instance.Minimap.ShowWaypoints && Waypoints != null)
@@ -788,37 +805,30 @@ namespace Intersect.Client.Interface.Game.Map
                 }
             }
 
+            foreach (var list in entityInfo.Values)
+            {
+                list.Sort(EntityLocationComparer.Instance);
+            }
+
             return entityInfo;
         }
 
         private bool UpdateEntityInfoCache(Dictionary<Guid, List<EntityLocation>> newInfo)
         {
+            foreach (var list in newInfo.Values)
+            {
+                list.Sort(EntityLocationComparer.Instance);
+            }
+
             var changed = _entityInfoCache.Count != newInfo.Count;
             if (!changed)
             {
                 foreach (var kv in newInfo)
                 {
-                    if (!_entityInfoCache.TryGetValue(kv.Key, out var oldList) || oldList.Count != kv.Value.Count)
+                    if (!_entityInfoCache.TryGetValue(kv.Key, out var oldList) || oldList.Count != kv.Value.Count ||
+                        !oldList.SequenceEqual(kv.Value))
                     {
                         changed = true;
-                        break;
-                    }
-
-                    for (var i = 0; i < kv.Value.Count; i++)
-                    {
-                        var oldEntry = oldList[i];
-                        var newEntry = kv.Value[i];
-                        if (!oldEntry.Position.Equals(newEntry.Position) ||
-                            !oldEntry.Info.Color.Equals(newEntry.Info.Color) ||
-                            oldEntry.Info.Texture != newEntry.Info.Texture)
-                        {
-                            changed = true;
-                            break;
-                        }
-                    }
-
-                    if (changed)
-                    {
                         break;
                     }
                 }
@@ -898,7 +908,7 @@ namespace Intersect.Client.Interface.Game.Map
 
                 _lastWheelTime = now;
 
-                var step = Options.Instance.Minimap.ZoomStep;
+                var step = Math.Max(1, Options.Instance.Minimap.ZoomStep);
 
                 if (delta > 0)
                 {
@@ -914,12 +924,12 @@ namespace Intersect.Client.Interface.Game.Map
         }
         private void MZoomOutButton_Clicked(Base sender, MouseButtonState arguments)
         {
-            var step = Options.Instance.Minimap.ZoomStep;
+            var step = Math.Max(1, Options.Instance.Minimap.ZoomStep);
             SetZoom(_zoomLevel + step);
         }
         private void MZoomInButton_Clicked(Base sender, MouseButtonState arguments)
         {
-            var step = Options.Instance.Minimap.ZoomStep;
+            var step = Math.Max(1, Options.Instance.Minimap.ZoomStep);
             SetZoom(_zoomLevel - step);
         }
         private enum MapPosition
@@ -938,13 +948,79 @@ namespace Intersect.Client.Interface.Game.Map
         private sealed class EntityInfo
         {
             public Color Color { get; set; }
-            public string Texture { get; set; }
+            public string Texture { get; set; } = string.Empty;
         }
 
-        private struct EntityLocation
+        private readonly struct EntityLocation : IEquatable<EntityLocation>
         {
-            public Point Position;
-            public EntityInfo Info;
+            public Point Position { get; init; }
+            public EntityInfo Info { get; init; }
+
+            public bool Equals(EntityLocation other)
+            {
+                return Position.Equals(other.Position) &&
+                       Info.Color.A == other.Info.Color.A &&
+                       Info.Color.R == other.Info.Color.R &&
+                       Info.Color.G == other.Info.Color.G &&
+                       Info.Color.B == other.Info.Color.B &&
+                       Info.Texture == other.Info.Texture;
+            }
+
+            public override bool Equals(object? obj)
+            {
+                return obj is EntityLocation other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(Position, Info.Color.A, Info.Color.R, Info.Color.G, Info.Color.B, Info.Texture);
+            }
+        }
+
+        private sealed class EntityLocationComparer : IComparer<EntityLocation>
+        {
+            public static readonly EntityLocationComparer Instance = new();
+
+            public int Compare(EntityLocation x, EntityLocation y)
+            {
+                var result = x.Position.X.CompareTo(y.Position.X);
+                if (result != 0)
+                {
+                    return result;
+                }
+
+                result = x.Position.Y.CompareTo(y.Position.Y);
+                if (result != 0)
+                {
+                    return result;
+                }
+
+                result = x.Info.Color.A.CompareTo(y.Info.Color.A);
+                if (result != 0)
+                {
+                    return result;
+                }
+
+                result = x.Info.Color.R.CompareTo(y.Info.Color.R);
+                if (result != 0)
+                {
+                    return result;
+                }
+
+                result = x.Info.Color.G.CompareTo(y.Info.Color.G);
+                if (result != 0)
+                {
+                    return result;
+                }
+
+                result = x.Info.Color.B.CompareTo(y.Info.Color.B);
+                if (result != 0)
+                {
+                    return result;
+                }
+
+                return string.Compare(x.Info.Texture, y.Info.Texture, StringComparison.Ordinal);
+            }
         }
 
         private static class DictionaryPool<TKey, TValue>

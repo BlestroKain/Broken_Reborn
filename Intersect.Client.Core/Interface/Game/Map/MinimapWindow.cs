@@ -32,8 +32,9 @@ namespace Intersect.Client.Interface.Game.Map
         private int _zoomLevel;
         private Dictionary<MapPosition, MapInstance?> _mapGrid = new();
 
-        // Cached entity/POI information per map id
+        // Cached entity information per map id
         private Dictionary<Guid, List<EntityLocation>> _entityInfoCache = DictionaryPool<Guid, List<EntityLocation>>.Rent();
+        private readonly Dictionary<Guid, List<MapPoi>> _poisByMap = new();
         private Point _minimapTileSize;
         private float _dpi;
         private DateTime _lastWheelTime = DateTime.MinValue;
@@ -147,6 +148,24 @@ namespace Intersect.Client.Interface.Game.Map
             }
 
             DrawMinimap();
+        }
+
+        public void SetPois(IEnumerable<MapPoi> pois)
+        {
+            _poisByMap.Clear();
+
+            foreach (var poi in pois)
+            {
+                if (!_poisByMap.TryGetValue(poi.MapId, out var list))
+                {
+                    list = new List<MapPoi>();
+                    _poisByMap[poi.MapId] = list;
+                }
+
+                list.Add(poi);
+            }
+
+            _redrawEntities = true;
         }
         public void Show()
         {
@@ -464,6 +483,8 @@ namespace Intersect.Client.Interface.Game.Map
                 return;
             }
 
+            var iconScale = Options.Instance.Minimap.IconScale;
+
             foreach (var entity in cachedEntityInfo)
             {
                 var texture = _whiteTexture;
@@ -479,19 +500,66 @@ namespace Intersect.Client.Interface.Game.Map
                     }
                 }
 
+                var drawWidth = (int)(_minimapTileSize.X * iconScale);
+                var drawHeight = (int)(_minimapTileSize.Y * iconScale);
+                var drawX = entity.Position.X * _minimapTileSize.X + (_minimapTileSize.X - drawWidth) / 2;
+                var drawY = entity.Position.Y * _minimapTileSize.Y + (_minimapTileSize.Y - drawHeight) / 2;
+
                 Graphics.Renderer.DrawTexture(
                     texture,
                     0,
                     0,
                     texture.Width,
                     texture.Height,
-                    entity.Position.X * _minimapTileSize.X,
-                    entity.Position.Y * _minimapTileSize.Y,
-                    _minimapTileSize.X,
-                    _minimapTileSize.Y,
+                    drawX,
+                    drawY,
+                    drawWidth,
+                    drawHeight,
                     color,
                     cachedEntity,
                     GameBlendModes.Add);
+            }
+
+            if (_poisByMap.TryGetValue(map.Id, out var pois))
+            {
+                var minimapOptions = Options.Instance.Minimap;
+                var poiScale = minimapOptions.PoiIconScale;
+
+                foreach (var poi in pois)
+                {
+                    if (!minimapOptions.PoiIcons.TryGetValue(poi.PoiType, out var icon))
+                    {
+                        minimapOptions.PoiIcons.TryGetValue("Default", out icon);
+                    }
+
+                    var texture = !string.IsNullOrEmpty(icon)
+                        ? ContentManager.GetTexture(TextureType.Misc, icon)
+                        : null;
+
+                    if (texture == null)
+                    {
+                        continue;
+                    }
+
+                    var drawWidth = (int)(_minimapTileSize.X * poiScale);
+                    var drawHeight = (int)(_minimapTileSize.Y * poiScale);
+                    var drawX = poi.X * _minimapTileSize.X + (_minimapTileSize.X - drawWidth) / 2;
+                    var drawY = poi.Y * _minimapTileSize.Y + (_minimapTileSize.Y - drawHeight) / 2;
+
+                    Graphics.Renderer.DrawTexture(
+                        texture,
+                        0,
+                        0,
+                        texture.Width,
+                        texture.Height,
+                        drawX,
+                        drawY,
+                        drawWidth,
+                        drawHeight,
+                        Color.White,
+                        cachedEntity,
+                        GameBlendModes.Add);
+                }
             }
         }
         private void DrawMinimapCacheToTexture(MapInstance map, MapPosition position)

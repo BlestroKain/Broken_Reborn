@@ -65,6 +65,44 @@ public partial class MinimapOptions
     public int ZoomStep { get; set; } = 10;
 
     /// <summary>
+    /// Scales entity icons when drawn on the minimap.
+    /// </summary>
+    public float IconScale { get; set; } = 1.25f;
+
+    /// <summary>
+    /// Scales point of interest icons when drawn on the minimap.
+    /// </summary>
+    public float PoiIconScale { get; set; } = 1.5f;
+
+    /// <summary>
+    /// Maps point of interest types to their icon texture keys.
+    /// </summary>
+    public Dictionary<string, string> PoiIcons { get; set; } = new()
+    {
+        ["Bank"] = "poi_bank",
+        ["Blacksmith"] = "poi_blacksmith",
+        ["Jeweler"] = "poi_jeweler",
+        ["Farming"] = "poi_farming",
+        ["Mining"] = "poi_mining",
+        ["Lumberjack"] = "poi_lumberjack",
+        ["Fishing"] = "poi_fishing",
+        ["Hunter"] = "poi_hunter",
+        ["Cooking"] = "poi_cooking",
+        ["Smithing"] = "poi_smithing",
+        ["Alchemy"] = "poi_alchemy",
+        ["Crafting"] = "poi_crafting",
+        ["Jewerly"] = "poi_jewerly",
+        ["Tanner"] = "poi_tanner",
+        ["Tailoring"] = "poi_tailoring",
+        ["Portal"] = "poi_portal",
+        ["Tower"] = "poi_tower",
+        ["Inn"] = "poi_inn",
+        ["Market"] = "poi_market",
+        ["Shop"] = "poi_shop",
+        ["Default"] = "poi_default"
+    };
+
+    /// <summary>
     /// Configures the images used within the minimap. If any are left blank the system will default to its color.
     /// </summary>
     public Images MinimapImages { get; set; } = new();

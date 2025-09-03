@@ -800,37 +800,30 @@ namespace Intersect.Client.Interface.Game.Map
                 }
             }
 
+            foreach (var list in entityInfo.Values)
+            {
+                list.Sort(EntityLocationComparer.Instance);
+            }
+
             return entityInfo;
         }
 
         private bool UpdateEntityInfoCache(Dictionary<Guid, List<EntityLocation>> newInfo)
         {
+            foreach (var list in newInfo.Values)
+            {
+                list.Sort(EntityLocationComparer.Instance);
+            }
+
             var changed = _entityInfoCache.Count != newInfo.Count;
             if (!changed)
             {
                 foreach (var kv in newInfo)
                 {
-                    if (!_entityInfoCache.TryGetValue(kv.Key, out var oldList) || oldList.Count != kv.Value.Count)
+                    if (!_entityInfoCache.TryGetValue(kv.Key, out var oldList) || oldList.Count != kv.Value.Count ||
+                        !oldList.SequenceEqual(kv.Value))
                     {
                         changed = true;
-                        break;
-                    }
-
-                    for (var i = 0; i < kv.Value.Count; i++)
-                    {
-                        var oldEntry = oldList[i];
-                        var newEntry = kv.Value[i];
-                        if (!oldEntry.Position.Equals(newEntry.Position) ||
-                            !oldEntry.Info.Color.Equals(newEntry.Info.Color) ||
-                            oldEntry.Info.Texture != newEntry.Info.Texture)
-                        {
-                            changed = true;
-                            break;
-                        }
-                    }
-
-                    if (changed)
-                    {
                         break;
                     }
                 }
@@ -950,13 +943,79 @@ namespace Intersect.Client.Interface.Game.Map
         private sealed class EntityInfo
         {
             public Color Color { get; set; }
-            public string Texture { get; set; }
+            public string Texture { get; set; } = string.Empty;
         }
 
-        private struct EntityLocation
+        private readonly struct EntityLocation : IEquatable<EntityLocation>
         {
-            public Point Position;
-            public EntityInfo Info;
+            public Point Position { get; init; }
+            public EntityInfo Info { get; init; }
+
+            public bool Equals(EntityLocation other)
+            {
+                return Position.Equals(other.Position) &&
+                       Info.Color.A == other.Info.Color.A &&
+                       Info.Color.R == other.Info.Color.R &&
+                       Info.Color.G == other.Info.Color.G &&
+                       Info.Color.B == other.Info.Color.B &&
+                       Info.Texture == other.Info.Texture;
+            }
+
+            public override bool Equals(object? obj)
+            {
+                return obj is EntityLocation other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(Position, Info.Color.A, Info.Color.R, Info.Color.G, Info.Color.B, Info.Texture);
+            }
+        }
+
+        private sealed class EntityLocationComparer : IComparer<EntityLocation>
+        {
+            public static readonly EntityLocationComparer Instance = new();
+
+            public int Compare(EntityLocation x, EntityLocation y)
+            {
+                var result = x.Position.X.CompareTo(y.Position.X);
+                if (result != 0)
+                {
+                    return result;
+                }
+
+                result = x.Position.Y.CompareTo(y.Position.Y);
+                if (result != 0)
+                {
+                    return result;
+                }
+
+                result = x.Info.Color.A.CompareTo(y.Info.Color.A);
+                if (result != 0)
+                {
+                    return result;
+                }
+
+                result = x.Info.Color.R.CompareTo(y.Info.Color.R);
+                if (result != 0)
+                {
+                    return result;
+                }
+
+                result = x.Info.Color.G.CompareTo(y.Info.Color.G);
+                if (result != 0)
+                {
+                    return result;
+                }
+
+                result = x.Info.Color.B.CompareTo(y.Info.Color.B);
+                if (result != 0)
+                {
+                    return result;
+                }
+
+                return string.Compare(x.Info.Texture, y.Info.Texture, StringComparison.Ordinal);
+            }
         }
 
         private static class DictionaryPool<TKey, TValue>

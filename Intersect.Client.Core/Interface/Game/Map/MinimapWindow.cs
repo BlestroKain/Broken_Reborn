@@ -338,6 +338,7 @@ namespace Intersect.Client.Interface.Game.Map
             var displayH = (int)(_renderTexture.Height * (_zoomLevel / 100f));
             var x = Math.Clamp(centerX - (displayW / 2), 0, Math.Max(0, _renderTexture.Width - displayW));
             var y = Math.Clamp(centerY - (displayH / 2), 0, Math.Max(0, _renderTexture.Height - displayH));
+
             _minimap.SetTextureRect(x, y, displayW, displayH);
         }
         private void DrawMinimap()

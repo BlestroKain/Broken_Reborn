@@ -114,7 +114,7 @@ public partial class GameInterface : MutableInterface
 
     public PlayerStatusWindow PlayerStatusWindow;
 
-    private MinimapWindow _minimapWindow;
+    private MinimapWindow? _minimapWindow;
 
 
     private SettingsWindow GetOrCreateSettingsWindow()
@@ -171,10 +171,13 @@ public partial class GameInterface : MutableInterface
     {
         mChatBox = new Chatbox(GameCanvas, this);
         GameMenu = new MenuContainer(GameCanvas);
-        _minimapWindow = new MinimapWindow(GameCanvas)
+        if (Options.Instance.Minimap.EnableMinimapWindow)
         {
-            IsClickThrough = true,
-        };
+            _minimapWindow = new MinimapWindow(GameCanvas)
+            {
+                IsClickThrough = true,
+            };
+        }
         Hotbar = new HotBarWindow(GameCanvas);
         PlayerBox = new EntityBox(GameCanvas, EntityType.Player, Globals.Me, true);
         PlayerBox.SetEntity(Globals.Me);
@@ -462,8 +465,11 @@ public partial class GameInterface : MutableInterface
         }
 
         GameMenu?.Update(mShouldUpdateQuestLog);
-        _minimapWindow.Update();
-        _minimapWindow.IsClickThrough = !GameCanvas.Children.Any(child => child is Modal);
+        if (_minimapWindow != null)
+        {
+            _minimapWindow.Update();
+            _minimapWindow.IsClickThrough = !GameCanvas.Children.Any(child => child is Modal);
+        }
         mShouldUpdateQuestLog = false;
         Hotbar?.Update();
         EscapeMenu.Update();
@@ -812,12 +818,18 @@ public partial class GameInterface : MutableInterface
         return false;
     }
 
-    public bool IsMinimapOpen => _minimapWindow.IsVisible();
+    public bool IsMinimapOpen => _minimapWindow?.IsVisible() ?? false;
 
     public bool MinimapClickThrough
     {
-        get => _minimapWindow.IsClickThrough;
-        set => _minimapWindow.IsClickThrough = value;
+        get => _minimapWindow?.IsClickThrough ?? true;
+        set
+        {
+            if (_minimapWindow != null)
+            {
+                _minimapWindow.IsClickThrough = value;
+            }
+        }
     }
 
     public void OpenMinimap()
@@ -827,17 +839,17 @@ public partial class GameInterface : MutableInterface
             return;
         }
 
-        _minimapWindow.Show();
+        _minimapWindow?.Show();
     }
 
     public void CloseMinimap()
     {
-        _minimapWindow.Hide();
+        _minimapWindow?.Hide();
     }
 
     public void ToggleMinimap()
     {
-        if (_minimapWindow.IsVisible())
+        if (_minimapWindow?.IsVisible() ?? false)
         {
             _minimapWindow.Hide();
         }

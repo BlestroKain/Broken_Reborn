@@ -913,13 +913,11 @@ namespace Intersect.Client.Interface.Game.Map
             {
                 return base.OnMouseWheeled(delta);
             }
-
             var now = DateTime.UtcNow;
             if (now - _lastWheelTime < WheelDebounce)
             {
                 return true;
             }
-
             _lastWheelTime = now;
 
             var step = Math.Max(1, Options.Instance.Minimap.ZoomStep);

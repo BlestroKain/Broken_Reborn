@@ -198,11 +198,9 @@ namespace Intersect.Client.Interface.Game.Map
 
         public void SetZoom(int newLevel, bool persist = true)
         {
-            newLevel = Math.Clamp(
-                newLevel,
-                Options.Instance.Minimap.MinimumZoom,
-                Options.Instance.Minimap.MaximumZoom
-            );
+            var min = Math.Min(Options.Instance.Minimap.MinimumZoom, Options.Instance.Minimap.MaximumZoom);
+            var max = Math.Max(Options.Instance.Minimap.MinimumZoom, Options.Instance.Minimap.MaximumZoom);
+            newLevel = Math.Clamp(newLevel, min, max);
 
             if (_zoomLevel == newLevel)
             {
@@ -338,24 +336,8 @@ namespace Intersect.Client.Interface.Game.Map
             var centerY = (_renderTexture.Height / 3) + (player.Y * _minimapTileSize.Y);
             var displayW = (int)(_renderTexture.Width * (_zoomLevel / 100f));
             var displayH = (int)(_renderTexture.Height * (_zoomLevel / 100f));
-            var x = centerX - (displayW / 2);
-            if (x + displayW > _renderTexture.Width)
-            {
-                x = _renderTexture.Width - displayW;
-            }
-            if (x < 0)
-            {
-                x = 0;
-            }
-            var y = centerY - (displayH / 2);
-            if (y + displayH > _renderTexture.Height)
-            {
-                y = _renderTexture.Height - displayH;
-            }
-            if (y < 0)
-            {
-                y = 0;
-            }
+            var x = Math.Clamp(centerX - (displayW / 2), 0, Math.Max(0, _renderTexture.Width - displayW));
+            var y = Math.Clamp(centerY - (displayH / 2), 0, Math.Max(0, _renderTexture.Height - displayH));
             _minimap.SetTextureRect(x, y, displayW, displayH);
         }
         private void DrawMinimap()
@@ -898,7 +880,7 @@ namespace Intersect.Client.Interface.Game.Map
 
                 _lastWheelTime = now;
 
-                var step = Options.Instance.Minimap.ZoomStep;
+                var step = Math.Max(1, Options.Instance.Minimap.ZoomStep);
 
                 if (delta > 0)
                 {
@@ -914,12 +896,12 @@ namespace Intersect.Client.Interface.Game.Map
         }
         private void MZoomOutButton_Clicked(Base sender, MouseButtonState arguments)
         {
-            var step = Options.Instance.Minimap.ZoomStep;
+            var step = Math.Max(1, Options.Instance.Minimap.ZoomStep);
             SetZoom(_zoomLevel + step);
         }
         private void MZoomInButton_Clicked(Base sender, MouseButtonState arguments)
         {
-            var step = Options.Instance.Minimap.ZoomStep;
+            var step = Math.Max(1, Options.Instance.Minimap.ZoomStep);
             SetZoom(_zoomLevel - step);
         }
         private enum MapPosition

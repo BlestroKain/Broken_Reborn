@@ -30,7 +30,7 @@ namespace Intersect.Client.Interface.Game.Map
         private bool _redrawMaps;
         private bool _redrawEntities;
         private int _zoomLevel;
-        private Dictionary<MapPosition, MapInstance?> _mapGrid = new();
+        private Dictionary<MapPosition, MapInstance?> _mapGrid = DictionaryPool<MapPosition, MapInstance?>.Rent();
 
         // Cached entity information per map id
         private Dictionary<Guid, List<EntityLocation>> _entityInfoCache = DictionaryPool<Guid, List<EntityLocation>>.Rent();
@@ -330,6 +330,7 @@ namespace Intersect.Client.Interface.Game.Map
                     }
                 }
 
+                DictionaryPool<MapPosition, MapInstance?>.Return(_mapGrid);
                 _mapGrid = newGrid;
                 _mapPosition.Clear();
                 foreach (var map in _mapGrid)
@@ -342,6 +343,10 @@ namespace Intersect.Client.Interface.Game.Map
                 _redrawMaps = true;
                 SyncDiscoveries();
                 Globals.LoadDiscoveries(Globals.MapDiscoveries.ToDictionary(k => k.Key, v => v.Value.Data));
+            }
+            else
+            {
+                DictionaryPool<MapPosition, MapInstance?>.Return(newGrid);
             }
 
             var visibleEntities = new Dictionary<Guid, Dictionary<Guid, Entity>>();
@@ -623,7 +628,7 @@ namespace Intersect.Client.Interface.Game.Map
         }
         private static Dictionary<MapPosition, MapInstance?> CreateMapGridFromMap(MapInstance map)
         {
-            var grid = new Dictionary<MapPosition, MapInstance?>();
+            var grid = DictionaryPool<MapPosition, MapInstance?>.Rent();
 
             for (var x = map.GridX - 1; x <= map.GridX + 1; x++)
             {

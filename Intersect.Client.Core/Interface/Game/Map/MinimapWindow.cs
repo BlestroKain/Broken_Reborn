@@ -312,6 +312,29 @@ namespace Intersect.Client.Interface.Game.Map
 
             if (changed)
             {
+                var oldIds = _mapGrid.Values
+                    .Where(static m => m != null)
+                    .Select(static m => m!.Id)
+                    .ToHashSet();
+                var newIds = newGrid.Values
+                    .Where(static m => m != null)
+                    .Select(static m => m!.Id)
+                    .ToHashSet();
+                foreach (var removedId in oldIds.Except(newIds).ToArray())
+                {
+                    if (_minimapCache.TryGetValue(removedId, out var minimapTex))
+                    {
+                        minimapTex.Dispose();
+                        _minimapCache.Remove(removedId);
+                    }
+
+                    if (_entityCache.TryGetValue(removedId, out var entityTex))
+                    {
+                        entityTex.Dispose();
+                        _entityCache.Remove(removedId);
+                    }
+                }
+
                 _mapGrid = newGrid;
                 _mapPosition.Clear();
                 foreach (var map in _mapGrid)

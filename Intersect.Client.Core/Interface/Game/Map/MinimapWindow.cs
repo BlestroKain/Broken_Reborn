@@ -146,7 +146,7 @@ namespace Intersect.Client.Interface.Game.Map
             if (now - _lastOverlayUpdate >= OverlayInterval)
             {
                 Waypoints?.Update();
-                UpdateMinimap(Globals.Me, Globals.Entities);
+                UpdateMinimap(Globals.Me);
                 _lastOverlayUpdate = now;
             }
 
@@ -239,16 +239,11 @@ namespace Intersect.Client.Interface.Game.Map
         }
 
         // Private Methods
-        private void UpdateMinimap(Player player, Dictionary<Guid, Entity> allEntities)
+        private void UpdateMinimap(Player player)
         {
             if (player == null)
             {
                 Console.WriteLine("Player is null in UpdateMinimap.");
-                return;
-            }
-            if (allEntities == null)
-            {
-                Console.WriteLine("allEntities is null in UpdateMinimap.");
                 return;
             }
             if (player.MapInstance == null)
@@ -349,7 +344,16 @@ namespace Intersect.Client.Interface.Game.Map
                 Globals.LoadDiscoveries(Globals.MapDiscoveries.ToDictionary(k => k.Key, v => v.Value.Data));
             }
 
-            var newLocations = GenerateEntityInfo(allEntities, player);
+            var visibleEntities = new Dictionary<Guid, Dictionary<Guid, Entity>>();
+            foreach (var mapId in _mapPosition.Keys)
+            {
+                if (MapInstance.TryGet(mapId, out var localMap))
+                {
+                    visibleEntities[mapId] = localMap.LocalEntities;
+                }
+            }
+
+            var newLocations = GenerateEntityInfo(visibleEntities, player);
             if (UpdateEntityInfoCache(newLocations))
             {
                 _redrawEntities = true;
@@ -648,111 +652,114 @@ namespace Intersect.Client.Interface.Game.Map
 
             return grid;
         }
-        private Dictionary<Guid, List<EntityLocation>> GenerateEntityInfo(Dictionary<Guid, Entity> entities, Player player)
+        private Dictionary<Guid, List<EntityLocation>> GenerateEntityInfo(Dictionary<Guid, Dictionary<Guid, Entity>> entities, Player player)
         {
             var entityInfo = DictionaryPool<Guid, List<EntityLocation>>.Rent();
             var minimapOptions = Options.Instance.Minimap;
             var minimapColorOptions = minimapOptions.MinimapColors;
             var minimapImageOptions = minimapOptions.MinimapImages;
 
-            foreach (var entity in entities.Values)
+            foreach (var mapId in _mapPosition.Keys)
             {
-                if (!_mapPosition.ContainsKey(entity.MapInstance.Id))
+                if (!entities.TryGetValue(mapId, out var mapEntities))
                 {
                     continue;
                 }
 
-                if (entity.IsHidden)
+                foreach (var entity in mapEntities.Values)
                 {
-                    continue;
-                }
-
-                var color = Color.Transparent;
-                var texture = string.Empty;
-
-                switch (entity.Type)
-                {
-                    case EntityType.Player:
-                        if (entity.IsStealthed)
-                        {
-                            color = Color.Transparent;
-                            texture = string.Empty;
-                        }
-                        else if (entity.Id == player.Id)
-                        {
-                            color = minimapColorOptions.MyEntity;
-                            texture = minimapImageOptions.MyEntity;
-                        }
-                        else if (player.IsInMyParty(entity.Id))
-                        {
-                            color = minimapColorOptions.PartyMember;
-                            texture = minimapImageOptions.PartyMember;
-                        }
-                        else
-                        {
-                            color = minimapColorOptions.Player;
-                            texture = minimapImageOptions.Player;
-                        }
-
-                        break;
-
-                    case EntityType.Event:
+                    if (entity.IsHidden)
+                    {
                         continue;
+                    }
 
-                    case EntityType.GlobalEntity:
-                        if (entity.IsStealthed)
-                        {
-                            color = Color.Transparent;
-                            texture = string.Empty;
-                        }
-                        else
-                        {
-                            color = minimapColorOptions.Npc;
-                            texture = minimapImageOptions.Npc;
-                        }
+                    var color = Color.Transparent;
+                    var texture = string.Empty;
 
-                        break;
+                    switch (entity.Type)
+                    {
+                        case EntityType.Player:
+                            if (entity.IsStealthed)
+                            {
+                                color = Color.Transparent;
+                                texture = string.Empty;
+                            }
+                            else if (entity.Id == player.Id)
+                            {
+                                color = minimapColorOptions.MyEntity;
+                                texture = minimapImageOptions.MyEntity;
+                            }
+                            else if (player.IsInMyParty(entity.Id))
+                            {
+                                color = minimapColorOptions.PartyMember;
+                                texture = minimapImageOptions.PartyMember;
+                            }
+                            else
+                            {
+                                color = minimapColorOptions.Player;
+                                texture = minimapImageOptions.Player;
+                            }
 
-                    case EntityType.Resource:
-                        var job = ((Resource)entity).Descriptor?.Jobs ?? JobType.None;
+                            break;
 
-                        if (!minimapColorOptions.Resource.TryGetValue(job, out color))
-                        {
+                        case EntityType.Event:
+                            continue;
+
+                        case EntityType.GlobalEntity:
+                            if (entity.IsStealthed)
+                            {
+                                color = Color.Transparent;
+                                texture = string.Empty;
+                            }
+                            else
+                            {
+                                color = minimapColorOptions.Npc;
+                                texture = minimapImageOptions.Npc;
+                            }
+
+                            break;
+
+                        case EntityType.Resource:
+                            var job = ((Resource)entity).Descriptor?.Jobs ?? JobType.None;
+
+                            if (!minimapColorOptions.Resource.TryGetValue(job, out color))
+                            {
+                                color = minimapColorOptions.Default;
+                            }
+
+                            if (!minimapImageOptions.Resource.TryGetValue(job, out texture))
+                            {
+                                texture = minimapImageOptions.Default;
+                            }
+
+                            break;
+
+                        case EntityType.Projectile:
+                            continue;
+
+                        default:
                             color = minimapColorOptions.Default;
-                        }
-
-                        if (!minimapImageOptions.Resource.TryGetValue(job, out texture))
-                        {
                             texture = minimapImageOptions.Default;
-                        }
+                            break;
+                    }
 
-                        break;
-
-                    case EntityType.Projectile:
+                    if (color == Color.Transparent && string.IsNullOrEmpty(texture))
+                    {
                         continue;
+                    }
 
-                    default:
-                        color = minimapColorOptions.Default;
-                        texture = minimapImageOptions.Default;
-                        break;
+                    if (!entityInfo.TryGetValue(entity.MapInstance.Id, out var list))
+                    {
+                        list = ListPool<EntityLocation>.Rent();
+                        entityInfo.Add(entity.MapInstance.Id, list);
+                    }
+
+                    list.Add(new EntityLocation
+                    {
+                        Position = new Point(entity.X, entity.Y),
+                        Info = new EntityInfo { Color = color, Texture = texture }
+                    });
                 }
-
-                if (color == Color.Transparent && string.IsNullOrEmpty(texture))
-                {
-                    continue;
-                }
-
-                if (!entityInfo.TryGetValue(entity.MapInstance.Id, out var list))
-                {
-                    list = ListPool<EntityLocation>.Rent();
-                    entityInfo.Add(entity.MapInstance.Id, list);
-                }
-
-                list.Add(new EntityLocation
-                {
-                    Position = new Point(entity.X, entity.Y),
-                    Info = new EntityInfo { Color = color, Texture = texture }
-                });
             }
 
             if (Options.Instance.Minimap.ShowWaypoints && Waypoints != null)

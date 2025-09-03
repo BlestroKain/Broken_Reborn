@@ -6,6 +6,7 @@ using Intersect.Client.Framework.Graphics;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
 using Intersect.Client.Framework.Input;
+using Intersect.Client.Framework.Gwen.Input;
 using Intersect.Client.Framework.GenericClasses;
 using Intersect.Client.General;
 using Intersect.Client.Localization;
@@ -41,11 +42,11 @@ namespace Intersect.Client.Interface.Game.Map
         private readonly Dictionary<Guid, IGameRenderTexture> _minimapCache = new();
         private readonly Dictionary<Guid, IGameRenderTexture> _entityCache = new();
         private readonly Dictionary<Guid, MapPosition> _mapPosition = new();
-        private readonly ImagePanel _minimap;
-        private readonly Button _zoomInButton;
-        private readonly Button _zoomOutButton;
+        private ImagePanel _minimap;                 // children resolved after LoadJsonUi
+        private Button _zoomInButton;
+        private Button _zoomOutButton;
 #if DEBUG
-        private readonly Label _zoomLabel;
+        private Label _zoomLabel;
 #endif
         private static readonly GameContentManager ContentManager = Globals.ContentManager;
         private volatile bool _initialized;
@@ -81,6 +82,8 @@ namespace Intersect.Client.Interface.Game.Map
         // Throttle dynamic overlay updates to ~4Hz
         private DateTime _lastOverlayUpdate = DateTime.MinValue;
         private static readonly TimeSpan OverlayInterval = TimeSpan.FromMilliseconds(250);
+        private DateTime _lastWheelTime = DateTime.MinValue;
+        private static readonly TimeSpan WheelDebounce = TimeSpan.FromMilliseconds(125);
         private DateTime _lastDiscoverySync = DateTime.MinValue;
         private static readonly TimeSpan DiscoverySyncInterval = TimeSpan.FromSeconds(30);
         // Constructors
@@ -90,27 +93,41 @@ namespace Intersect.Client.Interface.Game.Map
             SetZoom(Options.Instance.Minimap.DefaultZoom, false);
             _dpi = Sdl2.GetDisplayDpi();
             _minimapTileSize = Options.Instance.Minimap.GetScaledTileSize(_dpi);
-            _minimap = new MinimapPanel(this, "MinimapContainer");
-            _zoomInButton = new Button(_minimap, "ZoomInButton");
-            _zoomOutButton = new Button(_minimap, "ZoomOutButton");
-            _zoomInButton.Clicked += MZoomInButton_Clicked;
-            _zoomInButton.SetToolTipText(Strings.Minimap.ZoomIn);
-            _zoomOutButton.Clicked += MZoomOutButton_Clicked;
-            _zoomOutButton.SetToolTipText(Strings.Minimap.ZoomOut);
-#if DEBUG
-            _zoomLabel = new Label(_minimap, nameof(_zoomLabel))
-            {
-                AutoSizeToContents = true,
-                Text = $"{_zoomLevel}%",
-            };
-#endif
+            // UI controls are resolved in EnsureInitialized() after LoadJsonUi
             _whiteTexture = Graphics.Renderer.WhitePixel;
             _renderTexture = GenerateBaseRenderTexture();
-            Waypoints = new WaypointLayer(_minimap);
         }
         protected override void EnsureInitialized()
         {
+            if (_initialized)
+            {
+                return;
+            }
+
             LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+
+            _minimap = FindChildByName<ImagePanel>("MinimapContainer", true)
+                       ?? throw new Exception("MinimapContainer not found in layout.");
+            _zoomInButton = FindChildByName<Button>("ZoomInButton", true)
+                       ?? throw new Exception("ZoomInButton not found in layout.");
+            _zoomOutButton = FindChildByName<Button>("ZoomOutButton", true)
+                       ?? throw new Exception("ZoomOutButton not found in layout.");
+#if DEBUG
+            _zoomLabel = FindChildByName<Label>(nameof(_zoomLabel), true);
+            if (_zoomLabel != null)
+            {
+                _zoomLabel.AutoSizeToContents = true;
+                _zoomLabel.Text = $"{_zoomLevel}%";
+            }
+#endif
+
+            _zoomInButton.Clicked += MZoomInButton_Clicked;
+            _zoomOutButton.Clicked += MZoomOutButton_Clicked;
+            _zoomInButton.SetToolTipText(Strings.Minimap.ZoomIn);
+            _zoomOutButton.SetToolTipText(Strings.Minimap.ZoomOut);
+
+            Waypoints = new WaypointLayer(_minimap);
+
             _initialized = true;
         }
         // Public Methods
@@ -209,7 +226,10 @@ namespace Intersect.Client.Interface.Game.Map
 
             _zoomLevel = newLevel;
 #if DEBUG
-            _zoomLabel.Text = $"{_zoomLevel}%";
+            if (_zoomLabel != null)
+            {
+                _zoomLabel.Text = $"{_zoomLevel}%";
+            }
 #endif
 
             if (persist)
@@ -882,45 +902,37 @@ namespace Intersect.Client.Interface.Game.Map
             _lastDiscoverySync = DateTime.UtcNow;
         }
 
-        private sealed class MinimapPanel : ImagePanel
+        protected override bool OnMouseWheeled(int delta)
         {
-            private readonly MinimapWindow _window;
-            private DateTime _lastWheelTime = DateTime.MinValue;
-            private static readonly TimeSpan WheelDebounce = TimeSpan.FromMilliseconds(125);
-
-            public MinimapPanel(MinimapWindow window, string name) : base(window, name)
+            if (IsClickThrough)
             {
-                _window = window;
+                return false;
             }
 
-            protected override bool OnMouseWheeled(int delta)
+            if (_minimap == null || InputHandler.HoveredControl != _minimap)
             {
-                if (_window.IsClickThrough)
-                {
-                    return false;
-                }
+                return base.OnMouseWheeled(delta);
+            }
 
-                var now = DateTime.UtcNow;
-                if (now - _lastWheelTime < WheelDebounce)
-                {
-                    return true;
-                }
-
-                _lastWheelTime = now;
-
-                var step = Math.Max(1, Options.Instance.Minimap.ZoomStep);
-
-                if (delta > 0)
-                {
-                    _window.SetZoom(_window._zoomLevel - step);
-                }
-                else if (delta < 0)
-                {
-                    _window.SetZoom(_window._zoomLevel + step);
-                }
-
+            var now = DateTime.UtcNow;
+            if (now - _lastWheelTime < WheelDebounce)
+            {
                 return true;
             }
+
+            _lastWheelTime = now;
+
+            var step = Math.Max(1, Options.Instance.Minimap.ZoomStep);
+            if (delta > 0)
+            {
+                SetZoom(_zoomLevel - step);
+            }
+            else if (delta < 0)
+            {
+                SetZoom(_zoomLevel + step);
+            }
+
+            return true;
         }
         private void MZoomOutButton_Clicked(Base sender, MouseButtonState arguments)
         {

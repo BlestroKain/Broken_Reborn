@@ -316,6 +316,14 @@ public partial class MapDescriptor : DatabaseObject<MapDescriptor>
 
     public MapZone ZoneType { get; set; } = MapZone.Normal;
 
+    [Column("ZoneId")]
+    [JsonProperty]
+    public Guid? ZoneId { get; set; }
+
+    [Column("SubzoneId")]
+    [JsonProperty]
+    public Guid? SubzoneId { get; set; }
+
     public int PlayerLightSize { get; set; } = 300;
 
     public byte PlayerLightIntensity { get; set; } = 255;

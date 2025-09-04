@@ -10,6 +10,7 @@ using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.GameObjects.Resources;
 using Intersect.Framework.Core.GameObjects.Variables;
+using Intersect.Framework.Core.GameObjects.Zones;
 using Intersect.GameObjects;
 using Intersect.Server.Database.GameData.Migrations;
 using Intersect.Server.Maps;
@@ -51,6 +52,11 @@ public abstract partial class GameContext : IntersectDbContext<GameContext>, IGa
     public DbSet<MapController> Maps { get; set; }
 
     public DbSet<MapList> MapFolders { get; set; }
+
+    //Zones
+    public DbSet<Zone> Zones { get; set; }
+
+    public DbSet<Subzone> Subzones { get; set; }
 
     //NPCs
     public DbSet<NPCDescriptor> Npcs { get; set; }

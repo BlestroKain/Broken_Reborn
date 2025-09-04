@@ -9,6 +9,7 @@ using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.GameObjects.Resources;
 using Intersect.Framework.Core.GameObjects.Variables;
+using Intersect.Framework.Core.GameObjects.Zones;
 using Intersect.GameObjects;
 using Intersect.Server.Maps;
 using Microsoft.EntityFrameworkCore;
@@ -36,6 +37,10 @@ public interface IGameContext : IDbContext
     DbSet<MapController> Maps { get; set; }
 
     DbSet<MapList> MapFolders { get; set; }
+
+    DbSet<Zone> Zones { get; set; }
+
+    DbSet<Subzone> Subzones { get; set; }
 
     DbSet<NPCDescriptor> Npcs { get; set; }
 

@@ -5,6 +5,7 @@ using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Graphics;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
+using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Input;
 using Intersect.Client.Framework.Gwen.Input;
 using Intersect.Client.Framework.GenericClasses;
@@ -106,12 +107,18 @@ namespace Intersect.Client.Interface.Game.Map
 
             LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
 
-            _minimap = FindChildByName<ImagePanel>("MinimapContainer", true)
-                       ?? throw new Exception("MinimapContainer not found in layout.");
-            _zoomInButton = FindChildByName<Button>("ZoomInButton", true)
-                       ?? throw new Exception("ZoomInButton not found in layout.");
-            _zoomOutButton = FindChildByName<Button>("ZoomOutButton", true)
-                       ?? throw new Exception("ZoomOutButton not found in layout.");
+            _minimap = FindChildByName<ImagePanel>("MinimapContainer", true);
+            if (_minimap == null)
+            {
+                _minimap = new ImagePanel(this, "MinimapContainer")
+                {
+                    Dock = Pos.Fill,
+                };
+            }
+
+            _zoomInButton = FindChildByName<Button>("ZoomInButton", true);
+            _zoomOutButton = FindChildByName<Button>("ZoomOutButton", true);
+
 #if DEBUG
             _zoomLabel = FindChildByName<Label>(nameof(_zoomLabel), true);
             if (_zoomLabel != null)
@@ -121,10 +128,17 @@ namespace Intersect.Client.Interface.Game.Map
             }
 #endif
 
-            _zoomInButton.Clicked += MZoomInButton_Clicked;
-            _zoomOutButton.Clicked += MZoomOutButton_Clicked;
-            _zoomInButton.SetToolTipText(Strings.Minimap.ZoomIn);
-            _zoomOutButton.SetToolTipText(Strings.Minimap.ZoomOut);
+            if (_zoomInButton != null)
+            {
+                _zoomInButton.Clicked += MZoomInButton_Clicked;
+                _zoomInButton.SetToolTipText(Strings.Minimap.ZoomIn);
+            }
+
+            if (_zoomOutButton != null)
+            {
+                _zoomOutButton.Clicked += MZoomOutButton_Clicked;
+                _zoomOutButton.SetToolTipText(Strings.Minimap.ZoomOut);
+            }
 
             Waypoints = new WaypointLayer(_minimap);
 

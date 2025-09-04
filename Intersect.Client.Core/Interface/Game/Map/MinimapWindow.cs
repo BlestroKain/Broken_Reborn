@@ -23,6 +23,8 @@ using Intersect;
 using Intersect.Framework.Core.GameObjects.Mapping.Tilesets;
 using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Client.Networking;
+using Intersect.Client.Interface;
+using Intersect.Client.Framework.Gwen.ControlInternal;
 namespace Intersect.Client.Interface.Game.Map
 {
     public sealed class MinimapWindow : Window
@@ -43,7 +45,7 @@ namespace Intersect.Client.Interface.Game.Map
         private readonly Dictionary<Guid, IGameRenderTexture> _minimapCache = new();
         private readonly Dictionary<Guid, IGameRenderTexture> _entityCache = new();
         private readonly Dictionary<Guid, MapPosition> _mapPosition = new();
-        private ImagePanel _minimap;                 // children resolved after LoadJsonUi
+        private MinimapPanel _minimap;                 // children resolved after LoadJsonUi
         private Button _zoomInButton;
         private Button _zoomOutButton;
 #if DEBUG
@@ -107,10 +109,10 @@ namespace Intersect.Client.Interface.Game.Map
 
             LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
 
-            _minimap = FindChildByName<ImagePanel>("MinimapContainer", true);
+            _minimap = FindChildByName<MinimapPanel>("MinimapContainer", true);
             if (_minimap == null)
             {
-                _minimap = new ImagePanel(this, "MinimapContainer")
+                _minimap = new MinimapPanel(this, "MinimapContainer")
                 {
                     Dock = Pos.Fill,
                 };
@@ -141,6 +143,8 @@ namespace Intersect.Client.Interface.Game.Map
             }
 
             Waypoints = new WaypointLayer(_minimap);
+
+            AttachInputHandlers();
 
             _initialized = true;
         }
@@ -217,6 +221,7 @@ namespace Intersect.Client.Interface.Game.Map
 
             SetZoom(clampedPref, persist: true);
             IsHidden = false;
+            AttachInputHandlers();
         }
         public bool IsVisible()
         {
@@ -224,6 +229,7 @@ namespace Intersect.Client.Interface.Game.Map
         }
         public void Hide()
         {
+            DetachInputHandlers();
             IsHidden = true;
         }
 
@@ -249,6 +255,71 @@ namespace Intersect.Client.Interface.Game.Map
             if (persist)
             {
                 MapPreferences.UpdateMinimapZoom(_zoomLevel);
+            }
+        }
+
+        private void AttachInputHandlers()
+        {
+            if (_minimap == null)
+            {
+                return;
+            }
+
+            _minimap.Clicked -= Minimap_Clicked;
+            _minimap.Clicked += Minimap_Clicked;
+            _minimap.MouseWheeled -= Minimap_MouseWheeled;
+            _minimap.MouseWheeled += Minimap_MouseWheeled;
+        }
+
+        private void DetachInputHandlers()
+        {
+            if (_minimap == null)
+            {
+                return;
+            }
+
+            _minimap.Clicked -= Minimap_Clicked;
+            _minimap.MouseWheeled -= Minimap_MouseWheeled;
+        }
+
+        private void Minimap_Clicked(Base sender, MouseButtonState arguments)
+        {
+            // Intentionally left blank; subscribing prevents other panels from consuming the click.
+        }
+
+        private void Minimap_MouseWheeled(Base sender, ValueChangedEventArgs<int> arguments)
+        {
+            HandleMouseWheel(arguments.Value);
+        }
+
+        private void HandleMouseWheel(int delta)
+        {
+            if (IsClickThrough)
+            {
+                return;
+            }
+
+            if (InterfaceController.HasModal)
+            {
+                return;
+            }
+
+            var now = DateTime.UtcNow;
+            if (now - _lastWheelTime < WheelDebounce)
+            {
+                return;
+            }
+
+            _lastWheelTime = now;
+
+            var step = Math.Max(1, Options.Instance.Minimap.ZoomStep);
+            if (delta > 0)
+            {
+                SetZoom(_zoomLevel - step);
+            }
+            else if (delta < 0)
+            {
+                SetZoom(_zoomLevel + step);
             }
         }
 
@@ -916,36 +987,7 @@ namespace Intersect.Client.Interface.Game.Map
             _lastDiscoverySync = DateTime.UtcNow;
         }
 
-        protected override bool OnMouseWheeled(int delta)
-        {
-            if (IsClickThrough)
-            {
-                return false;
-            }
-
-            if (_minimap == null || InputHandler.HoveredControl != _minimap)
-            {
-                return base.OnMouseWheeled(delta);
-            }
-            var now = DateTime.UtcNow;
-            if (now - _lastWheelTime < WheelDebounce)
-            {
-                return true;
-            }
-            _lastWheelTime = now;
-
-            var step = Math.Max(1, Options.Instance.Minimap.ZoomStep);
-            if (delta > 0)
-            {
-                SetZoom(_zoomLevel - step);
-            }
-            else if (delta < 0)
-            {
-                SetZoom(_zoomLevel + step);
-            }
-
-            return true;
-        }
+        
         private void MZoomOutButton_Clicked(Base sender, MouseButtonState arguments)
         {
             var step = Math.Max(1, Options.Instance.Minimap.ZoomStep);
@@ -956,6 +998,27 @@ namespace Intersect.Client.Interface.Game.Map
             var step = Math.Max(1, Options.Instance.Minimap.ZoomStep);
             SetZoom(_zoomLevel - step);
         }
+
+        private sealed class MinimapPanel : ImagePanel
+        {
+            public event GwenEventHandler<ValueChangedEventArgs<int>>? MouseWheeled;
+
+            public MinimapPanel(Base parent, string? name = null) : base(parent, name)
+            {
+            }
+
+            protected override bool OnMouseWheeled(int delta)
+            {
+                if (!IsVisibleInTree || IsDisabledByTree || InterfaceController.HasModal)
+                {
+                    return false;
+                }
+
+                MouseWheeled?.Invoke(this, new ValueChangedEventArgs<int> { Value = delta });
+                return true;
+            }
+        }
+
         private enum MapPosition
         {
             TopLeft,
@@ -1045,6 +1108,11 @@ namespace Intersect.Client.Interface.Game.Map
 
                 return string.Compare(x.Info.Texture, y.Info.Texture, StringComparison.Ordinal);
             }
+        }
+
+        private static class InterfaceController
+        {
+            public static bool HasModal => Interface.GameUi.GameCanvas.Children.Any(child => child is Modal);
         }
 
         private static class DictionaryPool<TKey, TValue>

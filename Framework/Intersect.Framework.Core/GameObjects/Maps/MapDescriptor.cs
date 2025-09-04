@@ -160,6 +160,9 @@ public partial class MapDescriptor : DatabaseObject<MapDescriptor>
 
                 EventIds?.Clear();
                 EventIds?.AddRange(mapDescriptor.EventIds?.ToArray() ?? []);
+
+                ZoneId = mapDescriptor.ZoneId;
+                SubzoneId = mapDescriptor.SubzoneId;
             }
         }
     }
@@ -315,6 +318,14 @@ public partial class MapDescriptor : DatabaseObject<MapDescriptor>
     public int Brightness { get; set; } = 100;
 
     public MapZone ZoneType { get; set; } = MapZone.Normal;
+
+    [Column("ZoneId")]
+    [JsonProperty]
+    public Guid? ZoneId { get; set; }
+
+    [Column("SubzoneId")]
+    [JsonProperty]
+    public Guid? SubzoneId { get; set; }
 
     public int PlayerLightSize { get; set; } = 300;
 

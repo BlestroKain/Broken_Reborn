@@ -5840,6 +5840,51 @@ Negative values for time to flow backwards.";
 
     }
 
+    public partial struct ZoneEditor
+    {
+
+        public static LocalizedString title = @"Zone Editor";
+
+        public static LocalizedString flags = @"Flags";
+
+        public static LocalizedString modifiers = @"Modifiers";
+
+        public static LocalizedString overrideflags = @"Override Flags";
+
+        public static LocalizedString overridemodifiers = @"Override Modifiers";
+
+        public static LocalizedString save = @"Save";
+
+        public static LocalizedString cancel = @"Cancel";
+
+        public static LocalizedString New = @"New";
+
+        public static LocalizedString delete = @"Delete";
+
+        public static LocalizedString copy = @"Copy";
+
+        public static LocalizedString paste = @"Paste";
+
+        public static LocalizedString undo = @"Undo";
+
+        public static LocalizedString sortalphabetically = @"Order Alphabetically";
+
+        public static LocalizedString experiencerate = @"Experience Rate";
+
+        public static LocalizedString goldrate = @"Gold Rate";
+
+        public static LocalizedString droprate = @"Drop Rate";
+
+        public static LocalizedString damagerate = @"Damage Rate";
+
+        public static LocalizedString movementspeed = @"Movement Speed";
+
+        public static LocalizedString mountspeed = @"Mount Speed";
+
+        public static LocalizedString regenerationrate = @"Regeneration Rate";
+
+    }
+
     public partial struct Update
     {
 

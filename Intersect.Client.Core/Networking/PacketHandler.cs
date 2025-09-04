@@ -340,6 +340,7 @@ internal sealed partial class PacketHandler
                 pendingEventsForMap.Clear();
             }
         }
+        HandleMapCustom(mapInstance, packet);
 
         mapInstance.MarkLoadFinished();
     }
@@ -1957,6 +1958,8 @@ internal sealed partial class PacketHandler
             }
         }
 
+        HandleMapGridCustom(packet);
+
         if (Globals.Me != null)
         {
             Player.FetchNewMaps();
@@ -2490,4 +2493,6 @@ internal sealed partial class PacketHandler
         Interface.Interface.GameUi.GameMenu?.RefreshFactionWindow();
     }
 
+    partial void HandleMapCustom(MapInstance mapInstance, MapPacket packet);
+    partial void HandleMapGridCustom(MapGridPacket packet);
 }

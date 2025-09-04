@@ -27,6 +27,7 @@ using Intersect.Network.Packets.Server;
 using Intersect.Utilities;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Intersect.Framework.Core.GameObjects.Zones;
 
 namespace Intersect.Client.Maps;
 
@@ -145,6 +146,8 @@ public partial class MapInstance : MapDescriptor, IGameObject<Guid, MapInstance>
 
     //Camera Locking Variables
     public bool[] CameraHolds { get; set; } = new bool[4];
+
+    public ZoneModifiers ZoneModifiers { get; set; } = new ZoneModifiers();
 
     //World Position
     public int GridX

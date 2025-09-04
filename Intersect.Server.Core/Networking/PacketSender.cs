@@ -219,6 +219,8 @@ public static partial class PacketSender
             new bool[4]
         );
 
+        PopulateMapPacket(mapPacket, map);
+
         if (client.IsEditor)
         {
             foreach (var id in map.EventIds)
@@ -243,6 +245,8 @@ public static partial class PacketSender
 
         return mapPacket;
     }
+
+    static partial void PopulateMapPacket(MapPacket packet, MapController map);
 
     //MapPacket
     public static (MapPacket, MapEntitiesPacket?, MapItemsPacket?, MapTrapsPacket?) GenerateMapPackets(Client client, Guid mapId)
@@ -376,9 +380,17 @@ public static partial class PacketSender
         else
         {
             packet = new MapPacket(
-                mapId, false, map.JsonData, map.TileData, map.AttributeData, map.Revision, map.MapGridX,
+                mapId,
+                false,
+                map.JsonData,
+                map.TileData,
+                map.AttributeData,
+                map.Revision,
+                map.MapGridX,
                 map.MapGridY
             );
+
+            PopulateMapPacket(packet, map);
         }
 
         SendDataToEditors(packet);
@@ -1607,13 +1619,16 @@ public static partial class PacketSender
         }
         else
         {
-            client.Send(new MapGridPacket(grid.GetClientData(), null, clearKnownMaps));
+            var packet = GenerateMapGridPacket(grid, clearKnownMaps);
+            client.Send(packet);
             if (clearKnownMaps)
             {
                 SendAreaPacket(client.Entity);
             }
         }
     }
+
+    public static partial MapGridPacket GenerateMapGridPacket(MapGrid grid, bool clearKnownMaps);
 
     //SpellCastPacket
     public static void SendEntityCastTime(Entity en, Guid spellId)

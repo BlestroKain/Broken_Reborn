@@ -13,6 +13,7 @@ using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.GameObjects.Resources;
 using Intersect.Framework.Core.GameObjects.Variables;
+using Intersect.Framework.Core.GameObjects.Zones;
 using Intersect.Framework.Core.Network.Packets.Security;
 using Intersect.Framework.Core.Security;
 using Intersect.GameObjects;
@@ -152,6 +153,67 @@ public static partial class PacketSender
     {
         // Abre la ventana para vender ítems
         player.SendPacket(new BrokeItemWindowPacket());
+    }
+
+    static partial void PopulateMapPacket(MapPacket packet, MapController map)
+    {
+        packet.ZoneId = map.ZoneId ?? Guid.Empty;
+        packet.SubzoneId = map.SubzoneId ?? Guid.Empty;
+
+        var zoneModifiers = Zone.Get(map.ZoneId ?? Guid.Empty)?.Modifiers ?? new ZoneModifiers();
+        if (map.SubzoneId.HasValue)
+        {
+            var subzone = Subzone.Get(map.SubzoneId.Value);
+            if (subzone?.Modifiers != null)
+            {
+                zoneModifiers = subzone.Modifiers;
+            }
+        }
+
+        packet.Modifiers = zoneModifiers;
+    }
+
+    public static partial MapGridPacket GenerateMapGridPacket(MapGrid grid, bool clearKnownMaps)
+    {
+        var clientData = grid.GetClientData();
+        var width = clientData.GetLength(0);
+        var height = clientData.GetLength(1);
+        Guid?[,] zoneIds = new Guid?[width, height];
+        Guid?[,] subzoneIds = new Guid?[width, height];
+        ZoneModifiers?[,] modifiers = new ZoneModifiers?[width, height];
+
+        for (var x = 0; x < width; x++)
+        {
+            for (var y = 0; y < height; y++)
+            {
+                var mapId = clientData[x, y];
+                if (MapController.TryGet(mapId, out var map))
+                {
+                    zoneIds[x, y] = map.ZoneId;
+                    subzoneIds[x, y] = map.SubzoneId;
+
+                    var zoneMods = Zone.Get(map.ZoneId ?? Guid.Empty)?.Modifiers ?? new ZoneModifiers();
+                    if (map.SubzoneId.HasValue)
+                    {
+                        var sub = Subzone.Get(map.SubzoneId.Value);
+                        if (sub?.Modifiers != null)
+                        {
+                            zoneMods = sub.Modifiers;
+                        }
+                    }
+
+                    modifiers[x, y] = zoneMods;
+                }
+                else
+                {
+                    zoneIds[x, y] = Guid.Empty;
+                    subzoneIds[x, y] = Guid.Empty;
+                    modifiers[x, y] = new ZoneModifiers();
+                }
+            }
+        }
+
+        return new MapGridPacket(clientData, null, clearKnownMaps, zoneIds, subzoneIds, modifiers);
     }
 
     public static void SendOpenMailBox(Player player)

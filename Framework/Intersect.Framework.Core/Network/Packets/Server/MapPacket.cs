@@ -3,6 +3,7 @@ using System.Numerics;
 using MessagePack;
 using System.Security.Cryptography;
 using Intersect.Framework.Core.GameObjects.Maps;
+using Intersect.Framework.Core.GameObjects.Zones;
 using Intersect.Models;
 using Newtonsoft.Json.Converters;
 
@@ -31,7 +32,10 @@ public partial class MapPacket : IntersectPacket
         int revision = -1,
         int gridX = -1,
         int gridY = -1,
-        bool[]? borders = null
+        bool[]? borders = null,
+        Guid zoneId = default,
+        Guid subzoneId = default,
+        ZoneModifiers? modifiers = null
     )
     {
         MapId = mapId;
@@ -43,6 +47,9 @@ public partial class MapPacket : IntersectPacket
         GridX = gridX;
         GridY = gridY;
         CameraHolds = borders;
+        ZoneId = zoneId;
+        SubzoneId = subzoneId;
+        Modifiers = modifiers;
     }
 
     [Key(0)]
@@ -72,6 +79,15 @@ public partial class MapPacket : IntersectPacket
     [Key(8)]
     public bool[]? CameraHolds { get; set; }
 
+    [Key(9)]
+    public Guid ZoneId { get; set; }
+
+    [Key(10)]
+    public Guid SubzoneId { get; set; }
+
+    [Key(11)]
+    public ZoneModifiers? Modifiers { get; set; }
+
     [IgnoreMember]
     public string? CacheChecksum
     {
@@ -97,18 +113,28 @@ public partial class MapPacket : IntersectPacket
                 return _version;
             }
 
-            _version = ComputeCacheVersion(MapId, Revision, GridX, GridY, CameraHolds);
+            _version = ComputeCacheVersion(MapId, Revision, GridX, GridY, CameraHolds, ZoneId, SubzoneId);
             return _version;
         }
     }
 
-    public static string ComputeCacheVersion(Guid id, int revision, int gridX, int gridY, bool[]? cameraHolds)
+    public static string ComputeCacheVersion(
+        Guid id,
+        int revision,
+        int gridX,
+        int gridY,
+        bool[]? cameraHolds,
+        Guid zoneId,
+        Guid subzoneId
+    )
     {
         var hashInputData = id.ToByteArray()
             .Concat(BitConverter.GetBytes(revision))
             .Concat(BitConverter.GetBytes(gridX))
             .Concat(BitConverter.GetBytes(gridY))
             .Concat(cameraHolds?.SelectMany(BitConverter.GetBytes) ?? [])
+            .Concat(zoneId.ToByteArray())
+            .Concat(subzoneId.ToByteArray())
             .ToArray();
         var versionData = SHA256.HashData(hashInputData);
         var version = Convert.ToBase64String(versionData);

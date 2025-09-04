@@ -20,6 +20,6 @@ public partial class Zone : DatabaseObject<Zone>
 
     public ZoneFlags Flags { get; set; } = ZoneFlags.None;
 
-    public ZoneModifiers Modifiers { get; set; } = ZoneModifiers.None;
+    public ZoneModifiers Modifiers { get; set; } = new ZoneModifiers();
 }
 

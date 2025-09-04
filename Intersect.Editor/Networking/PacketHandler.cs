@@ -15,6 +15,7 @@ using Intersect.Framework.Core.GameObjects.Maps.MapList;
 using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.GameObjects.Resources;
+using Intersect.Framework.Core.GameObjects.Zones;
 using Intersect.Framework.Core.GameObjects.Variables;
 using Intersect.GameObjects;
 using Intersect.Network;
@@ -747,6 +748,34 @@ internal sealed partial class PacketHandler
                     var set = new SetDescriptor(id);
                     set.Load(json);
                     SetDescriptor.Lookup.Set(id, set);
+                }
+
+                break;
+            case GameObjectType.Zone:
+                if (deleted)
+                {
+                    var zone = Zone.Get(id);
+                    zone.Delete();
+                }
+                else
+                {
+                    var zone = new Zone(id);
+                    zone.Load(json);
+                    Zone.Lookup.Set(id, zone);
+                }
+
+                break;
+            case GameObjectType.Subzone:
+                if (deleted)
+                {
+                    var sub = Subzone.Get(id);
+                    sub.Delete();
+                }
+                else
+                {
+                    var sub = new Subzone(id);
+                    sub.Load(json);
+                    Subzone.Lookup.Set(id, sub);
                 }
 
                 break;

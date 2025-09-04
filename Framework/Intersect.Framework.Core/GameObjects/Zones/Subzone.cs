@@ -23,8 +23,10 @@ public partial class Subzone : DatabaseObject<Subzone>
     [JsonProperty]
     public Guid ZoneId { get; set; }
 
-    public ZoneFlags Flags { get; set; } = ZoneFlags.None;
+    // When null, the subzone inherits its parent's flags.
+    public ZoneFlags? Flags { get; set; }
 
-    public ZoneModifiers Modifiers { get; set; } = ZoneModifiers.None;
+    // When null, the subzone inherits its parent's modifiers.
+    public ZoneModifiers? Modifiers { get; set; }
 }
 

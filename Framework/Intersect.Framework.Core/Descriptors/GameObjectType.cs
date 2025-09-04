@@ -9,6 +9,7 @@ using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.GameObjects.Resources;
+using Intersect.Framework.Core.GameObjects.Zones;
 using Intersect.Framework.Core.GameObjects.Variables;
 using Intersect.GameObjects;
 
@@ -75,4 +76,10 @@ public enum GameObjectType
 
     [GameObjectInfo(typeof(SetDescriptor), "sets")]
     Sets,
+
+    [GameObjectInfo(typeof(Zone), "zones")]
+    Zone,
+
+    [GameObjectInfo(typeof(Subzone), "subzones")]
+    Subzone,
 }

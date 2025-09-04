@@ -71,6 +71,7 @@ public partial class FrmMain : Form
 
     private FrmTime mTimeEditor;
     private frmSets mSetEditor;
+    private FrmZoneEditor mZoneEditor;
 
     //General Editting Variables
     bool mTMouseDown;
@@ -1732,6 +1733,16 @@ public partial class FrmMain : Form
                         mTimeEditor = new FrmTime();
                         mTimeEditor.InitEditor(DaylightCycleDescriptor.Instance);
                         mTimeEditor.Show();
+                    }
+
+                    break;
+                case GameObjectType.Zone:
+                case GameObjectType.Subzone:
+                    if (mZoneEditor == null || !mZoneEditor.Visible)
+                    {
+                        mZoneEditor = new FrmZoneEditor();
+                        mZoneEditor.InitEditor();
+                        mZoneEditor.Show();
                     }
 
                     break;

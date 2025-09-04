@@ -1009,13 +1009,13 @@ namespace Intersect.Client.Interface.Game.Map
 
             protected override bool OnMouseWheeled(int delta)
             {
-                if (!IsVisibleInTree || IsDisabledByTree)
+                if (!IsVisibleInTree || IsDisabledByTree || InterfaceController.HasModal)
                 {
                     return false;
                 }
 
                 MouseWheeled?.Invoke(this, new ValueChangedEventArgs<int> { Value = delta });
-                return false;
+                return true;
             }
         }
 

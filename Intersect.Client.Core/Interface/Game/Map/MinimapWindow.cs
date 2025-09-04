@@ -34,6 +34,8 @@ namespace Intersect.Client.Interface.Game.Map
         private bool _redrawMaps;
         private bool _redrawEntities;
         private int _zoomLevel;
+        private int _viewX;
+        private int _viewY;
         private Dictionary<MapPosition, MapInstance?> _mapGrid = DictionaryPool<MapPosition, MapInstance?>.Rent();
 
         // Cached entity information per map id
@@ -473,9 +475,13 @@ namespace Intersect.Client.Interface.Game.Map
             var centerY = (_renderTexture.Height / 3) + (player.Y * _minimapTileSize.Y);
             var displayW = (int)(_renderTexture.Width * (_zoomLevel / 100f));
             var displayH = (int)(_renderTexture.Height * (_zoomLevel / 100f));
-            var x = Math.Clamp(centerX - (displayW / 2), 0, _renderTexture.Width - displayW);
-            var y = Math.Clamp(centerY - (displayH / 2), 0, _renderTexture.Height - displayH);
-            _minimap.SetTextureRect(x, y, displayW, displayH);
+            var targetX = Math.Clamp(centerX - (displayW / 2), 0, _renderTexture.Width - displayW);
+            var targetY = Math.Clamp(centerY - (displayH / 2), 0, _renderTexture.Height - displayH);
+            _viewX = (int)(_viewX + (targetX - _viewX) * 0.15f);
+            _viewY = (int)(_viewY + (targetY - _viewY) * 0.15f);
+            _viewX = Math.Clamp(_viewX, 0, _renderTexture.Width - displayW);
+            _viewY = Math.Clamp(_viewY, 0, _renderTexture.Height - displayH);
+            _minimap.SetTextureRect(_viewX, _viewY, displayW, displayH);
         }
         private void DrawMinimap()
         {

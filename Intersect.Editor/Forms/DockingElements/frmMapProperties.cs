@@ -85,9 +85,10 @@ public partial class FrmMapProperties : DockContent
         cmbSubarea.SelectedIndexChanged -= CmbSubarea_SelectedIndexChanged;
 
         var zoneId = mProperties?.ZoneId ?? Guid.Empty;
-        var subzones = Subzone.Lookup.Where(s => s.Value?.ZoneId == zoneId)
-            .OrderBy(s => s.Value?.Name)
-            .Select(s => s.Value)
+        var subzones = Subzone.Lookup.Values
+            .OfType<Subzone>()
+            .Where(s => s.ZoneId == zoneId)
+            .OrderBy(s => s.Name)
             .ToList();
         subzones.Insert(0, new Subzone(Guid.Empty) { Name = Strings.General.None, ZoneId = zoneId });
         cmbSubarea.DisplayMember = nameof(Subzone.Name);

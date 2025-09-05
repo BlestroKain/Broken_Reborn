@@ -173,7 +173,7 @@ public static partial class PacketSender
         packet.Modifiers = zoneModifiers;
     }
 
-    static partial MapGridPacket GenerateMapGridPacket(MapGrid grid, bool clearKnownMaps)
+    public static partial MapGridPacket GenerateMapGridPacket(MapGrid grid, bool clearKnownMaps)
     {
         var clientData = grid.GetClientData();
         var width = clientData.GetLength(0);

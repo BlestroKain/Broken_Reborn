@@ -1628,7 +1628,7 @@ public static partial class PacketSender
         }
     }
 
-    static partial MapGridPacket GenerateMapGridPacket(MapGrid grid, bool clearKnownMaps);
+    public static partial MapGridPacket GenerateMapGridPacket(MapGrid grid, bool clearKnownMaps);
 
     //SpellCastPacket
     public static void SendEntityCastTime(Entity en, Guid spellId)

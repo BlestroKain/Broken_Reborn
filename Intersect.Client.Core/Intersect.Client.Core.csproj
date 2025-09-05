@@ -31,6 +31,7 @@
     <ProjectReference Include="..\Intersect (Core)\Intersect.Core.csproj" />
     <ProjectReference Include="..\Intersect.Client.Framework\Intersect.Client.Framework.csproj" />
     <ProjectReference Include="..\Intersect.Network\Intersect.Network.csproj" />
+    <ProjectReference Include="..\Framework\Intersect.Framework.Core\Intersect.Framework.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup Label="Project Embedded Resources">

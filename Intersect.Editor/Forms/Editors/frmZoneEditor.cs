@@ -76,6 +76,36 @@ public partial class FrmZoneEditor : EditorForm
         var numGold = new NumericUpDown { Minimum = 0, Maximum = 1000, Left = 120, Top = y - 3 };
         grpModifiers.Controls.Add(numGold);
         _modifierControls["GoldRate"] = numGold;
+        y += 25;
+
+        grpModifiers.Controls.Add(new Label { Text = "Drop Rate", Left = 5, Top = y, AutoSize = true });
+        var numDrop = new NumericUpDown { Minimum = 0, Maximum = 1000, Left = 120, Top = y - 3 };
+        grpModifiers.Controls.Add(numDrop);
+        _modifierControls["DropRate"] = numDrop;
+        y += 25;
+
+        grpModifiers.Controls.Add(new Label { Text = "Damage Rate", Left = 5, Top = y, AutoSize = true });
+        var numDamage = new NumericUpDown { Minimum = 0, Maximum = 1000, Left = 120, Top = y - 3 };
+        grpModifiers.Controls.Add(numDamage);
+        _modifierControls["DamageRate"] = numDamage;
+        y += 25;
+
+        grpModifiers.Controls.Add(new Label { Text = "Movement Speed", Left = 5, Top = y, AutoSize = true });
+        var numMove = new NumericUpDown { Minimum = 0, Maximum = 1000, Left = 120, Top = y - 3 };
+        grpModifiers.Controls.Add(numMove);
+        _modifierControls["MovementSpeed"] = numMove;
+        y += 25;
+
+        grpModifiers.Controls.Add(new Label { Text = "Mount Speed", Left = 5, Top = y, AutoSize = true });
+        var numMount = new NumericUpDown { Minimum = 0, Maximum = 1000, Left = 120, Top = y - 3 };
+        grpModifiers.Controls.Add(numMount);
+        _modifierControls["MountSpeed"] = numMount;
+        y += 25;
+
+        grpModifiers.Controls.Add(new Label { Text = "Regeneration Rate", Left = 5, Top = y, AutoSize = true });
+        var numRegen = new NumericUpDown { Minimum = 0, Maximum = 1000, Left = 120, Top = y - 3 };
+        grpModifiers.Controls.Add(numRegen);
+        _modifierControls["RegenerationRate"] = numRegen;
     }
 
     private void PopulateTree()
@@ -167,6 +197,11 @@ public partial class FrmZoneEditor : EditorForm
 
         _modifierControls["ExperienceRate"].Value = modifiers.ExperienceRate;
         _modifierControls["GoldRate"].Value = modifiers.GoldRate;
+        _modifierControls["DropRate"].Value = modifiers.DropRate;
+        _modifierControls["DamageRate"].Value = modifiers.DamageRate;
+        _modifierControls["MovementSpeed"].Value = modifiers.MovementSpeed;
+        _modifierControls["MountSpeed"].Value = modifiers.MountSpeed;
+        _modifierControls["RegenerationRate"].Value = modifiers.RegenerationRate;
     }
 
     private void OverrideFlagsChanged(object? sender, EventArgs e)
@@ -180,6 +215,10 @@ public partial class FrmZoneEditor : EditorForm
     {
         if (_currentSubzone == null || _loading) return;
         _currentSubzone.Modifiers = chkOverrideModifiers.Checked ? new ZoneModifiers() : null;
+        foreach (var num in _modifierControls.Values)
+        {
+            num.Enabled = chkOverrideModifiers.Checked;
+        }
         LoadValues();
     }
 
@@ -201,6 +240,11 @@ public partial class FrmZoneEditor : EditorForm
             {
                 _currentSubzone.Modifiers.ExperienceRate = (int)_modifierControls["ExperienceRate"].Value;
                 _currentSubzone.Modifiers.GoldRate = (int)_modifierControls["GoldRate"].Value;
+                _currentSubzone.Modifiers.DropRate = (int)_modifierControls["DropRate"].Value;
+                _currentSubzone.Modifiers.DamageRate = (int)_modifierControls["DamageRate"].Value;
+                _currentSubzone.Modifiers.MovementSpeed = (int)_modifierControls["MovementSpeed"].Value;
+                _currentSubzone.Modifiers.MountSpeed = (int)_modifierControls["MountSpeed"].Value;
+                _currentSubzone.Modifiers.RegenerationRate = (int)_modifierControls["RegenerationRate"].Value;
             }
             PacketSender.SendSaveObject(_currentSubzone);
         }
@@ -214,6 +258,11 @@ public partial class FrmZoneEditor : EditorForm
             _currentZone.Flags = flags;
             _currentZone.Modifiers.ExperienceRate = (int)_modifierControls["ExperienceRate"].Value;
             _currentZone.Modifiers.GoldRate = (int)_modifierControls["GoldRate"].Value;
+            _currentZone.Modifiers.DropRate = (int)_modifierControls["DropRate"].Value;
+            _currentZone.Modifiers.DamageRate = (int)_modifierControls["DamageRate"].Value;
+            _currentZone.Modifiers.MovementSpeed = (int)_modifierControls["MovementSpeed"].Value;
+            _currentZone.Modifiers.MountSpeed = (int)_modifierControls["MountSpeed"].Value;
+            _currentZone.Modifiers.RegenerationRate = (int)_modifierControls["RegenerationRate"].Value;
             PacketSender.SendSaveObject(_currentZone);
         }
     }

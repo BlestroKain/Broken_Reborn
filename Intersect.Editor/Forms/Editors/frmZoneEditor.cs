@@ -7,6 +7,7 @@ using Intersect.Framework.Core.GameObjects.Zones;
 using Intersect.Editor.Networking;
 using Intersect.Enums;
 using Intersect.Editor.Core;
+using Intersect.Editor.Localization;
 
 namespace Intersect.Editor.Forms.Editors;
 
@@ -31,6 +32,8 @@ public partial class FrmZoneEditor : EditorForm
         _btnSave = btnSave;
         _btnCancel = btnCancel;
 
+        InitLocalization();
+
         treeZones.AfterSelect += TreeAfterSelect;
         treeZones.GotFocus += TreeFocusChanged;
         treeZones.LostFocus += TreeFocusChanged;
@@ -52,6 +55,23 @@ public partial class FrmZoneEditor : EditorForm
         PopulateTree();
         UpdateEditorButtons(false);
         UpdateToolStripItems();
+    }
+
+    private void InitLocalization()
+    {
+        Text = Strings.ZoneEditor.title;
+        grpFlags.Text = Strings.ZoneEditor.flags;
+        grpModifiers.Text = Strings.ZoneEditor.modifiers;
+        chkOverrideFlags.Text = Strings.ZoneEditor.overrideflags;
+        chkOverrideModifiers.Text = Strings.ZoneEditor.overridemodifiers;
+        btnSave.Text = Strings.ZoneEditor.save;
+        btnCancel.Text = Strings.ZoneEditor.cancel;
+        toolStripItemNew.Text = Strings.ZoneEditor.New;
+        toolStripItemDelete.Text = Strings.ZoneEditor.delete;
+        toolStripItemCopy.Text = Strings.ZoneEditor.copy;
+        toolStripItemPaste.Text = Strings.ZoneEditor.paste;
+        toolStripItemUndo.Text = Strings.ZoneEditor.undo;
+        btnAlphabetical.ToolTipText = Strings.ZoneEditor.sortalphabetically;
     }
 
     private void SetupFlagControls()
@@ -80,43 +100,43 @@ public partial class FrmZoneEditor : EditorForm
     private void SetupModifierControls()
     {
         var y = 20;
-        grpModifiers.Controls.Add(new Label { Text = "Experience Rate", Left = 5, Top = y, AutoSize = true });
+        grpModifiers.Controls.Add(new Label { Text = Strings.ZoneEditor.experiencerate, Left = 5, Top = y, AutoSize = true });
         var numExp = new NumericUpDown { Minimum = 0, Maximum = 1000, Left = 120, Top = y - 3 };
         grpModifiers.Controls.Add(numExp);
         _modifierControls["ExperienceRate"] = numExp;
         y += 25;
 
-        grpModifiers.Controls.Add(new Label { Text = "Gold Rate", Left = 5, Top = y, AutoSize = true });
+        grpModifiers.Controls.Add(new Label { Text = Strings.ZoneEditor.goldrate, Left = 5, Top = y, AutoSize = true });
         var numGold = new NumericUpDown { Minimum = 0, Maximum = 1000, Left = 120, Top = y - 3 };
         grpModifiers.Controls.Add(numGold);
         _modifierControls["GoldRate"] = numGold;
         y += 25;
 
-        grpModifiers.Controls.Add(new Label { Text = "Drop Rate", Left = 5, Top = y, AutoSize = true });
+        grpModifiers.Controls.Add(new Label { Text = Strings.ZoneEditor.droprate, Left = 5, Top = y, AutoSize = true });
         var numDrop = new NumericUpDown { Minimum = 0, Maximum = 1000, Left = 120, Top = y - 3 };
         grpModifiers.Controls.Add(numDrop);
         _modifierControls["DropRate"] = numDrop;
         y += 25;
 
-        grpModifiers.Controls.Add(new Label { Text = "Damage Rate", Left = 5, Top = y, AutoSize = true });
+        grpModifiers.Controls.Add(new Label { Text = Strings.ZoneEditor.damagerate, Left = 5, Top = y, AutoSize = true });
         var numDamage = new NumericUpDown { Minimum = 0, Maximum = 1000, Left = 120, Top = y - 3 };
         grpModifiers.Controls.Add(numDamage);
         _modifierControls["DamageRate"] = numDamage;
         y += 25;
 
-        grpModifiers.Controls.Add(new Label { Text = "Movement Speed", Left = 5, Top = y, AutoSize = true });
+        grpModifiers.Controls.Add(new Label { Text = Strings.ZoneEditor.movementspeed, Left = 5, Top = y, AutoSize = true });
         var numMove = new NumericUpDown { Minimum = 0, Maximum = 1000, Left = 120, Top = y - 3 };
         grpModifiers.Controls.Add(numMove);
         _modifierControls["MovementSpeed"] = numMove;
         y += 25;
 
-        grpModifiers.Controls.Add(new Label { Text = "Mount Speed", Left = 5, Top = y, AutoSize = true });
+        grpModifiers.Controls.Add(new Label { Text = Strings.ZoneEditor.mountspeed, Left = 5, Top = y, AutoSize = true });
         var numMount = new NumericUpDown { Minimum = 0, Maximum = 1000, Left = 120, Top = y - 3 };
         grpModifiers.Controls.Add(numMount);
         _modifierControls["MountSpeed"] = numMount;
         y += 25;
 
-        grpModifiers.Controls.Add(new Label { Text = "Regeneration Rate", Left = 5, Top = y, AutoSize = true });
+        grpModifiers.Controls.Add(new Label { Text = Strings.ZoneEditor.regenerationrate, Left = 5, Top = y, AutoSize = true });
         var numRegen = new NumericUpDown { Minimum = 0, Maximum = 1000, Left = 120, Top = y - 3 };
         grpModifiers.Controls.Add(numRegen);
         _modifierControls["RegenerationRate"] = numRegen;

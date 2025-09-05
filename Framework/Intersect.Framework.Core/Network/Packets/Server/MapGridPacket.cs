@@ -1,4 +1,5 @@
 ﻿using MessagePack;
+using Intersect.Framework.Core.GameObjects.Zones;
 
 namespace Intersect.Network.Packets.Server;
 
@@ -10,11 +11,21 @@ public partial class MapGridPacket : IntersectPacket
     {
     }
 
-    public MapGridPacket(Guid[,] grid, string[,] editorGrid, bool clearKnownMaps)
+    public MapGridPacket(
+        Guid[,] grid,
+        string[,] editorGrid,
+        bool clearKnownMaps,
+        Guid?[,] zoneIds = null,
+        Guid?[,] subzoneIds = null,
+        ZoneModifiers?[,] modifiers = null
+    )
     {
         Grid = grid;
         EditorGrid = editorGrid;
         ClearKnownMaps = clearKnownMaps;
+        ZoneIds = zoneIds;
+        SubzoneIds = subzoneIds;
+        Modifiers = modifiers;
     }
 
     [Key(0)]
@@ -26,4 +37,12 @@ public partial class MapGridPacket : IntersectPacket
     [Key(2)]
     public bool ClearKnownMaps { get; set; }
 
+    [Key(3)]
+    public Guid?[,] ZoneIds { get; set; }
+
+    [Key(4)]
+    public Guid?[,] SubzoneIds { get; set; }
+
+    [Key(5)]
+    public ZoneModifiers?[,] Modifiers { get; set; }
 }

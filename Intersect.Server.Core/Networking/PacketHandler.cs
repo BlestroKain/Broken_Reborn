@@ -774,7 +774,9 @@ internal sealed partial class PacketHandler
                 descriptor.Revision,
                 descriptor.MapGridX,
                 descriptor.MapGridY,
-                descriptor.GetCameraHolds()
+                descriptor.GetCameraHolds(),
+                descriptor.ZoneId ?? Guid.Empty,
+                descriptor.SubzoneId ?? Guid.Empty
             );
 
             var checksumToCompare = string.Equals(cacheKey.Version, version, StringComparison.Ordinal)

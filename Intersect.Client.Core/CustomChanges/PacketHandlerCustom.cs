@@ -30,6 +30,7 @@ using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Framework.Core.GameObjects.Maps.Attributes;
 using Intersect.Framework.Core.GameObjects.Maps.MapList;
 using Intersect.Framework.Core.Security;
+using Intersect.Framework.Core.GameObjects.Zones;
 using Intersect.Localization;
 using Microsoft.Extensions.Logging;
 using Intersect.Config;
@@ -189,6 +190,68 @@ internal sealed partial class PacketHandler
     public void HandlePacket(IPacketSender packetSender, BrokeItemWindowPacket packet)
     {
         Interface.Interface.GameUi?.OpenBrokeItemWindow();
+    }
+
+    partial void HandleMapCustom(MapInstance mapInstance, MapPacket packet)
+    {
+        Globals.MapZoneIds[mapInstance.Id] = packet.ZoneId;
+        Globals.MapSubzoneIds[mapInstance.Id] = packet.SubzoneId;
+        if (packet.Modifiers != null)
+        {
+            Globals.MapZoneModifiers[mapInstance.Id] = packet.Modifiers;
+            mapInstance.ZoneModifiers = packet.Modifiers;
+        }
+        else
+        {
+            mapInstance.ZoneModifiers = Globals.MapZoneModifiers.TryGetValue(mapInstance.Id, out var mods)
+                ? mods
+                : new ZoneModifiers();
+        }
+
+        mapInstance.ZoneId = packet.ZoneId == Guid.Empty ? null : packet.ZoneId;
+        mapInstance.SubzoneId = packet.SubzoneId == Guid.Empty ? null : packet.SubzoneId;
+    }
+
+    partial void HandleMapGridCustom(MapGridPacket packet)
+    {
+        if (packet.ClearKnownMaps)
+        {
+            Globals.MapZoneIds.Clear();
+            Globals.MapSubzoneIds.Clear();
+            Globals.MapZoneModifiers.Clear();
+        }
+
+        var zoneIds = packet.ZoneIds;
+        var subzoneIds = packet.SubzoneIds;
+        var modifiers = packet.Modifiers;
+        if (zoneIds == null)
+        {
+            return;
+        }
+
+        var width = zoneIds.GetLength(0);
+        var height = zoneIds.GetLength(1);
+        for (var x = 0; x < width; x++)
+        {
+            for (var y = 0; y < height; y++)
+            {
+                var mapId = packet.Grid[x, y];
+                if (mapId == Guid.Empty)
+                {
+                    continue;
+                }
+
+                Globals.MapZoneIds[mapId] = zoneIds[x, y] ?? Guid.Empty;
+                if (subzoneIds != null)
+                {
+                    Globals.MapSubzoneIds[mapId] = subzoneIds[x, y] ?? Guid.Empty;
+                }
+                if (modifiers != null && modifiers[x, y] != null)
+                {
+                    Globals.MapZoneModifiers[mapId] = modifiers[x, y];
+                }
+            }
+        }
     }
 
     // Mail

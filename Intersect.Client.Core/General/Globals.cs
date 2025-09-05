@@ -13,6 +13,7 @@ using Intersect.Client.Plugins.Interfaces;
 using Intersect.Core;
 using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Crafting;
+using Intersect.Framework.Core.GameObjects.Zones;
 using Intersect.GameObjects;
 using Intersect.Network.Packets.Server;
 using Microsoft.Extensions.Logging;
@@ -42,6 +43,9 @@ public static partial class Globals
     private static GameStates mGameState = GameStates.Intro;
 
     public static readonly Dictionary<Guid, Point> GridMaps = [];
+    public static readonly Dictionary<Guid, Guid> MapZoneIds = [];
+    public static readonly Dictionary<Guid, Guid> MapSubzoneIds = [];
+    public static readonly Dictionary<Guid, ZoneModifiers> MapZoneModifiers = [];
 
     public static bool HasGameData = false;
 

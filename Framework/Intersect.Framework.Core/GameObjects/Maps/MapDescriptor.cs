@@ -160,6 +160,9 @@ public partial class MapDescriptor : DatabaseObject<MapDescriptor>
 
                 EventIds?.Clear();
                 EventIds?.AddRange(mapDescriptor.EventIds?.ToArray() ?? []);
+
+                ZoneId = mapDescriptor.ZoneId;
+                SubzoneId = mapDescriptor.SubzoneId;
             }
         }
     }

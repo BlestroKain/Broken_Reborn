@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using Intersect.Framework.Core.GameObjects.Zones;
 using Intersect.Editor.Networking;
 using Intersect.Enums;
+using Intersect.Editor.Core;
 
 namespace Intersect.Editor.Forms.Editors;
 
@@ -83,10 +84,16 @@ public partial class FrmZoneEditor : EditorForm
         foreach (var pair in Zone.Lookup.OrderBy(p => p.Value?.Name))
         {
             var zoneNode = new TreeNode(pair.Value?.Name ?? string.Empty) { Tag = pair.Value };
-            foreach (var sub in Subzone.Lookup.Where(z => z.Value?.ZoneId == pair.Key))
+
+            foreach (var subPair in Subzone.Lookup
+                         .Where(z => z.Value is Subzone subzone && subzone.ZoneId == pair.Key))
             {
-                zoneNode.Nodes.Add(new TreeNode(sub.Value?.Name ?? string.Empty) { Tag = sub.Value });
+                if (subPair.Value is Subzone subzone)
+                {
+                    zoneNode.Nodes.Add(new TreeNode(subzone.Name) { Tag = subzone });
+                }
             }
+
             treeZones.Nodes.Add(zoneNode);
         }
     }

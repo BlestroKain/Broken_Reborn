@@ -21,6 +21,7 @@ namespace Intersect.Editor.Forms.Editors
             var resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmZoneEditor));
             pnlContainer = new System.Windows.Forms.Panel();
             treeZones = new System.Windows.Forms.TreeView();
+            txtName = new DarkTextBox();
             chkOverrideFlags = new System.Windows.Forms.CheckBox();
             grpFlags = new DarkGroupBox();
             chkOverrideModifiers = new System.Windows.Forms.CheckBox();
@@ -51,6 +52,7 @@ namespace Intersect.Editor.Forms.Editors
             pnlContainer.Controls.Add(chkOverrideModifiers);
             pnlContainer.Controls.Add(grpFlags);
             pnlContainer.Controls.Add(chkOverrideFlags);
+            pnlContainer.Controls.Add(txtName);
             pnlContainer.Controls.Add(treeZones);
             pnlContainer.Location = new System.Drawing.Point(0, 29);
             pnlContainer.Name = "pnlContainer";
@@ -68,58 +70,68 @@ namespace Intersect.Editor.Forms.Editors
             treeZones.Size = new System.Drawing.Size(200, 392);
             treeZones.TabIndex = 0;
             //
+            // txtName
+            //
+            txtName.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            txtName.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            txtName.ForeColor = System.Drawing.Color.FromArgb(220, 220, 220);
+            txtName.Location = new System.Drawing.Point(210, 10);
+            txtName.Name = "txtName";
+            txtName.Size = new System.Drawing.Size(260, 23);
+            txtName.TabIndex = 1;
+            //
             // chkOverrideFlags
             //
             chkOverrideFlags.AutoSize = true;
-            chkOverrideFlags.Location = new System.Drawing.Point(210, 10);
+            chkOverrideFlags.Location = new System.Drawing.Point(210, 35);
             chkOverrideFlags.Name = "chkOverrideFlags";
             chkOverrideFlags.Size = new System.Drawing.Size(103, 19);
-            chkOverrideFlags.TabIndex = 1;
+            chkOverrideFlags.TabIndex = 2;
             chkOverrideFlags.Text = "Override Flags";
             chkOverrideFlags.UseVisualStyleBackColor = true;
             //
             // grpFlags
             //
-            grpFlags.Location = new System.Drawing.Point(210, 35);
+            grpFlags.Location = new System.Drawing.Point(210, 60);
             grpFlags.Name = "grpFlags";
             grpFlags.Size = new System.Drawing.Size(260, 150);
-            grpFlags.TabIndex = 2;
+            grpFlags.TabIndex = 3;
             grpFlags.TabStop = false;
             grpFlags.Text = "Flags";
             //
             // chkOverrideModifiers
             //
             chkOverrideModifiers.AutoSize = true;
-            chkOverrideModifiers.Location = new System.Drawing.Point(210, 190);
+            chkOverrideModifiers.Location = new System.Drawing.Point(210, 215);
             chkOverrideModifiers.Name = "chkOverrideModifiers";
             chkOverrideModifiers.Size = new System.Drawing.Size(127, 19);
-            chkOverrideModifiers.TabIndex = 3;
+            chkOverrideModifiers.TabIndex = 4;
             chkOverrideModifiers.Text = "Override Modifiers";
             chkOverrideModifiers.UseVisualStyleBackColor = true;
             //
             // grpModifiers
             //
-            grpModifiers.Location = new System.Drawing.Point(210, 215);
+            grpModifiers.Location = new System.Drawing.Point(210, 240);
             grpModifiers.Name = "grpModifiers";
             grpModifiers.Size = new System.Drawing.Size(260, 120);
-            grpModifiers.TabIndex = 4;
+            grpModifiers.TabIndex = 5;
             grpModifiers.TabStop = false;
             grpModifiers.Text = "Modifiers";
             //
             // btnSave
             //
-            btnSave.Location = new System.Drawing.Point(210, 350);
+            btnSave.Location = new System.Drawing.Point(210, 365);
             btnSave.Name = "btnSave";
             btnSave.Size = new System.Drawing.Size(80, 23);
-            btnSave.TabIndex = 5;
+            btnSave.TabIndex = 6;
             btnSave.Text = "Save";
             //
             // btnCancel
             //
-            btnCancel.Location = new System.Drawing.Point(300, 350);
+            btnCancel.Location = new System.Drawing.Point(300, 365);
             btnCancel.Name = "btnCancel";
             btnCancel.Size = new System.Drawing.Size(80, 23);
-            btnCancel.TabIndex = 6;
+            btnCancel.TabIndex = 7;
             btnCancel.Text = "Cancel";
             //
             // toolStrip
@@ -234,6 +246,7 @@ namespace Intersect.Editor.Forms.Editors
 
         private System.Windows.Forms.Panel pnlContainer;
         private System.Windows.Forms.TreeView treeZones;
+        private DarkTextBox txtName;
         private System.Windows.Forms.CheckBox chkOverrideFlags;
         private DarkGroupBox grpFlags;
         private System.Windows.Forms.CheckBox chkOverrideModifiers;

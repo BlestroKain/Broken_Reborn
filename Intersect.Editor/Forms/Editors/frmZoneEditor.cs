@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+using DarkUI.Forms;
 using Intersect.Framework.Core.GameObjects.Zones;
 using Intersect.Editor.Networking;
 using Intersect.Enums;
@@ -123,21 +124,43 @@ public partial class FrmZoneEditor : EditorForm
 
     private void PopulateTree()
     {
+        var selectedZoneId = _currentZone?.Id;
+        var selectedSubzoneId = _currentSubzone?.Id;
+        TreeNode? selectedNode = null;
+
+        treeZones.BeginUpdate();
         treeZones.Nodes.Clear();
         foreach (var pair in Zone.Lookup.OrderBy(p => p.Value?.Name))
         {
-            var zoneNode = new TreeNode(pair.Value?.Name ?? string.Empty) { Tag = pair.Value };
+            var zone = pair.Value;
+            var zoneNode = new TreeNode(zone?.Name ?? string.Empty) { Tag = zone };
+            if (zone != null && zone.Id == selectedZoneId && selectedSubzoneId == null)
+            {
+                selectedNode = zoneNode;
+            }
 
             foreach (var subPair in Subzone.Lookup
                          .Where(z => z.Value is Subzone subzone && subzone.ZoneId == pair.Key))
             {
                 if (subPair.Value is Subzone subzone)
                 {
-                    zoneNode.Nodes.Add(new TreeNode(subzone.Name) { Tag = subzone });
+                    var subNode = new TreeNode(subzone.Name) { Tag = subzone };
+                    zoneNode.Nodes.Add(subNode);
+                    if (subzone.Id == selectedSubzoneId)
+                    {
+                        selectedNode = subNode;
+                    }
                 }
             }
 
             treeZones.Nodes.Add(zoneNode);
+        }
+        treeZones.EndUpdate();
+
+        if (selectedNode != null)
+        {
+            treeZones.SelectedNode = selectedNode;
+            selectedNode.EnsureVisible();
         }
     }
 
@@ -167,12 +190,17 @@ public partial class FrmZoneEditor : EditorForm
     {
         if (_currentZone == null)
         {
+            txtName.Enabled = false;
+            txtName.Text = string.Empty;
             foreach (var cb in _flagBoxes.Values) cb.Enabled = false;
             foreach (var num in _modifierControls.Values) num.Enabled = false;
             chkOverrideFlags.Visible = false;
             chkOverrideModifiers.Visible = false;
             return;
         }
+
+        txtName.Enabled = true;
+        txtName.Text = _currentSubzone?.Name ?? _currentZone.Name;
 
         ZoneFlags flags;
         ZoneModifiers modifiers;
@@ -243,15 +271,38 @@ public partial class FrmZoneEditor : EditorForm
 
     private void SaveClick(object? sender, EventArgs e)
     {
-        if (_currentZone == null) return;
+        if (_currentZone == null)
+        {
+            return;
+        }
+
+        var name = txtName.Text.Trim();
+        if (string.IsNullOrEmpty(name))
+        {
+            DarkMessageBox.ShowError("Name cannot be empty.", "Error");
+            return;
+        }
+
         if (_currentSubzone != null)
         {
+            if (Subzone.Lookup.Any(p => p.Value != null && p.Value.Id != _currentSubzone.Id &&
+                                       string.Equals(p.Value.Name, name, StringComparison.OrdinalIgnoreCase)))
+            {
+                DarkMessageBox.ShowError("A subzone with that name already exists.", "Error");
+                return;
+            }
+
+            _currentSubzone.Name = name;
+
             if (_currentSubzone.Flags.HasValue)
             {
                 ZoneFlags flags = ZoneFlags.None;
                 foreach (var pair in _flagBoxes)
                 {
-                    if (pair.Value.Checked) flags |= pair.Key;
+                    if (pair.Value.Checked)
+                    {
+                        flags |= pair.Key;
+                    }
                 }
                 _currentSubzone.Flags = flags;
             }
@@ -269,10 +320,22 @@ public partial class FrmZoneEditor : EditorForm
         }
         else
         {
+            if (Zone.Lookup.Any(p => p.Value != null && p.Value.Id != _currentZone.Id &&
+                                     string.Equals(p.Value.Name, name, StringComparison.OrdinalIgnoreCase)))
+            {
+                DarkMessageBox.ShowError("A zone with that name already exists.", "Error");
+                return;
+            }
+
+            _currentZone.Name = name;
+
             ZoneFlags flags = ZoneFlags.None;
             foreach (var pair in _flagBoxes)
             {
-                if (pair.Value.Checked) flags |= pair.Key;
+                if (pair.Value.Checked)
+                {
+                    flags |= pair.Key;
+                }
             }
             _currentZone.Flags = flags;
             _currentZone.Modifiers.ExperienceRate = (int)_modifierControls["ExperienceRate"].Value;
@@ -284,6 +347,9 @@ public partial class FrmZoneEditor : EditorForm
             _currentZone.Modifiers.RegenerationRate = (int)_modifierControls["RegenerationRate"].Value;
             PacketSender.SendSaveObject(_currentZone);
         }
+
+        PopulateTree();
+        UpdateToolStripItems();
     }
 
     private void CancelClick(object? sender, EventArgs e)

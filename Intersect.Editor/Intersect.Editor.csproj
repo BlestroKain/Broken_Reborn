@@ -116,7 +116,7 @@
     <Compile Update="Forms\frmUpdate.Designer.cs">
       <DependentUpon>frmUpdate.cs</DependentUpon>
     </Compile>
-    <Compile Update="Forms\Editors\frmZoneEditor.cs">
+<Compile Update="Forms\Editors\frmZoneEditor.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Forms\Editors\frmZoneEditor.Designer.cs">

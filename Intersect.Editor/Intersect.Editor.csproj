@@ -116,8 +116,11 @@
     <Compile Update="Forms\frmUpdate.Designer.cs">
       <DependentUpon>frmUpdate.cs</DependentUpon>
     </Compile>
-    <Compile Update="Forms\Editors\frmZoneEditor.cs">
+<Compile Update="Forms\Editors\frmZoneEditor.cs">
       <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\Editors\frmZoneEditor.Designer.cs">
+      <DependentUpon>frmZoneEditor.cs</DependentUpon>
     </Compile>
     <Compile Update="Forms\Helpers\GridHelper.cs" />
     <Compile Update="Forms\Controls\SearchableDarkTreeView.cs">
@@ -614,6 +617,9 @@
     </EmbeddedResource>
     <EmbeddedResource Update="Forms\Editors\frmVariable.resx">
       <DependentUpon>frmVariable.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Forms\Editors\frmZoneEditor.resx">
+      <DependentUpon>frmZoneEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Update="Forms\Editors\frmTime.resx">
       <DependentUpon>frmTime.cs</DependentUpon>

@@ -18,6 +18,9 @@ public partial class FrmZoneEditor : EditorForm
     private Subzone? _currentSubzone;
     private bool _loading;
 
+    private string? _copiedData;
+    private bool _copiedIsSubzone;
+
     public FrmZoneEditor()
     {
         ApplyHooks();
@@ -28,6 +31,15 @@ public partial class FrmZoneEditor : EditorForm
         _btnCancel = btnCancel;
 
         treeZones.AfterSelect += TreeAfterSelect;
+        treeZones.GotFocus += TreeFocusChanged;
+        treeZones.LostFocus += TreeFocusChanged;
+        treeZones.KeyDown += TreeZones_KeyDown;
+
+        toolStripItemNew.Click += ToolStripItemNew_Click;
+        toolStripItemDelete.Click += ToolStripItemDelete_Click;
+        toolStripItemCopy.Click += ToolStripItemCopy_Click;
+        toolStripItemPaste.Click += ToolStripItemPaste_Click;
+        toolStripItemUndo.Click += ToolStripItemUndo_Click;
         chkOverrideFlags.CheckedChanged += OverrideFlagsChanged;
         chkOverrideModifiers.CheckedChanged += OverrideModifiersChanged;
         btnSave.Click += SaveClick;
@@ -38,6 +50,7 @@ public partial class FrmZoneEditor : EditorForm
 
         PopulateTree();
         UpdateEditorButtons(false);
+        UpdateToolStripItems();
     }
 
     private void SetupFlagControls()
@@ -138,10 +151,16 @@ public partial class FrmZoneEditor : EditorForm
         if (_currentSubzone != null)
         {
             _currentZone = Zone.Get(_currentSubzone.ZoneId);
+            _currentSubzone.MakeBackup();
+        }
+        else
+        {
+            _currentZone?.MakeBackup();
         }
         LoadValues();
         UpdateEditorButtons(true);
         _loading = false;
+        UpdateToolStripItems();
     }
 
     private void LoadValues()
@@ -277,6 +296,154 @@ public partial class FrmZoneEditor : EditorForm
         if (type == GameObjectType.Zone || type == GameObjectType.Subzone)
         {
             PopulateTree();
+            UpdateToolStripItems();
         }
+    }
+
+    private void TreeFocusChanged(object? sender, EventArgs e) => UpdateToolStripItems();
+
+    private void TreeZones_KeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Control)
+        {
+            if (e.KeyCode == Keys.N)
+            {
+                ToolStripItemNew_Click(null, null);
+            }
+            else if (e.KeyCode == Keys.C)
+            {
+                ToolStripItemCopy_Click(null, null);
+            }
+            else if (e.KeyCode == Keys.V)
+            {
+                ToolStripItemPaste_Click(null, null);
+            }
+            else if (e.KeyCode == Keys.Z)
+            {
+                ToolStripItemUndo_Click(null, null);
+            }
+        }
+        else if (e.KeyCode == Keys.Delete)
+        {
+            ToolStripItemDelete_Click(null, null);
+        }
+    }
+
+    private void ToolStripItemNew_Click(object? sender, EventArgs e)
+    {
+        if (_currentZone != null)
+        {
+            PacketSender.SendCreateObject(GameObjectType.Subzone);
+        }
+        else
+        {
+            PacketSender.SendCreateObject(GameObjectType.Zone);
+        }
+
+        PopulateTree();
+        UpdateToolStripItems();
+    }
+
+    private void ToolStripItemDelete_Click(object? sender, EventArgs? e)
+    {
+        if (!treeZones.Focused)
+        {
+            return;
+        }
+
+        if (_currentSubzone != null)
+        {
+            PacketSender.SendDeleteObject(_currentSubzone);
+            _currentSubzone = null;
+            _currentZone = null;
+        }
+        else if (_currentZone != null)
+        {
+            PacketSender.SendDeleteObject(_currentZone);
+            _currentZone = null;
+        }
+
+        PopulateTree();
+        LoadValues();
+        UpdateEditorButtons(false);
+        UpdateToolStripItems();
+    }
+
+    private void ToolStripItemCopy_Click(object? sender, EventArgs? e)
+    {
+        if (!treeZones.Focused)
+        {
+            return;
+        }
+
+        if (_currentSubzone != null)
+        {
+            _copiedData = _currentSubzone.JsonData;
+            _copiedIsSubzone = true;
+        }
+        else if (_currentZone != null)
+        {
+            _copiedData = _currentZone.JsonData;
+            _copiedIsSubzone = false;
+        }
+
+        PopulateTree();
+        UpdateToolStripItems();
+    }
+
+    private void ToolStripItemPaste_Click(object? sender, EventArgs? e)
+    {
+        if (!treeZones.Focused || _copiedData == null)
+        {
+            return;
+        }
+
+        if (_copiedIsSubzone && _currentSubzone != null)
+        {
+            _currentSubzone.Load(_copiedData, true);
+            LoadValues();
+        }
+        else if (!_copiedIsSubzone && _currentZone != null && _currentSubzone == null)
+        {
+            _currentZone.Load(_copiedData, true);
+            LoadValues();
+        }
+
+        PopulateTree();
+        UpdateToolStripItems();
+    }
+
+    private void ToolStripItemUndo_Click(object? sender, EventArgs? e)
+    {
+        if (!treeZones.Focused)
+        {
+            return;
+        }
+
+        if (_currentSubzone != null)
+        {
+            _currentSubzone.RestoreBackup();
+            LoadValues();
+        }
+        else if (_currentZone != null)
+        {
+            _currentZone.RestoreBackup();
+            LoadValues();
+        }
+
+        PopulateTree();
+        UpdateToolStripItems();
+    }
+
+    private void UpdateToolStripItems()
+    {
+        var focused = treeZones.Focused;
+        var hasSelection = treeZones.SelectedNode != null;
+
+        toolStripItemNew.Enabled = focused;
+        toolStripItemCopy.Enabled = focused && hasSelection;
+        toolStripItemPaste.Enabled = focused && hasSelection && _copiedData != null;
+        toolStripItemDelete.Enabled = focused && hasSelection;
+        toolStripItemUndo.Enabled = focused && hasSelection;
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using Intersect.Editor.Content;
 using Intersect.Editor.General;
 using Intersect.Editor.Localization;
@@ -60,6 +61,40 @@ partial class MapProperties
 
     [Browsable(false)]
     public Guid MapId => mMyMap.Id;
+
+    [Browsable(false)]
+    public Guid? ZoneId
+    {
+        get => mMyMap.ZoneId;
+        set
+        {
+            if (mMyMap.ZoneId != value)
+            {
+                Globals.MapEditorWindow.PrepUndoState();
+                mMyMap.ZoneId = value;
+                if (value == null)
+                {
+                    mMyMap.SubzoneId = null;
+                }
+                Globals.MapEditorWindow.AddUndoState();
+            }
+        }
+    }
+
+    [Browsable(false)]
+    public Guid? SubzoneId
+    {
+        get => mMyMap.SubzoneId;
+        set
+        {
+            if (mMyMap.SubzoneId != value)
+            {
+                Globals.MapEditorWindow.PrepUndoState();
+                mMyMap.SubzoneId = value;
+                Globals.MapEditorWindow.AddUndoState();
+            }
+        }
+    }
 
     [CustomCategory("general"), CustomDescription("namedesc"), CustomDisplayName("name"), DefaultValue("New Map")]
     public string Name

@@ -1337,6 +1337,11 @@ public partial class Player : Entity
             var vitalRegenRate = (playerClass.VitalRegen[vitalId] + GetEquipmentVitalRegen(vital)) / 100f;
             var regenValue = (long)Math.Max(1, maxVitalValue * vitalRegenRate) *
                              Math.Abs(Math.Sign(vitalRegenRate));
+            var mapMods = MapController.Get(MapId)?.EffectiveModifiers;
+            if (mapMods != null)
+            {
+                regenValue = (long)(regenValue * mapMods.RegenerationRate / 100f);
+            }
 
             AddVital(vital, regenValue);
         }
@@ -1511,6 +1516,12 @@ public partial class Player : Entity
         if (amount == 0)
         {
             return;
+        }
+
+        var mapModifiers = MapController.Get(MapId)?.EffectiveModifiers;
+        if (mapModifiers != null)
+        {
+            amount = amount * mapModifiers.ExperienceRate / 100;
         }
 
         if (amount < 0)

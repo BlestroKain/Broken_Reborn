@@ -5,6 +5,7 @@ using Intersect.Server.Localization;
 using Intersect.Utilities;
 using NCalc;
 using Newtonsoft.Json;
+using Intersect.Server.Maps;
 
 namespace Intersect.Server.General;
 
@@ -134,6 +135,11 @@ public partial class Formulas
             if (negate)
             {
                 result = -result;
+            }
+            var mapModifiers = MapController.Get(attacker.MapId)?.EffectiveModifiers;
+            if (mapModifiers != null)
+            {
+                result *= mapModifiers.DamageRate / 100.0;
             }
 
             return (long)Math.Round(result);

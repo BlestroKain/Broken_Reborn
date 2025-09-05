@@ -1061,6 +1061,19 @@ public abstract partial class Entity : IEntity
             time += time * Options.Instance.Combat.BlockingSlow;
         }
 
+        if (this is Player)
+        {
+            var modifiers = MapController.Get(MapId)?.EffectiveModifiers;
+            if (modifiers != null)
+            {
+                var speedMultiplier = modifiers.MovementSpeed / 100f;
+                if (speedMultiplier > 0)
+                {
+                    time /= speedMultiplier;
+                }
+            }
+        }
+
         return Math.Min(1000f, time);
     }
 
@@ -3287,8 +3300,19 @@ public abstract partial class Entity : IEntity
                 continue;
             }
 
+            var mapModsQuantity = MapController.Get(MapId)?.EffectiveModifiers;
+            if (mapModsQuantity != null && itemDescriptor.ItemType == ItemType.Currency)
+            {
+                drop.Quantity = (int)Math.Max(1, drop.Quantity * mapModsQuantity.GoldRate / 100f);
+            }
+
             var playerKiller = killer as Player;
             var dropRateModifier = 1 + (playerKiller?.GetEquipmentBonusEffect(ItemEffect.Luck) / 100f ?? 0);
+            var mapMods = MapController.Get(MapId)?.EffectiveModifiers;
+            if (mapMods != null)
+            {
+                dropRateModifier *= mapMods.DropRate / 100f;
+            }
          
             if (!ShouldDropItem(killer, itemDescriptor, drop, dropRateModifier, out Guid lootOwner))
             {

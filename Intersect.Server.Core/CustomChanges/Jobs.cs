@@ -4,6 +4,7 @@ using Intersect.Enums;
 using Intersect.Server.Localization;
 using Intersect.Server.Networking;
 using Newtonsoft.Json;
+using Intersect.Server.Maps;
 
 namespace Intersect.Server.Entities
 {
@@ -50,6 +51,12 @@ namespace Intersect.Server.Entities
 
         public void GiveJobExperience(JobType jobType, long experience)
         {
+            var mapModifiers = MapController.Get(MapId)?.EffectiveModifiers;
+            if (mapModifiers != null)
+            {
+                experience = experience * mapModifiers.ExperienceRate / 100;
+            }
+
             if (Jobs.TryGetValue(jobType, out var job))
             {
                 job.AddExperience(experience, this);

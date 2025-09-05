@@ -109,6 +109,11 @@ public partial class Resource : Entity
         {
             var roll = Randomization.Next(1, 10001);
             var maximumRoll = drop.Chance * 100;
+            var mapMods = MapController.Get(MapId)?.EffectiveModifiers;
+            if (mapMods != null)
+            {
+                maximumRoll = maximumRoll * mapMods.DropRate / 100;
+            }
 
             if (roll > maximumRoll || !ItemDescriptor.TryGet(drop.ItemId, out _))
             {
@@ -117,6 +122,15 @@ public partial class Resource : Entity
 
             var slot = new InventorySlot(itemSlot);
             var dropQuantity = Randomization.Next(drop.MinQuantity, drop.MaxQuantity + 1);
+            var mapMods2 = MapController.Get(MapId)?.EffectiveModifiers;
+            if (mapMods2 != null)
+            {
+                var descriptor = ItemDescriptor.Get(drop.ItemId);
+                if (descriptor != null && descriptor.ItemType == ItemType.Currency)
+                {
+                    dropQuantity = (int)Math.Max(1, dropQuantity * mapMods2.GoldRate / 100f);
+                }
+            }
             var dropInstance = new Item(drop.ItemId, dropQuantity);
             slot.Set(dropInstance);
 

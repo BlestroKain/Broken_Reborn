@@ -17,4 +17,43 @@ public class ZoneModifiers
     ///     Gold drop rate percentage.
     /// </summary>
     public int GoldRate { get; set; } = 100;
+
+    /// <summary>
+    ///     General item drop chance percentage.
+    /// </summary>
+    public int DropRate { get; set; } = 100;
+
+    /// <summary>
+    ///     Damage dealt percentage.
+    /// </summary>
+    public int DamageRate { get; set; } = 100;
+
+    /// <summary>
+    ///     Movement speed percentage applied to players.
+    /// </summary>
+    public int MovementSpeed { get; set; } = 100;
+
+    /// <summary>
+    ///     Mount speed percentage applied to players.
+    /// </summary>
+    public int MountSpeed { get; set; } = 100;
+
+    /// <summary>
+    ///     Vital regeneration percentage applied to players.
+    /// </summary>
+    public int RegenerationRate { get; set; } = 100;
+
+    public ZoneModifiers Clone()
+    {
+        return new ZoneModifiers
+        {
+            ExperienceRate = ExperienceRate,
+            GoldRate = GoldRate,
+            DropRate = DropRate,
+            DamageRate = DamageRate,
+            MovementSpeed = MovementSpeed,
+            MountSpeed = MountSpeed,
+            RegenerationRate = RegenerationRate,
+        };
+    }
 }

@@ -8,6 +8,7 @@ using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.Resources;
+using Intersect.Framework.Core.GameObjects.Zones;
 using Intersect.GameObjects;
 using Intersect.Network.Packets.Server;
 using Intersect.Server.Database;
@@ -74,6 +75,54 @@ public partial class MapController : MapDescriptor
     }
 
     private readonly ConcurrentDictionary<Guid, MapInstance> mInstances = [];
+
+    private static readonly ConcurrentDictionary<(Guid, Guid?, Guid?), ZoneModifiers> sModifierCache = new();
+
+    public ZoneModifiers EffectiveModifiers { get; private set; } = new ZoneModifiers();
+
+    private void RefreshModifiers()
+    {
+        var key = (Id, ZoneId, SubzoneId);
+        if (!sModifierCache.TryGetValue(key, out var modifiers))
+        {
+            modifiers = CalculateEffectiveModifiers(ZoneId, SubzoneId);
+            sModifierCache[key] = modifiers;
+        }
+
+        EffectiveModifiers = modifiers;
+    }
+
+    private static ZoneModifiers CalculateEffectiveModifiers(Guid? zoneId, Guid? subzoneId)
+    {
+        var result = new ZoneModifiers();
+
+        if (zoneId.HasValue)
+        {
+            var zone = Zone.Get(zoneId.Value);
+            if (zone != null)
+            {
+                result = zone.Modifiers.Clone();
+            }
+        }
+
+        if (subzoneId.HasValue)
+        {
+            var subzone = Subzone.Get(subzoneId.Value);
+            if (subzone?.Modifiers != null)
+            {
+                var subMods = subzone.Modifiers;
+                result.ExperienceRate = result.ExperienceRate * subMods.ExperienceRate / 100;
+                result.GoldRate = result.GoldRate * subMods.GoldRate / 100;
+                result.DropRate = result.DropRate * subMods.DropRate / 100;
+                result.DamageRate = result.DamageRate * subMods.DamageRate / 100;
+                result.MovementSpeed = result.MovementSpeed * subMods.MovementSpeed / 100;
+                result.MountSpeed = result.MountSpeed * subMods.MountSpeed / 100;
+                result.RegenerationRate = result.RegenerationRate * subMods.RegenerationRate / 100;
+            }
+        }
+
+        return result;
+    }
 
     private static MapControllers sLookup;
 
@@ -347,6 +396,7 @@ public partial class MapController : MapDescriptor
             CachedMapClientPacket = default;
             DespawnAllInstances();
             base.Load(json);
+            RefreshModifiers();
             if (keepRevision > -1)
             {
                 Revision = keepRevision;

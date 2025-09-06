@@ -45,7 +45,7 @@ public partial class InventoryWindow : Window
     // --- Layout ---
     private const int PAD = 8;       // margen externo
     private const int GAP = 8;       // separación entre controles
-    private const int HEADER_H = 92; // alto del header (filtros)
+    private const int HEADER_H = 60; // alto del header (filtros)
     private const int CTRL_H = 24;   // alto de controles
     private const int CTRL_W_SMALL = 140;
     private const int CTRL_W_MED = 150;
@@ -129,7 +129,7 @@ public partial class InventoryWindow : Window
             OverflowY = OverflowBehavior.Scroll,
         };
         _slotContainer.SetPosition(PAD, _headerPanel.Y + _headerPanel.Height + GAP);
-        _slotContainer.SetSize(Width - PAD * 2, Height - (_headerPanel.Y + _headerPanel.Height + GAP) - PAD);
+        
 
         // Context menu
         _contextMenu = new ContextMenu(gameCanvas, "InventoryContextMenu")
@@ -167,7 +167,7 @@ public partial class InventoryWindow : Window
         _subtypeBox.SetPosition(_typeBox.X + _typeBox.Width + GAP, _typeBox.Y);
 
         _slotContainer.SetPosition(PAD, _headerPanel.Y + _headerPanel.Height + GAP);
-        _slotContainer.SetSize(Width - PAD * 2, Height - (_headerPanel.Y + _headerPanel.Height + GAP) - PAD);
+  
     }
 
     private void SortButton_Clicked(Base sender, MouseButtonState arguments)
@@ -307,12 +307,8 @@ public partial class InventoryWindow : Window
         {
             if (item is InventoryItem inv)
             {
-                var idx = inv.SlotIndex;
-                var slot = (idx >= 0 && idx < Options.Instance.Player.MaxInventory) ? inventory[idx] : null;
-                var hasDescriptor = slot?.Descriptor != null;
-
                 var isMatch = matchedSet.Contains(item);
-                var show = isMatch || !filterActive || !hasDescriptor;
+                var show = isMatch || !filterActive;
 
                 inv.IsVisibleInParent = show;
                 inv.SetFilterMatch(isMatch);
@@ -320,8 +316,9 @@ public partial class InventoryWindow : Window
             }
         }
 
-        // Mantén el orden original de los slots
-        PopulateSlotContainer.Populate(_slotContainer, Items);
+        // Mantén el orden original de los slots y distribuye sólo los visibles
+        var visibleItems = Items.Where(i => i.IsVisibleInParent).ToList();
+        PopulateSlotContainer.Populate(_slotContainer, visibleItems);
     }
 
     private void SortItems(Base sender, MouseButtonState arguments)
@@ -330,33 +327,33 @@ public partial class InventoryWindow : Window
 
         var inventory = Globals.Me.Inventory;
 
+        // 1) Solo slots ocupados
         var filledItems = Items
-            .Where(i => inventory[i.SlotIndex]?.Descriptor != null)
+            .Where(i => i != null && inventory[i.SlotIndex]?.Descriptor != null)
             .ToList();
 
-        var searchText = _searchBox?.Text ?? string.Empty;
-
+        // 2) Ordena SIN filtrar (ignora búsqueda/tipo/subtipo)
         var sortedItems = ItemListHelper.FilterAndSort(
             filledItems,
             getDescriptor: i => inventory[i.SlotIndex]?.Descriptor,
             getQuantity: i => inventory[i.SlotIndex]?.Quantity ?? 0,
-            searchText: searchText,
-            type: _selectedType,
-            subtype: _selectedSubtype,
+            searchText: null,          // 👈 nada de filtros aquí
+            type: null,          // 👈
+            subtype: null,          // 👈
             criterion: _criterion,
             ascending: _sortAscending
         ).ToList();
 
-        var desiredSlotMap = new Dictionary<int, int>(); // targetSlot => currentSlot
-        for (int i = 0; i < sortedItems.Count; i++)
-        {
-            desiredSlotMap[i] = sortedItems[i].SlotIndex;
-        }
+        // 3) Mapa “target => current” empaquetando desde 0
+        var desiredSlotMap = new Dictionary<int, int>();
+        for (int k = 0; k < sortedItems.Count; k++)
+            desiredSlotMap[k] = sortedItems[k].SlotIndex;
 
-        foreach (var pair in desiredSlotMap.ToList())
+        // 4) Swaps
+        foreach (var kv in desiredSlotMap.ToList())
         {
-            int target = pair.Key;
-            int current = pair.Value;
+            int target = kv.Key;
+            int current = kv.Value;
             if (current == target) continue;
 
             if (inventory[target]?.Descriptor == inventory[current]?.Descriptor &&
@@ -365,14 +362,10 @@ public partial class InventoryWindow : Window
 
             Globals.Me.SwapItems(current, target);
 
+            // Actualiza el mapa: quien apuntaba al target ahora apunta al current
             foreach (var key in desiredSlotMap.Keys.ToList())
-            {
                 if (desiredSlotMap[key] == target)
-                {
                     desiredSlotMap[key] = current;
-                    break;
-                }
-            }
         }
 
         ApplyFilters();

@@ -171,7 +171,8 @@ public partial class InventoryWindow : Window
         if (Globals.Me?.Inventory == null)
             return;
 
-           var matched = Items.Where(i =>
+        // 1) Calcular los que coinciden con la búsqueda y filtros
+        var matched = Items.Where(i =>
         {
             var slot = Globals.Me.Inventory[i.SlotIndex];
             var descriptor = slot?.Descriptor;
@@ -201,31 +202,16 @@ public partial class InventoryWindow : Window
 
         var arranged = matchedList.Concat(nonMatched).ToList();
 
-        // Determinar si hay algún filtro activo (búsqueda, tipo o subtipo)
-        var filterActive = !string.IsNullOrWhiteSpace(_searchBox.Text) ||
-                          _selectedType.HasValue ||
-                          !string.IsNullOrEmpty(_selectedSubtype);
-
-        // Actualizar el estado visual de cada slot (visible o no)
+        // 3) "Vaciar" visualmente los que NO coinciden (sin ocultarlos)
         foreach (var item in Items)
         {
             if (item is InventoryItem inventoryItem)
             {
-                var isMatch = matchedSet.Contains(item);
-                var slot = Globals.Me.Inventory[inventoryItem.SlotIndex];
-                var hasDescriptor = slot?.Descriptor != null;
-
-                // Mantener visibles los espacios vacíos cuando no hay filtro activo
-                // o cuando el slot no contiene ningún objeto
-                var show = isMatch || !filterActive || !hasDescriptor;
-
-                inventoryItem.IsVisibleInParent = show;
-                inventoryItem.SetFilterMatch(isMatch);
-                inventoryItem.Update(); // 🔁 fuerza el refresco visual
+                inventoryItem.SetFilterMatch(matchedSet.Contains(item));
             }
         }
 
-        // Mostrar todos los slots en su orden original (sin reordenamiento)
+        // 4) Siempre poblar con TODA la lista para mantener el grid y permitir drop en cualquier slot
         PopulateSlotContainer.Populate(_slotContainer, arranged);
     }
     private void SortItems(Base sender, MouseButtonState arguments)

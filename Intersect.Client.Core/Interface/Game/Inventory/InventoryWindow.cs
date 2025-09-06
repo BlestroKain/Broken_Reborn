@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 using Intersect.Client.Core;
 using Intersect.Client.Entities;
@@ -119,6 +120,8 @@ public partial class InventoryWindow : Window
         BuildSubtypeLookup();
         PopulateSubtypeComboForType(null); // al inicio: todos o solo "All" (según implementación abajo)
 
+        _typeBox.ItemSelected += TypeBox_Selected;
+
         // --------- Lista de ítems (debajo del header) ----------
         _slotContainer = new ScrollControl(this, "ItemsContainer")
         {
@@ -195,6 +198,18 @@ public partial class InventoryWindow : Window
         _sortButton.SetText($"{Strings.Inventory.Sort}: {_criterion} {arrow}");
     }
 
+    private void TypeBox_Selected(Base sender, ItemSelectedEventArgs args)
+    {
+        var newType = (ItemType?)args.SelectedItem?.UserData;
+        if (newType != _selectedType)
+        {
+            _selectedType = newType;
+            PopulateSubtypeComboForType(_selectedType);
+            _selectedSubtype = (string?)_subtypeBox.SelectedItem?.UserData;
+            ApplyFilters();
+        }
+    }
+
     // Construye los índices de subtipos una sola vez
     private void BuildSubtypeLookup()
     {
@@ -226,6 +241,12 @@ public partial class InventoryWindow : Window
     private void PopulateSubtypeComboForType(ItemType? type)
     {
         _subtypeBox.ClearItems();
+        if (typeof(ComboBox).GetField("_menu", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(_subtypeBox) is Intersect.Client.Framework.Gwen.Control.Menu menu)
+        {
+            menu.ClearChildren(true);
+        }
+        _selectedSubtype = null;
+
         var all = _subtypeBox.AddItem(Strings.Inventory.All, userData: null);
 
         // Por defecto: solo “Todos” (nada de meter todos los subtipos globales)
@@ -235,23 +256,17 @@ public partial class InventoryWindow : Window
         {
             var key = Convert.ToInt32(type.Value);
             if (_subtypesByType.TryGetValue(key, out var valids))
-                source = valids;
-        }
-
-        var prev = _selectedSubtype;
-        var toSelect = all;
-
-        foreach (var st in source)
-        {
-            var it = _subtypeBox.AddItem(st, userData: st);
-            if (!string.IsNullOrEmpty(prev) &&
-                string.Equals(prev, st, StringComparison.OrdinalIgnoreCase))
             {
-                toSelect = it;
+                source = valids;
             }
         }
 
-        _subtypeBox.SelectedItem = toSelect;
+        foreach (var st in source)
+        {
+            _subtypeBox.AddItem(st, userData: st);
+        }
+
+        _subtypeBox.SelectedItem = all;
     }
 
     private void ApplyFilters()

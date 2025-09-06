@@ -217,22 +217,35 @@ public partial class InventoryWindow : Window
 
         var matched = Items.Where(i =>
         {
+            if (i is null)
+            {
+                return false;
+            }
+
             var slot = Globals.Me.Inventory[i.SlotIndex];
             var descriptor = slot?.Descriptor;
-            if (descriptor == null) return false;
+            if (descriptor == null)
+            {
+                return false;
+            }
 
-            if (_selectedType.HasValue && descriptor.ItemType != _selectedType) return false;
+            if (_selectedType.HasValue && descriptor.ItemType != _selectedType)
+            {
+                return false;
+            }
 
             if (!string.IsNullOrEmpty(_selectedSubtype) &&
                 !descriptor.Subtype.Equals(_selectedSubtype, StringComparison.OrdinalIgnoreCase))
+            {
                 return false;
+            }
 
             return SearchHelper.Matches(_searchBox.Text, descriptor.Name);
         });
 
         var matchedList = matched.ToList();
         var matchedSet = matchedList.ToHashSet();
-        var nonMatched = Items.Where(i => !matchedSet.Contains(i));
+        var nonMatched = Items.Where(i => i is not null && !matchedSet.Contains(i));
         var arranged = matchedList.Concat(nonMatched).ToList();
 
         var filterActive = !string.IsNullOrWhiteSpace(_searchBox.Text) ||

@@ -43,15 +43,14 @@ public partial class InventoryWindow : Window
         IsClosable = true;
         _searchBox = new TextBox(this, "SearchBox")
         {
-   
+
             Width = 150,
             Height = 40,
-           
+
        FontName = "source-sans-pro",
     FontSize = 12,// Tamaño de fuente
-       
+
         };
-        _searchBox.TextChanged += (s, e) => ApplyFilters(); // reprocesa al escribir
        _searchBox.SetPosition(10, 10);
         _sortButton = new Button(this, "SortButton")
         {
@@ -73,12 +72,7 @@ public partial class InventoryWindow : Window
         _typeBox.SetPosition(10, 60);
 
         var typeAll = _typeBox.AddItem(Strings.Inventory.All, userData: null);
-        typeAll.Selected += (_, _) =>
-        {
-            _selectedType = null;
-            UpdateSubtypeOptions();
-            ApplyFilters();
-        };
+        _typeBox.SelectedItem = typeAll;
         foreach (var type in Enum.GetValues<ItemType>())
         {
             if (type == ItemType.None)
@@ -86,13 +80,7 @@ public partial class InventoryWindow : Window
                 continue;
             }
 
-            var item = _typeBox.AddItem(type.ToString(), userData: type);
-            item.Selected += (_, _) =>
-            {
-                _selectedType = (ItemType)item.UserData;
-                UpdateSubtypeOptions();
-                ApplyFilters();
-            };
+            _typeBox.AddItem(type.ToString(), userData: type);
         }
 
         _subtypeBox = new ComboBox(this, "SubtypeFilter")
@@ -103,11 +91,7 @@ public partial class InventoryWindow : Window
         _subtypeBox.SetPosition(170, 60);
 
         var subtypeAll = _subtypeBox.AddItem(Strings.Inventory.All, userData: null);
-        subtypeAll.Selected += (_, _) =>
-        {
-            _selectedSubtype = null;
-            ApplyFilters();
-        };
+        _subtypeBox.SelectedItem = subtypeAll;
 
 
         _slotContainer = new ScrollControl(this, "ItemsContainer")
@@ -124,6 +108,11 @@ public partial class InventoryWindow : Window
             ItemFont = GameContentManager.Current.GetFont(name: "sourcesansproblack"),
             ItemFontSize = 10,
         };
+
+        _lastQuery = _searchBox.Text;
+        _selectedType = (ItemType?)_typeBox.SelectedItem?.UserData;
+        _selectedSubtype = (string?)_subtypeBox.SelectedItem?.UserData;
+        _lastAsc = _sortAscending;
     }
 
     private void SortButton_Clicked(Base sender, MouseButtonState arguments)
@@ -158,11 +147,6 @@ public partial class InventoryWindow : Window
     {
         _subtypeBox.ClearItems();
         var all = _subtypeBox.AddItem(Strings.Inventory.All, userData: null);
-        all.Selected += (_, _) =>
-        {
-            _selectedSubtype = null;
-            ApplyFilters();
-        };
 
         if (_selectedType.HasValue &&
             Options.Instance.Items.ItemSubtypes.TryGetValue(_selectedType.Value, out var subtypes))
@@ -170,12 +154,7 @@ public partial class InventoryWindow : Window
             foreach (var st in subtypes)
             {
                 var local = st; // avoid modified closure
-                var item = _subtypeBox.AddItem(local, userData: local);
-                item.Selected += (_, _) =>
-                {
-                    _selectedSubtype = (string?)item.UserData;
-                    ApplyFilters();
-                };
+                _subtypeBox.AddItem(local, userData: local);
             }
         }
 
@@ -287,7 +266,7 @@ public partial class InventoryWindow : Window
         }
 
         // Refrescar visualmente
-        ApplyFilters();
+        // La actualización de filtros se gestionará en Update()
     }
 
 
@@ -322,12 +301,49 @@ public partial class InventoryWindow : Window
             return;
         }
 
+        var query = _searchBox.Text;
+        var asc = _sortAscending;
+        var type = (ItemType?)_typeBox.SelectedItem?.UserData;
+        var subtype = (string?)_subtypeBox.SelectedItem?.UserData;
+
+        var changed = false;
+
+        if (type != _selectedType)
+        {
+            _selectedType = type;
+            UpdateSubtypeOptions();
+            subtype = (string?)_subtypeBox.SelectedItem?.UserData;
+            changed = true;
+        }
+
+        if (subtype != _selectedSubtype)
+        {
+            _selectedSubtype = subtype;
+            changed = true;
+        }
+
+        if (query != _lastQuery)
+        {
+            _lastQuery = query;
+            changed = true;
+        }
+
+        if (asc != _lastAsc)
+        {
+            _lastAsc = asc;
+            changed = true;
+        }
+
+        if (changed)
+        {
+            ApplyFilters();
+        }
+
         var slotCount = Math.Min(Options.Instance.Player.MaxInventory, Items.Count);
         for (var slotIndex = 0; slotIndex < slotCount; slotIndex++)
         {
             Items[slotIndex].Update();
         }
-        ApplyFilters();
     }
 
   

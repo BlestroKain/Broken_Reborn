@@ -76,5 +76,33 @@ public class ItemListHelperTests
 
         Assert.AreEqual(0, result.Count());
     }
+
+    [Test]
+    public void FilterAndSort_IncludesEquipmentSlot()
+    {
+        var descriptor = new ItemDescriptor(Guid.NewGuid())
+        {
+            Name = "Iron Helmet",
+            Price = 5,
+            ItemType = ItemType.Equipment,
+            Subtype = "Helmet"
+        };
+
+        var items = new[] { (Descriptor: descriptor, Quantity: 1) };
+
+        var result = ItemListHelper.FilterAndSort(
+            items,
+            x => x.Descriptor,
+            x => x.Quantity,
+            null,
+            null,
+            null,
+            SortCriterion.Name,
+            true
+        ).ToList();
+
+        Assert.AreEqual(1, result.Count);
+        Assert.AreSame(descriptor, result[0].Descriptor);
+    }
 }
 

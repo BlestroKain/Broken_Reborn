@@ -60,7 +60,7 @@ public partial class InventoryWindow : Window
             FontName = "source-sans-pro",
             FontSize = 12,// Tamaño de fuente
         };
-        _sortButton.SetText("Sort");
+        _sortButton.SetText(Strings.Inventory.Sort);
         _sortButton.Clicked += SortItems; // ✅ ahora ordena visualmente
 
 
@@ -73,7 +73,7 @@ public partial class InventoryWindow : Window
         };
         _typeBox.SetPosition(10, 60);
 
-        var typeAll = _typeBox.AddItem("All", userData: null);
+        var typeAll = _typeBox.AddItem(Strings.Inventory.All, userData: null);
         typeAll.Selected += (_, _) =>
         {
             _selectedType = null;
@@ -103,7 +103,7 @@ public partial class InventoryWindow : Window
         };
         _subtypeBox.SetPosition(170, 60);
 
-        var subtypeAll = _subtypeBox.AddItem("All", userData: null);
+        var subtypeAll = _subtypeBox.AddItem(Strings.Inventory.All, userData: null);
         subtypeAll.Selected += (_, _) =>
         {
             _selectedSubtype = null;
@@ -130,7 +130,7 @@ public partial class InventoryWindow : Window
     private void UpdateSubtypeOptions()
     {
         _subtypeBox.ClearItems();
-        var all = _subtypeBox.AddItem("All", userData: null);
+        var all = _subtypeBox.AddItem(Strings.Inventory.All, userData: null);
         all.Selected += (_, _) =>
         {
             _selectedSubtype = null;

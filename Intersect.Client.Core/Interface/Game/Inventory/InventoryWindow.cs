@@ -200,7 +200,9 @@ public partial class InventoryWindow : Window
         {
             if (item is InventoryItem inventoryItem)
             {
-                inventoryItem.SetFilterMatch(matchedSet.Contains(item));
+                var isMatch = matchedSet.Contains(item);
+                inventoryItem.IsVisibleInParent = isMatch;
+                inventoryItem.SetFilterMatch(isMatch);
                 inventoryItem.Update(); // 🔁 fuerza el refresco visual
             }
         }

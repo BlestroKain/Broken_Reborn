@@ -21,6 +21,48 @@ namespace Intersect.Client.Utilities
     {
         private static readonly StringComparer NameComparer = StringComparer.OrdinalIgnoreCase;
 
+        private static bool IsValid(ItemDescriptor d, int? quantity)
+        {
+            if (string.IsNullOrEmpty(d.Name))
+            {
+                return false;
+            }
+
+            if (d.Price < 0)
+            {
+                return false;
+            }
+
+            if (quantity.HasValue && quantity.Value < 0)
+            {
+                return false;
+            }
+
+            if (!Enum.IsDefined(typeof(ItemType), d.ItemType))
+            {
+                return false;
+            }
+
+            var subtypes = Options.Instance?.Items?.ItemSubtypes;
+            if (subtypes == null)
+            {
+                return false;
+            }
+
+            if (!subtypes.TryGetValue(d.ItemType, out var list) || list == null)
+            {
+                return false;
+            }
+
+            var subtype = d.Subtype;
+            if (string.IsNullOrEmpty(subtype))
+            {
+                return false;
+            }
+
+            return list.Any(s => s.Equals(subtype, StringComparison.OrdinalIgnoreCase));
+        }
+
         public static IEnumerable<T> FilterAndSort<T>(
             IEnumerable<T> items,
             Func<T, ItemDescriptor?> getDescriptor,
@@ -38,37 +80,64 @@ namespace Intersect.Client.Utilities
             bool Match(T entry)
             {
                 var d = getDescriptor(entry);
-                if (d == null) return false;
+                if (d == null)
+                {
+                    return false;
+                }
+
+                var q = getQuantity?.Invoke(entry);
+                if (!IsValid(d, q))
+                {
+                    return false;
+                }
 
                 // Filtro explícito por tipo
-                if (type.HasValue && d.ItemType != type.Value) return false;
+                if (type.HasValue && d.ItemType != type.Value)
+                {
+                    return false;
+                }
 
                 // Filtro explícito por subtipo
                 if (!string.IsNullOrEmpty(subtype))
                 {
                     if (!string.Equals(d.Subtype ?? string.Empty, subtype, StringComparison.OrdinalIgnoreCase))
+                    {
                         return false;
+                    }
                 }
 
                 // Texto libre (null-safe)
-                if (!SearchHelper.Matches(tokens.FreeText, d.Name ?? string.Empty)) return false;
+                if (!SearchHelper.Matches(tokens.FreeText, d.Name ?? string.Empty))
+                {
+                    return false;
+                }
 
                 // type: en el query (comparado por ToString del enum)
                 if (tokens.Type is { Length: > 0 } t &&
                     !t.Equals(d.ItemType.ToString(), StringComparison.OrdinalIgnoreCase))
+                {
                     return false;
+                }
 
                 // subtype: en el query
                 if (tokens.Subtype is { Length: > 0 } st &&
                     !st.Equals(d.Subtype ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+                {
                     return false;
+                }
 
                 // minqty / maxqty
-                if (getQuantity != null)
+                if (q.HasValue)
                 {
-                    var q = getQuantity(entry);
-                    if (tokens.MinQty.HasValue && q < tokens.MinQty.Value) return false;
-                    if (tokens.MaxQty.HasValue && q > tokens.MaxQty.Value) return false;
+                    if (tokens.MinQty.HasValue && q.Value < tokens.MinQty.Value)
+                    {
+                        return false;
+                    }
+
+                    if (tokens.MaxQty.HasValue && q.Value > tokens.MaxQty.Value)
+                    {
+                        return false;
+                    }
                 }
 
                 return true;

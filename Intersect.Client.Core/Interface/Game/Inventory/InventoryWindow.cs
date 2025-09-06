@@ -8,6 +8,7 @@ using Intersect.Client.Localization;
 using Intersect.Client.Utilities;
 using System.Linq;
 using Intersect.Framework.Core.GameObjects.Items;
+using Intersect.Client.Entities;
 
 
 namespace Intersect.Client.Interface.Game.Inventory;
@@ -30,6 +31,7 @@ public partial class InventoryWindow : Window
 
     private string? _lastQuery;
     private bool _lastAsc;
+    private bool _inventoryDirty;
 
     public InventoryWindow(Canvas gameCanvas) : base(gameCanvas, Strings.Inventory.Title, false, nameof(InventoryWindow))
     {
@@ -113,6 +115,10 @@ public partial class InventoryWindow : Window
         _selectedType = (ItemType?)_typeBox.SelectedItem?.UserData;
         _selectedSubtype = (string?)_subtypeBox.SelectedItem?.UserData;
         _lastAsc = _sortAscending;
+        if (Globals.Me is { } player)
+        {
+            player.InventoryUpdated += PlayerOnInventoryUpdated;
+        }
     }
 
     private void SortButton_Clicked(Base sender, MouseButtonState arguments)
@@ -308,7 +314,7 @@ public partial class InventoryWindow : Window
         var type = (ItemType?)_typeBox.SelectedItem?.UserData;
         var subtype = (string?)_subtypeBox.SelectedItem?.UserData;
 
-        var changed = false;
+        var changed = _inventoryDirty;
 
         if (type != _selectedType)
         {
@@ -339,6 +345,7 @@ public partial class InventoryWindow : Window
         if (changed)
         {
             ApplyFilters();
+            _inventoryDirty = false;
         }
 
         var slotCount = Math.Min(Options.Instance.Player.MaxInventory, Items.Count);
@@ -346,6 +353,11 @@ public partial class InventoryWindow : Window
         {
             Items[slotIndex].Update();
         }
+    }
+
+    private void PlayerOnInventoryUpdated(Player player, int slotIndex)
+    {
+        _inventoryDirty = true;
     }
 
   

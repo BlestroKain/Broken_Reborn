@@ -30,6 +30,7 @@ public partial class BankWindow : Window
     private bool _sortAscending;
     private ItemType? _selectedType;
     private string? _selectedSubtype;
+    private bool _slotsDirty;
 
     //Init
     public BankWindow(Canvas gameCanvas) : base(
@@ -152,7 +153,7 @@ public partial class BankWindow : Window
         var type = (ItemType?)_typeBox.SelectedItem?.UserData;
         var subtype = (string?)_subtypeBox.SelectedItem?.UserData;
 
-        var changed = false;
+        var changed = _slotsDirty;
 
         if (type != _selectedType)
         {
@@ -183,6 +184,7 @@ public partial class BankWindow : Window
         if (changed)
         {
             ApplyFilters();
+            _slotsDirty = false;
         }
 
         for (var i = 0; i < Items.Count; i++)
@@ -268,7 +270,10 @@ public partial class BankWindow : Window
     }
 
 
-    public void Refresh() => ApplyFilters();
+    public void Refresh()
+    {
+        _slotsDirty = true;
+    }
 
     public override void Hide()
     {

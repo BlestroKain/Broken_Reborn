@@ -49,18 +49,30 @@ namespace Intersect.Client.Utilities
                 return false;
             }
 
-            if (!subtypes.TryGetValue(d.ItemType, out var list) || list == null)
-            {
-                return false;
-            }
-
             var subtype = d.Subtype;
             if (string.IsNullOrEmpty(subtype))
             {
                 return false;
             }
 
-            return list.Any(s => s.Equals(subtype, StringComparison.OrdinalIgnoreCase));
+            if (subtypes.TryGetValue(d.ItemType, out var list) && list != null)
+            {
+                if (list.Any(s => s.Equals(subtype, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return true;
+                }
+            }
+
+            if (d.ItemType == ItemType.Equipment)
+            {
+                var slots = Options.Instance?.Equipment?.EquipmentSlots?.Select(es => es.Name);
+                if (slots != null && slots.Any(s => s.Equals(subtype, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public static IEnumerable<T> FilterAndSort<T>(

@@ -96,7 +96,7 @@ public partial class BankWindow : Window
         _subtypeBox.SelectedItem = allSub;
 
         _valueLabel = new Label(topPanel, "ValueLabel");
-        _valueLabel.SetPosition(420, 11);
+        _valueLabel.SetPosition(380, 11);
         _valueLabel.SetText("Bank Value: 0");
         _valueLabel.TextColor = Color.White;
         _valueLabel.FontSize = 10;

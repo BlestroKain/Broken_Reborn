@@ -1,4 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
 using Intersect.Client.Core;
+using Intersect.Client.Entities;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
@@ -6,9 +11,7 @@ using Intersect.Client.Framework.Gwen.Control.EventArguments;
 using Intersect.Client.General;
 using Intersect.Client.Localization;
 using Intersect.Client.Utilities;
-using System.Linq;
 using Intersect.Framework.Core.GameObjects.Items;
-using Intersect.Client.Entities;
 
 namespace Intersect.Client.Interface.Game.Inventory;
 
@@ -24,6 +27,11 @@ public partial class InventoryWindow : Window
     private readonly ComboBox _typeBox;
     private readonly ComboBox _subtypeBox;
 
+ 
+    private readonly Dictionary<int, HashSet<string>> _subtypesByType = new();
+
+    private readonly HashSet<string> _allSubtypes = new(StringComparer.OrdinalIgnoreCase);
+
     // --- Filtros/estado ---
     private ItemType? _selectedType;
     private string? _selectedSubtype;
@@ -34,10 +42,10 @@ public partial class InventoryWindow : Window
     private bool _inventoryDirty;
 
     // --- Layout ---
-    private const int PAD = 8;                // margen externo
-    private const int GAP = 8;                // separación entre controles
-    private const int HEADER_H = 92;          // alto del header (contiene filtros)
-    private const int CTRL_H = 24;            // alto controles (textbox/botón/combos)
+    private const int PAD = 8;       // margen externo
+    private const int GAP = 8;       // separación entre controles
+    private const int HEADER_H = 92; // alto del header (filtros)
+    private const int CTRL_H = 24;   // alto de controles
     private const int CTRL_W_SMALL = 140;
     private const int CTRL_W_MED = 150;
 
@@ -52,10 +60,8 @@ public partial class InventoryWindow : Window
         IsResizable = false;
         IsClosable = true;
 
-        // Tamaño/posición explícitos del inventario (ajústalos a gusto)
+        // Tamaño/posición explícitos
         SetSize(380, 460);
-        // Alignment ya lo tira abajo a la derecha con Margin; si quisieras fijo:
-        // SetPosition(Graphics.Renderer.ScreenWidth - Width - 15, Graphics.Renderer.ScreenHeight - Height - 60);
 
         // --------- Header (contenedor de filtros) ----------
         _headerPanel = new Base(this, "HeaderPanel");
@@ -109,8 +115,9 @@ public partial class InventoryWindow : Window
         };
         _subtypeBox.SetPosition(_typeBox.X + _typeBox.Width + GAP, _typeBox.Y);
 
-        var subtypeAll = _subtypeBox.AddItem(Strings.Inventory.All, userData: null);
-        _subtypeBox.SelectedItem = subtypeAll;
+        // Construir índices y poblar combo (inicio)
+        BuildSubtypeLookup();
+        PopulateSubtypeComboForType(null); // al inicio: todos o solo "All" (según implementación abajo)
 
         // --------- Lista de ítems (debajo del header) ----------
         _slotContainer = new ScrollControl(this, "ItemsContainer")
@@ -118,7 +125,6 @@ public partial class InventoryWindow : Window
             OverflowX = OverflowBehavior.Auto,
             OverflowY = OverflowBehavior.Scroll,
         };
-        // tamaño/posición explícitos; nada de Dock.Fill
         _slotContainer.SetPosition(PAD, _headerPanel.Y + _headerPanel.Height + GAP);
         _slotContainer.SetSize(Width - PAD * 2, Height - (_headerPanel.Y + _headerPanel.Height + GAP) - PAD);
 
@@ -142,7 +148,6 @@ public partial class InventoryWindow : Window
             player.InventoryUpdated += PlayerOnInventoryUpdated;
         }
 
-        // Guarda tamaño para detectar cambios y recalcular layout
         _lastW = Width;
         _lastH = Height;
     }
@@ -150,17 +155,14 @@ public partial class InventoryWindow : Window
     // Recalcula posiciones/tamaños si cambia el tamaño de la ventana
     private void RecomputeLayout()
     {
-        // Header
         _headerPanel.SetPosition(PAD, PAD);
         _headerPanel.SetSize(Width - PAD * 2, HEADER_H);
 
-        // Reposicionar controles del header por si cambiaste anchos
         _searchBox.SetPosition(0, 0);
         _sortButton.SetPosition(_searchBox.X + _searchBox.Width + GAP, 0);
         _typeBox.SetPosition(0, _searchBox.Y + _searchBox.Height + GAP);
         _subtypeBox.SetPosition(_typeBox.X + _typeBox.Width + GAP, _typeBox.Y);
 
-        // Lista
         _slotContainer.SetPosition(PAD, _headerPanel.Y + _headerPanel.Height + GAP);
         _slotContainer.SetSize(Width - PAD * 2, Height - (_headerPanel.Y + _headerPanel.Height + GAP) - PAD);
     }
@@ -193,81 +195,118 @@ public partial class InventoryWindow : Window
         _sortButton.SetText($"{Strings.Inventory.Sort}: {_criterion} {arrow}");
     }
 
-    private void UpdateSubtypeOptions()
+    // Construye los índices de subtipos una sola vez
+    private void BuildSubtypeLookup()
+    {
+        _allSubtypes.Clear();
+        _subtypesByType.Clear();
+
+        var dict = Options.Instance.Items.ItemSubtypes;
+        if (dict == null) return;
+
+        foreach (var kv in dict)
+        {
+            // Normaliza el enum (sea cual sea) a int
+            var keyInt = Convert.ToInt32(kv.Key);
+
+            if (!_subtypesByType.TryGetValue(keyInt, out var set))
+            {
+                set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                _subtypesByType[keyInt] = set;
+            }
+
+            foreach (var st in kv.Value)
+            {
+                if (string.IsNullOrWhiteSpace(st)) continue;
+                set.Add(st);
+                _allSubtypes.Add(st);
+            }
+        }
+    }
+    private void PopulateSubtypeComboForType(ItemType? type)
     {
         _subtypeBox.ClearItems();
         var all = _subtypeBox.AddItem(Strings.Inventory.All, userData: null);
 
-        if (_selectedType.HasValue &&
-            Options.Instance.Items.ItemSubtypes.TryGetValue(_selectedType.Value, out var subtypes))
+        // Por defecto: solo “Todos” (nada de meter todos los subtipos globales)
+        IEnumerable<string> source = Enumerable.Empty<string>();
+
+        if (type.HasValue)
         {
-            foreach (var st in subtypes)
+            var key = Convert.ToInt32(type.Value);
+            if (_subtypesByType.TryGetValue(key, out var valids))
+                source = valids;
+        }
+
+        var prev = _selectedSubtype;
+        var toSelect = all;
+
+        foreach (var st in source)
+        {
+            var it = _subtypeBox.AddItem(st, userData: st);
+            if (!string.IsNullOrEmpty(prev) &&
+                string.Equals(prev, st, StringComparison.OrdinalIgnoreCase))
             {
-                var local = st; // evitar cierre modificado
-                _subtypeBox.AddItem(local, userData: local);
+                toSelect = it;
             }
         }
 
-        _subtypeBox.SelectedItem = all;
+        _subtypeBox.SelectedItem = toSelect;
     }
 
     private void ApplyFilters()
     {
         if (Globals.Me?.Inventory == null) return;
 
-        var matched = Items.Where(i =>
+        var inventory = Globals.Me.Inventory;
+        var searchText = _searchBox?.Text ?? string.Empty;
+
+        var matchedSet = Items.Where(i =>
         {
-            if (i is null)
-            {
-                return false;
-            }
+            if (i == null) return false;
 
-            var slot = Globals.Me.Inventory[i.SlotIndex];
+            var idx = i.SlotIndex;
+            if (idx < 0 || idx >= Options.Instance.Player.MaxInventory) return false;
+
+            var slot = inventory[idx];
             var descriptor = slot?.Descriptor;
-            if (descriptor == null)
+            if (descriptor == null) return false;
+
+            if (_selectedType.HasValue && descriptor.ItemType != _selectedType) return false;
+
+            if (!string.IsNullOrEmpty(_selectedSubtype))
             {
-                return false;
+                if (!string.Equals(descriptor.Subtype, _selectedSubtype, StringComparison.OrdinalIgnoreCase))
+                    return false;
             }
 
-            if (_selectedType.HasValue && descriptor.ItemType != _selectedType)
-            {
-                return false;
-            }
+            var name = descriptor.Name ?? string.Empty;
+            return SearchHelper.Matches(searchText, name);
+        }).ToHashSet();
 
-            if (!string.IsNullOrEmpty(_selectedSubtype) &&
-                !descriptor.Subtype.Equals(_selectedSubtype, StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            return SearchHelper.Matches(_searchBox.Text, descriptor.Name);
-        });
-
-        var matchedList = matched.ToList();
-        var matchedSet = matchedList.ToHashSet();
-        var nonMatched = Items.Where(i => i is not null && !matchedSet.Contains(i));
-        var arranged = matchedList.Concat(nonMatched).ToList();
-
-        var filterActive = !string.IsNullOrWhiteSpace(_searchBox.Text) ||
+        var filterActive = !string.IsNullOrWhiteSpace(searchText) ||
                            _selectedType.HasValue ||
                            !string.IsNullOrEmpty(_selectedSubtype);
 
         foreach (var item in Items)
         {
-            if (item is InventoryItem inventoryItem)
+            if (item is InventoryItem inv)
             {
-                var isMatch = matchedSet.Contains(item);
-                var slot = Globals.Me.Inventory[inventoryItem.SlotIndex];
+                var idx = inv.SlotIndex;
+                var slot = (idx >= 0 && idx < Options.Instance.Player.MaxInventory) ? inventory[idx] : null;
                 var hasDescriptor = slot?.Descriptor != null;
 
+                var isMatch = matchedSet.Contains(item);
                 var show = isMatch || !filterActive || !hasDescriptor;
-                inventoryItem.IsVisibleInParent = show;
-                inventoryItem.SetFilterMatch(isMatch);
-                inventoryItem.Update();
+
+                inv.IsVisibleInParent = show;
+                inv.SetFilterMatch(isMatch);
+                inv.Update();
             }
         }
 
-        PopulateSlotContainer.Populate(_slotContainer, arranged);
+        // Mantén el orden original de los slots
+        PopulateSlotContainer.Populate(_slotContainer, Items);
     }
 
     private void SortItems(Base sender, MouseButtonState arguments)
@@ -323,7 +362,7 @@ public partial class InventoryWindow : Window
     {
         LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
         InitItemContainer();
-        RecomputeLayout(); // << asegura que todo quede bien puesto
+        RecomputeLayout();
         ApplyFilters();
     }
 
@@ -340,7 +379,7 @@ public partial class InventoryWindow : Window
         IsClosable = Globals.CanCloseInventory;
         if (Globals.Me?.Inventory == default) return;
 
-        // Si por algún motivo cambió el tamaño (future-proof)
+        // Si cambió el tamaño (future-proof)
         if (_lastW != Width || _lastH != Height)
         {
             _lastW = Width;
@@ -358,7 +397,8 @@ public partial class InventoryWindow : Window
         if (type != _selectedType)
         {
             _selectedType = type;
-            UpdateSubtypeOptions();
+            // Repoblar combo de subtipos solo con los del tipo actual
+            PopulateSubtypeComboForType(_selectedType);
             subtype = (string?)_subtypeBox.SelectedItem?.UserData;
             changed = true;
         }

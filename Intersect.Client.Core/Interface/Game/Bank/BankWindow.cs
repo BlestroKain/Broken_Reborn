@@ -66,7 +66,6 @@ public partial class BankWindow : Window
         _searchBox = new TextBox(topPanel, "SearchBox");
         _searchBox.SetSize(130, 24);
         _searchBox.SetPosition(0, 8);
-        _searchBox.TextChanged += (s, e) => ApplyFilters();
 
         _sortButton = new Button(topPanel, "SortButton");
         _sortButton.SetSize(50, 24);
@@ -82,33 +81,18 @@ public partial class BankWindow : Window
         _typeBox.SetSize(100, 24);
         _typeBox.SetPosition(200, 8);
         var allType = _typeBox.AddItem("All", userData: null);
-        allType.Selected += (_, _) =>
-        {
-            _selectedType = null;
-            UpdateSubtypeOptions();
-            ApplyFilters();
-        };
+        _typeBox.SelectedItem = allType;
         foreach (var type in Enum.GetValues<ItemType>())
         {
             if (type == ItemType.None) continue;
-            var item = _typeBox.AddItem(type.ToString(), userData: type);
-            item.Selected += (_, _) =>
-            {
-                _selectedType = (ItemType)item.UserData;
-                UpdateSubtypeOptions();
-                ApplyFilters();
-            };
+            _typeBox.AddItem(type.ToString(), userData: type);
         }
 
         _subtypeBox = new ComboBox(topPanel, "SubtypeFilter");
         _subtypeBox.SetSize(100, 24);
         _subtypeBox.SetPosition(310, 8);
         var allSub = _subtypeBox.AddItem("All", userData: null);
-        allSub.Selected += (_, _) =>
-        {
-            _selectedSubtype = null;
-            ApplyFilters();
-        };
+        _subtypeBox.SelectedItem = allSub;
 
         _valueLabel = new Label(topPanel, "ValueLabel");
         _valueLabel.SetPosition(420, 11);
@@ -132,6 +116,11 @@ public partial class BankWindow : Window
             ItemFont = GameContentManager.Current.GetFont(name: "sourcesansproblack"),
             ItemFontSize = 10,
         };
+
+        _lastQuery = _searchBox.Text;
+        _selectedType = (ItemType?)_typeBox.SelectedItem?.UserData;
+        _selectedSubtype = (string?)_subtypeBox.SelectedItem?.UserData;
+        _lastAsc = _sortAscending;
     }
 
     protected override void EnsureInitialized()
@@ -157,7 +146,44 @@ public partial class BankWindow : Window
         {
             return;
         }
-        ApplyFilters();
+
+        var query = _searchBox.Text;
+        var asc = _sortAscending;
+        var type = (ItemType?)_typeBox.SelectedItem?.UserData;
+        var subtype = (string?)_subtypeBox.SelectedItem?.UserData;
+
+        var changed = false;
+
+        if (type != _selectedType)
+        {
+            _selectedType = type;
+            UpdateSubtypeOptions();
+            subtype = (string?)_subtypeBox.SelectedItem?.UserData;
+            changed = true;
+        }
+
+        if (subtype != _selectedSubtype)
+        {
+            _selectedSubtype = subtype;
+            changed = true;
+        }
+
+        if (query != _lastQuery)
+        {
+            _lastQuery = query;
+            changed = true;
+        }
+
+        if (asc != _lastAsc)
+        {
+            _lastAsc = asc;
+            changed = true;
+        }
+
+        if (changed)
+        {
+            ApplyFilters();
+        }
 
         for (var i = 0; i < Items.Count; i++)
         {
@@ -178,11 +204,6 @@ public partial class BankWindow : Window
     {
         _subtypeBox.ClearItems();
         var all = _subtypeBox.AddItem("All", userData: null);
-        all.Selected += (_, _) =>
-        {
-            _selectedSubtype = null;
-            ApplyFilters();
-        };
 
         if (_selectedType.HasValue &&
             Options.Instance.Items.ItemSubtypes.TryGetValue(_selectedType.Value, out var subtypes))
@@ -190,12 +211,7 @@ public partial class BankWindow : Window
             foreach (var st in subtypes)
             {
                 var local = st;
-                var item = _subtypeBox.AddItem(local, userData: local);
-                item.Selected += (_, _) =>
-                {
-                    _selectedSubtype = (string?)item.UserData;
-                    ApplyFilters();
-                };
+                _subtypeBox.AddItem(local, userData: local);
             }
         }
 

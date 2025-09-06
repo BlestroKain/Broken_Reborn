@@ -307,12 +307,8 @@ public partial class InventoryWindow : Window
         {
             if (item is InventoryItem inv)
             {
-                var idx = inv.SlotIndex;
-                var slot = (idx >= 0 && idx < Options.Instance.Player.MaxInventory) ? inventory[idx] : null;
-                var hasDescriptor = slot?.Descriptor != null;
-
                 var isMatch = matchedSet.Contains(item);
-                var show = isMatch || !filterActive || !hasDescriptor;
+                var show = isMatch || !filterActive;
 
                 inv.IsVisibleInParent = show;
                 inv.SetFilterMatch(isMatch);
@@ -320,8 +316,9 @@ public partial class InventoryWindow : Window
             }
         }
 
-        // Mantén el orden original de los slots
-        PopulateSlotContainer.Populate(_slotContainer, Items);
+        // Mantén el orden original de los slots y distribuye sólo los visibles
+        var visibleItems = Items.Where(i => i.IsVisibleInParent).ToList();
+        PopulateSlotContainer.Populate(_slotContainer, visibleItems);
     }
 
     private void SortItems(Base sender, MouseButtonState arguments)

@@ -1323,4 +1323,74 @@ internal sealed partial class NetworkedPacketHandler
         }
 
         #endregion
+
+    //WaypointSetPacket
+    public void HandlePacket(Client client, WaypointSetPacket packet)
+    {
+        if (client?.Entity is not Player player)
+        {
+            return;
+        }
+
+        switch (packet.Scope)
+        {
+            case WaypointScope.Party:
+                if (player.Party != null)
+                {
+                    foreach (var member in player.Party.Where(m => m != player))
+                    {
+                        member.SendPacket(new Network.Packets.Server.WaypointSetPacket(packet.X, packet.Y, WaypointScope.Party));
+                    }
+                }
+                break;
+            case WaypointScope.Guild:
+                if (player.Guild?.Members != null)
+                {
+                    foreach (var memberId in player.Guild.Members.Keys)
+                    {
+                        var member = Player.Find(memberId);
+                        if (member != null && member != player)
+                        {
+                            member.SendPacket(new Network.Packets.Server.WaypointSetPacket(packet.X, packet.Y, WaypointScope.Guild));
+                        }
+                    }
+                }
+                break;
+        }
+    }
+
+    //WaypointClearPacket
+    public void HandlePacket(Client client, WaypointClearPacket packet)
+    {
+        if (client?.Entity is not Player player)
+        {
+            return;
+        }
+
+        switch (packet.Scope)
+        {
+            case WaypointScope.Party:
+                if (player.Party != null)
+                {
+                    foreach (var member in player.Party.Where(m => m != player))
+                    {
+                        member.SendPacket(new Network.Packets.Server.WaypointClearPacket(WaypointScope.Party));
+                    }
+                }
+                break;
+            case WaypointScope.Guild:
+                if (player.Guild?.Members != null)
+                {
+                    foreach (var memberId in player.Guild.Members.Keys)
+                    {
+                        var member = Player.Find(memberId);
+                        if (member != null && member != player)
+                        {
+                            member.SendPacket(new Network.Packets.Server.WaypointClearPacket(WaypointScope.Guild));
+                        }
+                    }
+                }
+                break;
+        }
+    }
 }

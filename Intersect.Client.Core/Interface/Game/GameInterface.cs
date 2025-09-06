@@ -14,17 +14,21 @@ using Intersect.Client.Interface.Game.Guilds;
 using Intersect.Client.Interface.Game.Hotbar;
 using Intersect.Client.Interface.Game.Inventory;
 using Intersect.Client.Interface.Game.Mail;
+using Intersect.Client.Interface.Game.Map;
 using Intersect.Client.Interface.Game.Shop;
 using Intersect.Client.Interface.Game.Trades;
 using Intersect.Client.Interface.Menu;
 using Intersect.Client.Interface.Shared;
 using Intersect.Client.Networking;
+using Intersect.Config;
 using Intersect.Core;
 using Intersect.Enums;
 using Intersect.GameObjects;
 using Microsoft.Extensions.Logging;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Client.Interface.Game.Spells;
+using Intersect.Client.Framework.Gwen.ControlInternal;
+using System.Linq;
 
 namespace Intersect.Client.Interface.Game;
 
@@ -110,6 +114,8 @@ public partial class GameInterface : MutableInterface
 
     public PlayerStatusWindow PlayerStatusWindow;
 
+    private MinimapWindow? _minimapWindow;
+
 
     private SettingsWindow GetOrCreateSettingsWindow()
     {
@@ -161,11 +167,17 @@ public partial class GameInterface : MutableInterface
 
     public MenuContainer GameMenu { get; private set; }
 
-
     public void InitGameGui()
     {
         mChatBox = new Chatbox(GameCanvas, this);
         GameMenu = new MenuContainer(GameCanvas);
+        if (Options.Instance.Minimap.EnableMinimapWindow)
+        {
+            _minimapWindow = new MinimapWindow(GameCanvas)
+            {
+                IsClickThrough = true,
+            };
+        }
         Hotbar = new HotBarWindow(GameCanvas);
         PlayerBox = new EntityBox(GameCanvas, EntityType.Player, Globals.Me, true);
         PlayerBox.SetEntity(Globals.Me);
@@ -453,6 +465,11 @@ public partial class GameInterface : MutableInterface
         }
 
         GameMenu?.Update(mShouldUpdateQuestLog);
+        if (_minimapWindow != null)
+        {
+            _minimapWindow.Update();
+            _minimapWindow.IsClickThrough = !GameCanvas.Children.Any(child => child is Modal);
+        }
         mShouldUpdateQuestLog = false;
         Hotbar?.Update();
         EscapeMenu.Update();
@@ -749,6 +766,99 @@ public partial class GameInterface : MutableInterface
         return closedWindows;
     }
 
+    public bool CloseMostRecentWindow()
+    {
+        if (_bagWindow != null && _bagWindow.IsVisibleInTree)
+        {
+            CloseBagWindow();
+            return true;
+        }
+
+        if (mTradingWindow != null && mTradingWindow.IsVisible())
+        {
+            CloseTrading();
+            return true;
+        }
+
+        if (_bankWindow is { IsVisibleInTree: true })
+        {
+            CloseBank();
+            return true;
+        }
+
+        if (mCraftingWindow is { IsVisibleInTree: true, IsCrafting: false })
+        {
+            CloseCraftingTable();
+            return true;
+        }
+
+        if (_shopWindow is { IsVisibleInTree: true })
+        {
+            CloseShop();
+            return true;
+        }
+
+        if (_bestiaryWindow is { IsVisibleInTree: true })
+        {
+            _bestiaryWindow.Hide();
+            return true;
+        }
+
+        if (GameMenu != null && GameMenu.CloseMostRecentWindow())
+        {
+            return true;
+        }
+
+        if (TargetContextMenu.IsVisibleInTree)
+        {
+            TargetContextMenu.ToggleHidden();
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool IsMinimapOpen => _minimapWindow?.IsVisible() ?? false;
+
+    public bool MinimapClickThrough
+    {
+        get => _minimapWindow?.IsClickThrough ?? true;
+        set
+        {
+            if (_minimapWindow != null)
+            {
+                _minimapWindow.IsClickThrough = value;
+            }
+        }
+    }
+
+    public void OpenMinimap()
+    {
+        if (!Options.Instance.Minimap.EnableMinimapWindow)
+        {
+            return;
+        }
+
+        _minimapWindow?.Show();
+    }
+
+    public void CloseMinimap()
+    {
+        _minimapWindow?.Hide();
+    }
+
+    public void ToggleMinimap()
+    {
+        if (_minimapWindow?.IsVisible() ?? false)
+        {
+            _minimapWindow.Hide();
+        }
+        else
+        {
+            OpenMinimap();
+        }
+    }
+
     //Dispose
     public void Dispose()
     {
@@ -757,6 +867,7 @@ public partial class GameInterface : MutableInterface
         CloseCraftingTable();
         CloseShop();
         CloseTrading();
+        CloseMinimap();
         _bestiaryWindow?.Hide();
         _bestiaryWindow = null;
         GameCanvas.Dispose();
@@ -799,3 +910,4 @@ public partial class GameInterface : MutableInterface
     }
 
 }
+

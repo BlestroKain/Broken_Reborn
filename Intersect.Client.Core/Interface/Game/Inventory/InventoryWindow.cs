@@ -60,9 +60,8 @@ public partial class InventoryWindow : Window
             FontName = "source-sans-pro",
             FontSize = 12,// Tamaño de fuente
         };
-        _sortButton.SetText(Strings.Inventory.Sort);
-        _sortButton.Clicked += SortItems; // ✅ ahora ordena visualmente
-
+        UpdateSortButtonText();
+        _sortButton.Clicked += SortButton_Clicked;
 
         _sortButton.SetPosition(170, 10); // A la derecha del textbox
 
@@ -125,6 +124,34 @@ public partial class InventoryWindow : Window
             ItemFont = GameContentManager.Current.GetFont(name: "sourcesansproblack"),
             ItemFontSize = 10,
         };
+    }
+
+    private void SortButton_Clicked(Base sender, MouseButtonState arguments)
+    {
+        if (_sortAscending)
+        {
+            _sortAscending = false;
+        }
+        else
+        {
+            _sortAscending = true;
+            _criterion = _criterion switch
+            {
+                SortCriterion.TypeThenName => SortCriterion.Name,
+                SortCriterion.Name => SortCriterion.Quantity,
+                SortCriterion.Quantity => SortCriterion.Price,
+                _ => SortCriterion.TypeThenName,
+            };
+        }
+
+        UpdateSortButtonText();
+        SortItems(sender, arguments);
+    }
+
+    private void UpdateSortButtonText()
+    {
+        var arrow = _sortAscending ? "▲" : "▼";
+        _sortButton.SetText($"{Strings.Inventory.Sort}: {_criterion} {arrow}");
     }
 
     private void UpdateSubtypeOptions()

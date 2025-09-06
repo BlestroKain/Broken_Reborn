@@ -321,6 +321,11 @@ public partial class InventoryWindow : Window
         PopulateSlotContainer.Populate(_slotContainer, visibleItems);
     }
 
+    /// <summary>
+    /// Ordena todos los ítems del inventario ignorando filtros activos.
+    /// Valida nombre, precio, cantidad, tipo y subtipo antes de ordenar;
+    /// cualquier entrada inválida se omite, quedando al final del inventario.
+    /// </summary>
     private void SortItems(Base sender, MouseButtonState arguments)
     {
         if (Globals.Me?.Inventory == null) return;
@@ -332,24 +337,37 @@ public partial class InventoryWindow : Window
             .Where(i => i != null && inventory[i.SlotIndex]?.Descriptor != null)
             .ToList();
 
-        // 2) Ordena SIN filtrar (ignora búsqueda/tipo/subtipo)
+        // 2) Filtra ítems con datos válidos
+        var validItems = new List<SlotItem>();
+        foreach (var item in filledItems)
+        {
+            var slot = inventory[item.SlotIndex];
+            var descriptor = slot?.Descriptor;
+            var quantity = slot?.Quantity;
+            if (descriptor != null && ItemListHelper.IsValid(descriptor, quantity))
+            {
+                validItems.Add(item);
+            }
+        }
+
+        // 3) Ordena SIN filtrar (ignora búsqueda/tipo/subtipo)
         var sortedItems = ItemListHelper.FilterAndSort(
-            filledItems,
+            validItems,
             getDescriptor: i => inventory[i.SlotIndex]?.Descriptor,
             getQuantity: i => inventory[i.SlotIndex]?.Quantity ?? 0,
-            searchText: null,          // 👈 nada de filtros aquí
-            type: null,          // 👈
-            subtype: null,          // 👈
+            searchText: null,
+            type: null,
+            subtype: null,
             criterion: _criterion,
             ascending: _sortAscending
         ).ToList();
 
-        // 3) Mapa “target => current” empaquetando desde 0
+        // 4) Mapa “target => current” empaquetando desde 0
         var desiredSlotMap = new Dictionary<int, int>();
         for (int k = 0; k < sortedItems.Count; k++)
             desiredSlotMap[k] = sortedItems[k].SlotIndex;
 
-        // 4) Swaps
+        // 5) Swaps
         foreach (var kv in desiredSlotMap.ToList())
         {
             int target = kv.Key;

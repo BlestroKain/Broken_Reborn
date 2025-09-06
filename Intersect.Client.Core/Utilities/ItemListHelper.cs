@@ -21,7 +21,7 @@ namespace Intersect.Client.Utilities
     {
         private static readonly StringComparer NameComparer = StringComparer.OrdinalIgnoreCase;
 
-        private static bool IsValid(ItemDescriptor d, int? quantity)
+        internal static bool IsValid(ItemDescriptor d, int? quantity)
         {
             if (string.IsNullOrEmpty(d.Name))
             {

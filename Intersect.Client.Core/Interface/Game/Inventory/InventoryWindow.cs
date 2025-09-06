@@ -319,11 +319,15 @@ public partial class InventoryWindow : Window
             .Where(i => inventory[i.SlotIndex]?.Descriptor != null)
             .ToList();
 
+        var searchText = _searchBox?.Text ?? string.Empty;
+
         var sortedItems = ItemListHelper.FilterAndSort(
             filledItems,
             getDescriptor: i => inventory[i.SlotIndex]?.Descriptor,
             getQuantity: i => inventory[i.SlotIndex]?.Quantity ?? 0,
-            searchText: "",
+            searchText: searchText,
+            type: _selectedType,
+            subtype: _selectedSubtype,
             criterion: _criterion,
             ascending: _sortAscending
         ).ToList();
@@ -355,7 +359,8 @@ public partial class InventoryWindow : Window
                 }
             }
         }
-        // visual se refresca en Update()
+
+        ApplyFilters();
     }
 
     protected override void EnsureInitialized()

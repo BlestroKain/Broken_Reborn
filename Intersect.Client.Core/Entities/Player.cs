@@ -34,6 +34,7 @@ using Intersect.GameObjects;
 using Intersect.Network.Packets.Server;
 using Intersect.Utilities;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 
 namespace Intersect.Client.Entities;
 
@@ -103,6 +104,15 @@ public partial class Player : Entity, IPlayer
         // Si la cantidad es 0 o el descriptor es inválido, limpiamos el slot
         if (quantity <= 0 || !ItemDescriptor.TryGet(descriptorId, out _))
         {
+            // Si este slot estaba equipado, lo removemos de MyEquipment para evitar referencias nulas
+            foreach (var kvp in MyEquipment.ToList())
+            {
+                if (kvp.Value.Remove(slotIndex) && kvp.Value.Count == 0)
+                {
+                    MyEquipment.Remove(kvp.Key);
+                }
+            }
+
             Inventory[slotIndex] = null;
             InventoryUpdated?.Invoke(this, slotIndex);
             return;

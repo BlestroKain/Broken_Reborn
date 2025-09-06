@@ -22,6 +22,8 @@ namespace Intersect.Client.Utilities
             Func<T, ItemDescriptor?> getDescriptor,
             Func<T, int>? getQuantity,
             string? searchText,
+            ItemType? type,
+            string? subtype,
             SortCriterion criterion,
             bool ascending
         )
@@ -33,6 +35,15 @@ namespace Intersect.Client.Utilities
             {
                 var d = getDescriptor(entry);
                 if (d == null) return false;
+
+                // filtros explícitos
+                if (type.HasValue && d.ItemType != type.Value) return false;
+
+                if (!string.IsNullOrEmpty(subtype))
+                {
+                    if (!string.Equals(d.Subtype ?? string.Empty, subtype, StringComparison.OrdinalIgnoreCase))
+                        return false;
+                }
 
                 // texto libre
                 if (!SearchHelper.Matches(tokens.FreeText, d.Name)) return false;
@@ -81,5 +92,14 @@ namespace Intersect.Client.Utilities
 
             return ordered;
         }
+
+        public static IEnumerable<T> FilterAndSort<T>(
+            IEnumerable<T> items,
+            Func<T, ItemDescriptor?> getDescriptor,
+            Func<T, int>? getQuantity,
+            string? searchText,
+            SortCriterion criterion,
+            bool ascending
+        ) => FilterAndSort(items, getDescriptor, getQuantity, searchText, null, null, criterion, ascending);
     }
 }

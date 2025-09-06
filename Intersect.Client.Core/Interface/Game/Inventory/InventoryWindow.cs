@@ -201,13 +201,25 @@ public partial class InventoryWindow : Window
 
         var arranged = matchedList.Concat(nonMatched).ToList();
 
+        // Determinar si hay algún filtro activo (búsqueda, tipo o subtipo)
+        var filterActive = !string.IsNullOrWhiteSpace(_searchBox.Text) ||
+                          _selectedType.HasValue ||
+                          !string.IsNullOrEmpty(_selectedSubtype);
+
         // Actualizar el estado visual de cada slot (visible o no)
         foreach (var item in Items)
         {
             if (item is InventoryItem inventoryItem)
             {
                 var isMatch = matchedSet.Contains(item);
-                inventoryItem.IsVisibleInParent = isMatch;
+                var slot = Globals.Me.Inventory[inventoryItem.SlotIndex];
+                var hasDescriptor = slot?.Descriptor != null;
+
+                // Mantener visibles los espacios vacíos cuando no hay filtro activo
+                // o cuando el slot no contiene ningún objeto
+                var show = isMatch || !filterActive || !hasDescriptor;
+
+                inventoryItem.IsVisibleInParent = show;
                 inventoryItem.SetFilterMatch(isMatch);
                 inventoryItem.Update(); // 🔁 fuerza el refresco visual
             }

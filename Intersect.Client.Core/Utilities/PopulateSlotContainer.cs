@@ -9,20 +9,27 @@ public static class PopulateSlotContainer
     public static void Populate(ScrollControl slotContainer, List<SlotItem> items)
     {
         float containerInnerWidth = slotContainer.InnerPanel.InnerWidth;
+        var visibleIndex = 0;
         for (var slotIndex = 0; slotIndex < items.Count; slotIndex++)
         {
             var slot = items[slotIndex];
+            if (!slot.IsVisibleInParent)
+            {
+                continue;
+            }
+
             var outerSize = slot.OuterBounds.Size;
 
             var itemsPerRow = (int)(containerInnerWidth / outerSize.X);
 
-            var column = slotIndex % itemsPerRow;
-            var row = slotIndex / itemsPerRow;
+            var column = visibleIndex % itemsPerRow;
+            var row = visibleIndex / itemsPerRow;
 
             var xPosition = column * outerSize.X + slot.Margin.Left;
             var yPosition = row * outerSize.Y + slot.Margin.Top;
 
             slot.SetPosition(xPosition, yPosition);
+            visibleIndex++;
         }
     }
 

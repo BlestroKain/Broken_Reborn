@@ -27,7 +27,6 @@ public partial class MarketManager
         }
 
         var itemGuid = ItemDescriptor.IdFromList(listing.ItemId);
-
         // Try to return the listed items, allowing overflow to bank or map. If nothing could be
         // returned we leave the listing intact so the player can try again later instead of
         // destroying the listing and its items.

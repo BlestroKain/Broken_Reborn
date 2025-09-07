@@ -420,6 +420,11 @@ public partial class GameInterface : MutableInterface
         return _bankWindow;
     }
 
+    public MarketWindow? GetMarketWindow()
+    {
+        return _marketWindow;
+    }
+
     public void RefreshBank()
     {
         _bankWindow?.Refresh();

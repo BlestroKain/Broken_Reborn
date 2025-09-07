@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Diagnostics;
 using System.Text;
+using System.Linq;
 using Intersect.Core;
 using Intersect.Framework.Core;
 using Intersect.Framework.Core.GameObjects.Crafting;
@@ -30,6 +31,7 @@ using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.Security;
 using Intersect.Network.Packets.Server;
 using Intersect.Server.Core;
+using Intersect.Server.Metrics;
 using Microsoft.Extensions.Logging;
 using Intersect.Server.Database.PlayerData.Market;
 using ChatMsgPacket = Intersect.Network.Packets.Client.ChatMsgPacket;
@@ -605,7 +607,51 @@ internal sealed partial class PacketHandler
 
     public void HandlePacket(Client client, SearchMarketPacket packet)
     {
-        // Placeholder for market search handling
+        var player = client.Entity;
+        if (player == null)
+        {
+            return;
+        }
+
+        var sw = Stopwatch.StartNew();
+
+        var (listings, total) = MarketManager.SearchMarket(
+            packet.Page,
+            packet.PageSize,
+            packet.ItemId,
+            packet.MinPrice,
+            packet.MaxPrice,
+            packet.Status,
+            packet.SellerId
+        );
+
+        sw.Stop();
+
+        var packets = listings.Select(l => new MarketListingPacket(
+            l.Id,
+            l.SellerId,
+            l.ItemId,
+            l.Quantity,
+            l.Price,
+            l.ItemProperties
+        )).ToList();
+
+        PacketSender.SendMarketListings(player, packets, packet.Page, packet.PageSize, total);
+
+        if (Options.Instance.Metrics.Enable)
+        {
+            MetricsRoot.Instance.Game.MarketSearchTime.Record(sw.ElapsedMilliseconds);
+        }
+
+        Log.Information(
+            "Player {PlayerId} searched market (page {Page}, size {Size}) -> {Returned}/{Total} results in {Elapsed}ms",
+            player.Id,
+            packet.Page,
+            packet.PageSize,
+            packets.Count,
+            total,
+            sw.ElapsedMilliseconds
+        );
     }
 
     public void HandlePacket(Client client, RequestMarketPricePacket packet)
@@ -616,8 +662,7 @@ internal sealed partial class PacketHandler
             return;
         }
 
-        var itemGuid = ItemDescriptor.IdFromList(packet.ItemId);
-        var (suggested, min, max) = MarketStatisticsManager.GetStatistics(itemGuid);
+        var (suggested, min, max) = MarketStatisticsManager.GetStatistics(packet.ItemId);
         PacketSender.SendMarketPriceInfo(player, packet.ItemId, suggested, min, max);
     }
 
@@ -629,7 +674,7 @@ internal sealed partial class PacketHandler
             return;
         }
 
-        if (!MarketManager.CreateListing(player, packet.ItemSlot, packet.Quantity, packet.Price, packet.Properties, packet.AutoSplit))
+        if (!MarketManager.CreateListing(player, packet.ItemSlot, packet.Quantity, packet.Price,packet.Properties, packet.AutoSplit))
         {
             PacketSender.SendChatMsg(player, "No se pudo crear el listado.", ChatMessageType.Error);
         }
@@ -637,7 +682,58 @@ internal sealed partial class PacketHandler
 
     public void HandlePacket(Client client, BuyMarketListingPacket packet)
     {
-        // Placeholder for purchasing market listings
+        var player = client.Entity;
+        if (player == null)
+        {
+            return;
+        }
+
+        var sw = Stopwatch.StartNew();
+
+        var success = MarketManager.BuyAsync(player, packet.ListingId)
+            .ConfigureAwait(false).GetAwaiter().GetResult();
+
+        sw.Stop();
+
+        if (Options.Instance.Metrics.Enable)
+        {
+            MetricsRoot.Instance.Game.MarketPurchaseTime.Record(sw.ElapsedMilliseconds);
+        }
+
+        if (success)
+        {
+            PacketSender.SendMarketPurchaseSuccess(player, packet.ListingId);
+            PacketSender.SendRefreshMarket(player);
+            PacketSender.SendChatMsg(
+                player,
+                Strings.Market.itempurchased,
+                ChatMessageType.Trading,
+                CustomColors.Alerts.Accepted
+            );
+
+            Log.Information(
+                "Player {PlayerId} purchased listing {ListingId} in {Elapsed}ms",
+                player.Id,
+                packet.ListingId,
+                sw.ElapsedMilliseconds
+            );
+        }
+        else
+        {
+            PacketSender.SendChatMsg(
+                player,
+                Strings.Market.transactionfailed,
+                ChatMessageType.Error,
+                CustomColors.Alerts.Error
+            );
+
+            Log.Warning(
+                "Player {PlayerId} failed to purchase listing {ListingId} after {Elapsed}ms",
+                player.Id,
+                packet.ListingId,
+                sw.ElapsedMilliseconds
+            );
+        }
     }
 
     public void HandlePacket(Client client, CancelMarketListingPacket packet)

@@ -27,6 +27,13 @@ public partial class MarketWindow : Window
     private readonly ComboBox _typeBox;
     private readonly ComboBox _subtypeBox;
     private readonly Button _sellButton;
+    private readonly Button _prevButton;
+    private readonly Button _nextButton;
+    private readonly Label _pageLabel;
+
+    private int _page = 1;
+    private int _pageSize = 10;
+    private int _total;
 
     private ItemType? _selectedType;
     private string? _selectedSubtype;
@@ -86,7 +93,36 @@ public partial class MarketWindow : Window
         _listingScroll = new ScrollControl(this, nameof(_listingScroll));
         _ = _listingScroll.VerticalScrollBar;
         _listingScroll.EnableScroll(false, true);
-        _listingScroll.SetBounds(10, 60, Width - 20, Height - 70);
+        _listingScroll.SetBounds(10, 60, Width - 20, Height - 110);
+
+        var bottomPanel = new ImagePanel(this, "BottomControlsPanel");
+        bottomPanel.SetBounds(10, Height - 40, Width - 20, 30);
+
+        _prevButton = new Button(bottomPanel, nameof(_prevButton)) { Text = "<" };
+        _prevButton.SetBounds(0, 3, 30, 24);
+        _prevButton.Clicked += (_, _) =>
+        {
+            if (_page > 1)
+            {
+                RequestPage(_page - 1);
+            }
+        };
+
+        _pageLabel = new Label(bottomPanel, nameof(_pageLabel));
+        _pageLabel.SetBounds(40, 3, 100, 24);
+
+        _nextButton = new Button(bottomPanel, nameof(_nextButton)) { Text = ">" };
+        _nextButton.SetBounds(150, 3, 30, 24);
+        _nextButton.Clicked += (_, _) =>
+        {
+            var maxPage = (int)Math.Ceiling(_total / (double)_pageSize);
+            if (_page < maxPage)
+            {
+                RequestPage(_page + 1);
+            }
+        };
+
+        RequestPage(1);
     }
 
     private void TypeBox_Selected(Base sender, ItemSelectedEventArgs args)
@@ -122,8 +158,12 @@ public partial class MarketWindow : Window
         }
     }
 
-    public void LoadListings(List<MarketListingPacket> listings)
+    public void LoadListings(List<MarketListingPacket> listings, int page, int pageSize, int total)
     {
+        _page = page;
+        _pageSize = pageSize;
+        _total = total;
+
         _listingScroll.DeleteAllChildren();
         _items.Clear();
 
@@ -139,6 +179,20 @@ public partial class MarketWindow : Window
 
         _listingScroll.SetInnerSize(_listingScroll.Width - 16, y);
         ApplyFilters();
+        UpdatePagination();
+    }
+
+    private void UpdatePagination()
+    {
+        var maxPage = Math.Max(1, (int)Math.Ceiling(_total / (double)_pageSize));
+        _pageLabel.Text = $"{_page}/{maxPage}";
+        _prevButton.IsDisabled = _page <= 1;
+        _nextButton.IsDisabled = _page >= maxPage;
+    }
+
+    private void RequestPage(int page)
+    {
+        PacketSender.SendSearchMarket(page, _pageSize);
     }
 
     private void ApplyFilters()
@@ -198,7 +252,7 @@ public partial class MarketWindow : Window
     {
         LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
         SetSize(800, 600);
-        _listingScroll.SetBounds(10, 60, Width - 20, Height - 70);
+        _listingScroll.SetBounds(10, 60, Width - 20, Height - 110);
     }
 }
 

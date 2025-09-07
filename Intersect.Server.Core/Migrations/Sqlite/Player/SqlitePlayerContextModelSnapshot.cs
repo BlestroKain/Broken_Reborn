@@ -97,8 +97,8 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.Property<bool>("IsSold")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("ItemId")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("ItemId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("ItemPropertiesJson")
                         .HasColumnType("TEXT")
@@ -135,8 +135,8 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.Property<string>("BuyerName")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("ItemId")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("ItemId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("ItemPropertiesJson")
                         .HasColumnType("TEXT")

@@ -12,7 +12,7 @@ public Guid Id { get; set; } = Guid.NewGuid();
 public Guid ListingId { get; set; }
 public Guid? BuyerId { get; set; }
 public string BuyerName { get; set; } = string.Empty;
-public Guid ItemId { get; set; }
+public int ItemId { get; set; }
 public Guid SellerId { get; set; }
 public virtual Player? Seller { get; set; }
 public int Quantity { get; set; }

@@ -1447,6 +1447,21 @@ public static partial class Strings
         public readonly LocalizedString cannotlist = @"Cannot list this item.";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString bounditem = @"Item is bound or trade-locked.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString invalidquantity = @"Invalid quantity.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString invalidprice = @"Invalid price.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString priceoutofrange = @"Price must be between {00} and {01}.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString ownlisting = @"Cannot buy your own listing.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public readonly LocalizedString listingunavailable = @"Listing unavailable.";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

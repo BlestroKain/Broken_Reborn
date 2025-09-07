@@ -13,6 +13,7 @@ using Intersect.Client.Interface.Game.Bag;
 using Intersect.Client.Interface.Game.Bank;
 using Intersect.Client.Interface.Game.Hotbar;
 using Intersect.Client.Interface.Game.Mail;
+using Intersect.Client.Interface.Game.Market;
 using Intersect.Client.Interface.Game.Shop;
 using Intersect.Client.Items;
 using Intersect.Client.Localization;
@@ -108,6 +109,14 @@ public partial class InventoryItem : SlotItem
         }
     }
 
+
+
+    public InventoryItem(SellMarketWindow sellMarketWindow, Base parent, int i, ContextMenu contextMenu)
+        : base(parent, nameof(InventoryItem), i, contextMenu) // Fix: Pass the required "parent" argument to the base constructor
+    {
+        this.sellMarketWindow = sellMarketWindow;
+        this.i = i;
+    }
 
     #region Context Menu
 
@@ -655,6 +664,10 @@ public partial class InventoryItem : SlotItem
 
     // Campo nuevo:
     private bool _filterMatch = true;
+    private SellMarketWindow sellMarketWindow;
+    private ScrollControl mInventoryScroll;
+    private int i;
+    private object value;
 
     // Método nuevo (llámalo desde la ventana):
     public void SetFilterMatch(bool match)

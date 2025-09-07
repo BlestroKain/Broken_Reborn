@@ -248,9 +248,9 @@ public static partial class PacketSender
         player.SendPacket(new MarketListingCreatedPacket(listingId));
     }
 
-    public static void SendMarketListings(Player player, List<MarketListingPacket> listings)
+    public static void SendMarketListings(Player player, List<MarketListingPacket> listings, int page, int pageSize, int total)
     {
-        player.SendPacket(new MarketListingsPacket(listings));
+        player.SendPacket(new MarketListingsPacket(listings, page, pageSize, total));
     }
 
     public static void SendMarketPurchaseSuccess(Player player, Guid listingId)

@@ -3170,6 +3170,14 @@ If you are sure you want to hand over your guild enter '\c{{#ff8080}}{02}\c{{}}'
     {
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString Title = @"Market";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Quantity = @"Quantity";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Price = @"Price";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString SuggestedPrice = @"Suggested Price: {00}";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Sell = @"Sell";
     }
 
 }

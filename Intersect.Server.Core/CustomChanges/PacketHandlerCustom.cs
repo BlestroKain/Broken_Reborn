@@ -629,7 +629,7 @@ internal sealed partial class PacketHandler
             return;
         }
 
-        if (!MarketManager.CreateListing(player, packet.ItemSlot, packet.Quantity, packet.Price, packet.Properties, packet.AutoSplit))
+        if (!MarketManager.CreateListing(player, packet.ItemSlot, packet.Quantity, packet.Price, packet.AutoSplit))
         {
             PacketSender.SendChatMsg(player, "No se pudo crear el listado.", ChatMessageType.Error);
         }

@@ -97,7 +97,6 @@ namespace Intersect.Server.Database.PlayerData.Market
             }
 
             item.Properties = properties ?? item.Properties;
-
             return TryListItem(seller, item, quantity, (int)pricePerUnit, autoSplit);
         }
 

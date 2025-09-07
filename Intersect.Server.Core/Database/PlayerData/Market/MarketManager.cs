@@ -27,7 +27,14 @@ public partial class MarketManager
         }
 
         var itemGuid = ItemDescriptor.IdFromList(listing.ItemId);
-        player.TryGiveItem(itemGuid, listing.Quantity, listing.Properties);
+        // Try to return the listed items, allowing overflow to bank or map. If nothing could be
+        // returned we leave the listing intact so the player can try again later instead of
+        // destroying the listing and its items.
+        if (!player.TryGiveItem(itemGuid, listing.Quantity, listing.Properties, ItemHandling.Overflow, bankOverflow: true))
+        {
+            return false;
+        }
+
         _listings.Remove(listing);
         return true;
     }

@@ -610,6 +610,7 @@ internal sealed partial class PacketHandler
     public void HandlePacket(Client client, CreateMarketListingPacket packet)
     {
         // Placeholder for creating market listings
+        var _ = packet.Properties;
     }
 
     public void HandlePacket(Client client, BuyMarketListingPacket packet)

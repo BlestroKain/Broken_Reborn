@@ -248,11 +248,16 @@ internal sealed partial class PacketHandler
     public void HandlePacket(IPacketSender packetSender, MarketListingPacket packet)
     {
         // Placeholder for handling a single market listing
+        var _ = packet.Properties;
     }
 
     public void HandlePacket(IPacketSender packetSender, MarketListingsPacket packet)
     {
         // Placeholder for handling multiple market listings
+        foreach (var listing in packet.Listings)
+        {
+            var _ = listing.Properties;
+        }
     }
 
     public void HandlePacket(IPacketSender packetSender, MarketPurchaseSuccessPacket packet)

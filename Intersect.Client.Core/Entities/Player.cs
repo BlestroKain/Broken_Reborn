@@ -1019,9 +1019,15 @@ public partial class Player : Entity, IPlayer
         }
 
         slot ??= Inventory[inventorySlotIndex];
+        if (slot is null)
+        {
+            ApplicationContext.Context.Value?.Logger.LogWarning($"Tried to move item from slot {inventorySlotIndex}, but the slot was empty");
+            return false;
+        }
+
         if (!ItemDescriptor.TryGet(slot.ItemId, out var itemDescriptor))
         {
-            ApplicationContext.Context.Value?.Logger.LogWarning($"Tried to move item that does not exist from slot {inventorySlotIndex}: {itemDescriptor.Id}");
+            ApplicationContext.Context.Value?.Logger.LogWarning($"Tried to move item that does not exist from slot {inventorySlotIndex}: {slot.ItemId}");
             return false;
         }
 
@@ -1146,9 +1152,15 @@ public partial class Player : Entity, IPlayer
         }
 
         slot ??= Globals.BankSlots[bankSlotIndex];
+        if (slot is null)
+        {
+            ApplicationContext.Context.Value?.Logger.LogWarning($"Tried to move item from slot {bankSlotIndex}, but the slot was empty");
+            return false;
+        }
+
         if (!ItemDescriptor.TryGet(slot.ItemId, out var itemDescriptor))
         {
-            ApplicationContext.Context.Value?.Logger.LogWarning($"Tried to move item that does not exist from slot {bankSlotIndex}: {itemDescriptor.Id}");
+            ApplicationContext.Context.Value?.Logger.LogWarning($"Tried to move item that does not exist from slot {bankSlotIndex}: {slot.ItemId}");
             return false;
         }
 

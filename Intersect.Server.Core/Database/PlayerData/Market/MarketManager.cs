@@ -12,6 +12,7 @@ using Intersect.Server.Database.PlayerData.Players;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Intersect.Server.Database.PlayerData.Market
 
@@ -210,148 +211,169 @@ namespace Intersect.Server.Database.PlayerData.Market
         }
 
 
-        public static bool TryBuyListing(Player buyer, Guid listingId)
+        public static async Task<bool> BuyAsync(Player buyer, Guid listingId)
         {
             using var context = DbInterface.CreatePlayerContext(readOnly: false);
-            context.StopTrackingUsersExcept(buyer.User); // ✅ Prevenir tracking duplicado
-
-            // ✅ Adjuntar comprador (en caso de que lo requiera EF)
+            context.StopTrackingUsersExcept(buyer.User);
             context.Attach(buyer);
 
-            var listing = context.Market_Listings
-                .Include(l => l.Seller)
-                .FirstOrDefault(l => l.Id == listingId);
+            await using var tx = await context.Database.BeginTransactionAsync();
 
-            if (listing == null || listing.IsSold || listing.ExpireAt <= DateTime.UtcNow)
-            {
-                PacketSender.SendChatMsg(buyer, Strings.Market.listingunavailable, ChatMessageType.Error, CustomColors.Alerts.Declined);
-                return false;
-            }
-
-            var currencyBase = GetDefaultCurrency();
-            if (currencyBase == null)
-            {
-                PacketSender.SendChatMsg(buyer, "Currency not configured.", ChatMessageType.Error, CustomColors.Alerts.Error);
-                return false;
-            }
-
-            var totalCost = listing.Price;
-            var currencyAmount = buyer.FindInventoryItemQuantity(currencyBase.Id);
-
-            if (currencyAmount < totalCost)
-            {
-                PacketSender.SendChatMsg(buyer, Strings.Market.notenoughmoney, ChatMessageType.Error, CustomColors.Alerts.Declined);
-                return false;
-            }
-
-            var itemToGive = new Item(listing.ItemId, listing.Quantity) { Properties = listing.ItemProperties };
-            if (!buyer.CanGiveItem(itemToGive.ItemId, itemToGive.Quantity))
-            {
-                PacketSender.SendChatMsg(buyer, Strings.Market.inventoryfull, ChatMessageType.Error, CustomColors.Alerts.Declined);
-                return false;
-            }
-
-            var currencySlots = buyer.FindInventoryItemSlots(currencyBase.Id);
-            var remainingCost = totalCost;
             var removedItems = new Dictionary<Guid, int>();
-            var success = true;
+            Item itemToGive = null;
+            var itemGiven = false;
 
-            foreach (var itemSlot in currencySlots)
+            try
             {
-                var quantityToRemove = Math.Min(remainingCost, itemSlot.Quantity);
-                if (!buyer.TryTakeItem(itemSlot, (int)quantityToRemove))
+                var listing = await context.Market_Listings
+                    .Include(l => l.Seller)
+                    .AsTracking()
+                    .Where(l => l.Id == listingId)
+                    .ForUpdate()
+                    .FirstOrDefaultAsync();
+
+                if (listing == null || listing.IsSold || listing.ExpireAt <= DateTime.UtcNow)
                 {
-                    success = false;
-                    break;
+                    PacketSender.SendChatMsg(buyer, Strings.Market.listingunavailable, ChatMessageType.Error, CustomColors.Alerts.Declined);
+                    await tx.RollbackAsync();
+                    return false;
                 }
 
-                removedItems[itemSlot.Id] = (int)quantityToRemove;
-                remainingCost -= quantityToRemove;
+                var currencyBase = GetDefaultCurrency();
+                if (currencyBase == null)
+                {
+                    PacketSender.SendChatMsg(buyer, "Currency not configured.", ChatMessageType.Error, CustomColors.Alerts.Error);
+                    await tx.RollbackAsync();
+                    return false;
+                }
 
-                if (remainingCost <= 0) break;
+                var totalCost = listing.Price;
+                var currencyAmount = buyer.FindInventoryItemQuantity(currencyBase.Id);
+
+                if (currencyAmount < totalCost)
+                {
+                    PacketSender.SendChatMsg(buyer, Strings.Market.notenoughmoney, ChatMessageType.Error, CustomColors.Alerts.Declined);
+                    await tx.RollbackAsync();
+                    return false;
+                }
+
+                itemToGive = new Item(listing.ItemId, listing.Quantity) { Properties = listing.ItemProperties };
+                if (!buyer.CanGiveItem(itemToGive.ItemId, itemToGive.Quantity))
+                {
+                    PacketSender.SendChatMsg(buyer, Strings.Market.inventoryfull, ChatMessageType.Error, CustomColors.Alerts.Declined);
+                    await tx.RollbackAsync();
+                    return false;
+                }
+
+                var currencySlots = buyer.FindInventoryItemSlots(currencyBase.Id);
+                var remainingCost = totalCost;
+
+                foreach (var itemSlot in currencySlots)
+                {
+                    var quantityToRemove = Math.Min(remainingCost, itemSlot.Quantity);
+                    if (!buyer.TryTakeItem(itemSlot, (int)quantityToRemove))
+                    {
+                        foreach (var kvp in removedItems)
+                        {
+                            buyer.TryGiveItem(kvp.Key, kvp.Value);
+                        }
+
+                        PacketSender.SendChatMsg(buyer, Strings.Market.transactionfailed, ChatMessageType.Error, CustomColors.Alerts.Declined);
+                        await tx.RollbackAsync();
+                        return false;
+                    }
+
+                    removedItems[itemSlot.Id] = (int)quantityToRemove;
+                    remainingCost -= quantityToRemove;
+
+                    if (remainingCost <= 0)
+                    {
+                        break;
+                    }
+                }
+
+                if (remainingCost > 0)
+                {
+                    foreach (var kvp in removedItems)
+                    {
+                        buyer.TryGiveItem(kvp.Key, kvp.Value);
+                    }
+
+                    PacketSender.SendChatMsg(buyer, Strings.Market.transactionfailed, ChatMessageType.Error, CustomColors.Alerts.Declined);
+                    await tx.RollbackAsync();
+                    return false;
+                }
+
+                buyer.TryGiveItem(itemToGive, -1);
+                itemGiven = true;
+
+                listing.IsSold = true;
+                context.Update(listing);
+
+                var transaction = new MarketTransaction
+                {
+                    ListingId = listing.Id,
+                    Seller = listing.Seller,
+                    BuyerName = buyer.Name,
+                    ItemId = listing.ItemId,
+                    Quantity = listing.Quantity,
+                    Price = listing.Price,
+                    ItemProperties = listing.ItemProperties
+                };
+                await context.Market_Transactions.AddAsync(transaction);
+
+                var goldAttachment = new MailAttachment
+                {
+                    ItemId = currencyBase.Id,
+                    Quantity = (int)totalCost
+                };
+
+                var mail = new MailBox(
+                    sender: buyer,
+                    receiver: listing.Seller,
+                    title: Strings.Market.salecompleted,
+                    message: Strings.Market.yoursolditem.ToString(ItemDescriptor.GetName(listing.ItemId)),
+                    attachments: new List<MailAttachment> { goldAttachment }
+                );
+
+                var sellerOnline = Player.FindOnline(listing.Seller.Name);
+                if (sellerOnline != null)
+                {
+                    sellerOnline.MailBoxs.Add(mail);
+                    PacketSender.SendChatMsg(sellerOnline, Strings.Market.yoursolditem, ChatMessageType.Trading, CustomColors.Alerts.Accepted);
+                    PacketSender.SendOpenMailBox(sellerOnline);
+                }
+                else
+                {
+                    context.Player_MailBox.Add(mail);
+                }
+
+                await context.SaveChangesAsync();
+                await tx.CommitAsync();
+
+                PacketSender.SendChatMsg(buyer, Strings.Market.itempurchased, ChatMessageType.Trading, CustomColors.Alerts.Accepted);
+                PacketSender.SendRefreshMarket(buyer);
+                MarketStatisticsManager.UpdateStatistics(transaction);
+
+                return true;
             }
-
-            if (!success || remainingCost > 0)
+            catch (Exception ex)
             {
+                if (itemGiven && itemToGive != null)
+                {
+                    buyer.TryTakeItem(itemToGive.ItemId, itemToGive.Quantity);
+                }
+
                 foreach (var kvp in removedItems)
                 {
                     buyer.TryGiveItem(kvp.Key, kvp.Value);
                 }
 
+                await tx.RollbackAsync();
+                Log.Error(ex, "Error buying market listing {ListingId}", listingId);
                 PacketSender.SendChatMsg(buyer, Strings.Market.transactionfailed, ChatMessageType.Error, CustomColors.Alerts.Declined);
                 return false;
             }
-
-            // ✅ Marcar como vendido y dar el ítem
-            listing.IsSold = true;
-            context.Remove(listing);
-            context.Update(listing);
-            buyer.TryGiveItem(itemToGive, -1);
-
-            var transaction = new MarketTransaction
-            {
-                ListingId = listing.Id,
-                Seller = listing.Seller,
-                BuyerName = buyer.Name,
-                ItemId = listing.ItemId,
-                Quantity = listing.Quantity,
-                Price = listing.Price,
-                ItemProperties = listing.ItemProperties
-            };
-            context.Market_Transactions.Add(transaction);
-
-            var goldAttachment = new MailAttachment
-            {
-                ItemId = currencyBase.Id,
-                Quantity = (int)totalCost
-            };
-
-            var mail = new MailBox(
-                sender: buyer,
-                receiver: listing.Seller,
-                title: Strings.Market.salecompleted,
-               message: Strings.Market.yoursolditem.ToString(ItemDescriptor.GetName(listing.ItemId)),
-                attachments: new List<MailAttachment> { goldAttachment }
-            );
-
-            var sellerOnline = Player.FindOnline(listing.Seller.Name);
-            if (sellerOnline != null)
-            {
-                sellerOnline.MailBoxs.Add(mail);
-                PacketSender.SendChatMsg(sellerOnline, Strings.Market.yoursolditem, ChatMessageType.Trading, CustomColors.Alerts.Accepted);
-                PacketSender.SendOpenMailBox(sellerOnline);
-            }
-            else
-            {
-                // ❌ Ya está traqueado por EF, NO volver a hacer context.Attach(listing.Seller)
-                context.Player_MailBox.Add(mail);
-            }
-
-            var retries = 3;
-            while (retries > 0)
-            {
-                try
-                {
-                    context.SaveChanges();
-                    break;
-                }
-                catch (DbUpdateException ex)
-                {
-                    Log.Error($"❌ Error de concurrencia al comprar ítem. Reintentos restantes: {retries - 1}", ex);
-                    retries--;
-
-                    if (retries == 0)
-                    {
-                        PacketSender.SendChatMsg(buyer, Strings.Market.transactionfailed, ChatMessageType.Error, CustomColors.Alerts.Declined);
-                        return false;
-                    }
-                }
-            }
-            PacketSender.SendChatMsg(buyer, Strings.Market.itempurchased, ChatMessageType.Trading, CustomColors.Alerts.Accepted);
-            PacketSender.SendRefreshMarket(buyer); // Actualiza al cliente con nuevo mercado
-            MarketStatisticsManager.UpdateStatistics(transaction);
-
-            return true;
         }
 
         public static void CancelListing(Player seller, Guid listingId)

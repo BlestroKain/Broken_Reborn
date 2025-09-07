@@ -400,8 +400,6 @@ namespace Intersect.Server.Database.PlayerData.Market
                 await context.SaveChangesAsync();
                 await tx.CommitAsync();
 
-                PacketSender.SendChatMsg(buyer, Strings.Market.itempurchased, ChatMessageType.Trading, CustomColors.Alerts.Accepted);
-                PacketSender.SendRefreshMarket(buyer);
                 MarketStatisticsManager.UpdateStatistics(transaction);
 
                 return true;

@@ -50,7 +50,7 @@ namespace Intersect.Server.Database.PlayerData.Market
             {
                 result = result.Where(l =>
                 {
-                    var itemDescriptor = ItemDescriptor.Get(l.ItemId);
+                    var itemDescriptor = ItemDescriptor.Get(ItemDescriptor.IdFromList(l.ItemId));
                     return itemDescriptor != null &&
                            itemDescriptor.Name.Contains(name, StringComparison.OrdinalIgnoreCase);
                 }).ToList();
@@ -60,7 +60,7 @@ namespace Intersect.Server.Database.PlayerData.Market
             {
                 result = result.Where(l =>
                 {
-                    var itemDescriptor = ItemDescriptor.Get(l.ItemId);
+                    var itemDescriptor = ItemDescriptor.Get(ItemDescriptor.IdFromList(l.ItemId));
                     return itemDescriptor != null &&
                            itemDescriptor.Type == GameObjectType.Item &&
                            itemDescriptor.ItemType == type.Value;
@@ -116,7 +116,7 @@ namespace Intersect.Server.Database.PlayerData.Market
                 return false;
             }
 
-            var stats = MarketStatisticsManager.GetStatistics(item.ItemId);
+            var stats = MarketStatisticsManager.GetStatistics(ItemDescriptor.ListIndex(item.ItemId));
             var avg = stats.suggested;
             var min = stats.min;
             var max = stats.max;
@@ -167,7 +167,7 @@ namespace Intersect.Server.Database.PlayerData.Market
                     {
                         Seller = seller,
                         SellerId = seller.Id,
-                        ItemId = item.ItemId,
+                        ItemId = ItemDescriptor.ListIndex(item.ItemId),
                         Quantity = size,
                         Price = totalPrice,
                         ItemProperties = itemProperties,
@@ -257,7 +257,7 @@ namespace Intersect.Server.Database.PlayerData.Market
                     return false;
                 }
 
-                itemToGive = new Item(listing.ItemId, listing.Quantity) { Properties = listing.ItemProperties };
+                itemToGive = new Item(ItemDescriptor.IdFromList(listing.ItemId), listing.Quantity) { Properties = listing.ItemProperties };
                 if (!buyer.CanGiveItem(itemToGive.ItemId, itemToGive.Quantity))
                 {
                     PacketSender.SendChatMsg(buyer, Strings.Market.inventoryfull, ChatMessageType.Error, CustomColors.Alerts.Declined);
@@ -332,7 +332,7 @@ namespace Intersect.Server.Database.PlayerData.Market
                     sender: buyer,
                     receiver: listing.Seller,
                     title: Strings.Market.salecompleted,
-                    message: Strings.Market.yoursolditem.ToString(ItemDescriptor.GetName(listing.ItemId)),
+                    message: Strings.Market.yoursolditem.ToString(ItemDescriptor.GetName(ItemDescriptor.IdFromList(listing.ItemId))),
                     attachments: new List<MailAttachment> { goldAttachment }
                 );
 
@@ -391,11 +391,11 @@ namespace Intersect.Server.Database.PlayerData.Market
 
             context.Market_Listings.Remove(listing);
 
-            if (!seller.TryGiveItem(listing.ItemId, listing.Quantity, listing.ItemProperties))
+            if (!seller.TryGiveItem(ItemDescriptor.IdFromList(listing.ItemId), listing.Quantity, listing.ItemProperties))
             {
                 var attachment = new MailAttachment
                 {
-                    ItemId = listing.ItemId,
+                    ItemId = ItemDescriptor.IdFromList(listing.ItemId),
                     Quantity = listing.Quantity,
                     Properties = listing.ItemProperties
                 };
@@ -443,7 +443,7 @@ namespace Intersect.Server.Database.PlayerData.Market
             {
                 var item = new MailAttachment
                 {
-                    ItemId = listing.ItemId,
+                    ItemId = ItemDescriptor.IdFromList(listing.ItemId),
                     Quantity = listing.Quantity,
                     Properties = listing.ItemProperties
                 };

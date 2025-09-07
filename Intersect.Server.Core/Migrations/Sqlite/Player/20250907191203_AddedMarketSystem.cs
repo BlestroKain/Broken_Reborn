@@ -17,7 +17,7 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     SellerId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ItemId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    ItemId = table.Column<int>(type: "INTEGER", nullable: false),
                     Quantity = table.Column<int>(type: "INTEGER", nullable: false),
                     Price = table.Column<long>(type: "INTEGER", nullable: false),
                     ListedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
@@ -44,7 +44,7 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     ListingId = table.Column<Guid>(type: "TEXT", nullable: false),
                     BuyerId = table.Column<Guid>(type: "TEXT", nullable: true),
                     BuyerName = table.Column<string>(type: "TEXT", nullable: true),
-                    ItemId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    ItemId = table.Column<int>(type: "INTEGER", nullable: false),
                     SellerId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Quantity = table.Column<int>(type: "INTEGER", nullable: false),
                     Price = table.Column<long>(type: "INTEGER", nullable: false),

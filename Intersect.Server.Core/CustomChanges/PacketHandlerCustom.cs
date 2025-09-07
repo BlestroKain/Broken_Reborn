@@ -616,8 +616,7 @@ internal sealed partial class PacketHandler
             return;
         }
 
-        var itemGuid = ItemDescriptor.IdFromList(packet.ItemId);
-        var (suggested, min, max) = MarketStatisticsManager.GetStatistics(itemGuid);
+        var (suggested, min, max) = MarketStatisticsManager.GetStatistics(packet.ItemId);
         PacketSender.SendMarketPriceInfo(player, packet.ItemId, suggested, min, max);
     }
 

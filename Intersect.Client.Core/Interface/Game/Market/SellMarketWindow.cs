@@ -2,21 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Intersect;
+using Intersect.Client.Core;
+using Intersect.Client.Framework.GenericClasses;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.Layout;
 using Intersect.Client.Framework.File_Management;
-using Intersect.Client.General;
-using Intersect.Client.Items;
-using Intersect.Client.Networking;
-using Intersect.GameObjects;
-using Intersect.Client.Interface.Game.Inventory;
-using Intersect.Client.Core;
-using Intersect.Client.Localization;
-using Intersect.Enums;
-using Intersect.Client.Framework.GenericClasses;
-using Intersect.Network.Packets.Client;
 using Intersect.Client.Interface.Game.Chat;
-using Intersect.Logging;
+using Intersect.Client.Interface.Game.Inventory;
+using Intersect.Client.Localization;
+using Intersect.Client.Networking;
+using Intersect.Enums;
+using Intersect.Framework.Core.GameObjects.Items;
+using Intersect.Client.Utilities;
 using Intersect.Config;
 
 namespace Intersect.Client.Interface.Game.Market;
@@ -34,11 +31,10 @@ public sealed class SellMarketWindow
     private readonly Label _infoLabel;
     private readonly Label _taxLabel;
     private readonly Label _suggestedPriceLabel;
-    private readonly CheckBox _autoSplitCheckbox;
+    private readonly Checkbox _autoSplitCheckbox;
 
     // Render helpers por slot
     public readonly List<InventoryItem> Items = new();
-    private readonly List<Label> Values = new();
 
     #endregion
 
@@ -59,12 +55,12 @@ public sealed class SellMarketWindow
     {
         _window = new WindowControl(canvas, "📤 " + Strings.Market.sellwindow, false, "SellMarketWindow");
         _window.SetSize(600, 460);
-        _window.SetPosition(Graphics.Renderer.GetScreenWidth() / 2 - 300, Graphics.Renderer.GetScreenHeight() / 2 - 230);
+        _window.SetPosition(Graphics.Renderer.ScreenWidth / 2 - 300, Graphics.Renderer.ScreenHeight / 2 - 230);
         _window.DisableResizing();
 
         // Panel inventario
         mInventoryScroll = new ScrollControl(_window, "SellInventoryScroll");
-        mInventoryScroll.GetVerticalScrollBar();
+        _ = mInventoryScroll.VerticalScrollBar;
         mInventoryScroll.EnableScroll(false, true);
         mInventoryScroll.SetBounds(20, 20, 280, 400);
         // Etiquetas y campos de entrada
@@ -76,16 +72,16 @@ public sealed class SellMarketWindow
         _quantityInput = new TextBoxNumeric(_window, "QuantityInput");
         _priceInput = new TextBoxNumeric(_window, "PriceInput");
         _quantityInput.Focus();
-        Interface.FocusElements.Add(_quantityInput);
+        Interface.FocusComponents.Add(_quantityInput);
         _priceInput.Focus();
-        Interface.FocusElements.Add(_priceInput);
+        Interface.FocusComponents.Add(_priceInput);
 
         _quantityInput.TextChanged += (_, _) => RefreshTax();
         _priceInput.TextChanged += (_, _) => RefreshTax();
 
         _taxLabel = new Label(_window, "TaxLabel") { Text = Strings.Market.taxes_0 };
 
-        _autoSplitCheckbox = new CheckBox(_window,"SplitCheckBox") { Text = Strings.Market.splitpackages };
+        _autoSplitCheckbox = new Checkbox(_window,"SplitCheckBox") { Text = Strings.Market.splitpackages };
         _autoSplitCheckbox.IsChecked = true;
   
         _confirmButton = new Button(_window,"CorfimButton") { Text = Strings.Market.publish };
@@ -136,71 +132,47 @@ public sealed class SellMarketWindow
             InitItemContainer();
         }
 
-        if (Items.Count != Options.MaxInvItems || Values.Count != Options.MaxInvItems)
+        if (Items.Count != Options.Instance.Player.MaxInventory)
         {
             InitItemContainer();
         }
 
-        for (int i = 0; i < Options.MaxInvItems; i++)
+        for (int i = 0; i < Options.Instance.Player.MaxInventory; i++)
         {
             var slot = Globals.Me.Inventory[i];
-            var item = slot?.ItemId != null ? ItemBase.Get(slot.ItemId) : null;
 
-            if (slot == null || item == null || slot.ItemId == Guid.Empty)
+            if (slot == null || !ItemDescriptor.TryGet(slot.ItemId, out var descriptor) || slot.ItemId == Guid.Empty)
             {
-                Items[i].Pnl.IsHidden = true;
-                Values[i].IsHidden = true;
+                Items[i].IsVisibleInParent = false;
                 continue;
             }
 
-            Items[i].Pnl.IsHidden = false;
-            Items[i].Container.RenderColor = CustomColors.Items.Rarities.TryGetValue(item.Rarity, out var color) ? color : Color.White;
+            Items[i].IsVisibleInParent = true;
+            Items[i].RenderColor = CustomColors.Items.Rarities.TryGetValue(descriptor.Rarity, out var color) ? color : Color.White;
 
-            if (item.IsStackable)
+            if (Items[i].Icon.IsDragging)
             {
-                Values[i].IsHidden = slot.Quantity <= 1;
-                Values[i].Text = Strings.FormatQuantityAbbreviated(slot.Quantity);
-            }
-            else
-            {
-                Values[i].IsHidden = true;
-            }
-
-            if (Items[i].IsDragging)
-            {
-                Items[i].Pnl.IsHidden = true;
-                Values[i].IsHidden = true;
+                Items[i].IsVisibleInParent = false;
             }
 
             Items[i].Update();
         }
+
+        PopulateSlotContainer.Populate(mInventoryScroll, Items);
     }
 
     private void InitItemContainer()
     {
         Items.Clear();
-        Values.Clear();
 
-        for (var i = 0; i < Options.MaxInvItems; i++)
+        var inventoryWindow = Interface.GameUi.GameMenu.GetInventoryWindow();
+
+        for (var i = 0; i < Options.Instance.Player.MaxInventory; i++)
         {
-            Items.Add(new InventoryItem(this, i));
-            Items[i].Container = new ImagePanel(mInventoryScroll, "SellInvItem");
-            Items[i].Setup();
-
-            Values.Add(new Label(Items[i].Container, "InventoryItemValue"));
-            Values[i].Text = "";
-
-            Items[i].Container.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
-
-      
-            var xPadding = Items[i].Container.Margin.Left + Items[i].Container.Margin.Right;
-            var yPadding = Items[i].Container.Margin.Top + Items[i].Container.Margin.Bottom;
-
-            Items[i].Container.SetPosition(
-                i % (mInventoryScroll.Width / (Items[i].Container.Width + xPadding)) * (Items[i].Container.Width + xPadding) + xPadding,
-                i / (mInventoryScroll.Width / (Items[i].Container.Width + xPadding)) * (Items[i].Container.Height + yPadding) + yPadding
-            );
+            Items.Add(new InventoryItem(inventoryWindow, mInventoryScroll, i, new ContextMenu(mInventoryScroll)));
         }
+
+        PopulateSlotContainer.Populate(mInventoryScroll, Items);
     }
 
     public void SelectItem(InventoryItem itemSlot, int slotIndex)
@@ -215,15 +187,16 @@ public sealed class SellMarketWindow
         _selectedSlot = slotIndex;
         _selectedItemId = slot.ItemId;
         _waitingPriceForItemId = slot.ItemId;
-        var item = ItemBase.Get(slot.ItemId);
+        if (ItemDescriptor.TryGet(slot.ItemId, out var descriptor))
+        {
+            _infoLabel.Text = Strings.Market.publish_colon + " " + descriptor.Name;
+        }
         _confirmButton.Enable();
-        _infoLabel.Text = Strings.Market.publish_colon + " " + item?.Name;
 
-        GetSelectedItemId();
         UpdateSuggestedPrice(slot.ItemId);
 
         // Luego pide al servidor para actualizar si es necesario.
-        PacketSender.SendRequestMarketInfo(slot.ItemId);
+        PacketSender.SendRequestMarketInfo(ItemDescriptor.ListIndex(slot.ItemId));
         // Cargar cantidad y precio del ítem
         _quantityInput.SetText(slot.Quantity.ToString(), false);
         if (MarketPriceCache.TryGet(slot.ItemId, out var avg, out var min, out var max))
@@ -252,7 +225,7 @@ public sealed class SellMarketWindow
         if (!MarketPriceCache.TryGet(itemId, out int avg, out int min, out int max))
         {
             // Nada en cache aún, esperar.
-            Log.Debug($"⏳ Esperando precio para {itemId}...");
+            Console.WriteLine($"⏳ Esperando precio para {itemId}...");
             return;
         }
 
@@ -260,11 +233,11 @@ public sealed class SellMarketWindow
         _suggestedRangeLabel.SetText(Strings.Market.pricerange.ToString(min, max));
         _suggestedPriceLabel.Show();
         _suggestedRangeLabel.Show();
-        _suggestedPriceLabel.SetTextColor(Color.Orange, Label.ControlState.Normal);
-        _suggestedRangeLabel.SetTextColor(Color.Orange, Label.ControlState.Normal);
+        _suggestedPriceLabel.SetTextColor(Color.Orange, ComponentState.Normal);
+        _suggestedRangeLabel.SetTextColor(Color.Orange, ComponentState.Normal);
 
         _waitingPriceForItemId = Guid.Empty;
-        Log.Debug($"✅ Precio actualizado visualmente para {itemId}");
+        Console.WriteLine($"✅ Precio actualizado visualmente para {itemId}");
     }
 
 
@@ -335,8 +308,7 @@ public sealed class SellMarketWindow
 
         // Enviar al servidor (simplificado: usa solo el primer slot en PacketSender actual)
         var firstSlot = slotsToUse.First();
-        var props = Globals.Me.Inventory[firstSlot.SlotIndex].ItemProperties ?? new Network.Packets.Server.ItemProperties();
-        PacketSender.SendCreateMarketListing(_selectedItemId, qty, price, props, _autoSplitCheckbox.IsChecked);
+        PacketSender.SendCreateMarketListing(firstSlot.SlotIndex, qty, price, _autoSplitCheckbox.IsChecked);
 
         // Luego puedes ajustar para enviar info de múltiples slots si el servidor lo permite
 

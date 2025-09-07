@@ -84,7 +84,7 @@ public partial class MarketWindow : Window
         _sellButton.Clicked += SellButton_Clicked;
 
         _listingScroll = new ScrollControl(this, nameof(_listingScroll));
-        _listingScroll.GetVerticalScrollBar();
+        _ = _listingScroll.VerticalScrollBar;
         _listingScroll.EnableScroll(false, true);
         _listingScroll.SetBounds(10, 60, Width - 20, Height - 70);
     }

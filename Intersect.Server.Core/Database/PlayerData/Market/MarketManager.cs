@@ -10,11 +10,9 @@ public partial class MarketManager
 {
     private readonly List<MarketListing> _listings = new();
     private readonly List<MarketTransaction> _transactions = new();
-    private readonly MarketStatisticsManager _statistics = new();
 
     public IReadOnlyList<MarketListing> Listings => _listings;
     public IReadOnlyList<MarketTransaction> Transactions => _transactions;
-    public MarketStatisticsManager Statistics => _statistics;
 
     public bool CreateListing(Player player, int slot, int quantity, long price, ItemProperties properties, bool autoSplit)
     {
@@ -39,10 +37,10 @@ public partial class MarketManager
                     AddListing(new MarketListing
                     {
                         SellerId = player.Id,
-                        ItemId = ItemDescriptor.ListIndex(inventoryItem.ItemId),
+                        ItemId = inventoryItem.ItemId,
                         Quantity = batch,
                         Price = price,
-                        Properties = new ItemProperties(properties)
+                        ItemProperties = new ItemProperties(properties)
                     });
                 }
             }
@@ -63,10 +61,10 @@ public partial class MarketManager
         AddListing(new MarketListing
         {
             SellerId = player.Id,
-            ItemId = ItemDescriptor.ListIndex(inventoryItem.ItemId),
+            ItemId = inventoryItem.ItemId,
             Quantity = quantity,
             Price = price,
-            Properties = new ItemProperties(properties)
+            ItemProperties = new ItemProperties(properties)
         });
 
         return true;
@@ -75,7 +73,7 @@ public partial class MarketManager
     public void AddListing(MarketListing listing)
     {
         _listings.Add(listing);
-        _statistics.RecordListing(listing.ItemId, listing.Price);
+        MarketStatisticsManager.RecordListing(listing.ItemId, listing.Price);
     }
 
     public void RecordTransaction(MarketTransaction transaction)
@@ -84,7 +82,7 @@ public partial class MarketManager
         var listing = _listings.FirstOrDefault(l => l.Id == transaction.ListingId);
         if (listing != null)
         {
-            _statistics.RecordSale(listing.ItemId, transaction.Price);
+            MarketStatisticsManager.RecordSale(listing.ItemId, transaction.Price);
             _listings.Remove(listing);
         }
     }
@@ -97,11 +95,11 @@ public partial class MarketManager
             return false;
         }
 
-        var itemGuid = ItemDescriptor.IdFromList(listing.ItemId);
+        var itemGuid = listing.ItemId;
         // Try to return the listed items, allowing overflow to bank or map. If nothing could be
         // returned we leave the listing intact so the player can try again later instead of
         // destroying the listing and its items.
-        if (!player.TryGiveItem(itemGuid, listing.Quantity, listing.Properties, ItemHandling.Overflow, bankOverflow: true))
+        if (!player.TryGiveItem(itemGuid, listing.Quantity, listing.ItemProperties, ItemHandling.Overflow, bankOverflow: true))
         {
             return false;
         }

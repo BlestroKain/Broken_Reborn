@@ -176,6 +176,12 @@ public static partial class PacketSender
         player.SendPacket(new MarketWindowPacket(MarketWindowPacketType.CloseSell));
     }
 
+    public static void SendRefreshMarket(Player player)
+    {
+        // Placeholder implementation: reopen market window to refresh listings
+        SendOpenMarket(player);
+    }
+
     public static void SendOpenMailBox(Player player)
     {
         var mails = new List<MailBoxUpdatePacket>();

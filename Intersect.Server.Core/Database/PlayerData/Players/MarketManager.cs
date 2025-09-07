@@ -6,12 +6,12 @@ using Intersect.Server.Entities;
 using Intersect.Server.Localization;
 using Intersect.Network.Packets.Server;
 using Intersect.Enums;
-
+using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.GameObjects;
 using Intersect.Server.Networking;
 using Intersect.Server.Database.PlayerData.Players;
 using Microsoft.EntityFrameworkCore;
-using Intersect.Logging;
+using Serilog;
 using System.Diagnostics;
 
 namespace Intersect.Server.Database.PlayerData.Players
@@ -50,9 +50,9 @@ namespace Intersect.Server.Database.PlayerData.Players
             {
                 result = result.Where(l =>
                 {
-                    var itemBase = ItemBase.Get(l.ItemId);
-                    return itemBase != null &&
-                           itemBase.Name.Contains(name, StringComparison.OrdinalIgnoreCase);
+                    var itemDescriptor = ItemDescriptor.Get(l.ItemId);
+                    return itemDescriptor != null &&
+                           itemDescriptor.Name.Contains(name, StringComparison.OrdinalIgnoreCase);
                 }).ToList();
             }
 
@@ -60,10 +60,10 @@ namespace Intersect.Server.Database.PlayerData.Players
             {
                 result = result.Where(l =>
                 {
-                    var itemBase = ItemBase.Get(l.ItemId);
-                    return itemBase != null &&
-                           itemBase.Type == GameObjectType.Item &&
-                           itemBase.ItemType == type.Value;
+                    var itemDescriptor = ItemDescriptor.Get(l.ItemId);
+                    return itemDescriptor != null &&
+                           itemDescriptor.Type == GameObjectType.Item &&
+                           itemDescriptor.ItemType == type.Value;
                 }).ToList();
             }
 
@@ -78,17 +78,17 @@ namespace Intersect.Server.Database.PlayerData.Players
                 return false;
             }
 
-            var itemBase = ItemBase.Get(item.ItemId);
-            if (itemBase == null || !itemBase.CanSell)
+            var itemDescriptor = ItemDescriptor.Get(item.ItemId);
+            if (itemDescriptor == null || !itemDescriptor.CanSell)
             {
                 PacketSender.SendChatMsg(seller, Strings.Market.cannotlist, ChatMessageType.Error, CustomColors.Alerts.Error);
                 return false;
             }
 
             var stats = MarketStatisticsManager.GetStatistics(item.ItemId);
-            var avg = stats.AveragePricePerUnit;
-            var min = stats.GetMinAllowedPrice();
-            var max = stats.GetMaxAllowedPrice();
+            var avg = stats.suggested;
+            var min = stats.min;
+            var max = stats.max;
 
             if (pricePerUnit < min || pricePerUnit > max)
             {
@@ -135,6 +135,7 @@ namespace Intersect.Server.Database.PlayerData.Players
                     var listing = new MarketListing
                     {
                         Seller = seller,
+                        SellerId = seller.Id,
                         ItemId = item.ItemId,
                         Quantity = size,
                         Price = totalPrice,
@@ -145,6 +146,7 @@ namespace Intersect.Server.Database.PlayerData.Players
                     };
 
                     context.Market_Listings.Add(listing);
+                    MarketStatisticsManager.RecordListing(listing.ItemId, totalPrice);
                     remaining -= size;
                     atLeastOneListed = true;
                 }
@@ -276,9 +278,9 @@ namespace Intersect.Server.Database.PlayerData.Players
 
             var mail = new MailBox(
                 sender: buyer,
-                to: listing.Seller,
+                receiver: listing.Seller,
                 title: Strings.Market.salecompleted,
-                msg: Strings.Market.yoursolditem.ToString(ItemBase.GetName(listing.ItemId)),
+                msg: Strings.Market.yoursolditem.ToString(ItemDescriptor.GetName(listing.ItemId)),
                 attachments: new List<MailAttachment> { goldAttachment }
             );
 
@@ -315,8 +317,6 @@ namespace Intersect.Server.Database.PlayerData.Players
                     }
                 }
             }
-            UpdateStatistics(transaction);
-
             PacketSender.SendChatMsg(buyer, Strings.Market.itempurchased, ChatMessageType.Trading, CustomColors.Alerts.Accepted);
             PacketSender.SendRefreshMarket(buyer); // Actualiza al cliente con nuevo mercado
             MarketStatisticsManager.UpdateStatistics(transaction);
@@ -332,10 +332,10 @@ namespace Intersect.Server.Database.PlayerData.Players
             // Si en el futuro quieres hacer dinámico esto por tipo de ítem, ciudad, etc., puedes modificar aquí
             return DefaultMarketTax;
         }
-        private static ItemBase GetDefaultCurrency()
+        private static ItemDescriptor? GetDefaultCurrency()
         {
-            return ItemBase.Lookup.Values
-                .OfType<ItemBase>()
+            return ItemDescriptor.Lookup.Values
+                .OfType<ItemDescriptor>()
                 .FirstOrDefault(i => i.ItemType == ItemType.Currency);
         }
 
@@ -358,7 +358,7 @@ namespace Intersect.Server.Database.PlayerData.Players
 
                 var mail = new MailBox(
                     sender: null,
-                    to: listing.Seller,
+                    receiver: listing.Seller,
                     title: Strings.Market.expiredlisting,
                     msg: Strings.Market.yourlistingexpired,
                     attachments: new List<MailAttachment> { item }
@@ -382,21 +382,6 @@ namespace Intersect.Server.Database.PlayerData.Players
                 context.SaveChanges();
             }
         }
-
-        private static readonly Dictionary<Guid, MarketStatistics> _statisticsCache = new();
-
-        public static void UpdateStatistics(MarketTransaction tx)
-        {
-            if (!_statisticsCache.TryGetValue(tx.ItemId, out var stats))
-            {
-                stats = new MarketStatistics(tx.ItemId);
-                _statisticsCache[tx.ItemId] = stats;
-            }
-
-            stats.AddTransaction(tx);
-        }
-
-       
 
     }
 }

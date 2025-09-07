@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Intersect.Framework.Core.GameObjects.Items;
 using MessagePack;
 
 namespace Intersect.Network.Packets.Server;
@@ -12,13 +13,14 @@ public partial class MarketListingPacket : IntersectPacket
     {
     }
 
-    public MarketListingPacket(Guid listingId, Guid sellerId, int itemId, int quantity, long price)
+    public MarketListingPacket(Guid listingId, Guid sellerId, int itemId, int quantity, long price, ItemProperties properties)
     {
         ListingId = listingId;
         SellerId = sellerId;
         ItemId = itemId;
         Quantity = quantity;
         Price = price;
+        Properties = properties;
     }
 
     [Key(0)]
@@ -35,6 +37,9 @@ public partial class MarketListingPacket : IntersectPacket
 
     [Key(4)]
     public long Price { get; set; }
+
+    [Key(5)]
+    public ItemProperties Properties { get; set; } = new();
 }
 
 [MessagePackObject]

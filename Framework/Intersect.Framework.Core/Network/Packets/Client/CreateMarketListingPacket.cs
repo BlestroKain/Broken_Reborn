@@ -1,4 +1,5 @@
 using System;
+using Intersect.Framework.Core.GameObjects.Items;
 using MessagePack;
 
 namespace Intersect.Network.Packets.Client;
@@ -11,11 +12,12 @@ public partial class CreateMarketListingPacket : IntersectPacket
     {
     }
 
-    public CreateMarketListingPacket(int itemSlot, int quantity, long price)
+    public CreateMarketListingPacket(int itemSlot, int quantity, long price, ItemProperties properties)
     {
         ItemSlot = itemSlot;
         Quantity = quantity;
         Price = price;
+        Properties = properties;
     }
 
     [Key(0)]
@@ -26,4 +28,7 @@ public partial class CreateMarketListingPacket : IntersectPacket
 
     [Key(2)]
     public long Price { get; set; }
+
+    [Key(3)]
+    public ItemProperties Properties { get; set; } = new();
 }

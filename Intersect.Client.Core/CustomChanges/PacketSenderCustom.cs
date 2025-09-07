@@ -9,6 +9,7 @@ using Intersect.Client.Maps;
 using Intersect.Enums;
 using Intersect.Framework;
 using Intersect.Framework.Core.GameObjects.Guild;
+using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Models;
 using Intersect.Network.Packets.Client;
@@ -100,7 +101,8 @@ public static partial class PacketSender
 
     public static void SendCreateMarketListing(int itemSlot, int quantity, long price)
     {
-        Network.SendPacket(new CreateMarketListingPacket(itemSlot, quantity, price));
+        var props = Globals.Me?.Inventory[itemSlot]?.ItemProperties ?? new ItemProperties();
+        Network.SendPacket(new CreateMarketListingPacket(itemSlot, quantity, price, props));
     }
 
     public static void SendSearchMarket(string query)

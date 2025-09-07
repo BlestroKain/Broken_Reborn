@@ -8,6 +8,8 @@ using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.Layout;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Interface.Game.Chat;
+using Intersect.Client.Interface.Game;
+using Intersect.Client.General;
 using Intersect.Client.Interface.Game.Inventory;
 using Intersect.Client.Localization;
 using Intersect.Client.Networking;
@@ -34,7 +36,7 @@ public sealed class SellMarketWindow
     private readonly Checkbox _autoSplitCheckbox;
 
     // Render helpers por slot
-    public readonly List<InventoryItem> Items = new();
+    public readonly List<SlotItem> Items = new();
 
     #endregion
 
@@ -107,8 +109,8 @@ public sealed class SellMarketWindow
         _suggestedPriceLabel.SetBounds(startX, startY, 250, labelH); startY += labelH + (padY * 2);
         _suggestedRangeLabel.SetBounds(startX, startY, 250, labelH); startY += labelH + (padY * 2);
         // Cantidad / Precio etiquetas
-        new Label(_window,"QuantityLabel") { Text = Strings.Market.quantity }.SetBounds(startX, startY + 10, 100, labelH);
-        new Label(_window,"Pricelabel") { Text = Strings.Market.price }.SetBounds(startX + 110, startY + 10, 100, labelH);
+        new Label(_window,"QuantityLabel") { Text = Strings.Market.Quantity }.SetBounds(startX, startY + 10, 100, labelH);
+        new Label(_window,"Pricelabel") { Text = Strings.Market.Price }.SetBounds(startX + 110, startY + 10, 100, labelH);
         startY += labelH;
 
         _quantityInput.SetBounds(startX, startY+10, 100, inputH);

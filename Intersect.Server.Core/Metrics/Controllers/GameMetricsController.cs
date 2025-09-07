@@ -26,6 +26,10 @@ public partial class GameMetricsController : MetricsController
 
     public Histogram MapTotalUpdateTime { get; private set; }
 
+    public Histogram MarketSearchTime { get; private set; }
+
+    public Histogram MarketPurchaseTime { get; private set; }
+
 
     public GameMetricsController() : base(CONTEXT)
     {
@@ -40,5 +44,7 @@ public partial class GameMetricsController : MetricsController
         MapUpdateQueuedTime = new Histogram(nameof(MapUpdateQueuedTime), this);
         MapUpdateProcessingTime = new Histogram(nameof(MapUpdateProcessingTime), this);
         MapTotalUpdateTime = new Histogram(nameof(MapTotalUpdateTime), this);
+        MarketSearchTime = new Histogram(nameof(MarketSearchTime), this);
+        MarketPurchaseTime = new Histogram(nameof(MarketPurchaseTime), this);
     }
 }

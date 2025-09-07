@@ -50,11 +50,23 @@ public partial class MarketListingsPacket : IntersectPacket
     {
     }
 
-    public MarketListingsPacket(List<MarketListingPacket> listings)
+    public MarketListingsPacket(List<MarketListingPacket> listings, int page, int pageSize, int total)
     {
         Listings = listings;
+        Page = page;
+        PageSize = pageSize;
+        Total = total;
     }
 
     [Key(0)]
     public List<MarketListingPacket> Listings { get; set; } = new();
+
+    [Key(1)]
+    public int Page { get; set; }
+
+    [Key(2)]
+    public int PageSize { get; set; }
+
+    [Key(3)]
+    public int Total { get; set; }
 }

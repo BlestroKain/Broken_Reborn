@@ -105,9 +105,17 @@ public static partial class PacketSender
         Network.SendPacket(new CreateMarketListingPacket(itemSlot, quantity, price, props, autoSplit));
     }
 
-    public static void SendSearchMarket(string query)
+    public static void SendSearchMarket(
+        int page,
+        int pageSize,
+        int? itemId = null,
+        int? minPrice = null,
+        int? maxPrice = null,
+        bool? status = null,
+        Guid? sellerId = null
+    )
     {
-        Network.SendPacket(new SearchMarketPacket(query));
+        Network.SendPacket(new SearchMarketPacket(page, pageSize, itemId, minPrice, maxPrice, status, sellerId));
     }
 
     public static void SendBuyMarketListing(Guid listingId, int quantity)

@@ -17,6 +17,7 @@ using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Client.Utilities;
 using Intersect.Config;
+using Intersect.Client.Interface.Game.Breaking;
 
 namespace Intersect.Client.Interface.Game.Market;
 
@@ -150,8 +151,7 @@ public sealed class SellMarketWindow
             }
 
             Items[i].IsVisibleInParent = true;
-            Items[i].RenderColor = CustomColors.Items.Rarities.TryGetValue(descriptor.Rarity, out var color) ? color : Color.White;
-
+          
             if (Items[i].Icon.IsDragging)
             {
                 Items[i].IsVisibleInParent = false;
@@ -165,18 +165,15 @@ public sealed class SellMarketWindow
 
     private void InitItemContainer()
     {
-        Items.Clear();
-
-        var inventoryWindow = Interface.GameUi.GameMenu.GetInventoryWindow();
-
-        for (var i = 0; i < Options.Instance.Player.MaxInventory; i++)
+        for (int i = 0; i < Options.Instance.Player.MaxInventory; i++)
         {
-            Items.Add(new InventoryItem(inventoryWindow, mInventoryScroll, i, new ContextMenu(mInventoryScroll)));
+            var item = new InventoryItem(this, mInventoryScroll, i, null);
+            Items.Add(item);
         }
 
         PopulateSlotContainer.Populate(mInventoryScroll, Items);
+        Update();
     }
-
     public void SelectItem(InventoryItem itemSlot, int slotIndex)
     {
         var slot = Globals.Me.Inventory[slotIndex];

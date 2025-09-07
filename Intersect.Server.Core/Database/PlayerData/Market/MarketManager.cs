@@ -19,20 +19,35 @@ namespace Intersect.Server.Database.PlayerData.Market
 {
     public static class MarketManager
     {
-        public static List<MarketListing> SearchMarket(
-     string name = "",
-     int? minPrice = null,
-     int? maxPrice = null,
-     ItemType? type = null
- )
+        public static (List<MarketListing> Listings, int Total) SearchMarket(
+            int page,
+            int pageSize,
+            int? itemId = null,
+            int? minPrice = null,
+            int? maxPrice = null,
+            bool? status = null,
+            Guid? sellerId = null
+        )
         {
             using var context = DbInterface.CreatePlayerContext(readOnly: true);
 
-            // 🔎 Consulta base: solo ítems no vendidos y dentro de fecha de expiración
             var query = context.Market_Listings
-                .Where(l => !l.IsSold && l.ExpireAt > DateTime.UtcNow);
+                .Where(l => l.ExpireAt > DateTime.UtcNow);
 
-            // 💰 Filtros de precio
+            if (status.HasValue)
+            {
+                query = query.Where(l => l.IsSold == status.Value);
+            }
+            else
+            {
+                query = query.Where(l => !l.IsSold);
+            }
+
+            if (itemId.HasValue)
+            {
+                query = query.Where(l => l.ItemId == itemId.Value);
+            }
+
             if (minPrice.HasValue)
             {
                 query = query.Where(l => l.Price >= minPrice.Value);
@@ -43,31 +58,20 @@ namespace Intersect.Server.Database.PlayerData.Market
                 query = query.Where(l => l.Price <= maxPrice.Value);
             }
 
-            var result = query.ToList();
-
-            // 🧠 Filtrado avanzado (no puede hacerse en EF)
-            if (!string.IsNullOrWhiteSpace(name))
+            if (sellerId.HasValue)
             {
-                result = result.Where(l =>
-                {
-                    var itemDescriptor = ItemDescriptor.Get(ItemDescriptor.IdFromList(l.ItemId));
-                    return itemDescriptor != null &&
-                           itemDescriptor.Name.Contains(name, StringComparison.OrdinalIgnoreCase);
-                }).ToList();
+                query = query.Where(l => l.SellerId == sellerId.Value);
             }
 
-            if (type.HasValue)
-            {
-                result = result.Where(l =>
-                {
-                    var itemDescriptor = ItemDescriptor.Get(ItemDescriptor.IdFromList(l.ItemId));
-                    return itemDescriptor != null &&
-                           itemDescriptor.Type == GameObjectType.Item &&
-                           itemDescriptor.ItemType == type.Value;
-                }).ToList();
-            }
+            var total = query.Count();
 
-            return result;
+            var result = query
+                .OrderBy(l => l.ListedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return (result, total);
         }
 
         public static bool CreateListing(

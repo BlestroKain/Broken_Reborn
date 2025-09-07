@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Diagnostics;
 using System.Text;
+using System.Linq;
 using Intersect.Core;
 using Intersect.Framework.Core;
 using Intersect.Framework.Core.GameObjects.Crafting;
@@ -605,7 +606,32 @@ internal sealed partial class PacketHandler
 
     public void HandlePacket(Client client, SearchMarketPacket packet)
     {
-        // Placeholder for market search handling
+        var player = client.Entity;
+        if (player == null)
+        {
+            return;
+        }
+
+        var (listings, total) = MarketManager.SearchMarket(
+            packet.Page,
+            packet.PageSize,
+            packet.ItemId,
+            packet.MinPrice,
+            packet.MaxPrice,
+            packet.Status,
+            packet.SellerId
+        );
+
+        var packets = listings.Select(l => new MarketListingPacket(
+            l.Id,
+            l.SellerId,
+            l.ItemId,
+            l.Quantity,
+            l.Price,
+            l.ItemProperties
+        )).ToList();
+
+        PacketSender.SendMarketListings(player, packets, packet.Page, packet.PageSize, total);
     }
 
     public void HandlePacket(Client client, RequestMarketPricePacket packet)

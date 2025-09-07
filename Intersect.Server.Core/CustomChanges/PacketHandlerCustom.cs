@@ -44,7 +44,6 @@ namespace Intersect.Server.Networking;
 
 internal sealed partial class PacketHandler
 {
-    private static readonly MarketManager MarketManager = new();
     public void HandlePacket(Client client, GuildExpPercentagePacket packet)
     {
         var player = client?.Entity;

@@ -69,6 +69,38 @@ namespace Intersect.Server.Database.PlayerData.Market
             return result;
         }
 
+        public static bool CreateListing(
+            Player seller,
+            int itemSlot,
+            int quantity,
+            long pricePerUnit,
+            ItemProperties properties,
+            bool autoSplit
+        )
+        {
+            if (seller == null)
+            {
+                return false;
+            }
+
+            if (itemSlot < 0 || itemSlot >= seller.Items.Count)
+            {
+                PacketSender.SendChatMsg(seller, Strings.Market.invalidlisting, ChatMessageType.Error, CustomColors.Alerts.Error);
+                return false;
+            }
+
+            var item = seller.Items[itemSlot];
+            if (item == null || item.Quantity < quantity)
+            {
+                PacketSender.SendChatMsg(seller, Strings.Market.invalidlisting, ChatMessageType.Error, CustomColors.Alerts.Error);
+                return false;
+            }
+
+            item.Properties = properties ?? item.Properties;
+
+            return TryListItem(seller, item, quantity, (int)pricePerUnit, autoSplit);
+        }
+
         public static bool TryListItem(Player seller, Item item, int quantity, int pricePerUnit, bool autoSplit = false)
         {
             if (item == null || quantity <= 0 || pricePerUnit <= 0)
@@ -321,6 +353,46 @@ namespace Intersect.Server.Database.PlayerData.Market
             MarketStatisticsManager.UpdateStatistics(transaction);
 
             return true;
+        }
+
+        public static void CancelListing(Player seller, Guid listingId)
+        {
+            using var context = DbInterface.CreatePlayerContext(readOnly: false);
+            context.StopTrackingUsersExcept(seller.User);
+            context.Attach(seller);
+
+            var listing = context.Market_Listings.FirstOrDefault(l => l.Id == listingId && l.SellerId == seller.Id && !l.IsSold);
+            if (listing == null)
+            {
+                PacketSender.SendChatMsg(seller, Strings.Market.listingunavailable, ChatMessageType.Error, CustomColors.Alerts.Declined);
+                return;
+            }
+
+            context.Market_Listings.Remove(listing);
+
+            if (!seller.TryGiveItem(listing.ItemId, listing.Quantity, listing.ItemProperties))
+            {
+                var attachment = new MailAttachment
+                {
+                    ItemId = listing.ItemId,
+                    Quantity = listing.Quantity,
+                    Properties = listing.ItemProperties
+                };
+
+                var mail = new MailBox(
+                    sender: null,
+                    receiver: seller,
+                    title: "Listing canceled.",
+                    message: "Your listing has been canceled.",
+                    attachments: new List<MailAttachment> { attachment }
+                );
+
+                seller.MailBoxs.Add(mail);
+                PacketSender.SendOpenMailBox(seller);
+            }
+
+            context.SaveChanges();
+            PacketSender.SendRefreshMarket(seller);
         }
 
 

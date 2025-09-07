@@ -31,6 +31,7 @@ using Intersect.Framework.Core.Security;
 using Intersect.Network.Packets.Server;
 using Intersect.Server.Core;
 using Microsoft.Extensions.Logging;
+using Intersect.Server.Database.PlayerData.Market;
 using ChatMsgPacket = Intersect.Network.Packets.Client.ChatMsgPacket;
 using LoginPacket = Intersect.Network.Packets.Client.LoginPacket;
 using PartyInvitePacket = Intersect.Network.Packets.Client.PartyInvitePacket;
@@ -43,6 +44,7 @@ namespace Intersect.Server.Networking;
 
 internal sealed partial class PacketHandler
 {
+    private static readonly MarketManager MarketManager = new();
     public void HandlePacket(Client client, GuildExpPercentagePacket packet)
     {
         var player = client?.Entity;
@@ -616,6 +618,17 @@ internal sealed partial class PacketHandler
     public void HandlePacket(Client client, BuyMarketListingPacket packet)
     {
         // Placeholder for purchasing market listings
+    }
+
+    public void HandlePacket(Client client, CancelMarketListingPacket packet)
+    {
+        var player = client.Entity;
+        if (player == null)
+        {
+            return;
+        }
+
+        MarketManager.CancelListing(player, packet.ListingId);
     }
 
 

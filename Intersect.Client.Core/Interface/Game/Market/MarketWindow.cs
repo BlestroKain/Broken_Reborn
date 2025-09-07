@@ -1,6 +1,9 @@
 using System.Collections.Generic;
+using Intersect.Client.Core;
+using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
+using Intersect.Client.General;
 using Intersect.Client.Localization;
 using Intersect.Network.Packets.Server;
 
@@ -23,8 +26,13 @@ public partial class MarketWindow : Window
         foreach (var listing in listings)
         {
             var marketItem = new MarketItem(this, _items.Count, new ContextMenu(this));
-            marketItem.Load(listing.ListingId, listing.ItemId, listing.Properties);
+            marketItem.Load(listing.ListingId, listing.SellerId, listing.ItemId, listing.Properties);
             _items.Add(marketItem);
         }
+    }
+
+    protected override void EnsureInitialized()
+    {
+        LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
     }
 }

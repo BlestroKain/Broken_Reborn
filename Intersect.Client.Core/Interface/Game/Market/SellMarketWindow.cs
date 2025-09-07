@@ -1,6 +1,8 @@
 using Intersect.Client.Core;
+using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
+using Intersect.Client.General;
 using Intersect.Client.Localization;
 using Intersect.Client.Networking;
 using Intersect.Framework.Core.GameObjects.Items;
@@ -28,5 +30,10 @@ public partial class SellMarketWindow : Window
     public void SellItem(int quantity, long price)
     {
         PacketSender.SendCreateMarketListing(_slot, quantity, price);
+    }
+
+    protected override void EnsureInitialized()
+    {
+        LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
     }
 }

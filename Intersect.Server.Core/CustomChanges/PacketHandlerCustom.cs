@@ -637,7 +637,14 @@ internal sealed partial class PacketHandler
 
     public void HandlePacket(Client client, BuyMarketListingPacket packet)
     {
-        // Placeholder for purchasing market listings
+        var player = client.Entity;
+        if (player == null)
+        {
+            return;
+        }
+
+        MarketManager.BuyAsync(player, packet.ListingId)
+            .ConfigureAwait(false).GetAwaiter().GetResult();
     }
 
     public void HandlePacket(Client client, CancelMarketListingPacket packet)

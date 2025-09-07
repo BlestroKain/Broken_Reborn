@@ -322,71 +322,204 @@ public partial class InventoryWindow : Window
     }
 
     /// <summary>
-    /// Ordena todos los ítems del inventario ignorando filtros activos.
-    /// Valida nombre, precio, cantidad, tipo y subtipo antes de ordenar;
-    /// cualquier entrada inválida se omite, quedando al final del inventario.
+    /// Ordena todos los ítems del inventario con un burbujeo simple, sin aplicar filtros.
+    /// Los slots vacíos siempre terminan al final.
     /// </summary>
     private void SortItems(Base sender, MouseButtonState arguments)
     {
-        if (Globals.Me?.Inventory == null) return;
+        if (Globals.Me?.Inventory == null)
+        {
+            return;
+        }
 
         var inventory = Globals.Me.Inventory;
+        var max = Options.Instance.Player.MaxInventory;
 
-        // 1) Solo slots ocupados
-        var filledItems = Items
-            .Where(i => i != null && inventory[i.SlotIndex]?.Descriptor != null)
-            .ToList();
-
-        // 2) Filtra ítems con datos válidos
-        var validItems = new List<SlotItem>();
-        foreach (var item in filledItems)
+        // Bubble sort sobre todos los slots del inventario
+        for (var pass = 0; pass < max - 1; pass++)
         {
-            var slot = inventory[item.SlotIndex];
-            var descriptor = slot?.Descriptor;
-            var quantity = slot?.Quantity;
-            if (descriptor != null && ItemListHelper.IsValid(descriptor, quantity))
+            for (var i = 0; i < max - pass - 1; i++)
             {
-                validItems.Add(item);
+                if (CompareSlots(inventory, i, i + 1) > 0)
+                {
+                    Globals.Me.SwapItems(i, i + 1);
+                }
             }
         }
 
-        // 3) Ordena SIN filtrar (ignora búsqueda/tipo/subtipo)
-        var sortedItems = ItemListHelper.FilterAndSort(
-            validItems,
-            getDescriptor: i => inventory[i.SlotIndex]?.Descriptor,
-            getQuantity: i => inventory[i.SlotIndex]?.Quantity ?? 0,
-            searchText: null,
-            type: null,
-            subtype: null,
-            criterion: _criterion,
-            ascending: _sortAscending
-        ).ToList();
+        ApplyFilters();
+    }
 
-        // 4) Mapa “target => current” empaquetando desde 0
-        var desiredSlotMap = new Dictionary<int, int>();
-        for (int k = 0; k < sortedItems.Count; k++)
-            desiredSlotMap[k] = sortedItems[k].SlotIndex;
+    /// <summary>
+    /// Compara los contenidos de los slots 'a' y 'b'.
+    /// Devuelve &gt; 0 si A debe ir después de B, &lt; 0 si A va antes, 0 si empate.
+    /// </summary>
+    private int CompareSlots(Intersect.Client.Entities.Item?[] inventory, int a, int b)
+    {
+        var left = (a >= 0 && a < inventory.Length) ? inventory[a] : null;
+        var right = (b >= 0 && b < inventory.Length) ? inventory[b] : null;
 
-        // 5) Swaps
-        foreach (var kv in desiredSlotMap.ToList())
+        var dx = left?.Descriptor;
+        var dy = right?.Descriptor;
+
+        var leftEmpty = dx == null;
+        var rightEmpty = dy == null;
+
+        // Vacíos siempre al final
+        if (leftEmpty && rightEmpty) return 0;
+        if (leftEmpty) return 1;
+        if (rightEmpty) return -1;
+
+        return _criterion switch
         {
-            int target = kv.Key;
-            int current = kv.Value;
-            if (current == target) continue;
+            SortCriterion.Name =>
+                CompareByName(dx!, dy!, _sortAscending),
+            SortCriterion.Quantity =>
+                CompareQuantity(left!, right!),
+            SortCriterion.Price =>
+                ComparePrice(dx!, dy!),
+            _ => CompareDescriptors(dx!, dy!, _sortAscending)
+        };
+    }
 
-            if (inventory[target]?.Descriptor == inventory[current]?.Descriptor &&
-                inventory[target]?.Quantity == inventory[current]?.Quantity)
-                continue;
-
-            Globals.Me.SwapItems(current, target);
-
-            // Actualiza el mapa: quien apuntaba al target ahora apunta al current
-            foreach (var key in desiredSlotMap.Keys.ToList())
-                if (desiredSlotMap[key] == target)
-                    desiredSlotMap[key] = current;
+    private int CompareByName(ItemDescriptor dx, ItemDescriptor dy, bool ascending)
+    {
+        var cmp = StringComparer.OrdinalIgnoreCase.Compare(SafeName(dx), SafeName(dy));
+        if (cmp != 0)
+        {
+            return ascending ? cmp : -cmp;
         }
 
-        ApplyFilters();
+        return CompareDescriptors(dx, dy, ascending);
+    }
+
+    private int CompareQuantity(Intersect.Client.Entities.Item left, Intersect.Client.Entities.Item right)
+    {
+        var qx = left.Quantity;
+        var qy = right.Quantity;
+
+        var cmp = qx.CompareTo(qy);
+        if (cmp != 0)
+        {
+            return _sortAscending ? cmp : -cmp;
+        }
+
+        return CompareDescriptors(left.Descriptor!, right.Descriptor!, _sortAscending);
+    }
+
+    private int ComparePrice(ItemDescriptor dx, ItemDescriptor dy)
+    {
+        var px = dx.Price;
+        var py = dy.Price;
+
+        var cmp = px.CompareTo(py);
+        if (cmp != 0)
+        {
+            return _sortAscending ? cmp : -cmp;
+        }
+
+        return CompareDescriptors(dx, dy, _sortAscending);
+    }
+
+    /// <summary>
+    /// Orden "TypeThenName": Tipo → Subtipo → Nombre → Precio → Id.
+    /// </summary>
+    private int CompareDescriptors(ItemDescriptor x, ItemDescriptor y, bool ascending)
+    {
+        var cmp = TypePriority(x.ItemType).CompareTo(TypePriority(y.ItemType));
+        if (cmp != 0)
+        {
+            return cmp;
+        }
+
+        cmp = SubtypeIndex(x).CompareTo(SubtypeIndex(y));
+        if (cmp != 0)
+        {
+            return cmp;
+        }
+
+        cmp = StringComparer.OrdinalIgnoreCase.Compare(SafeName(x), SafeName(y));
+        if (cmp != 0)
+        {
+            return ascending ? cmp : -cmp;
+        }
+
+        cmp = x.Price.CompareTo(y.Price);
+        if (cmp != 0)
+        {
+            return ascending ? cmp : -cmp;
+        }
+
+        return x.Id.CompareTo(y.Id);
+    }
+
+    /// <summary>
+    /// Prioridad del tipo de ítem para agrupar de forma estable.
+    /// </summary>
+    private int TypePriority(ItemType t)
+    {
+        return t switch
+        {
+            ItemType.Currency => 0,
+            ItemType.Equipment => 10,
+            ItemType.Bag => 20,
+            ItemType.Event => 30,
+            ItemType.Spell => 40,
+            ItemType.Consumable => 50,
+            ItemType.Resource => 60,
+            _ => 100 + (int)t
+        };
+    }
+
+    /// <summary>
+    /// Obtiene la posición del subtipo en la configuración.
+    /// </summary>
+    private int SubtypeIndex(ItemDescriptor d)
+    {
+        try
+        {
+            var dict = Options.Instance.Items.ItemSubtypes;
+            if (dict == null)
+            {
+                return int.MaxValue;
+            }
+
+            var targetType = Convert.ToInt32(d.ItemType);
+
+            foreach (var kv in dict)
+            {
+                if (Convert.ToInt32(kv.Key) == targetType)
+                {
+                    var list = kv.Value;
+                    if (list == null)
+                    {
+                        break;
+                    }
+
+                    var st = d.Subtype ?? string.Empty;
+                    for (var i = 0; i < list.Count; i++)
+                    {
+                        if (string.Equals(list[i], st, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return i;
+                        }
+                    }
+
+                    break;
+                }
+            }
+        }
+        catch
+        {
+            // Ignorar errores y mandar al final.
+        }
+
+        return int.MaxValue;
+    }
+
+    private static string SafeName(ItemDescriptor d)
+    {
+        return d.Name ?? string.Empty;
     }
 
     protected override void EnsureInitialized()

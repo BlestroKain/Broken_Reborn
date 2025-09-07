@@ -10,6 +10,7 @@ using Intersect.GameObjects;
 using Intersect.Server.Networking;
 using Intersect.Server.Database.PlayerData.Players;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Serilog;
 using System.Diagnostics;
 using System.Data;
@@ -501,45 +502,60 @@ namespace Intersect.Server.Database.PlayerData.Market
         {
             using var context = DbInterface.CreatePlayerContext(readOnly: false);
             var removable = context.Market_Listings
-                .Where(l => l.IsSold || l.ExpireAt <= DateTime.UtcNow)
+                .Where(l => l.IsSold || l.ExpireAt <= DateTime.UtcNow || l.ReturnPending)
                 .ToList();
 
             foreach (var listing in removable)
             {
-                if (!listing.IsSold && listing.ExpireAt <= DateTime.UtcNow)
+                IDbContextTransaction tx = null;
+                try
                 {
-                    var item = new MailAttachment
-                    {
-                        ItemId = ItemDescriptor.IdFromList(listing.ItemId),
-                        Quantity = listing.Quantity,
-                        Properties = listing.ItemProperties
-                    };
+                    listing.ReturnPending = true;
+                    context.SaveChanges();
 
-                    var mail = new MailBox(
-                        sender: null,
-                        receiver: listing.Seller,
-                        title: Strings.Market.expiredlisting,
-                        message: Strings.Market.yourlistingexpired,
-                        attachments: new List<MailAttachment> { item }
-                    );
+                    tx = context.Database.BeginTransaction();
 
-                    if (Player.FindOnline(listing.Seller.Name) is Player onlineSeller)
+                    if (!listing.IsSold && listing.ExpireAt <= DateTime.UtcNow)
                     {
-                        onlineSeller.MailBoxs.Add(mail);
-                        PacketSender.SendOpenMailBox(onlineSeller);
+                        var item = new MailAttachment
+                        {
+                            ItemId = ItemDescriptor.IdFromList(listing.ItemId),
+                            Quantity = listing.Quantity,
+                            Properties = listing.ItemProperties
+                        };
+
+                        var mail = new MailBox(
+                            sender: null,
+                            receiver: listing.Seller,
+                            title: Strings.Market.expiredlisting,
+                            message: Strings.Market.yourlistingexpired,
+                            attachments: new List<MailAttachment> { item }
+                        );
+
+                        if (Player.FindOnline(listing.Seller.Name) is Player onlineSeller)
+                        {
+                            onlineSeller.MailBoxs.Add(mail);
+                            PacketSender.SendOpenMailBox(onlineSeller);
+                        }
+                        else
+                        {
+                            context.Player_MailBox.Add(mail);
+                        }
                     }
-                    else
-                    {
-                        context.Player_MailBox.Add(mail);
-                    }
+
+                    context.Market_Listings.Remove(listing);
+                    context.SaveChanges();
+                    tx.Commit();
                 }
-
-                context.Market_Listings.Remove(listing);
-            }
-
-            if (removable.Count > 0)
-            {
-                context.SaveChanges();
+                catch (Exception ex)
+                {
+                    tx?.Rollback();
+                    Log.Error(ex, "Error returning market listing {ListingId}", listing.Id);
+                }
+                finally
+                {
+                    tx?.Dispose();
+                }
             }
         }
 

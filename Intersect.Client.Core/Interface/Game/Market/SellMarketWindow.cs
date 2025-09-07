@@ -93,7 +93,9 @@ public sealed class SellMarketWindow
 
         BuildLayout();
         _window.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
-   
+        Initialized = true;
+        InitItemContainer();
+        Update();
     }
 
     #region === Layout ===
@@ -131,8 +133,12 @@ public sealed class SellMarketWindow
     {
         if (!Initialized)
         {
-            Initialized = true;
-            InitItemContainer();
+            return;
+        }
+
+        if (Globals.Me == null || Globals.Me.Inventory == null || Globals.Me.Inventory.Length == 0)
+        {
+            return;
         }
 
         if (Items.Count != Options.Instance.Player.MaxInventory)
@@ -144,27 +150,27 @@ public sealed class SellMarketWindow
         {
             var slot = Globals.Me.Inventory[i];
 
-            if (slot == null || !ItemDescriptor.TryGet(slot.ItemId, out var descriptor) || slot.ItemId == Guid.Empty)
+            if (slot == null || slot.ItemId == Guid.Empty || !ItemDescriptor.TryGet(slot.ItemId, out _))
             {
-                Items[i].IsVisibleInParent = false;
+                Items[i].Hide();
                 continue;
             }
 
-            Items[i].IsVisibleInParent = true;
-          
+            Items[i].Show();
+
             if (Items[i].Icon.IsDragging)
             {
-                Items[i].IsVisibleInParent = false;
+                Items[i].Hide();
             }
 
             Items[i].Update();
         }
-
-        PopulateSlotContainer.Populate(mInventoryScroll, Items);
     }
 
     private void InitItemContainer()
     {
+        Items.Clear();
+
         for (int i = 0; i < Options.Instance.Player.MaxInventory; i++)
         {
             var item = new InventoryItem(this, mInventoryScroll, i, null);
@@ -172,7 +178,6 @@ public sealed class SellMarketWindow
         }
 
         PopulateSlotContainer.Populate(mInventoryScroll, Items);
-        Update();
     }
     public void SelectItem(InventoryItem itemSlot, int slotIndex)
     {
@@ -326,7 +331,6 @@ public sealed class SellMarketWindow
         _suggestedPriceLabel.SetText("");
         _suggestedRangeLabel.SetText("");
         _taxLabel.SetText("");
-       InitItemContainer(); // refrescar grid inmediatamente para que el ítem desaparezca si el servidor ya lo descontó
         Update();
     }
 

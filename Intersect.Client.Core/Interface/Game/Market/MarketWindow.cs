@@ -6,6 +6,7 @@ using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
+using Intersect.Client.Framework.Gwen.Input;
 using Intersect.Client.General;
 using Intersect.Client.Interface.Game;
 using Intersect.Client.Localization;
@@ -160,26 +161,49 @@ public partial class MarketWindow : Window
 
     public void LoadListings(List<MarketListingPacket> listings, int page, int pageSize, int total)
     {
+        var scroll = _listingScroll.VerticalScrollBar.ScrollAmount;
+        var focus = InputHandler.KeyboardFocus;
+
         _page = page;
         _pageSize = pageSize;
         _total = total;
 
-        _listingScroll.DeleteAllChildren();
-        _items.Clear();
+        var existing = _items.ToDictionary(i => i.ListingId);
+        var orderedItems = new List<MarketItem>();
 
-        var y = 0;
         foreach (var listing in listings)
         {
-            var item = new MarketItem(_listingScroll, _items.Count, new ContextMenu(this));
-            item.SetBounds(0, y, _listingScroll.Width - 16, 40);
-            item.Load(listing.ListingId, listing.SellerId, listing.ItemId, listing.Quantity, listing.Price, listing.Properties);
-            _items.Add(item);
-            y += 44;
+            MarketItem item;
+            if (existing.TryGetValue(listing.ListingId, out item))
+            {
+                existing.Remove(listing.ListingId);
+                item.Update(listing.ListingId, listing.SellerId, listing.ItemId, listing.Quantity, listing.Price, listing.Properties);
+            }
+            else
+            {
+                item = new MarketItem(_listingScroll, orderedItems.Count, new ContextMenu(this));
+                item.Update(listing.ListingId, listing.SellerId, listing.ItemId, listing.Quantity, listing.Price, listing.Properties);
+            }
+
+            item.SetBounds(0, orderedItems.Count * 44, _listingScroll.Width - 16, 40);
+            item.Update();
+            orderedItems.Add(item);
         }
 
-        _listingScroll.SetInnerSize(_listingScroll.Width - 16, y);
+        foreach (var leftover in existing.Values)
+        {
+            _listingScroll.RemoveChild(leftover, true);
+        }
+
+        _items.Clear();
+        _items.AddRange(orderedItems);
+
+        _listingScroll.SetInnerSize(_listingScroll.Width - 16, _items.Count * 44);
         ApplyFilters();
         UpdatePagination();
+
+        _listingScroll.VerticalScrollBar.ScrollAmount = scroll;
+        focus?.Focus();
     }
 
     private void UpdatePagination()

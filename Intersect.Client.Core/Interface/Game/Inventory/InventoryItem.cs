@@ -8,6 +8,7 @@ using Intersect.Client.Framework.Gwen.DragDrop;
 using Intersect.Client.Framework.Gwen.Input;
 using Intersect.Client.Framework.Input;
 using Intersect.Client.General;
+using Intersect.Client.Interface;
 using Intersect.Client.Interface.Game.Bag;
 using Intersect.Client.Interface.Game.Bank;
 using Intersect.Client.Interface.Game.Hotbar;
@@ -243,7 +244,7 @@ public partial class InventoryItem : SlotItem
 
     private void _sellItemContextItem_Clicked(Base sender, MouseButtonState arguments)
     {
-        Interface.Interface.EnqueueInGame(gameInterface => gameInterface.NotifyOpenSellMarket(SlotIndex));
+        Interface.EnqueueInGame(gameInterface => gameInterface.NotifyOpenSellMarket(SlotIndex));
     }
 
     private void _dropItemContextItem_Clicked(Base sender, MouseButtonState arguments)

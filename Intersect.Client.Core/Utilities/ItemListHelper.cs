@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using Intersect.Config;
 using Intersect.Client.Utilities; // para SearchHelper / SearchQuery en tu proyecto
+using Intersect.Client.Framework.Items;
 using Intersect.Framework.Core.GameObjects.Items;
 
 namespace Intersect.Client.Utilities
@@ -278,6 +279,152 @@ namespace Intersect.Client.Utilities
             }
 
             return ordered.Select(x => x.e);
+        }
+
+        public static int CompareItems(IItem? left, IItem? right, SortCriterion criterion, bool ascending)
+        {
+            var dx = left?.Descriptor;
+            var dy = right?.Descriptor;
+
+            var leftEmpty = dx == null;
+            var rightEmpty = dy == null;
+
+            if (leftEmpty && rightEmpty) return 0;
+            if (leftEmpty) return 1;
+            if (rightEmpty) return -1;
+
+            return criterion switch
+            {
+                SortCriterion.Name => CompareByName(dx!, dy!, ascending),
+                SortCriterion.Quantity => CompareQuantity(left!, right!, ascending),
+                SortCriterion.Price => ComparePrice(dx!, dy!, ascending),
+                _ => CompareDescriptors(dx!, dy!, ascending),
+            };
+        }
+
+        private static int CompareByName(ItemDescriptor dx, ItemDescriptor dy, bool ascending)
+        {
+            var cmp = StringComparer.OrdinalIgnoreCase.Compare(SafeName(dx), SafeName(dy));
+            if (cmp != 0)
+            {
+                return ascending ? cmp : -cmp;
+            }
+
+            return CompareDescriptors(dx, dy, ascending);
+        }
+
+        private static int CompareQuantity(IItem left, IItem right, bool ascending)
+        {
+            var cmp = left.Quantity.CompareTo(right.Quantity);
+            if (cmp != 0)
+            {
+                return ascending ? cmp : -cmp;
+            }
+
+            return CompareDescriptors(left.Descriptor, right.Descriptor, ascending);
+        }
+
+        private static int ComparePrice(ItemDescriptor dx, ItemDescriptor dy, bool ascending)
+        {
+            var cmp = dx.Price.CompareTo(dy.Price);
+            if (cmp != 0)
+            {
+                return ascending ? cmp : -cmp;
+            }
+
+            return CompareDescriptors(dx, dy, ascending);
+        }
+
+        private static int CompareDescriptors(ItemDescriptor x, ItemDescriptor y, bool ascending)
+        {
+            var cmp = TypePriority(x.ItemType).CompareTo(TypePriority(y.ItemType));
+            if (cmp != 0)
+            {
+                return cmp;
+            }
+
+            cmp = SubtypeIndex(x).CompareTo(SubtypeIndex(y));
+            if (cmp != 0)
+            {
+                return cmp;
+            }
+
+            cmp = StringComparer.OrdinalIgnoreCase.Compare(SafeName(x), SafeName(y));
+            if (cmp != 0)
+            {
+                return ascending ? cmp : -cmp;
+            }
+
+            cmp = x.Price.CompareTo(y.Price);
+            if (cmp != 0)
+            {
+                return ascending ? cmp : -cmp;
+            }
+
+            return x.Id.CompareTo(y.Id);
+        }
+
+        private static int TypePriority(ItemType t)
+        {
+            return t switch
+            {
+                ItemType.Currency => 0,
+                ItemType.Equipment => 10,
+                ItemType.Bag => 20,
+                ItemType.Event => 30,
+                ItemType.Spell => 40,
+                ItemType.Consumable => 50,
+                ItemType.Resource => 60,
+                _ => 100 + (int)t,
+            };
+        }
+
+        private static int SubtypeIndex(ItemDescriptor d)
+        {
+            try
+            {
+                var dict = Options.Instance.Items.ItemSubtypes;
+                if (dict == null)
+                {
+                    return int.MaxValue;
+                }
+
+                var targetType = Convert.ToInt32(d.ItemType);
+
+                foreach (var kv in dict)
+                {
+                    if (Convert.ToInt32(kv.Key) == targetType)
+                    {
+                        var list = kv.Value;
+                        if (list == null)
+                        {
+                            break;
+                        }
+
+                        var st = d.Subtype ?? string.Empty;
+                        for (var i = 0; i < list.Count; i++)
+                        {
+                            if (string.Equals(list[i], st, StringComparison.OrdinalIgnoreCase))
+                            {
+                                return i;
+                            }
+                        }
+
+                        break;
+                    }
+                }
+            }
+            catch
+            {
+                // Ignorar errores y mandar al final
+            }
+
+            return int.MaxValue;
+        }
+
+        private static string SafeName(ItemDescriptor d)
+        {
+            return d.Name ?? string.Empty;
         }
 
         // Overload legacy (sin tipo/subtipo explícitos)

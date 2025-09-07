@@ -609,6 +609,18 @@ internal sealed partial class PacketHandler
         // Placeholder for market search handling
     }
 
+    public void HandlePacket(Client client, RequestMarketPricePacket packet)
+    {
+        var player = client.Entity;
+        if (player == null)
+        {
+            return;
+        }
+
+        var (suggested, min, max) = MarketManager.Statistics.GetStatistics(packet.ItemId);
+        PacketSender.SendMarketPriceInfo(player, packet.ItemId, suggested, min, max);
+    }
+
     public void HandlePacket(Client client, CreateMarketListingPacket packet)
     {
         // Placeholder for creating market listings

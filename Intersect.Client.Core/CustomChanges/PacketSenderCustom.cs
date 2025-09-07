@@ -120,4 +120,9 @@ public static partial class PacketSender
         Network.SendPacket(new CancelMarketListingPacket(listingId));
     }
 
+    public static void SendRequestMarketInfo(int itemId)
+    {
+        Network.SendPacket(new RequestMarketPricePacket(itemId));
+    }
+
 }

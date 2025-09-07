@@ -12,7 +12,11 @@ namespace Intersect.Client.Interface.Game.Market;
 
 public partial class SellMarketWindow : Window
 {
+    public static SellMarketWindow? Instance { get; private set; }
+
     private readonly int _slot;
+    private long _minPrice;
+    private long _maxPrice = long.MaxValue;
 
     private readonly Label _quantityLabel;
     private readonly TextBoxNumeric _quantityBox;
@@ -31,6 +35,7 @@ public partial class SellMarketWindow : Window
     public SellMarketWindow(Canvas gameCanvas, int slot)
         : base(gameCanvas, Strings.Market.Title, false, nameof(SellMarketWindow))
     {
+        Instance = this;
         _slot = slot;
         DisableResizing();
         Alignment = [Alignments.Center];
@@ -73,6 +78,7 @@ public partial class SellMarketWindow : Window
         };
         _cancelButton.Clicked += (_, _) => Close();
 
+        Closed += (_, _) => Instance = null;
         RecomputeLayout();
     }
 
@@ -95,6 +101,10 @@ public partial class SellMarketWindow : Window
     {
         var quantity = (int)_quantityBox.Value;
         var price = (long)_priceBox.Value;
+        if (price < _minPrice || price > _maxPrice)
+        {
+            return;
+        }
         SellItem(quantity, price);
         Close();
     }
@@ -115,11 +125,25 @@ public partial class SellMarketWindow : Window
         _suggestedPriceLabel.Text = Strings.Market.SuggestedPrice.ToString(suggested);
     }
 
+    public void SetMarketInfo(long suggested, long min, long max)
+    {
+        _minPrice = min;
+        _maxPrice = max > 0 ? max : long.MaxValue;
+        _priceBox.Minimum = min;
+        _priceBox.Maximum = _maxPrice;
+        _suggestedPriceLabel.Text = $"{Strings.Market.SuggestedPrice.ToString(suggested)} (Min {min} Max {max})";
+    }
+
     protected override void EnsureInitialized()
     {
         LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
         RecomputeLayout();
         UpdateSuggestedPrice();
+        var item = Globals.Me?.Inventory[_slot];
+        if (item != null)
+        {
+            PacketSender.SendRequestMarketInfo(ItemDescriptor.ListIndex(item.ItemId));
+        }
     }
 }
 

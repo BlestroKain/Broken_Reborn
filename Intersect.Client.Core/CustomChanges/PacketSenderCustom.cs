@@ -1,3 +1,4 @@
+using System;
 using Intersect.Client.Entities.Events;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
@@ -95,6 +96,21 @@ public static partial class PacketSender
         };
 
         Network.SendPacket(packet);
+    }
+
+    public static void SendCreateMarketListing(int itemSlot, int quantity, long price)
+    {
+        Network.SendPacket(new CreateMarketListingPacket(itemSlot, quantity, price));
+    }
+
+    public static void SendSearchMarket(string query)
+    {
+        Network.SendPacket(new SearchMarketPacket(query));
+    }
+
+    public static void SendBuyMarketListing(Guid listingId, int quantity)
+    {
+        Network.SendPacket(new BuyMarketListingPacket(listingId, quantity));
     }
 
 }

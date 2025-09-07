@@ -240,4 +240,29 @@ internal sealed partial class PacketHandler
         BestiaryController.ApplyPacket(packet);
     }
 
+    public void HandlePacket(IPacketSender packetSender, MarketListingCreatedPacket packet)
+    {
+        // Placeholder for handling market listing creation confirmation
+    }
+
+    public void HandlePacket(IPacketSender packetSender, MarketListingPacket packet)
+    {
+        // Placeholder for handling a single market listing
+    }
+
+    public void HandlePacket(IPacketSender packetSender, MarketListingsPacket packet)
+    {
+        // Placeholder for handling multiple market listings
+    }
+
+    public void HandlePacket(IPacketSender packetSender, MarketPurchaseSuccessPacket packet)
+    {
+        // Placeholder for handling successful market purchases
+    }
+
+    public void HandlePacket(IPacketSender packetSender, MarketTransactionsPacket packet)
+    {
+        // Placeholder for handling market transaction history
+    }
+
 }

@@ -1435,6 +1435,12 @@ public static partial class Strings
         public readonly LocalizedString RevokeNotAllowed = @"You can't revoke this item, {00} has already accepted the trade!";
     }
 
+    public sealed partial class MarketNamespace : LocaleNamespace
+    {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString Title = @"Market";
+    }
+
     public sealed partial class UpnpNamespace : LocaleNamespace
     {
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -1607,6 +1613,8 @@ public static partial class Strings
 
         public readonly ShopsNamespace Shops = new ShopsNamespace();
 
+        public readonly MarketNamespace Market = new MarketNamespace();
+
         public readonly TradingNamespace Trading = new TradingNamespace();
 
         public readonly UpnpNamespace Upnp = new UpnpNamespace();
@@ -1688,6 +1696,8 @@ public static partial class Strings
     public static RegexNamespace Regex => Root.Regex;
 
     public static ShopsNamespace Shops => Root.Shops;
+
+    public static MarketNamespace Market => Root.Market;
 
     public static TradingNamespace Trading => Root.Trading;
 

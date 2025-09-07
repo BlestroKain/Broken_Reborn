@@ -103,39 +103,56 @@ namespace Intersect.Server.Database.PlayerData.Market
 
         public static bool TryListItem(Player seller, Item item, int quantity, int pricePerUnit, bool autoSplit = false)
         {
-            if (item == null || quantity <= 0 || pricePerUnit <= 0)
+            if (seller == null || item == null || !seller.Items.Contains(item))
             {
                 PacketSender.SendChatMsg(seller, Strings.Market.invalidlisting, ChatMessageType.Error, CustomColors.Alerts.Error);
+                Log.Warning("[MARKET:E01] Listing failed: item not owned by seller {SellerId}", seller?.Id);
+                return false;
+            }
+
+            if (quantity <= 0)
+            {
+                PacketSender.SendChatMsg(seller, Strings.Market.invalidquantity, ChatMessageType.Error, CustomColors.Alerts.Error);
+                Log.Warning("[MARKET:E02] Listing failed: invalid quantity {Quantity}", quantity);
+                return false;
+            }
+
+            if (pricePerUnit <= 0)
+            {
+                PacketSender.SendChatMsg(seller, Strings.Market.invalidprice, ChatMessageType.Error, CustomColors.Alerts.Error);
+                Log.Warning("[MARKET:E03] Listing failed: invalid price {Price}", pricePerUnit);
                 return false;
             }
 
             var itemDescriptor = ItemDescriptor.Get(item.ItemId);
-            if (itemDescriptor == null || !itemDescriptor.CanSell)
+            if (itemDescriptor == null || !itemDescriptor.CanSell || !itemDescriptor.CanDrop || !itemDescriptor.CanTrade)
             {
-                PacketSender.SendChatMsg(seller, Strings.Market.cannotlist, ChatMessageType.Error, CustomColors.Alerts.Error);
+                PacketSender.SendChatMsg(seller, Strings.Market.bounditem, ChatMessageType.Error, CustomColors.Alerts.Error);
+                Log.Warning("[MARKET:E04] Listing failed: item is bound or trade-locked {ItemId}", item.ItemId);
                 return false;
             }
 
             var stats = MarketStatisticsManager.GetStatistics(ItemDescriptor.ListIndex(item.ItemId));
-            var avg = stats.suggested;
             var min = stats.min;
             var max = stats.max;
 
-            if (pricePerUnit < min || pricePerUnit > max)
+            if (min > 0 && max > 0 && (pricePerUnit < min || pricePerUnit > max))
             {
                 PacketSender.SendChatMsg(
                     seller,
-                    $"❌ Precio fuera del rango permitido para este ítem. Rango actual: {min} - {max} 🪙",
+                    Strings.Market.priceoutofrange.ToString(min, max),
                     ChatMessageType.Error,
                     CustomColors.Alerts.Declined
                 );
+                Log.Warning("[MARKET:E05] Listing failed: price {Price} outside allowed range {Min}-{Max}", pricePerUnit, min, max);
                 return false;
             }
 
             var currencyBase = GetDefaultCurrency();
             if (currencyBase == null)
             {
-                PacketSender.SendChatMsg(seller, "Currency item not configured!", ChatMessageType.Error, CustomColors.Alerts.Error);
+                PacketSender.SendChatMsg(seller, Strings.Market.transactionfailed, ChatMessageType.Error, CustomColors.Alerts.Error);
+                Log.Error("[MARKET:E06] Currency item not configured");
                 return false;
             }
 
@@ -143,7 +160,7 @@ namespace Intersect.Server.Database.PlayerData.Market
             context.StopTrackingUsersExcept(seller.User);
             context.Attach(seller);
 
-            var itemProperties = item.Properties;
+            var itemProperties = new ItemProperties(item.Properties);
             var packageSizes = autoSplit ? new[] { 1000,500, 100,50, 10, 1 } : new[] { quantity };
 
             var remaining = quantity;
@@ -189,19 +206,19 @@ namespace Intersect.Server.Database.PlayerData.Market
             }
             catch (DbUpdateException ex)
             {
-                Log.Error($"❌ Error guardando listados divididos: {ex}");
-                PacketSender.SendChatMsg(seller, "❌ Error al guardar el listado en el mercado.", ChatMessageType.Error, CustomColors.Alerts.Error);
+                Log.Error(ex, "[MARKET:E07] Error saving listings for seller {SellerId}", seller.Id);
+                PacketSender.SendChatMsg(seller, Strings.Market.transactionfailed, ChatMessageType.Error, CustomColors.Alerts.Error);
                 return false;
             }
 
             if (atLeastOneListed)
             {
-                //PacketSender.SendChatMsg(seller, "📤 Publicación realizada con éxito.", ChatMessageType.Trading, CustomColors.Alerts.Accepted);
                 PacketSender.SendRefreshMarket(seller);
                 return true;
             }
 
-            PacketSender.SendChatMsg(seller, "❌ No se pudo dividir ni publicar el ítem.", ChatMessageType.Error, CustomColors.Alerts.Error);
+            PacketSender.SendChatMsg(seller, Strings.Market.transactionfailed, ChatMessageType.Error, CustomColors.Alerts.Error);
+            Log.Warning("[MARKET:E08] Listing failed: could not split or list item for seller {SellerId}", seller.Id);
             return false;
         }
 
@@ -235,6 +252,31 @@ namespace Intersect.Server.Database.PlayerData.Market
                 if (listing == null || listing.IsSold || listing.ExpireAt <= DateTime.UtcNow)
                 {
                     PacketSender.SendChatMsg(buyer, Strings.Market.listingunavailable, ChatMessageType.Error, CustomColors.Alerts.Declined);
+                    Log.Warning("[MARKET:E10] Purchase failed: listing unavailable {ListingId}", listingId);
+                    await tx.RollbackAsync();
+                    return false;
+                }
+
+                if (listing.SellerId == buyer.Id)
+                {
+                    PacketSender.SendChatMsg(buyer, Strings.Market.ownlisting, ChatMessageType.Error, CustomColors.Alerts.Declined);
+                    Log.Warning("[MARKET:E11] Purchase failed: buyer attempted to purchase own listing {ListingId}", listingId);
+                    await tx.RollbackAsync();
+                    return false;
+                }
+
+                if (listing.Quantity <= 0)
+                {
+                    PacketSender.SendChatMsg(buyer, Strings.Market.invalidquantity, ChatMessageType.Error, CustomColors.Alerts.Declined);
+                    Log.Warning("[MARKET:E12] Purchase failed: invalid quantity for listing {ListingId}", listingId);
+                    await tx.RollbackAsync();
+                    return false;
+                }
+
+                if (listing.Price <= 0)
+                {
+                    PacketSender.SendChatMsg(buyer, Strings.Market.invalidprice, ChatMessageType.Error, CustomColors.Alerts.Declined);
+                    Log.Warning("[MARKET:E13] Purchase failed: invalid price for listing {ListingId}", listingId);
                     await tx.RollbackAsync();
                     return false;
                 }
@@ -242,7 +284,8 @@ namespace Intersect.Server.Database.PlayerData.Market
                 var currencyBase = GetDefaultCurrency();
                 if (currencyBase == null)
                 {
-                    PacketSender.SendChatMsg(buyer, "Currency not configured.", ChatMessageType.Error, CustomColors.Alerts.Error);
+                    PacketSender.SendChatMsg(buyer, Strings.Market.transactionfailed, ChatMessageType.Error, CustomColors.Alerts.Error);
+                    Log.Error("[MARKET:E14] Currency item not configured");
                     await tx.RollbackAsync();
                     return false;
                 }
@@ -253,6 +296,7 @@ namespace Intersect.Server.Database.PlayerData.Market
                 if (currencyAmount < totalCost)
                 {
                     PacketSender.SendChatMsg(buyer, Strings.Market.notenoughmoney, ChatMessageType.Error, CustomColors.Alerts.Declined);
+                    Log.Warning("[MARKET:E15] Purchase failed: insufficient funds {BuyerId}", buyer.Id);
                     await tx.RollbackAsync();
                     return false;
                 }
@@ -261,6 +305,7 @@ namespace Intersect.Server.Database.PlayerData.Market
                 if (!buyer.CanGiveItem(itemToGive.ItemId, itemToGive.Quantity))
                 {
                     PacketSender.SendChatMsg(buyer, Strings.Market.inventoryfull, ChatMessageType.Error, CustomColors.Alerts.Declined);
+                    Log.Warning("[MARKET:E16] Purchase failed: inventory full for buyer {BuyerId}", buyer.Id);
                     await tx.RollbackAsync();
                     return false;
                 }

@@ -117,7 +117,7 @@ public partial class CharacterWindow:Window
 
       IsResizable = false;
 
-        // 📌 Nombre, Nivel y Clase
+        // Nombre, Nivel y Clase
         mCharacterName = new Label(this, "CharacterNameLabel");
         mCharacterName.SetTextColor(Color.White, ComponentState.Normal);
         mCharacterName.SetPosition(16, 16);
@@ -133,7 +133,7 @@ public partial class CharacterWindow:Window
         mFactionButton.SetToolTipText("Faction");
         mFactionButton.Clicked += (s, e) => Interface.GameUi.GameMenu?.ToggleFactionWindow();
 
-        // 🖼️ Contenedor y retrato
+        // Contenedor y retrato
         mCharacterContainer = new ImagePanel(this, "CharacterContainer");
         mCharacterContainer.SetSize(96, 96);
         mCharacterContainer.SetPosition(16, 70);
@@ -142,7 +142,7 @@ public partial class CharacterWindow:Window
         mCharacterPortrait.SetSize(64, 64);
         mCharacterPortrait.SetPosition(16, 16);
 
-        // 🧩 Slots visuales Paperdoll
+        // Slots visuales Paperdoll
         PaperdollPanels = new ImagePanel[Options.Instance.Equipment.Slots.Count + 1];
         PaperdollTextures = new string[Options.Instance.Equipment.Slots.Count + 1];
         for (var i = 0; i <= Options.Instance.Equipment.Slots.Count; i++)
@@ -152,7 +152,7 @@ public partial class CharacterWindow:Window
             PaperdollPanels[i].Hide();
         }
 
-        // 🧱 Equipamiento en grilla modular (4x4)
+        // Equipamiento en grilla modular (4x4)
         var startX = 300;
         var startY = 40;
         var slotW = 32;
@@ -189,7 +189,7 @@ public partial class CharacterWindow:Window
                     multiSlotTracker[slotName]++;
                 }
 
-                // 📐 Ubicación provisional
+                // Ubicación provisional
                 int row = itemIndex / 4;
                 int col = itemIndex % 4;
 
@@ -202,7 +202,7 @@ public partial class CharacterWindow:Window
         }
 
 
-        // 📊 Etiquetas y botones de stats
+        // Etiquetas y botones de stats
         int statsX = 16;
         int statsY = 180;
         int statSpacing = 22;

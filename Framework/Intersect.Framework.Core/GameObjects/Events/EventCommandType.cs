@@ -145,4 +145,6 @@ public enum EventCommandType
     OpenMailBox = 204,
     SendMail = 205,
     ChangeBestiary = 206,
+    OpenMarket = 207,
+    OpenSellMarket = 208,
 }

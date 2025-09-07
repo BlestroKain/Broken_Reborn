@@ -1523,7 +1523,7 @@ public partial class Player : Entity
 
         // Aplicar bonificación de equipo a la experiencia ganada  
         long totalExp = (long)Math.Round(amount + (amount * (GetEquipmentBonusEffect(ItemEffect.EXP) / 100f)));
-        // 💡 Bonus adicional por mejoras del gremio  
+        // Bonus adicional por mejoras del gremio
         if (IsInGuild && Guild.HasUpgrade(GuildUpgradeType.BonusXp))
         {
             float guildBonus = Guild.GetXpBonusMultiplier(); // ej: 1.15  
@@ -6235,7 +6235,7 @@ public partial class Player : Entity
         var slotConfig = Options.Instance.Equipment.EquipmentSlots[equipmentSlot];
         var maxAllowed = slotConfig.MaxItems;
 
-        // 🔍 Si está lleno, reemplazamos el primero (lógica de auto-reemplazo)
+        // Si está lleno, reemplazamos el primero (lógica de auto-reemplazo)
         if (Equipment[equipmentSlot].Count >= maxAllowed)
         {
             var toReplace = Equipment[equipmentSlot][0];

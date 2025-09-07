@@ -2406,6 +2406,10 @@ Tick timer saved in server config.json.";
         public static LocalizedString sendmail = @"Send Mail";
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString openmailbox = @"Open Mail Box";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString openmarket = @"Open Market Window";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString opensellmarket = @"Open Sell Market Window";
     }
 
     public partial struct EventChangePlayerColor
@@ -2517,6 +2521,8 @@ Tick timer saved in server config.json.";
             {"mailbox", @"Mail Box"},
             {"sendmail", @"Send Mail"},
             {"openmailbox", @"Open Mail Box"},
+            {"openmarket", @"Open Market Window"},
+            {"opensellmarket", @"Open Sell Market Window"},
         };
 
     }
@@ -4051,7 +4057,7 @@ Tick timer saved in server config.json.";
         {
             SubtypesDynamic.Clear();
 
-            // 🔥 Corrected: Accessing ItemOptions through Intersect.Options.Instance
+            // Corrected: Accessing ItemOptions through Intersect.Options.Instance
             if (Intersect.Options.Instance?.Items?.ItemSubtypes != null)
             {
                 foreach (var kvp in Intersect.Options.Instance.Items.ItemSubtypes)

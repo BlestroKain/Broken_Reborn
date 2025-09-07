@@ -276,4 +276,26 @@ internal sealed partial class PacketHandler
         SellMarketWindow.Instance?.SetMarketInfo(packet.SuggestedPrice, packet.MinPrice, packet.MaxPrice);
     }
 
+    public void HandlePacket(IPacketSender packetSender, MarketWindowPacket packet)
+    {
+        Interface.Interface.EnqueueInGame(gameInterface =>
+        {
+            switch (packet.Action)
+            {
+                case MarketWindowPacketType.OpenMarket:
+                    gameInterface.NotifyOpenMarket();
+                    break;
+                case MarketWindowPacketType.CloseMarket:
+                    gameInterface.NotifyCloseMarket();
+                    break;
+                case MarketWindowPacketType.OpenSell:
+                    gameInterface.NotifyOpenSellMarket(packet.Slot);
+                    break;
+                case MarketWindowPacketType.CloseSell:
+                    gameInterface.NotifyCloseSellMarket();
+                    break;
+            }
+        });
+    }
+
 }

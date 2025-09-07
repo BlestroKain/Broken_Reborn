@@ -2366,6 +2366,28 @@ public static partial class CommandProcessing
     {
         player.OpenMailBox();
     }
+
+    private static void ProcessCommand(
+      OpenMarketWindowCommand command,
+      Player player,
+      Event instance,
+      CommandInstance stackInfo,
+      Stack<CommandInstance> callStack
+  )
+    {
+        player.OpenMarket();
+    }
+
+    private static void ProcessCommand(
+      OpenMarketSellWindowCommand command,
+      Player player,
+      Event instance,
+      CommandInstance stackInfo,
+      Stack<CommandInstance> callStack
+  )
+    {
+        player.OpenSellMarket(command.Slot);
+    }
     private static void ProcessCommand(
         SendMailBoxCommand command,
         Player player,

@@ -784,6 +784,12 @@ public partial class FrmEvent : Form
             case EventCommandType.OpenMailBox:
                 tmpCommand = new OpenMailBoxCommand();
                 break;
+            case EventCommandType.OpenMarket:
+                tmpCommand = new OpenMarketWindowCommand();
+                break;
+            case EventCommandType.OpenSellMarket:
+                tmpCommand = new OpenMarketSellWindowCommand();
+                break;
             default:
                 throw new ArgumentOutOfRangeException();
         }

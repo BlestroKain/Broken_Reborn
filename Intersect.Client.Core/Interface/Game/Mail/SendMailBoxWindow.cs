@@ -81,7 +81,7 @@ namespace Intersect.Client.Interface.Game.Mail
             // **Title**
             _titleLabel = new Label(this, "TitleLabel")
             {
-                Text = "🏷 Title:",
+                Text = "Title:",
                 FontName = defaultFont,
                 FontSize = fontSize
             };
@@ -100,7 +100,7 @@ namespace Intersect.Client.Interface.Game.Mail
             // **Message**
             _messageLabel = new Label(this, "MessageLabel")
             {
-                Text = "📝 Message:",
+                Text = "Message:",
                 FontName = defaultFont,
                 FontSize = fontSize
             };

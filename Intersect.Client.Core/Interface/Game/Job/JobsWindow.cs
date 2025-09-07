@@ -205,7 +205,7 @@ namespace Intersect.Client.Interface.Game.Job
         private void LoadRecipes(JobType jobType)
         {  // Record current scroll position before clearing to preserve it
             var currentScroll = mRecipePanel.VerticalScrollBar.ScrollAmount;
-            // 🔄 Limpiar visual y lógicamente las recetas anteriores
+            // Limpiar visual y lógicamente las recetas anteriores
             foreach (var craftedItem in mItems)
             {
                 if (craftedItem.Container is { } container)

@@ -156,6 +156,26 @@ public static partial class PacketSender
         player.SendPacket(new BrokeItemWindowPacket());
     }
 
+    public static void SendOpenMarket(Player player)
+    {
+        player.SendPacket(new MarketWindowPacket(MarketWindowPacketType.OpenMarket));
+    }
+
+    public static void SendCloseMarket(Player player)
+    {
+        player.SendPacket(new MarketWindowPacket(MarketWindowPacketType.CloseMarket));
+    }
+
+    public static void SendOpenSellMarket(Player player, int slot)
+    {
+        player.SendPacket(new MarketWindowPacket(MarketWindowPacketType.OpenSell, slot));
+    }
+
+    public static void SendCloseSellMarket(Player player)
+    {
+        player.SendPacket(new MarketWindowPacket(MarketWindowPacketType.CloseSell));
+    }
+
     public static void SendOpenMailBox(Player player)
     {
         var mails = new List<MailBoxUpdatePacket>();

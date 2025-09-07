@@ -12,6 +12,7 @@ using Intersect.Client.Framework.Gwen.Control.EventArguments;
 using Intersect.Client.General;
 using Intersect.Client.Localization;
 using Intersect.Client.Utilities;
+using Intersect.Client.Framework.Items;
 using Intersect.Framework.Core.GameObjects.Items;
 
 namespace Intersect.Client.Interface.Game.Inventory;
@@ -354,7 +355,7 @@ public partial class InventoryWindow : Window
     /// Compara los contenidos de los slots 'a' y 'b'.
     /// Devuelve &gt; 0 si A debe ir después de B, &lt; 0 si A va antes, 0 si empate.
     /// </summary>
-    private int CompareSlots(Intersect.Client.Entities.Item?[] inventory, int a, int b)
+    private int CompareSlots(IItem?[] inventory, int a, int b)
     {
         var left = (a >= 0 && a < inventory.Length) ? inventory[a] : null;
         var right = (b >= 0 && b < inventory.Length) ? inventory[b] : null;
@@ -393,7 +394,7 @@ public partial class InventoryWindow : Window
         return CompareDescriptors(dx, dy, ascending);
     }
 
-    private int CompareQuantity(Intersect.Client.Entities.Item left, Intersect.Client.Entities.Item right)
+    private int CompareQuantity(IItem left, IItem right)
     {
         var qx = left.Quantity;
         var qy = right.Quantity;

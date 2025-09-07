@@ -28,6 +28,7 @@ public partial class MarketItem : SlotItem
     private readonly Label _priceLabel;
     private readonly Button _buyButton;
 
+    public Guid ListingId => _listingId;
     public int ItemId => _itemId;
     public long Price => _price;
     public ItemType ItemType { get; private set; }
@@ -71,6 +72,11 @@ public partial class MarketItem : SlotItem
     }
 
     public void Load(Guid listingId, Guid sellerId, int itemId, int quantity, long price, ItemProperties properties)
+    {
+        Update(listingId, sellerId, itemId, quantity, price, properties);
+    }
+
+    public void Update(Guid listingId, Guid sellerId, int itemId, int quantity, long price, ItemProperties properties)
     {
         _listingId = listingId;
         _sellerId = sellerId;

@@ -1820,7 +1820,7 @@ internal sealed partial class PacketHandler
             Globals.BankSlots = new Item[packet.Slots];
             foreach (var itm in packet.Items)
             {
-                HandlePacket(itm);
+                HandlePacket(packetSender, itm);
             }
             Globals.BankSlotCount = packet.Slots;
             Globals.BankValue = packet.BankValue;

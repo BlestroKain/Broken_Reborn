@@ -115,4 +115,9 @@ public static partial class PacketSender
         Network.SendPacket(new BuyMarketListingPacket(listingId, quantity));
     }
 
+    public static void SendCancelMarketListing(Guid listingId)
+    {
+        Network.SendPacket(new CancelMarketListingPacket(listingId));
+    }
+
 }

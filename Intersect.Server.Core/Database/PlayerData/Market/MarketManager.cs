@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Data;
 
 namespace Intersect.Server.Database.PlayerData.Market
 
@@ -242,7 +243,7 @@ namespace Intersect.Server.Database.PlayerData.Market
             context.StopTrackingUsersExcept(buyer.User);
             context.Attach(buyer);
 
-            await using var tx = await context.Database.BeginTransactionAsync();
+            await using var tx = await context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
 
             var removedItems = new Dictionary<Guid, int>();
             Item itemToGive = null;
@@ -408,6 +409,23 @@ namespace Intersect.Server.Database.PlayerData.Market
                 MarketStatisticsManager.UpdateStatistics(transaction);
 
                 return true;
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (itemGiven && itemToGive != null)
+                {
+                    buyer.TryTakeItem(itemToGive.ItemId, itemToGive.Quantity);
+                }
+
+                foreach (var kvp in removedItems)
+                {
+                    buyer.TryGiveItem(kvp.Key, kvp.Value);
+                }
+
+                await tx.RollbackAsync();
+                PacketSender.SendChatMsg(buyer, Strings.Market.listingunavailable, ChatMessageType.Error, CustomColors.Alerts.Declined);
+                Log.Warning("[MARKET:E17] Concurrency conflict on listing {ListingId}", listingId);
+                return false;
             }
             catch (Exception ex)
             {

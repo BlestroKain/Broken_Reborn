@@ -165,6 +165,9 @@ public sealed class SellMarketWindow
 
     private void InitItemContainer()
     {
+        Items.Clear();
+        mInventoryScroll.DeleteAll();
+
         for (int i = 0; i < Options.Instance.Player.MaxInventory; i++)
         {
             var item = new InventoryItem(this, mInventoryScroll, i, null);

@@ -1473,6 +1473,10 @@ public partial class FrmEvent : Form
                 break;
             case EventCommandType.OpenMailBox:
                 break;
+            case EventCommandType.OpenMarket:
+                break;
+            case EventCommandType.OpenSellMarket:
+                break;
             default:
                 throw new ArgumentOutOfRangeException();
         }

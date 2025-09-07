@@ -2,6 +2,7 @@ using Intersect.Extensions;
 using Intersect.Server.Database.PlayerData.Api;
 using Intersect.Server.Database.PlayerData.Migrations;
 using Intersect.Server.Database.PlayerData.Players;
+using Intersect.Server.Database.PlayerData.Market;
 using Intersect.Server.Database.PlayerData.SeedData;
 using Intersect.Server.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -52,6 +53,8 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
     public DbSet<UserVariable> User_Variables { get; set; }
     public DbSet<MailBox> Player_MailBox { get; set; }
     public DbSet<KillLog> Player_KillLogs { get; set; }
+    public DbSet<MarketListing> Market_Listings { get; set; }
+    public DbSet<MarketTransaction> Market_Transactions { get; set; }
 
 
     internal async ValueTask Commit(
@@ -144,6 +147,16 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
             .WithMany() // no necesitamos colección inversa aquí
             .HasForeignKey(m => m.SenderId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<MarketListing>()
+            .HasOne(l => l.Seller)
+            .WithMany()
+            .HasForeignKey(l => l.SellerId);
+
+        modelBuilder.Entity<MarketTransaction>()
+            .HasOne(t => t.Seller)
+            .WithMany()
+            .HasForeignKey(t => t.SellerId);
 
         modelBuilder.Entity<KillLog>().HasOne(k => k.Attacker).WithMany().OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<KillLog>().HasOne(k => k.Victim).WithMany().OnDelete(DeleteBehavior.Restrict);

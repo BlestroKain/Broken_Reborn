@@ -1439,6 +1439,39 @@ public static partial class Strings
     {
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public readonly LocalizedString Title = @"Market";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString invalidlisting = @"Invalid listing.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString cannotlist = @"Cannot list this item.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString listingunavailable = @"Listing unavailable.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString notenoughmoney = @"Not enough money.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString inventoryfull = @"Inventory full.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString transactionfailed = @"Transaction failed.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString salecompleted = @"Sale completed.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString yoursolditem = @"You sold {00}.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString itempurchased = @"Item purchased.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString expiredlisting = @"Listing expired.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString yourlistingexpired = @"Your listing expired.";
     }
 
     public sealed partial class UpnpNamespace : LocaleNamespace

@@ -12,6 +12,7 @@ using Intersect.Server.Database.PlayerData.Players;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System.Diagnostics;
+using System.Data;
 using System.Threading.Tasks;
 
 namespace Intersect.Server.Database.PlayerData.Market
@@ -33,23 +34,22 @@ namespace Intersect.Server.Database.PlayerData.Market
 
             var query = context.Market_Listings.AsQueryable();
 
-            if (!status.HasValue || !status.Value)
-            {
-                query = query.Where(l => l.ExpireAt > DateTime.UtcNow);
-            }
-
-            if (status.HasValue)
-            {
-                query = query.Where(l => l.IsSold == status.Value);
-            }
-            else
-            {
-                query = query.Where(l => !l.IsSold);
-            }
-
             if (itemId.HasValue)
             {
                 query = query.Where(l => l.ItemId == itemId.Value);
+            }
+
+            if (sellerId.HasValue)
+            {
+                query = query.Where(l => l.SellerId == sellerId.Value);
+            }
+
+            var isSold = status ?? false;
+            query = query.Where(l => l.IsSold == isSold);
+
+            if (!isSold)
+            {
+                query = query.Where(l => l.ExpireAt > DateTime.UtcNow);
             }
 
             if (minPrice.HasValue)
@@ -62,15 +62,11 @@ namespace Intersect.Server.Database.PlayerData.Market
                 query = query.Where(l => l.Price <= maxPrice.Value);
             }
 
-            if (sellerId.HasValue)
-            {
-                query = query.Where(l => l.SellerId == sellerId.Value);
-            }
-
             var total = query.Count();
 
             var result = query
-                .OrderBy(l => l.ListedAt)
+                .OrderBy(l => l.Price)
+                .ThenBy(l => l.ListedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToList();

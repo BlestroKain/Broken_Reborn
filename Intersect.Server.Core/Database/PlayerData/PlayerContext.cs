@@ -153,6 +153,18 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
             .WithMany()
             .HasForeignKey(l => l.SellerId);
 
+        modelBuilder.Entity<MarketListing>()
+            .HasIndex(l => new { l.ItemId, l.IsSold, l.ExpireAt });
+
+        modelBuilder.Entity<MarketListing>()
+            .HasIndex(l => l.SellerId);
+
+        modelBuilder.Entity<MarketListing>()
+            .HasIndex(l => new { l.Price, l.ListedAt });
+
+        modelBuilder.Entity<MarketListing>()
+            .HasCheckConstraint("CK_Market_Listings_Positive", "Price > 0 AND Quantity > 0");
+
         modelBuilder.Entity<MarketTransaction>()
             .HasOne(t => t.Seller)
             .WithMany()

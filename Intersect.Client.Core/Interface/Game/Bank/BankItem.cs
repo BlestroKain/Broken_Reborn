@@ -320,17 +320,5 @@ public partial class BankItem : SlotItem
     public void SetFilterMatch(bool isMatch)
     {
         _filterMatch = isMatch;
-        // Actualizar aspecto inmediatamente
-        if (!_filterMatch)
-        {
-            // Simular slot vacío visualmente
-            _quantityLabel.IsVisibleInParent = false;
-            Icon.IsVisibleInParent = false;
-        }
-        else
-        {
-            // Se restablece en Update() según el estado real del slot
-            // (no hacemos nada aquí para evitar parpadeos)
-        }
     }
 }

@@ -31,8 +31,12 @@ namespace Intersect.Server.Database.PlayerData.Market
         {
             using var context = DbInterface.CreatePlayerContext(readOnly: true);
 
-            var query = context.Market_Listings
-                .Where(l => l.ExpireAt > DateTime.UtcNow);
+            var query = context.Market_Listings.AsQueryable();
+
+            if (!status.HasValue || !status.Value)
+            {
+                query = query.Where(l => l.ExpireAt > DateTime.UtcNow);
+            }
 
             if (status.HasValue)
             {
@@ -356,8 +360,9 @@ namespace Intersect.Server.Database.PlayerData.Market
                 buyer.TryGiveItem(itemToGive, -1);
                 itemGiven = true;
 
+                // Mark the listing as sold but keep it in the table for auditing.
+                // A scheduled cleanup job will remove it later.
                 listing.IsSold = true;
-                context.Update(listing);
 
                 var transaction = new MarketTransaction
                 {
@@ -484,41 +489,44 @@ namespace Intersect.Server.Database.PlayerData.Market
         public static void CleanExpiredListings()
         {
             using var context = DbInterface.CreatePlayerContext(readOnly: false);
-            var expired = context.Market_Listings
-                .Where(l => !l.IsSold && l.ExpireAt <= DateTime.UtcNow)
+            var removable = context.Market_Listings
+                .Where(l => l.IsSold || l.ExpireAt <= DateTime.UtcNow)
                 .ToList();
 
-            foreach (var listing in expired)
+            foreach (var listing in removable)
             {
-                var item = new MailAttachment
+                if (!listing.IsSold && listing.ExpireAt <= DateTime.UtcNow)
                 {
-                    ItemId = ItemDescriptor.IdFromList(listing.ItemId),
-                    Quantity = listing.Quantity,
-                    Properties = listing.ItemProperties
-                };
+                    var item = new MailAttachment
+                    {
+                        ItemId = ItemDescriptor.IdFromList(listing.ItemId),
+                        Quantity = listing.Quantity,
+                        Properties = listing.ItemProperties
+                    };
 
-                var mail = new MailBox(
-                    sender: null,
-                    receiver: listing.Seller,
-                    title: Strings.Market.expiredlisting,
-                    message: Strings.Market.yourlistingexpired,
-                    attachments: new List<MailAttachment> { item }
-                );
+                    var mail = new MailBox(
+                        sender: null,
+                        receiver: listing.Seller,
+                        title: Strings.Market.expiredlisting,
+                        message: Strings.Market.yourlistingexpired,
+                        attachments: new List<MailAttachment> { item }
+                    );
 
-                if (Player.FindOnline(listing.Seller.Name) is Player onlineSeller)
-                {
-                    onlineSeller.MailBoxs.Add(mail);
-                    PacketSender.SendOpenMailBox(onlineSeller);
-                }
-                else
-                {
-                    context.Player_MailBox.Add(mail);
+                    if (Player.FindOnline(listing.Seller.Name) is Player onlineSeller)
+                    {
+                        onlineSeller.MailBoxs.Add(mail);
+                        PacketSender.SendOpenMailBox(onlineSeller);
+                    }
+                    else
+                    {
+                        context.Player_MailBox.Add(mail);
+                    }
                 }
 
                 context.Market_Listings.Remove(listing);
             }
 
-            if (expired.Count > 0)
+            if (removable.Count > 0)
             {
                 context.SaveChanges();
             }

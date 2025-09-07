@@ -14,10 +14,11 @@ public Guid SellerId { get; set; }
 public virtual Player? Seller { get; set; }
 public int ItemId { get; set; }
 public int Quantity { get; set; }
-public long Price { get; set; }
-public DateTime ListedAt { get; set; } = DateTime.UtcNow;
-public DateTime ExpireAt { get; set; } = DateTime.UtcNow.AddDays(7);
-public bool IsSold { get; set; }
+    public long Price { get; set; }
+    public DateTime ListedAt { get; set; } = DateTime.UtcNow;
+    public DateTime ExpireAt { get; set; } = DateTime.UtcNow.AddDays(7);
+    public bool IsSold { get; set; }
+    public bool ReturnPending { get; set; }
     [Timestamp]
     public byte[] RowVersion { get; set; } = Array.Empty<byte>();
 

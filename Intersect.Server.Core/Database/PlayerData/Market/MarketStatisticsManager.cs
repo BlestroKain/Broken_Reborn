@@ -6,7 +6,7 @@ public class MarketStatisticsManager
 {
     private readonly Dictionary<int, MarketStatistics> _statistics = new();
 
-    private MarketStatistics GetStats(int itemId)
+    private MarketStatistics GetOrCreateStats(int itemId)
     {
         if (!_statistics.TryGetValue(itemId, out var stats))
         {
@@ -17,13 +17,13 @@ public class MarketStatisticsManager
         return stats;
     }
 
-    public void RecordListing(int itemId, long price) => GetStats(itemId).Record(price);
+    public void RecordListing(int itemId, long price) => GetOrCreateStats(itemId).Record(price);
 
-    public void RecordSale(int itemId, long price) => GetStats(itemId).Record(price);
+    public void RecordSale(int itemId, long price) => GetOrCreateStats(itemId).Record(price);
 
     public (long suggested, long min, long max) GetStatistics(int itemId)
     {
-        var stats = GetStats(itemId);
+        var stats = GetOrCreateStats(itemId);
         return (stats.SuggestedPrice, stats.MinPrice, stats.MaxPrice);
     }
 }

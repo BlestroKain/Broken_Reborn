@@ -169,7 +169,7 @@ public static partial class PacketSender
                 Properties = a.Properties
             }).ToList();
 
-            // ✅ Corregido: usar remitente
+            // Corregido: usar remitente
             mails.Add(new MailBoxUpdatePacket(
                 mail.Id,
                 mail.Title,
@@ -203,7 +203,7 @@ public static partial class PacketSender
     public static void SendUnlockedBestiaryEntries(Player player)
     {
         var unlocks = player.BestiaryUnlocks
-            .Where(b => b.Value > 0) // ✅ Ya no se excluye Kill
+            .Where(b => b.Value > 0) // Ya no se excluye Kill
             .GroupBy(b => b.NpcId)
             .ToDictionary(
                 g => g.Key,

@@ -17,17 +17,17 @@ namespace Intersect.Client.Interface.Game.Mail
 {
     public partial class SendMailBoxWindow : Window
     {
-        // ✅ UI principal
+        // UI principal
         private Label _toLabel, _titleLabel, _messageLabel, _attachmentLabel;
         private TextBox _toTextbox, _titleTextbox, _messageTextbox;
         private ScrollControl _attachmentContainer;
         private Button _sendButton, _closeButton;
 
-        // ✅ Slots de adjuntos
+        // Slots de adjuntos
         private List<MailItem> _attachmentSlots;
         public static SendMailBoxWindow Instance { get; private set; }
 
-        // ✅ Estado
+        // Estado
         private readonly List<MailAttachmentPacket> _attachments = new();
         // keep track of which slot each attachment came from so we can
         // correctly remove duplicates
@@ -43,7 +43,7 @@ namespace Intersect.Client.Interface.Game.Mail
             Interface.FocusComponents.Add(_messageTextbox);
             Interface.FocusComponents.Add(_toTextbox);
             Interface.FocusComponents.Add(_titleTextbox);
-            SetBounds(100, 100, 480, 300); // ✅ Ajustamos tamaño compacto
+            SetBounds(100, 100, 480, 300); // Ajustamos tamaño compacto
             LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
         }
 
@@ -53,7 +53,7 @@ namespace Intersect.Client.Interface.Game.Mail
             InitAttachmentSlots();
         }
 
-        #region ✅ Inicialización de UI
+        #region Inicialización de UI
         private void InitUI()
         {
             const string defaultFont = "sourcesansproblack";
@@ -63,7 +63,7 @@ namespace Intersect.Client.Interface.Game.Mail
             // **To**
             _toLabel = new Label(this, "ToLabel")
             {
-                Text = "👤 To:",
+                Text = "To:",
                 FontName = defaultFont,
                 FontSize = fontSize
             };
@@ -120,7 +120,7 @@ namespace Intersect.Client.Interface.Game.Mail
             // **Attachments**
             _attachmentLabel = new Label(this, "AttachmentLabel")
             {
-                Text = "📦 Attachments:",
+                Text = "Attachments:",
                 FontName = defaultFont,
                 FontSize = fontSize
             };
@@ -134,7 +134,7 @@ namespace Intersect.Client.Interface.Game.Mail
             // **Botones**
             _sendButton = new Button(this, "SendButton")
             {
-                Text = "📤 Send",
+                Text = "Send",
                 FontName = defaultFont,
                 FontSize = fontSize
             };
@@ -143,7 +143,7 @@ namespace Intersect.Client.Interface.Game.Mail
 
             _closeButton = new Button(this, "CloseButton")
             {
-                Text = "❌ Close",
+                Text = "Close",
                 FontName = defaultFont,
                 FontSize = fontSize
             };
@@ -152,7 +152,7 @@ namespace Intersect.Client.Interface.Game.Mail
         }
         #endregion
 
-        #region ✅ Slots de adjuntos
+        #region Slots de adjuntos
         private void InitAttachmentSlots()
         {
             _attachmentSlots = new List<MailItem>();
@@ -166,24 +166,24 @@ namespace Intersect.Client.Interface.Game.Mail
         }
         #endregion
 
-        #region ✅ Lógica principal
+        #region Lógica principal
         private void OnSendButtonClicked(Base sender, MouseButtonState arguments)
         {
             if (string.IsNullOrWhiteSpace(_toTextbox.Text))
             {
-                PacketSender.SendChatMsg("⚠️ Enter recipient.", 5);
+                PacketSender.SendChatMsg("Enter recipient.", 5);
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(_titleTextbox.Text))
             {
-                PacketSender.SendChatMsg("⚠️ Enter title.", 5);
+                PacketSender.SendChatMsg("Enter title.", 5);
                 return;
             }
 
             if (_attachments.Count == 0)
             {
-                PacketSender.SendChatMsg("⚠️ Attach at least one item.", 5);
+                PacketSender.SendChatMsg("Attach at least one item.", 5);
                 return;
             }
 

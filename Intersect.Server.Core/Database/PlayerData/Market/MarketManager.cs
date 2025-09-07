@@ -16,6 +16,62 @@ public partial class MarketManager
     public IReadOnlyList<MarketTransaction> Transactions => _transactions;
     public MarketStatisticsManager Statistics => _statistics;
 
+    public bool CreateListing(Player player, int slot, int quantity, long price, ItemProperties properties, bool autoSplit)
+    {
+        var inventoryItem = player.Items.ElementAtOrDefault(slot);
+        if (inventoryItem == null)
+        {
+            return false;
+        }
+
+        var descriptor = inventoryItem.Descriptor;
+        if (descriptor == null)
+        {
+            return false;
+        }
+
+        if (autoSplit && descriptor.Stackable)
+        {
+            foreach (var batch in new[] { 1, 10, 100, 1000 })
+            {
+                if (inventoryItem.Quantity >= batch && player.TryTakeItem(slot, batch))
+                {
+                    AddListing(new MarketListing
+                    {
+                        SellerId = player.Id,
+                        ItemId = ItemDescriptor.ListIndex(inventoryItem.ItemId),
+                        Quantity = batch,
+                        Price = price,
+                        Properties = new ItemProperties(properties)
+                    });
+                }
+            }
+
+            return true;
+        }
+
+        if (quantity <= 0 || quantity > inventoryItem.Quantity)
+        {
+            return false;
+        }
+
+        if (!player.TryTakeItem(slot, quantity))
+        {
+            return false;
+        }
+
+        AddListing(new MarketListing
+        {
+            SellerId = player.Id,
+            ItemId = ItemDescriptor.ListIndex(inventoryItem.ItemId),
+            Quantity = quantity,
+            Price = price,
+            Properties = new ItemProperties(properties)
+        });
+
+        return true;
+    }
+
     public void AddListing(MarketListing listing)
     {
         _listings.Add(listing);

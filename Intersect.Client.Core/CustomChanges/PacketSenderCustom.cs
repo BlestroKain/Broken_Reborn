@@ -99,10 +99,10 @@ public static partial class PacketSender
         Network.SendPacket(packet);
     }
 
-    public static void SendCreateMarketListing(int itemSlot, int quantity, long price)
+    public static void SendCreateMarketListing(int itemSlot, int quantity, long price, bool autoSplit)
     {
         var props = Globals.Me?.Inventory[itemSlot]?.ItemProperties ?? new ItemProperties();
-        Network.SendPacket(new CreateMarketListingPacket(itemSlot, quantity, price, props));
+        Network.SendPacket(new CreateMarketListingPacket(itemSlot, quantity, price, props, autoSplit));
     }
 
     public static void SendSearchMarket(string query)

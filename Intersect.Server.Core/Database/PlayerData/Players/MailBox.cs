@@ -24,14 +24,14 @@ namespace Intersect.Server.Database.PlayerData.Players
         [DatabaseGenerated(DatabaseGeneratedOption.Identity), JsonIgnore]
         public Guid Id { get; set; }
 
-        // ✅ Jugador destinatario
+        // Jugador destinatario
         [JsonIgnore]
         public Guid PlayerId { get; set; }
 
         [ForeignKey(nameof(PlayerId))]
         public virtual Player Player { get; set; }
 
-        // ✅ Jugador remitente (relación completa)
+        // Jugador remitente (relación completa)
         [JsonIgnore]
         public Guid SenderId { get; set; }
 
@@ -44,7 +44,7 @@ namespace Intersect.Server.Database.PlayerData.Players
 
         public DateTime SentAt { get; set; } = DateTime.UtcNow;
 
-        // ✅ Adjuntos serializados
+        // Adjuntos serializados
         [Column("Attachments")]
         public string AttachmentsJson
         {
@@ -72,7 +72,7 @@ namespace Intersect.Server.Database.PlayerData.Players
             // Cargamos los correos del jugador, incluyendo el remitente
             var mails = context.Player_MailBox
                 .Where(m => m.PlayerId == player.Id)
-                .Include(m => m.SenderPlayer) // ✅ Relación cargada
+                .Include(m => m.SenderPlayer) // Relación cargada
                 .ToList();
 
             if (mails == null || mails.Count == 0)

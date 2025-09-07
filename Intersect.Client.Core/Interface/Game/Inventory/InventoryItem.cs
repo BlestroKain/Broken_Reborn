@@ -532,7 +532,7 @@ public partial class InventoryItem : SlotItem
                     }
                     else
                     {
-                        PacketSender.SendChatMsg("⚠️ This slot already has an attachment.", 4);
+                        PacketSender.SendChatMsg("This slot already has an attachment.", 4);
                     }
                     return false;
 

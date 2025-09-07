@@ -6,6 +6,7 @@ using Intersect.Framework.Core.GameObjects.Items;
 using NUnit.Framework;
 using Assert = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 using Intersect;
+using Intersect.Client.Items;
 
 namespace Intersect.Tests;
 
@@ -103,6 +104,39 @@ public class ItemListHelperTests
 
         Assert.AreEqual(1, result.Count);
         Assert.AreSame(descriptor, result[0].Descriptor);
+    }
+
+    [Test]
+    public void CompareItems_SortsByNameAscending()
+    {
+        var descriptorA = new ItemDescriptor(Guid.NewGuid())
+        {
+            Name = "Alpha",
+            Price = 1,
+            ItemType = ItemType.Equipment,
+            Subtype = "Sword"
+        };
+
+        var descriptorB = new ItemDescriptor(Guid.NewGuid())
+        {
+            Name = "Beta",
+            Price = 1,
+            ItemType = ItemType.Equipment,
+            Subtype = "Sword"
+        };
+
+        ItemDescriptor.Lookup.Set(descriptorA.Id, descriptorA);
+        ItemDescriptor.Lookup.Set(descriptorB.Id, descriptorB);
+
+        var itemA = new Item();
+        itemA.Load(descriptorA.Id, 1, null, new ItemProperties());
+
+        var itemB = new Item();
+        itemB.Load(descriptorB.Id, 1, null, new ItemProperties());
+
+        var result = ItemListHelper.CompareItems(itemA, itemB, SortCriterion.Name, true);
+
+        Assert.IsTrue(result < 0);
     }
 }
 

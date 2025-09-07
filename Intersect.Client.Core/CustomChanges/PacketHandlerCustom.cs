@@ -6,6 +6,7 @@ using Intersect.Client.Framework.Entities;
 using Intersect.Client.Framework.Items;
 using Intersect.Client.General;
 using Intersect.Client.Interface.Game.Chat;
+using Intersect.Client.Interface.Game.Market;
 using Intersect.Client.Interface.Menu;
 using Intersect.Client.Items;
 using Intersect.Client.Localization;
@@ -23,6 +24,7 @@ using Intersect.Models;
 using Intersect.Client.Interface.Shared;
 using Intersect.Framework.Core;
 using Intersect.Framework.Core.GameObjects.Animations;
+using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Crafting;
 using Intersect.Framework.Core.GameObjects.Events;
 using Intersect.Framework.Core.GameObjects.Mapping.Tilesets;
@@ -238,6 +240,64 @@ internal sealed partial class PacketHandler
     public void HandlePacket(IPacketSender packetSender, UnlockedBestiaryEntriesPacket packet)
     {
         BestiaryController.ApplyPacket(packet);
+    }
+
+    public void HandlePacket(IPacketSender packetSender, MarketListingCreatedPacket packet)
+    {
+        // Placeholder for handling market listing creation confirmation
+    }
+
+    public void HandlePacket(IPacketSender packetSender, MarketListingPacket packet)
+    {
+        // Placeholder for handling a single market listing
+        var _ = packet.Properties;
+    }
+
+    public void HandlePacket(IPacketSender packetSender, MarketListingsPacket packet)
+    {
+        // Placeholder for handling multiple market listings
+        foreach (var listing in packet.Listings)
+        {
+            var _ = listing.Properties;
+        }
+    }
+
+    public void HandlePacket(IPacketSender packetSender, MarketPurchaseSuccessPacket packet)
+    {
+        // Placeholder for handling successful market purchases
+    }
+
+    public void HandlePacket(IPacketSender packetSender, MarketTransactionsPacket packet)
+    {
+        // Placeholder for handling market transaction history
+    }
+
+    public void HandlePacket(IPacketSender packetSender, MarketPriceInfoPacket packet)
+    {
+        var descriptorId = ItemDescriptor.IdFromList(packet.ItemId);
+        MarketPriceCache.Update(descriptorId, (int)packet.SuggestedPrice, (int)packet.MinPrice, (int)packet.MaxPrice);
+    }
+
+    public void HandlePacket(IPacketSender packetSender, MarketWindowPacket packet)
+    {
+        Interface.Interface.EnqueueInGame(gameInterface =>
+        {
+            switch (packet.Action)
+            {
+                case MarketWindowPacketType.OpenMarket:
+                    gameInterface.NotifyOpenMarket();
+                    break;
+                case MarketWindowPacketType.CloseMarket:
+                    gameInterface.NotifyCloseMarket();
+                    break;
+                case MarketWindowPacketType.OpenSell:
+                    gameInterface.NotifyOpenSellMarket(packet.Slot);
+                    break;
+                case MarketWindowPacketType.CloseSell:
+                    gameInterface.NotifyCloseSellMarket();
+                    break;
+            }
+        });
     }
 
 }

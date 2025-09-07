@@ -8,6 +8,7 @@ using Intersect.Client.Framework.Gwen.DragDrop;
 using Intersect.Client.Framework.Gwen.Input;
 using Intersect.Client.Framework.Input;
 using Intersect.Client.General;
+using Intersect.Client.Interface;
 using Intersect.Client.Interface.Game.Bag;
 using Intersect.Client.Interface.Game.Bank;
 using Intersect.Client.Interface.Game.Hotbar;
@@ -37,6 +38,7 @@ public partial class InventoryItem : SlotItem
     private readonly MenuItem _actionItemMenuItem;
     private readonly MenuItem _dropItemMenuItem;
     private readonly MenuItem _showItemMenuItem;
+    private readonly MenuItem _sellItemMenuItem;
 
     public InventoryItem(InventoryWindow inventoryWindow, Base parent, int index, ContextMenu contextMenu)
         : base(parent, nameof(InventoryItem), index, contextMenu)
@@ -96,6 +98,8 @@ public partial class InventoryItem : SlotItem
         _actionItemMenuItem.Clicked += _actionItemContextItem_Clicked;
         _showItemMenuItem = contextMenu.AddItem(Strings.ItemContextMenu.Show);
         _showItemMenuItem.Clicked += _showItemContextItem_Clicked;
+        _sellItemMenuItem = contextMenu.AddItem(Strings.ItemContextMenu.Sell);
+        _sellItemMenuItem.Clicked += _sellItemContextItem_Clicked;
         contextMenu.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
 
         if (Globals.Me is { } player)
@@ -179,6 +183,12 @@ public partial class InventoryItem : SlotItem
             _actionItemMenuItem.SetText(Strings.ItemContextMenu.Sell.ToString(descriptor.Name));
         }
 
+        if (Globals.GameShop == null && descriptor.CanSell)
+        {
+            contextMenu.AddChild(_sellItemMenuItem);
+            _sellItemMenuItem.SetText(Strings.ItemContextMenu.Sell.ToString(descriptor.Name));
+        }
+
         // Can we drop this item? if so show the user!
         if (descriptor.CanDrop)
         {
@@ -230,6 +240,11 @@ public partial class InventoryItem : SlotItem
         }
 
         Interface.GameUi.AppendChatboxItem(descriptor, slot.ItemProperties ?? new ItemProperties());
+    }
+
+    private void _sellItemContextItem_Clicked(Base sender, MouseButtonState arguments)
+    {
+        Interface.EnqueueInGame(gameInterface => gameInterface.NotifyOpenSellMarket(SlotIndex));
     }
 
     private void _dropItemContextItem_Clicked(Base sender, MouseButtonState arguments)
@@ -518,7 +533,7 @@ public partial class InventoryItem : SlotItem
                     }
                     else
                     {
-                        PacketSender.SendChatMsg("⚠️ This slot already has an attachment.", 4);
+                        PacketSender.SendChatMsg("This slot already has an attachment.", 4);
                     }
                     return false;
 

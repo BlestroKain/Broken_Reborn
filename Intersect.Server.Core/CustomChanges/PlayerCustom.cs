@@ -260,6 +260,15 @@ namespace Intersect.Server.Entities
         {
             PacketSender.SendOpenBrokeItemWindow(this);
         }
+        public void OpenMarket()
+        {
+            PacketSender.SendOpenMarket(this);
+        }
+
+        public void OpenSellMarket(int slot)
+        {
+            PacketSender.SendOpenSellMarket(this, slot);
+        }
         [NotMapped] public bool InMailBox;
         [JsonIgnore]
         public virtual List<MailBox> MailBoxs { get; set; } = new List<MailBox>();

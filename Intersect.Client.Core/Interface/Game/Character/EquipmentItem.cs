@@ -39,7 +39,7 @@ public partial class EquipmentItem
     {
         if (mYindex < 0 || mYindex >= Options.Instance.Equipment.EquipmentSlots.Count)
         {
-            Debug.WriteLine($"⚠️ Setup(): índice inválido {mYindex}. EquipmentSlots.Count = {Options.Instance.Equipment.EquipmentSlots.Count}");
+            Debug.WriteLine($"Setup(): índice inválido {mYindex}. EquipmentSlots.Count = {Options.Instance.Equipment.EquipmentSlots.Count}");
             return;
         }
 
@@ -144,7 +144,7 @@ public partial class EquipmentItem
     public void Update(List<Guid> itemIds, List<ItemProperties> properties)
     {
         mCurrentItemIds = itemIds;
-        mItemProperties = properties.FirstOrDefault(); // ✅ Aquí se guarda la propiedad real
+        mItemProperties = properties.FirstOrDefault(); // Aquí se guarda la propiedad real
 
         for (var i = 0; i < ContentPanels.Count; i++)
         {

@@ -714,7 +714,7 @@ public partial class FrmItem : EditorForm
             }
         }
 
-        // 🔥 Asignar subtipo actual o el primero por defecto
+        // Asignar subtipo actual o el primero por defecto
         if (cmbSubType.Items.Count > 0)
         {
             cmbSubType.SelectedItem = mEditorItem.Subtype ?? cmbSubType.Items[0];

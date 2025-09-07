@@ -15,6 +15,7 @@ using Intersect.Client.Interface.Game.Hotbar;
 using Intersect.Client.Interface.Game.Inventory;
 using Intersect.Client.Interface.Game.Mail;
 using Intersect.Client.Interface.Game.Shop;
+using Intersect.Client.Interface.Game.Market;
 using Intersect.Client.Interface.Game.Trades;
 using Intersect.Client.Interface.Menu;
 using Intersect.Client.Interface.Shared;
@@ -56,6 +57,8 @@ public partial class GameInterface : MutableInterface
     private QuestOfferWindow mQuestOfferWindow;
 
     private ShopWindow _shopWindow;
+    private MarketWindow? _marketWindow;
+    private SellMarketWindow? _sellMarketWindow;
     public EnchantItemWindow mEnchantItemWindow;
     private RuneEnchantWindow mRuneItemWindow;
     private BreakItemWindow mBreakItemWindow;
@@ -89,6 +92,12 @@ public partial class GameInterface : MutableInterface
     private bool mShouldOpenCraftingTable;
 
     private bool mShouldOpenShop;
+
+    private bool _shouldOpenMarket;
+    private bool _shouldCloseMarket;
+    private bool _shouldOpenSellMarket;
+    private bool _shouldCloseSellMarket;
+    private int _sellMarketSlot;
 
     private bool mShouldOpenTrading;
 
@@ -288,6 +297,42 @@ public partial class GameInterface : MutableInterface
     {
         _shopWindow = new ShopWindow(GameCanvas) { DeleteOnClose = true };
         mShouldOpenShop = false;
+    }
+
+    //Market
+    public void NotifyOpenMarket()
+    {
+        _shouldOpenMarket = true;
+    }
+
+    public void NotifyCloseMarket()
+    {
+        _shouldCloseMarket = true;
+    }
+
+    public void OpenMarket()
+    {
+        _marketWindow ??= new MarketWindow(GameCanvas) { DeleteOnClose = true };
+        _marketWindow.Show();
+        _shouldOpenMarket = false;
+    }
+
+    public void NotifyOpenSellMarket(int slot)
+    {
+        _sellMarketSlot = slot;
+        _shouldOpenSellMarket = true;
+    }
+
+    public void NotifyCloseSellMarket()
+    {
+        _shouldCloseSellMarket = true;
+    }
+
+    public void OpenSellMarket()
+    {
+        _sellMarketWindow = new SellMarketWindow(GameCanvas);
+        _sellMarketWindow.Show();
+        _shouldOpenSellMarket = false;
     }
 
     //Bank
@@ -522,6 +567,32 @@ public partial class GameInterface : MutableInterface
         }
 
         mShouldCloseShop = false;
+
+        //Market Update
+        if (_shouldOpenMarket)
+        {
+            OpenMarket();
+            GameMenu.OpenInventory();
+        }
+
+        if (_marketWindow != null && (!_marketWindow.IsVisibleInTree || _shouldCloseMarket))
+        {
+            _marketWindow.Close();
+            _marketWindow = null;
+            _shouldCloseMarket = false;
+        }
+
+        if (_shouldOpenSellMarket)
+        {
+            OpenSellMarket();
+        }
+
+        if (_sellMarketWindow != null && (!_sellMarketWindow.IsVisible() || _shouldCloseSellMarket))
+        {
+            _sellMarketWindow.Close();
+            _sellMarketWindow = null;
+            _shouldCloseSellMarket = false;
+        }
 
         //Bank Update
         if (mShouldOpenBank)

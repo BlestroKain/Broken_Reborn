@@ -72,7 +72,7 @@ public static class BestiaryController
             {
                 if (set.Add(unlock))
                 {
-                    OnUnlockGained?.Invoke(npcId, unlock); // ✅ esto debe disparar Refresh en BeastTile
+                    OnUnlockGained?.Invoke(npcId, unlock); // Esto debe disparar Refresh en BeastTile
 
                     if (NPCDescriptor.TryGet(npcId, out var desc))
                     {

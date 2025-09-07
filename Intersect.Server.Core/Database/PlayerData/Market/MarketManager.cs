@@ -279,7 +279,7 @@ namespace Intersect.Server.Database.PlayerData.Market
                 sender: buyer,
                 receiver: listing.Seller,
                 title: Strings.Market.salecompleted,
-                msg: Strings.Market.yoursolditem.ToString(ItemDescriptor.GetName(listing.ItemId)),
+               message: Strings.Market.yoursolditem.ToString(ItemDescriptor.GetName(listing.ItemId)),
                 attachments: new List<MailAttachment> { goldAttachment }
             );
 
@@ -359,7 +359,7 @@ namespace Intersect.Server.Database.PlayerData.Market
                     sender: null,
                     receiver: listing.Seller,
                     title: Strings.Market.expiredlisting,
-                    msg: Strings.Market.yourlistingexpired,
+                    message: Strings.Market.yourlistingexpired,
                     attachments: new List<MailAttachment> { item }
                 );
 

@@ -255,11 +255,10 @@ internal sealed partial class PacketHandler
 
     public void HandlePacket(IPacketSender packetSender, MarketListingsPacket packet)
     {
-        // Placeholder for handling multiple market listings
-        foreach (var listing in packet.Listings)
+        Interface.Interface.EnqueueInGame(gameInterface =>
         {
-            var _ = listing.Properties;
-        }
+            gameInterface.GetMarketWindow()?.LoadListings(packet.Listings, packet.Page, packet.PageSize, packet.Total);
+        });
     }
 
     public void HandlePacket(IPacketSender packetSender, MarketPurchaseSuccessPacket packet)

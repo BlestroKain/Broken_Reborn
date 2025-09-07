@@ -705,10 +705,11 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
                     }
                 }
 
-                if (_itemProperties?.StatModifiers != default)
+                var statModifiers = _itemProperties?.StatModifiers;
+                if (statModifiers != default)
                 {
                     agility += _itemDescriptor.StatsGiven[(int)Stat.Agility];
-                    agility += _itemProperties.StatModifiers[(int)Stat.Agility];
+                    agility += statModifiers[(int)Stat.Agility];
                     agility += (int)Math.Floor(agility * (_itemDescriptor.PercentageStatsGiven[(int)Stat.Agility] / 100f));
                 }
 
@@ -782,11 +783,12 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
             ItemRange? rangeForStat = default;
             var percentageGivenForStat = _itemDescriptor.PercentageStatsGiven[statIndex];
 
-            if (_itemProperties.StatModifiers != default || !_itemDescriptor.TryGetRangeFor((Stat)statIndex, out rangeForStat) || rangeForStat.LowRange == rangeForStat.HighRange)
+            var statModifiers = _itemProperties?.StatModifiers;
+            if (statModifiers != default || !_itemDescriptor.TryGetRangeFor((Stat)statIndex, out rangeForStat) || rangeForStat?.LowRange == rangeForStat?.HighRange)
             {
                 var flatValueGivenForStat = _itemDescriptor.StatsGiven[statIndex];
-                if (_itemProperties.StatModifiers != default)
-                    flatValueGivenForStat += _itemProperties.StatModifiers[statIndex];
+                if (statModifiers != default)
+                    flatValueGivenForStat += statModifiers[statIndex];
 
                 flatValueGivenForStat += rangeForStat?.LowRange ?? 0;
 

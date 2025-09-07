@@ -23,6 +23,7 @@ public partial class SellMarketWindow : Window
     private readonly Label _priceLabel;
     private readonly TextBoxNumeric _priceBox;
     private readonly Label _suggestedPriceLabel;
+    private readonly LabeledCheckBox _autoSplitCheckbox;
     private readonly Button _sellButton;
     private readonly Button _cancelButton;
 
@@ -41,7 +42,7 @@ public partial class SellMarketWindow : Window
         Alignment = [Alignments.Center];
         IsResizable = false;
         IsClosable = true;
-        SetSize(360, 180);
+        SetSize(360, 210);
 
         _quantityLabel = new Label(this, nameof(_quantityLabel))
         {
@@ -66,6 +67,11 @@ public partial class SellMarketWindow : Window
 
         _suggestedPriceLabel = new Label(this, nameof(_suggestedPriceLabel));
 
+        _autoSplitCheckbox = new LabeledCheckBox(this, nameof(_autoSplitCheckbox))
+        {
+            Text = "Dividir en paquetes",
+        };
+
         _sellButton = new Button(this, nameof(_sellButton))
         {
             Text = Strings.Market.Sell,
@@ -84,7 +90,7 @@ public partial class SellMarketWindow : Window
 
     private void RecomputeLayout()
     {
-        SetSize(360, 180);
+        SetSize(360, 210);
         _quantityLabel.SetBounds(PAD, PAD, LABEL_W, CTRL_H);
         _quantityBox.SetBounds(PAD + LABEL_W + GAP, PAD, INPUT_W, CTRL_H);
 
@@ -92,6 +98,7 @@ public partial class SellMarketWindow : Window
         _priceBox.SetBounds(PAD + LABEL_W + GAP, PAD + CTRL_H + GAP, INPUT_W, CTRL_H);
 
         _suggestedPriceLabel.SetBounds(PAD, PAD + (CTRL_H + GAP) * 2, LABEL_W + INPUT_W + GAP, CTRL_H);
+        _autoSplitCheckbox.SetBounds(PAD, PAD + (CTRL_H + GAP) * 3, LABEL_W + INPUT_W + GAP, CTRL_H);
 
         _sellButton.SetBounds(PAD, Height - CTRL_H - PAD, 100, CTRL_H);
         _cancelButton.SetBounds(Width - 100 - PAD, Height - CTRL_H - PAD, 100, CTRL_H);
@@ -105,7 +112,8 @@ public partial class SellMarketWindow : Window
         {
             return;
         }
-        SellItem(quantity, price);
+        var autoSplit = _autoSplitCheckbox.IsChecked;
+        SellItem(quantity, price, autoSplit);
         Close();
     }
 
@@ -114,9 +122,9 @@ public partial class SellMarketWindow : Window
         return Globals.Me?.Inventory[_slot]?.ItemProperties;
     }
 
-    public void SellItem(int quantity, long price)
+    public void SellItem(int quantity, long price, bool autoSplit)
     {
-        PacketSender.SendCreateMarketListing(_slot, quantity, price);
+        PacketSender.SendCreateMarketListing(_slot, quantity, price, autoSplit);
     }
 
     private void UpdateSuggestedPrice()

@@ -12,12 +12,13 @@ public partial class CreateMarketListingPacket : IntersectPacket
     {
     }
 
-    public CreateMarketListingPacket(int itemSlot, int quantity, long price, ItemProperties properties)
+    public CreateMarketListingPacket(int itemSlot, int quantity, long price, ItemProperties properties, bool autoSplit)
     {
         ItemSlot = itemSlot;
         Quantity = quantity;
         Price = price;
         Properties = properties;
+        AutoSplit = autoSplit;
     }
 
     [Key(0)]
@@ -31,4 +32,7 @@ public partial class CreateMarketListingPacket : IntersectPacket
 
     [Key(3)]
     public ItemProperties Properties { get; set; } = new();
+
+    [Key(4)]
+    public bool AutoSplit { get; set; }
 }

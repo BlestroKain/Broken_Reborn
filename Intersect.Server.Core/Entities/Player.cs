@@ -6197,7 +6197,7 @@ public partial class Player : Entity
             return; // No se encontró el ítem en inventario
         }
 
-        // ✅ Validación adicional: Armas 2 manos vs escudos
+        // Validación adicional: Armas 2 manos vs escudos
         if (itemDescriptor.EquipmentSlot == Options.Instance.Equipment.WeaponSlot)
         {
             if (itemDescriptor.TwoHanded)
@@ -6214,7 +6214,7 @@ public partial class Player : Entity
             }
         }
 
-        // ✅ Equipar el ítem
+        // Equipar el ítem
         AddEquipmentSlot(itemDescriptor.EquipmentSlot, slot);
 
         if (updateCooldown)

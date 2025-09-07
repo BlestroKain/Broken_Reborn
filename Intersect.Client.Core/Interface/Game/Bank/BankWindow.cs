@@ -61,7 +61,7 @@ public partial class BankWindow : Window
             Interface.GameUi.NotifyCloseBank();
         };
 
-        // 📦 Panel superior para filtros y controles
+        // Panel superior para filtros y controles
         var topPanel = new ImagePanel(this, "TopControlsPanel");
         topPanel.SetSize(480, 40);
         topPanel.SetPosition(10, 10);

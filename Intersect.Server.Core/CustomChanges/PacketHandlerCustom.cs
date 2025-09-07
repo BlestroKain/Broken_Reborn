@@ -283,23 +283,23 @@ internal sealed partial class PacketHandler
                 return;
             }
 
-            // ✅ Bloquear envío al mismo personaje
+            // Bloquear envío al mismo personaje
             if (sender.Id == recipient.Id)
             {
-                PacketSender.SendChatMsg(sender, "⚠️ No puedes enviarte un correo a ti mismo.", ChatMessageType.Error, CustomColors.Alerts.Info);
+                PacketSender.SendChatMsg(sender, "No puedes enviarte un correo a ti mismo.", ChatMessageType.Error, CustomColors.Alerts.Info);
                 sender.CloseMailBox();
                 return;
             }
 
-            // ✅ Bloquear envío a otros personajes de la misma cuenta
+            // Bloquear envío a otros personajes de la misma cuenta
             if (sender.UserId == recipient.UserId)
             {
-                PacketSender.SendChatMsg(sender, "⚠️ No puedes enviar correo a personajes de tu misma cuenta.", ChatMessageType.Error, CustomColors.Alerts.Info);
+                PacketSender.SendChatMsg(sender, "No puedes enviar correo a personajes de tu misma cuenta.", ChatMessageType.Error, CustomColors.Alerts.Info);
                 sender.CloseMailBox();
                 return;
             }
 
-            // ✅ Manejo de adjuntos con snapshot para rollback
+            // Manejo de adjuntos con snapshot para rollback
             var attachments = new List<MailAttachment>();
             var removedItems = new List<(Guid ItemId, int Quantity, ItemProperties Properties)>();
 
@@ -330,7 +330,7 @@ internal sealed partial class PacketHandler
                 }
             }
 
-            // ✅ Adjuntar entidades para evitar conflictos
+            // Adjuntar entidades para evitar conflictos
             context.Attach(recipient).State = EntityState.Unchanged;
             context.Attach(sender).State = EntityState.Unchanged;
 
@@ -339,7 +339,7 @@ internal sealed partial class PacketHandler
             recipient.MailBoxs.Add(mail);
             context.Entry(mail).State = EntityState.Added;
 
-            // ✅ Guardar con reintentos y rollback si falla
+            // Guardar con reintentos y rollback si falla
             var success = false;
             int retries = 3;
 
@@ -357,7 +357,7 @@ internal sealed partial class PacketHandler
                 }
             }
 
-            // ✅ Si falla, devolver ítems al inventario
+            // Si falla, devolver ítems al inventario
             if (!success)
             {
                 foreach (var item in removedItems)
@@ -365,12 +365,12 @@ internal sealed partial class PacketHandler
                     sender.TryGiveItem(item.ItemId, item.Quantity, item.Properties);
                 }
 
-                PacketSender.SendChatMsg(sender, "⚠️ Error al enviar el correo. Los ítems fueron devueltos.", ChatMessageType.Error, CustomColors.Alerts.Info);
+                PacketSender.SendChatMsg(sender, "Error al enviar el correo. Los ítems fueron devueltos.", ChatMessageType.Error, CustomColors.Alerts.Info);
                 sender.CloseMailBox();
                 return;
             }
 
-            // ✅ Notificar destinatario online
+            // Notificar destinatario online
             var onlineRecipient = Player.FindOnline(packet.To);
             if (onlineRecipient != null)
             {
@@ -380,7 +380,7 @@ internal sealed partial class PacketHandler
             }
         }
 
-        // ✅ Confirmación al remitente
+        // Confirmación al remitente
         PacketSender.SendChatMsg(sender, "Correo enviado con éxito.", ChatMessageType.Trading, CustomColors.Alerts.Accepted);
         sender.CloseMailBox();
     }
@@ -402,14 +402,14 @@ internal sealed partial class PacketHandler
 
         if (mail.Attachments == null || mail.Attachments.Count == 0)
         {
-            PacketSender.SendChatMsg(player, "⚠️ Este correo no contiene ítems.", ChatMessageType.Error, CustomColors.Alerts.Info);
+            PacketSender.SendChatMsg(player, "Este correo no contiene ítems.", ChatMessageType.Error, CustomColors.Alerts.Info);
             return;
         }
 
         var deliveredItems = new List<MailAttachment>();
         var pendingItems = new List<MailAttachment>();
 
-        // ✅ Procesar adjuntos de forma segura
+        // Procesar adjuntos de forma segura
         foreach (var attachment in mail.Attachments)
         {
             var item = new Item(attachment.ItemId, attachment.Quantity)
@@ -435,7 +435,7 @@ internal sealed partial class PacketHandler
             }
         }
 
-        // ✅ Actualización en base de datos
+        // Actualización en base de datos
         using (var context = DbInterface.CreatePlayerContext(readOnly: false))
         {
             var dbMail = context.Player_MailBox.FirstOrDefault(m => m.Id == mail.Id);
@@ -456,19 +456,19 @@ internal sealed partial class PacketHandler
             }
         }
 
-        // ✅ Actualizar en memoria
+        // Actualizar en memoria
         if (pendingItems.Any())
         {
             mail.Attachments = pendingItems;
-            PacketSender.SendChatMsg(player, "⚠️ No todos los ítems se entregaron. Verifica tu inventario y vuelve a intentarlo.", ChatMessageType.Notice, CustomColors.Alerts.Info);
+            PacketSender.SendChatMsg(player, "No todos los ítems se entregaron. Verifica tu inventario y vuelve a intentarlo.", ChatMessageType.Notice, CustomColors.Alerts.Info);
         }
         else
         {
             player.MailBoxs.Remove(mail);
-            PacketSender.SendChatMsg(player, "✅ Todos los ítems del correo fueron entregados.", ChatMessageType.Trading, CustomColors.Alerts.Accepted);
+            PacketSender.SendChatMsg(player, "Todos los ítems del correo fueron entregados.", ChatMessageType.Trading, CustomColors.Alerts.Accepted);
         }
 
-        // ✅ Actualización visual
+        // Actualización visual
         PacketSender.SendInventory(player);
         PacketSender.SendOpenMailBox(player);
     }
@@ -623,8 +623,16 @@ internal sealed partial class PacketHandler
 
     public void HandlePacket(Client client, CreateMarketListingPacket packet)
     {
-        // Placeholder for creating market listings
-        var _ = packet.Properties;
+        var player = client.Entity;
+        if (player == null)
+        {
+            return;
+        }
+
+        if (!MarketManager.CreateListing(player, packet.ItemSlot, packet.Quantity, packet.Price, packet.Properties, packet.AutoSplit))
+        {
+            PacketSender.SendChatMsg(player, "No se pudo crear el listado.", ChatMessageType.Error);
+        }
     }
 
     public void HandlePacket(Client client, BuyMarketListingPacket packet)

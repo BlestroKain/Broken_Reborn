@@ -92,7 +92,7 @@ public partial class MailBoxWindow : Window
         mMessage.SetBounds(300, 100, 350, 150);
         mMessage.Hide();
 
-        // 🎁 Adjuntos (Debajo del Mensaje)
+        // Adjuntos (Debajo del Mensaje)
         mAttachmentLabel = new Label(this, "Attachments")
         {
             Text = "Attachments",
@@ -158,22 +158,22 @@ public partial class MailBoxWindow : Window
 
     private void InitButtons()
         {
-            // 📤 Enviar Correo
+            // Enviar Correo
             mSendMailButton = new Button(this, "SendMailButton");
-            mSendMailButton.SetText("📤 Send Mail");
+            mSendMailButton.SetText("Send Mail");
             mSendMailButton.SetBounds(20, 460, 120, 30);
             mSendMailButton.Clicked += SendMail_Clicked;
 
-            // 🎁 Tomar Adjuntos
+            // Tomar Adjuntos
             mTakeButton = new Button(this, "TakeButton");
             mTakeButton.SetText(Strings.MailBox.take);
             mTakeButton.SetBounds(300, 460, 150, 30);
             mTakeButton.Clicked += Take_Clicked;
             mTakeButton.Hide();
 
-            // ❌ Cerrar Ventana
+            // Cerrar Ventana
             mCloseButton = new Button(this, "CloseButton");
-            mCloseButton.SetText("❌ Close");
+            mCloseButton.SetText("Close");
             mCloseButton.SetBounds(500, 460, 150, 30);
             mCloseButton.Clicked += CloseButton_Clicked;
         }

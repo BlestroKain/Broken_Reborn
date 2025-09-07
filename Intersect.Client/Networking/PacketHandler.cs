@@ -1589,20 +1589,29 @@ namespace Intersect.Client.Networking
         //BankPacket
         public void HandlePacket(IPacketSender packetSender, BankPacket packet)
         {
-            if (!packet.Close)
-            {
-                Globals.GuildBank = packet.Guild;
-                Globals.Bank = new Item[packet.Slots];
-                foreach (var itm in packet.Items)
-                {
-                    HandlePacket(itm);
-                }
-                Globals.BankSlots = packet.Slots;
-                Interface.Interface.GameUi.NotifyOpenBank();
-            }
-            else
+            if (packet.Close)
             {
                 Interface.Interface.GameUi.NotifyCloseBank();
+                return;
+            }
+
+            Globals.GuildBank = packet.Guild;
+
+            if (Globals.Bank == null || Globals.Bank.Length != packet.Slots)
+            {
+                Globals.Bank = new Item[packet.Slots];
+            }
+
+            foreach (var bankSlot in packet.Items)
+            {
+                HandlePacket(bankSlot);
+            }
+
+            Globals.BankSlots = packet.Slots;
+
+            if (!Globals.InBank)
+            {
+                Interface.Interface.GameUi.NotifyOpenBank();
             }
         }
 

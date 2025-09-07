@@ -10,13 +10,28 @@ public partial class MarketManager
 {
     private readonly List<MarketListing> _listings = new();
     private readonly List<MarketTransaction> _transactions = new();
+    private readonly MarketStatisticsManager _statistics = new();
 
     public IReadOnlyList<MarketListing> Listings => _listings;
     public IReadOnlyList<MarketTransaction> Transactions => _transactions;
+    public MarketStatisticsManager Statistics => _statistics;
 
-    public void AddListing(MarketListing listing) => _listings.Add(listing);
+    public void AddListing(MarketListing listing)
+    {
+        _listings.Add(listing);
+        _statistics.RecordListing(listing.ItemId, listing.Price);
+    }
 
-    public void RecordTransaction(MarketTransaction transaction) => _transactions.Add(transaction);
+    public void RecordTransaction(MarketTransaction transaction)
+    {
+        _transactions.Add(transaction);
+        var listing = _listings.FirstOrDefault(l => l.Id == transaction.ListingId);
+        if (listing != null)
+        {
+            _statistics.RecordSale(listing.ItemId, transaction.Price);
+            _listings.Remove(listing);
+        }
+    }
 
     public bool CancelListing(Player player, Guid listingId)
     {

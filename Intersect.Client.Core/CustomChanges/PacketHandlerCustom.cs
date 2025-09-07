@@ -6,6 +6,7 @@ using Intersect.Client.Framework.Entities;
 using Intersect.Client.Framework.Items;
 using Intersect.Client.General;
 using Intersect.Client.Interface.Game.Chat;
+using Intersect.Client.Interface.Game.Market;
 using Intersect.Client.Interface.Menu;
 using Intersect.Client.Items;
 using Intersect.Client.Localization;
@@ -268,6 +269,11 @@ internal sealed partial class PacketHandler
     public void HandlePacket(IPacketSender packetSender, MarketTransactionsPacket packet)
     {
         // Placeholder for handling market transaction history
+    }
+
+    public void HandlePacket(IPacketSender packetSender, MarketPriceInfoPacket packet)
+    {
+        SellMarketWindow.Instance?.SetMarketInfo(packet.SuggestedPrice, packet.MinPrice, packet.MaxPrice);
     }
 
 }

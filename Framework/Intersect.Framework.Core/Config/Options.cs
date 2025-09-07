@@ -210,6 +210,8 @@ public partial record Options
 
     public LootOptions Loot { get; set; } = new();
 
+    public MarketOptions Market { get; set; } = new();
+
     public ProcessingOptions Processing { get; set; } = new();
 
     public SpriteOptions Sprites { get; set; } = new();

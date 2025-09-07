@@ -140,7 +140,7 @@ namespace Intersect.Server.Database.PlayerData.Market
             var min = stats.min;
             var max = stats.max;
 
-            if (min > 0 && max > 0 && (pricePerUnit < min || pricePerUnit > max))
+            if (pricePerUnit < min || pricePerUnit > max)
             {
                 PacketSender.SendChatMsg(
                     seller,

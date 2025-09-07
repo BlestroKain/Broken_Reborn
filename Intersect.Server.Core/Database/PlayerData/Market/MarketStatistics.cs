@@ -1,19 +1,22 @@
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 
 namespace Intersect.Server.Database.PlayerData.Market;
 
 public class MarketStatistics
 {
     private const int MaxSamples = 20;
-    private readonly Queue<long> _prices = new();
+
+    [JsonProperty]
+    private readonly List<long> _prices = new();
 
     public void Record(long price)
     {
-        _prices.Enqueue(price);
+        _prices.Add(price);
         if (_prices.Count > MaxSamples)
         {
-            _prices.Dequeue();
+            _prices.RemoveAt(0);
         }
     }
 

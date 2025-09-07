@@ -476,19 +476,20 @@ public partial class Player : Entity, IPlayer
         }
 
         var fromSlot = Inventory[fromSlotIndex];
-        var toSlot = Inventory[toSlotIndex];
-       if (fromSlot == null && toSlot == null)
+        if (fromSlot == null || fromSlot.ItemId == Guid.Empty)
         {
+            ApplicationContext.Context.Value?.Logger.LogWarning($"Tried to swap item from slot {fromSlotIndex}, but the slot was empty");
             return;
         }
-        PacketSender.SendSwapInvItems(fromSlotIndex, toSlotIndex);
 
-        if (fromSlot == null || toSlot == null)
+        var toSlot = Inventory[toSlotIndex];
+        if (toSlot == null || toSlot.ItemId == Guid.Empty)
         {
-            Inventory[fromSlotIndex] = toSlot;
-            Inventory[toSlotIndex] = fromSlot;
+            ApplicationContext.Context.Value?.Logger.LogWarning($"Tried to swap item with slot {toSlotIndex}, but the slot was empty");
             return;
         }
+
+        PacketSender.SendSwapInvItems(fromSlotIndex, toSlotIndex);
 
         if (
             fromSlot.ItemId == toSlot.ItemId &&
@@ -521,8 +522,15 @@ public partial class Player : Entity, IPlayer
     public void TryDropItem(int inventorySlotIndex)
     {
         var inventorySlot = Inventory[inventorySlotIndex];
+        if (inventorySlot == null || inventorySlot.ItemId == Guid.Empty)
+        {
+            ApplicationContext.Context.Value?.Logger.LogWarning($"Tried to drop item from slot {inventorySlotIndex}, but the slot was empty");
+            return;
+        }
+
         if (!ItemDescriptor.TryGet(inventorySlot.ItemId, out var itemDescriptor))
         {
+            ApplicationContext.Context.Value?.Logger.LogWarning($"Tried to drop item that does not exist from slot {inventorySlotIndex}: {inventorySlot.ItemId}");
             return;
         }
 
@@ -622,7 +630,8 @@ public partial class Player : Entity, IPlayer
     {
         for (var i = 0; i < Options.Instance.Player.MaxInventory; i++)
         {
-            if (Inventory[i].ItemId == itemId && Inventory[i].Quantity >= itemVal)
+            var slot = Inventory[i];
+            if (slot != null && slot.ItemId == itemId && slot.Quantity >= itemVal)
             {
                 return i;
             }
@@ -856,8 +865,15 @@ public partial class Player : Entity, IPlayer
     public void TrySellItem(int inventorySlotIndex)
     {
         var inventorySlot = Inventory[inventorySlotIndex];
+        if (inventorySlot == null || inventorySlot.ItemId == Guid.Empty)
+        {
+            ApplicationContext.Context.Value?.Logger.LogWarning($"Tried to sell item from slot {inventorySlotIndex}, but the slot was empty");
+            return;
+        }
+
         if (!ItemDescriptor.TryGet(inventorySlot.ItemId, out var itemDescriptor))
         {
+            ApplicationContext.Context.Value?.Logger.LogWarning($"Tried to sell item that does not exist from slot {inventorySlotIndex}: {inventorySlot.ItemId}");
             return;
         }
 
@@ -1019,7 +1035,7 @@ public partial class Player : Entity, IPlayer
         }
 
         slot ??= Inventory[inventorySlotIndex];
-        if (slot is null)
+        if (slot == null || slot.ItemId == Guid.Empty)
         {
             ApplicationContext.Context.Value?.Logger.LogWarning($"Tried to move item from slot {inventorySlotIndex}, but the slot was empty");
             return false;
@@ -1152,7 +1168,7 @@ public partial class Player : Entity, IPlayer
         }
 
         slot ??= Globals.BankSlots[bankSlotIndex];
-        if (slot is null)
+        if (slot == null || slot.ItemId == Guid.Empty)
         {
             ApplicationContext.Context.Value?.Logger.LogWarning($"Tried to move item from slot {bankSlotIndex}, but the slot was empty");
             return false;
@@ -1263,8 +1279,15 @@ public partial class Player : Entity, IPlayer
     public void TryStoreItemInBag(int inventorySlotIndex, int bagSlotIndex)
     {
         var inventorySlot = Inventory[inventorySlotIndex];
+        if (inventorySlot == null || inventorySlot.ItemId == Guid.Empty)
+        {
+            ApplicationContext.Context.Value?.Logger.LogWarning($"Tried to store item from slot {inventorySlotIndex}, but the slot was empty");
+            return;
+        }
+
         if (!ItemDescriptor.TryGet(inventorySlot.ItemId, out var itemDescriptor))
         {
+            ApplicationContext.Context.Value?.Logger.LogWarning($"Tried to store item that does not exist from slot {inventorySlotIndex}: {inventorySlot.ItemId}");
             return;
         }
 
@@ -1363,10 +1386,17 @@ public partial class Player : Entity, IPlayer
     public void TryOfferItemToTrade(int index)
     {
         var slot = Inventory[index];
+        if (slot == null || slot.ItemId == Guid.Empty)
+        {
+            ApplicationContext.Context.Value?.Logger.LogWarning($"Tried to offer item from slot {index}, but the slot was empty");
+            return;
+        }
+
         var quantity = slot.Quantity;
         var tradingItem = ItemDescriptor.Get(slot.ItemId);
         if (tradingItem == null)
         {
+            ApplicationContext.Context.Value?.Logger.LogWarning($"Tried to offer item that does not exist from slot {index}: {slot.ItemId}");
             return;
         }
 
@@ -1575,11 +1605,14 @@ public partial class Player : Entity, IPlayer
         if (itemType == 0)
         {
             var item = Inventory[itemSlot];
-            if (item != null)
+            if (item == null || item.ItemId == Guid.Empty)
             {
-                Hotbar[hotbarSlot].ItemOrSpellId = item.ItemId;
-                Hotbar[hotbarSlot].PreferredStatBuffs = item.ItemProperties.StatModifiers;
+                ApplicationContext.Context.Value?.Logger.LogWarning($"Tried to add item from slot {itemSlot} to hotbar, but the slot was empty");
+                return;
             }
+
+            Hotbar[hotbarSlot].ItemOrSpellId = item.ItemId;
+            Hotbar[hotbarSlot].PreferredStatBuffs = item.ItemProperties.StatModifiers;
         }
         else if (itemType == 1)
         {
@@ -2107,9 +2140,17 @@ public partial class Player : Entity, IPlayer
             return false;
         }
 
-        // Return false if the shield item descriptor could not be retrieved.
-        if (!ItemDescriptor.TryGet(Inventory[myShieldIndex].ItemId, out _))
+        var shieldSlot = Inventory[myShieldIndex];
+        if (shieldSlot == null || shieldSlot.ItemId == Guid.Empty)
         {
+            ApplicationContext.Context.Value?.Logger.LogWarning($"Tried to block but shield slot {myShieldIndex} was empty");
+            return false;
+        }
+
+        // Return false if the shield item descriptor could not be retrieved.
+        if (!ItemDescriptor.TryGet(shieldSlot.ItemId, out _))
+        {
+            ApplicationContext.Context.Value?.Logger.LogWarning($"Tried to block with item that does not exist in slot {myShieldIndex}: {shieldSlot.ItemId}");
             return false;
         }
 

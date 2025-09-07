@@ -5970,4 +5970,10 @@ Negative values for time to flow backwards.";
 
     }
 
+    public partial struct Market
+    {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Title = @"Market";
+    }
+
 }

@@ -602,5 +602,20 @@ internal sealed partial class PacketHandler
         PacketSender.SendEntityDataToProximity(player);
     }
 
+    public void HandlePacket(Client client, SearchMarketPacket packet)
+    {
+        // Placeholder for market search handling
+    }
+
+    public void HandlePacket(Client client, CreateMarketListingPacket packet)
+    {
+        // Placeholder for creating market listings
+    }
+
+    public void HandlePacket(Client client, BuyMarketListingPacket packet)
+    {
+        // Placeholder for purchasing market listings
+    }
+
 
 }

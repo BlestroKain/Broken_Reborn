@@ -1,0 +1,55 @@
+using System;
+using System.Collections.Generic;
+using MessagePack;
+
+namespace Intersect.Network.Packets.Server;
+
+[MessagePackObject]
+public partial class MarketListingPacket : IntersectPacket
+{
+    // Parameterless constructor for MessagePack
+    public MarketListingPacket()
+    {
+    }
+
+    public MarketListingPacket(Guid listingId, Guid sellerId, int itemId, int quantity, long price)
+    {
+        ListingId = listingId;
+        SellerId = sellerId;
+        ItemId = itemId;
+        Quantity = quantity;
+        Price = price;
+    }
+
+    [Key(0)]
+    public Guid ListingId { get; set; }
+
+    [Key(1)]
+    public Guid SellerId { get; set; }
+
+    [Key(2)]
+    public int ItemId { get; set; }
+
+    [Key(3)]
+    public int Quantity { get; set; }
+
+    [Key(4)]
+    public long Price { get; set; }
+}
+
+[MessagePackObject]
+public partial class MarketListingsPacket : IntersectPacket
+{
+    // Parameterless constructor for MessagePack
+    public MarketListingsPacket()
+    {
+    }
+
+    public MarketListingsPacket(List<MarketListingPacket> listings)
+    {
+        Listings = listings;
+    }
+
+    [Key(0)]
+    public List<MarketListingPacket> Listings { get; set; } = new();
+}

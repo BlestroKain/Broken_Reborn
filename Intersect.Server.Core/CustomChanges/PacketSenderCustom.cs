@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Intersect.Config;
 using Intersect.Core;
 using Intersect.Enums;
@@ -213,6 +215,26 @@ public static partial class PacketSender
             .ToDictionary(b => b.NpcId, b => b.Value);
 
         player.SendPacket(new UnlockedBestiaryEntriesPacket(unlocks, killCounts));
+    }
+
+    public static void SendMarketListingCreated(Player player, Guid listingId)
+    {
+        player.SendPacket(new MarketListingCreatedPacket(listingId));
+    }
+
+    public static void SendMarketListings(Player player, List<MarketListingPacket> listings)
+    {
+        player.SendPacket(new MarketListingsPacket(listings));
+    }
+
+    public static void SendMarketPurchaseSuccess(Player player, Guid listingId)
+    {
+        player.SendPacket(new MarketPurchaseSuccessPacket(listingId));
+    }
+
+    public static void SendMarketTransactions(Player player, List<MarketTransactionInfo> transactions)
+    {
+        player.SendPacket(new MarketTransactionsPacket(transactions));
     }
 
 

@@ -21,9 +21,7 @@ using Intersect.Config;
 
 namespace Intersect.Client.Interface.Game.Market;
 
-/// <summary>
-/// Ventana para publicar objetos en el mercado.
-/// </summary>
+
 public sealed class SellMarketWindow
 {
     #region === UI ===
@@ -394,5 +392,5 @@ public static class MarketPriceCache
         avg = min = max = 0;
         return false;
     }
- 
+
 }

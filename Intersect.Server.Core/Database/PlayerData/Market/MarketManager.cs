@@ -74,6 +74,7 @@ namespace Intersect.Server.Database.PlayerData.Market
             int itemSlot,
             int quantity,
             long pricePerUnit,
+            ItemProperties properties,
             bool autoSplit
         )
         {
@@ -95,7 +96,7 @@ namespace Intersect.Server.Database.PlayerData.Market
                 return false;
             }
 
-            // Ignore any client-provided item data and rely on the server's authoritative item
+            item.Properties = properties ?? item.Properties;
             return TryListItem(seller, item, quantity, (int)pricePerUnit, autoSplit);
         }
 

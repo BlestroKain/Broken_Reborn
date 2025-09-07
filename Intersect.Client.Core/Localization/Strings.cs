@@ -3178,6 +3178,8 @@ If you are sure you want to hand over your guild enter '\c{{#ff8080}}{02}\c{{}}'
         public static LocalizedString SuggestedPrice = @"Suggested Price: {00}";
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString Sell = @"Sell";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Buy = @"Buy";
     }
 
 }

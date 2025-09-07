@@ -24,6 +24,7 @@ using Intersect.Models;
 using Intersect.Client.Interface.Shared;
 using Intersect.Framework.Core;
 using Intersect.Framework.Core.GameObjects.Animations;
+using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Crafting;
 using Intersect.Framework.Core.GameObjects.Events;
 using Intersect.Framework.Core.GameObjects.Mapping.Tilesets;
@@ -273,7 +274,8 @@ internal sealed partial class PacketHandler
 
     public void HandlePacket(IPacketSender packetSender, MarketPriceInfoPacket packet)
     {
-        SellMarketWindow.Instance?.SetMarketInfo(packet.SuggestedPrice, packet.MinPrice, packet.MaxPrice);
+        var descriptorId = ItemDescriptor.IdFromList(packet.ItemId);
+        MarketPriceCache.Update(descriptorId, (int)packet.SuggestedPrice, (int)packet.MinPrice, (int)packet.MaxPrice);
     }
 
     public void HandlePacket(IPacketSender packetSender, MarketWindowPacket packet)

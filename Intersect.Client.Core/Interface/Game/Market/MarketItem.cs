@@ -23,6 +23,16 @@ public partial class MarketItem : SlotItem
     private long _price;
     private ItemProperties _properties = new();
     private readonly Button _cancelButton;
+    private readonly Label _nameLabel;
+    private readonly Label _quantityLabel;
+    private readonly Label _priceLabel;
+    private readonly Button _buyButton;
+
+    public int ItemId => _itemId;
+    public long Price => _price;
+    public ItemType ItemType { get; private set; }
+    public string Subtype { get; private set; } = string.Empty;
+    public string Name { get; private set; } = string.Empty;
 
     public MarketItem(Base parent, int index, ContextMenu contextMenu)
         : base(parent, nameof(MarketItem), index, contextMenu)
@@ -36,7 +46,28 @@ public partial class MarketItem : SlotItem
             Text = Strings.InputBox.Cancel,
             IsVisibleInParent = false,
         };
+        _cancelButton.SetBounds(360, 8, 60, 24);
         _cancelButton.Clicked += CancelButton_Clicked;
+
+        _nameLabel = new Label(this, nameof(_nameLabel));
+        _nameLabel.SetBounds(44, 4, 150, 32);
+
+        _quantityLabel = new Label(this, nameof(_quantityLabel));
+        _quantityLabel.SetBounds(200, 4, 60, 32);
+
+        _priceLabel = new Label(this, nameof(_priceLabel));
+        _priceLabel.SetBounds(260, 4, 80, 32);
+
+        _buyButton = new Button(this, nameof(_buyButton))
+        {
+            Text = Strings.Market.Buy,
+            IsVisibleInParent = false,
+        };
+        _buyButton.SetBounds(360, 8, 60, 24);
+        _buyButton.Clicked += BuyButton_Clicked;
+
+        SetSize(420, 40);
+        Icon.SetBounds(4, 4, 32, 32);
     }
 
     public void Load(Guid listingId, Guid sellerId, int itemId, int quantity, long price, ItemProperties properties)
@@ -61,7 +92,17 @@ public partial class MarketItem : SlotItem
             Icon.RenderColor = descriptor.Color;
         }
 
-        _cancelButton.IsVisibleInParent = Globals.Me?.Id == _sellerId;
+        Name = descriptor.Name;
+        ItemType = descriptor.ItemType;
+        Subtype = descriptor.Subtype;
+
+        _nameLabel.Text = Name;
+        _quantityLabel.Text = $"x{_quantity}";
+        _priceLabel.Text = _price.ToString();
+
+        var isSeller = Globals.Me?.Id == _sellerId;
+        _cancelButton.IsVisibleInParent = isSeller;
+        _buyButton.IsVisibleInParent = !isSeller;
     }
 
     private void Icon_HoverEnter(Base sender, EventArgs args)
@@ -112,5 +153,10 @@ public partial class MarketItem : SlotItem
             maximumQuantity: _quantity,
             minimumQuantity: 1
         );
+    }
+
+    private void BuyButton_Clicked(Base sender, MouseButtonState args)
+    {
+        Icon_Clicked(sender, args);
     }
 }

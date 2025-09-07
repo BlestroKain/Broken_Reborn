@@ -116,6 +116,11 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.Property<Guid>("SellerId")
                         .HasColumnType("TEXT");
 
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("BLOB");
+
                     b.HasKey("Id");
 
                     b.HasIndex("SellerId");

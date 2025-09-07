@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Server.Entities;
@@ -17,6 +18,8 @@ public long Price { get; set; }
 public DateTime ListedAt { get; set; } = DateTime.UtcNow;
 public DateTime ExpireAt { get; set; } = DateTime.UtcNow.AddDays(7);
 public bool IsSold { get; set; }
+    [Timestamp]
+    public byte[] RowVersion { get; set; } = Array.Empty<byte>();
 
     [NotMapped]
     public ItemProperties ItemProperties { get; set; } = new();

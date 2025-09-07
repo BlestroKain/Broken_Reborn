@@ -111,74 +111,11 @@ public partial class InventoryItem : SlotItem
 
 
 
-    public InventoryItem(
-        SellMarketWindow sellMarketWindow,
-        Base parent,
-        int index,
-        ContextMenu? contextMenu = null
-    ) : base(parent, nameof(InventoryItem), index, contextMenu ?? new ContextMenu(parent))
+    public InventoryItem(SellMarketWindow sellMarketWindow, Base parent, int i, ContextMenu contextMenu)
+        : base(parent, nameof(InventoryItem), i, contextMenu) // Fix: Pass the required "parent" argument to the base constructor
     {
-        // We don't have an InventoryWindow in this context.
-        _inventoryWindow = null!;
         this.sellMarketWindow = sellMarketWindow;
-
-        TextureFilename = "inventoryitem.png";
-
-        _equipImageBackground = new ImagePanel(this, "EquippedIcon")
-        {
-            Texture = Graphics.Renderer.WhitePixel,
-        };
-
-        _equipLabel = new Label(this, "EquippedLabel")
-        {
-            IsVisibleInParent = false,
-            Text = Strings.Inventory.EquippedSymbol,
-            FontName = "sourcesansproblack",
-            FontSize = 8,
-            TextColor = new Color(0, 255, 255, 255),
-            Alignment = [Alignments.Right, Alignments.Top],
-            BackgroundTemplateName = "equipped.png",
-            Padding = new Padding(2),
-        };
-
-        _cooldownLabel = new Label(this, "CooldownLabel")
-        {
-            IsVisibleInParent = false,
-            FontName = "sourcesansproblack",
-            FontSize = 8,
-            TextColor = new Color(0, 255, 255, 255),
-            Alignment = [Alignments.Center],
-            BackgroundTemplateName = "quantity.png",
-            Padding = new Padding(2),
-        };
-
-        _quantityLabel = new Label(this, "Quantity")
-        {
-            Alignment = [Alignments.Bottom, Alignments.Right],
-            BackgroundTemplateName = "quantity.png",
-            FontName = "sourcesansproblack",
-            FontSize = 8,
-            Padding = new Padding(2),
-        };
-
-        LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
-
-        // Create dummy context menu items to satisfy readonly fields.
-        _contextMenu!.ClearChildren();
-        _useItemMenuItem = _contextMenu.AddItem(Strings.ItemContextMenu.Use);
-        _actionItemMenuItem = _contextMenu.AddItem(Strings.ItemContextMenu.Bank);
-        _dropItemMenuItem = _contextMenu.AddItem(Strings.ItemContextMenu.Drop);
-        _showItemMenuItem = _contextMenu.AddItem(Strings.ItemContextMenu.Show);
-        _sellItemMenuItem = _contextMenu.AddItem(Strings.ItemContextMenu.Sell);
-        _contextMenu.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
-
-        Icon.Clicked += (_, args) =>
-        {
-            if (args.MouseButton == MouseButton.Left)
-            {
-                sellMarketWindow.SelectItem(this, SlotIndex);
-            }
-        };
+        this.i = i;
     }
 
     #region Context Menu
@@ -728,6 +665,9 @@ public partial class InventoryItem : SlotItem
     // Campo nuevo:
     private bool _filterMatch = true;
     private SellMarketWindow sellMarketWindow;
+    private ScrollControl mInventoryScroll;
+    private int i;
+    private object value;
 
     // Método nuevo (llámalo desde la ventana):
     public void SetFilterMatch(bool match)

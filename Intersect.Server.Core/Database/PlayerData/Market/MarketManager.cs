@@ -13,7 +13,6 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using System.Data;
 
 namespace Intersect.Server.Database.PlayerData.Market
 
@@ -243,7 +242,7 @@ namespace Intersect.Server.Database.PlayerData.Market
             context.StopTrackingUsersExcept(buyer.User);
             context.Attach(buyer);
 
-            await using var tx = await context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+             await using var tx = await context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
 
             var removedItems = new Dictionary<Guid, int>();
             Item itemToGive = null;
@@ -410,7 +409,7 @@ namespace Intersect.Server.Database.PlayerData.Market
 
                 return true;
             }
-            catch (DbUpdateConcurrencyException)
+ catch (DbUpdateConcurrencyException)
             {
                 if (itemGiven && itemToGive != null)
                 {

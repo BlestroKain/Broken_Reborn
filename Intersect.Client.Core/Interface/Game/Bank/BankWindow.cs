@@ -1,3 +1,4 @@
+using System;
 using Intersect.Client.Core;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen;
@@ -5,6 +6,7 @@ using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
 using Intersect.Client.General;
 using Intersect.Client.Interface.Game.Inventory;
+using Intersect.Client.Items;
 using Intersect.Client.Localization;
 using Intersect.Client.Networking;
 using Intersect.Client.Utilities;
@@ -27,7 +29,7 @@ public partial class BankWindow : Window
     private SortCriterion _criterion = SortCriterion.TypeThenName;
     private string? _lastQuery;
     private bool _lastAsc;
-    private bool _sortAscending;
+    private bool _sortAscending = true;
     private ItemType? _selectedType;
     private string? _selectedSubtype;
     private bool _slotsDirty;
@@ -69,14 +71,10 @@ public partial class BankWindow : Window
         _searchBox.SetPosition(0, 8);
 
         _sortButton = new Button(topPanel, "SortButton");
-        _sortButton.SetSize(50, 24);
+        _sortButton.SetSize(100, 24);
         _sortButton.SetPosition(140, 8);
-        _sortButton.SetText("Sort");
-        _sortButton.Clicked += (_, _) =>
-        {
-            _sortAscending = !_sortAscending;
-            PacketSender.SendBankSortPacket(); // Evita reapertura
-        };
+        UpdateSortButtonText();
+        _sortButton.Clicked += SortButton_Clicked;
 
         _typeBox = new ComboBox(topPanel, "TypeFilter");
         _typeBox.SetSize(100, 24);
@@ -200,7 +198,212 @@ public partial class BankWindow : Window
 
     private void SortButton_Clicked(Base sender, MouseButtonState arguments)
     {
-        PacketSender.SendBankSortPacket();
+        if (_sortAscending)
+        {
+            _sortAscending = false;
+        }
+        else
+        {
+            _sortAscending = true;
+            _criterion = _criterion switch
+            {
+                SortCriterion.TypeThenName => SortCriterion.Name,
+                SortCriterion.Name => SortCriterion.Quantity,
+                SortCriterion.Quantity => SortCriterion.Price,
+                _ => SortCriterion.TypeThenName,
+            };
+        }
+
+        UpdateSortButtonText();
+        SortItems(sender, arguments);
+    }
+
+    private void UpdateSortButtonText()
+    {
+        var arrow = _sortAscending ? "▲" : "▼";
+        _sortButton.SetText($"{Strings.Inventory.Sort}: {_criterion} {arrow}");
+    }
+
+    private void SortItems(Base sender, MouseButtonState arguments)
+    {
+        if (Globals.BankSlots is null)
+        {
+            return;
+        }
+
+        var bank = Globals.BankSlots;
+        var max = Math.Min(Globals.BankSlotCount, bank.Length);
+
+        for (var pass = 0; pass < max - 1; pass++)
+        {
+            for (var i = 0; i < max - pass - 1; i++)
+            {
+                if (CompareSlots(bank, i, i + 1) > 0)
+                {
+                    PacketSender.SendMoveBankItems(i, i + 1);
+                    (bank[i], bank[i + 1]) = (bank[i + 1], bank[i]);
+                }
+            }
+        }
+
+        ApplyFilters();
+    }
+
+    private int CompareSlots(Item?[] bank, int a, int b)
+    {
+        var left = (a >= 0 && a < bank.Length) ? bank[a] : null;
+        var right = (b >= 0 && b < bank.Length) ? bank[b] : null;
+
+        var dx = left?.Descriptor;
+        var dy = right?.Descriptor;
+
+        var leftEmpty = dx == null;
+        var rightEmpty = dy == null;
+
+        if (leftEmpty && rightEmpty) return 0;
+        if (leftEmpty) return 1;
+        if (rightEmpty) return -1;
+
+        return _criterion switch
+        {
+            SortCriterion.Name =>
+                CompareByName(dx!, dy!, _sortAscending),
+            SortCriterion.Quantity =>
+                CompareQuantity(left!, right!),
+            SortCriterion.Price =>
+                ComparePrice(dx!, dy!),
+            _ => CompareDescriptors(dx!, dy!, _sortAscending)
+        };
+    }
+
+    private int CompareByName(ItemDescriptor dx, ItemDescriptor dy, bool ascending)
+    {
+        var cmp = StringComparer.OrdinalIgnoreCase.Compare(SafeName(dx), SafeName(dy));
+        if (cmp != 0)
+        {
+            return ascending ? cmp : -cmp;
+        }
+
+        return CompareDescriptors(dx, dy, ascending);
+    }
+
+    private int CompareQuantity(Item left, Item right)
+    {
+        var qx = left.Quantity;
+        var qy = right.Quantity;
+
+        var cmp = qx.CompareTo(qy);
+        if (cmp != 0)
+        {
+            return _sortAscending ? cmp : -cmp;
+        }
+
+        return CompareDescriptors(left.Descriptor!, right.Descriptor!, _sortAscending);
+    }
+
+    private int ComparePrice(ItemDescriptor dx, ItemDescriptor dy)
+    {
+        var px = dx.Price;
+        var py = dy.Price;
+
+        var cmp = px.CompareTo(py);
+        if (cmp != 0)
+        {
+            return _sortAscending ? cmp : -cmp;
+        }
+
+        return CompareDescriptors(dx, dy, _sortAscending);
+    }
+
+    private int CompareDescriptors(ItemDescriptor x, ItemDescriptor y, bool ascending)
+    {
+        var cmp = TypePriority(x.ItemType).CompareTo(TypePriority(y.ItemType));
+        if (cmp != 0)
+        {
+            return cmp;
+        }
+
+        cmp = SubtypeIndex(x).CompareTo(SubtypeIndex(y));
+        if (cmp != 0)
+        {
+            return cmp;
+        }
+
+        cmp = StringComparer.OrdinalIgnoreCase.Compare(SafeName(x), SafeName(y));
+        if (cmp != 0)
+        {
+            return ascending ? cmp : -cmp;
+        }
+
+        cmp = x.Price.CompareTo(y.Price);
+        if (cmp != 0)
+        {
+            return ascending ? cmp : -cmp;
+        }
+
+        return x.Id.CompareTo(y.Id);
+    }
+
+    private int TypePriority(ItemType t)
+    {
+        return t switch
+        {
+            ItemType.Currency => 0,
+            ItemType.Equipment => 10,
+            ItemType.Bag => 20,
+            ItemType.Event => 30,
+            ItemType.Spell => 40,
+            ItemType.Consumable => 50,
+            ItemType.Resource => 60,
+            _ => 100 + (int)t
+        };
+    }
+
+    private int SubtypeIndex(ItemDescriptor d)
+    {
+        try
+        {
+            var dict = Options.Instance.Items.ItemSubtypes;
+            if (dict == null)
+            {
+                return int.MaxValue;
+            }
+
+            var targetType = Convert.ToInt32(d.ItemType);
+
+            foreach (var kv in dict)
+            {
+                if (Convert.ToInt32(kv.Key) == targetType)
+                {
+                    var list = kv.Value;
+                    if (list == null)
+                    {
+                        break;
+                    }
+
+                    var st = d.Subtype ?? string.Empty;
+                    for (var i = 0; i < list.Count; i++)
+                    {
+                        if (string.Equals(list[i], st, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return i;
+                        }
+                    }
+
+                    break;
+                }
+            }
+        }
+        catch
+        {
+        }
+
+        return int.MaxValue;
+    }
+
+    private static string SafeName(ItemDescriptor d)
+    {
+        return d.Name ?? string.Empty;
     }
     private void UpdateSubtypeOptions()
     {
@@ -220,14 +423,16 @@ public partial class BankWindow : Window
         _subtypeBox.SelectedItem = all;
     }
 
-    // InventoryWindow.cs
     private void ApplyFilters()
     {
         if (Globals.BankSlots is null)
+        {
             return;
+        }
 
-        // 1) Calcular los que coinciden con la búsqueda y filtros
-        var matched = Items.Where(i =>
+        var searchText = _searchBox?.Text ?? string.Empty;
+
+        var matchedSet = Items.Where(i =>
         {
             var slot = Globals.BankSlots[i.SlotIndex];
             var descriptor = slot?.Descriptor;
@@ -247,26 +452,27 @@ public partial class BankWindow : Window
                 return false;
             }
 
-            return SearchHelper.Matches(_searchBox.Text, descriptor.Name);
-        });
+            return SearchHelper.Matches(searchText, descriptor.Name);
+        }).ToHashSet();
 
-        // 2) Reordenar: primero coincidentes, luego no-coincidentes
-        var matchedList = matched.ToList();
-        var matchedSet = matchedList.ToHashSet();
-        var nonMatched = Items.Where(i => !matchedSet.Contains(i));
+        var filterActive = !string.IsNullOrWhiteSpace(searchText) ||
+                           _selectedType.HasValue ||
+                           !string.IsNullOrEmpty(_selectedSubtype);
 
-        var arranged = matchedList.Concat(nonMatched).ToList();
-
-        // 3) "Vaciar" visualmente los que NO coinciden (sin ocultarlos)
-        foreach (var it in Items)
+        foreach (var item in Items)
         {
-            if (it is BankItem b)
-                b.SetFilterMatch(matchedSet.Contains(it));
-            // Importante: NO tocar it.IsHidden
+            if (item is BankItem bankItem)
+            {
+                var isMatch = matchedSet.Contains(item);
+                var show = isMatch || !filterActive;
+                bankItem.IsVisibleInParent = show;
+                bankItem.SetFilterMatch(isMatch);
+                bankItem.Update();
+            }
         }
 
-        // 4) Siempre poblar con TODA la lista para mantener el grid y permitir drop en cualquier slot
-        PopulateSlotContainer.Populate(_slotContainer, arranged);
+        var visibleItems = Items.Where(i => i.IsVisibleInParent).ToList();
+        PopulateSlotContainer.Populate(_slotContainer, visibleItems);
     }
 
 

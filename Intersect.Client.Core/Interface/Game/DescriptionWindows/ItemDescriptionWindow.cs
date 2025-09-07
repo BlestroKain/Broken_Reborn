@@ -369,12 +369,12 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
 
             if (_itemDescriptor.EquipmentSlot == Options.Instance.Equipment.WeaponSlot && !string.IsNullOrWhiteSpace(_itemDescriptor.Subtype))
             {
-                // 🔥 Mostrar solo el subtipo si es arma
+                // Mostrar solo el subtipo si es arma
                 header.SetSubtitle($"{_itemDescriptor.Subtype}", Color.White);
             }
             else
             {
-                // 🔥 Mostrar info extra si no tiene subtipo o no es arma
+                // Mostrar info extra si no tiene subtipo o no es arma
                 var extraInfo = _itemDescriptor.EquipmentSlot == Options.Instance.Equipment.WeaponSlot && _itemDescriptor.TwoHanded
                     ? $"{Strings.ItemDescription.TwoHand} {equipSlot}"
                     : equipSlot;
@@ -384,7 +384,7 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
         }
         else
         {
-            // 🔥 Mostrar subtipo si lo tiene, si no solo el tipo
+            // Mostrar subtipo si lo tiene, si no solo el tipo
             var subtypeInfo = !string.IsNullOrWhiteSpace(_itemDescriptor.Subtype)
        ? _itemDescriptor.Subtype
        : typeDesc?.ToString() ?? "";

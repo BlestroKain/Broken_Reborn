@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Intersect.Config;
 using Intersect.Core;
 using Intersect.Enums;
@@ -154,6 +156,26 @@ public static partial class PacketSender
         player.SendPacket(new BrokeItemWindowPacket());
     }
 
+    public static void SendOpenMarket(Player player)
+    {
+        player.SendPacket(new MarketWindowPacket(MarketWindowPacketType.OpenMarket));
+    }
+
+    public static void SendCloseMarket(Player player)
+    {
+        player.SendPacket(new MarketWindowPacket(MarketWindowPacketType.CloseMarket));
+    }
+
+    public static void SendOpenSellMarket(Player player, int slot)
+    {
+        player.SendPacket(new MarketWindowPacket(MarketWindowPacketType.OpenSell, slot));
+    }
+
+    public static void SendCloseSellMarket(Player player)
+    {
+        player.SendPacket(new MarketWindowPacket(MarketWindowPacketType.CloseSell));
+    }
+
     public static void SendOpenMailBox(Player player)
     {
         var mails = new List<MailBoxUpdatePacket>();
@@ -167,7 +189,7 @@ public static partial class PacketSender
                 Properties = a.Properties
             }).ToList();
 
-            // ✅ Corregido: usar remitente
+            // Corregido: usar remitente
             mails.Add(new MailBoxUpdatePacket(
                 mail.Id,
                 mail.Title,
@@ -201,7 +223,7 @@ public static partial class PacketSender
     public static void SendUnlockedBestiaryEntries(Player player)
     {
         var unlocks = player.BestiaryUnlocks
-            .Where(b => b.Value > 0) // ✅ Ya no se excluye Kill
+            .Where(b => b.Value > 0) // Ya no se excluye Kill
             .GroupBy(b => b.NpcId)
             .ToDictionary(
                 g => g.Key,
@@ -213,6 +235,31 @@ public static partial class PacketSender
             .ToDictionary(b => b.NpcId, b => b.Value);
 
         player.SendPacket(new UnlockedBestiaryEntriesPacket(unlocks, killCounts));
+    }
+
+    public static void SendMarketListingCreated(Player player, Guid listingId)
+    {
+        player.SendPacket(new MarketListingCreatedPacket(listingId));
+    }
+
+    public static void SendMarketListings(Player player, List<MarketListingPacket> listings)
+    {
+        player.SendPacket(new MarketListingsPacket(listings));
+    }
+
+    public static void SendMarketPurchaseSuccess(Player player, Guid listingId)
+    {
+        player.SendPacket(new MarketPurchaseSuccessPacket(listingId));
+    }
+
+    public static void SendMarketTransactions(Player player, List<MarketTransactionInfo> transactions)
+    {
+        player.SendPacket(new MarketTransactionsPacket(transactions));
+    }
+
+    public static void SendMarketPriceInfo(Player player, int itemId, long suggestedPrice, long minPrice, long maxPrice)
+    {
+        player.SendPacket(new MarketPriceInfoPacket(itemId, suggestedPrice, minPrice, maxPrice));
     }
 
 

@@ -84,7 +84,7 @@ public static partial class CustomColors
             {"Hostile", new LabelColor(new Color(255, 255, 81, 0), Color.Black, new Color(180, 0, 0, 0))},
             {"Moderator", new LabelColor(new Color(255, 0, 255, 255), Color.Black, new Color(180, 0, 0, 0))},
             {"Admin", new LabelColor(new Color(255, 255, 255, 0), Color.Black, new Color(180, 0, 0, 0))},
-            { "Market",     new LabelColor(new Color(255, 255, 191, 0),   Color.Black, new Color(180, 0, 0, 0)) } // 🔶 Canal de comercio
+            { "Market",     new LabelColor(new Color(255, 255, 191, 0),   Color.Black, new Color(180, 0, 0, 0)) } // Canal de comercio
         };
 
     }

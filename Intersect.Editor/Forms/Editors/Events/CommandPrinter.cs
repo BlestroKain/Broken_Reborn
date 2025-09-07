@@ -1713,6 +1713,14 @@ public static partial class CommandPrinter
     {
         return Strings.EventCommandList.openmailbox;
     }
+    private static string GetCommandText(OpenMarketWindowCommand command, MapInstance map)
+    {
+        return Strings.EventCommandList.openmarket;
+    }
+    private static string GetCommandText(OpenMarketSellWindowCommand command, MapInstance map)
+    {
+        return Strings.EventCommandList.opensellmarket;
+    }
     private static string GetCommandText(SendMailBoxCommand command, MapInstance map)
     {
         return Strings.EventCommandList.sendmail;

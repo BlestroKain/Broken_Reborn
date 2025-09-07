@@ -205,7 +205,7 @@ namespace Intersect.Client.Interface.Game.Job
         private void LoadRecipes(JobType jobType)
         {  // Record current scroll position before clearing to preserve it
             var currentScroll = mRecipePanel.VerticalScrollBar.ScrollAmount;
-            // 🔄 Limpiar visual y lógicamente las recetas anteriores
+            // Limpiar visual y lógicamente las recetas anteriores
             foreach (var craftedItem in mItems)
             {
                 if (craftedItem.Container is { } container)
@@ -216,12 +216,12 @@ namespace Intersect.Client.Interface.Game.Job
             }
 
             // Limpiar visualmente y en memoria
-            mRecipePanel.ClearChildren(); // ✅ Limpia todo visual
-            mItems.Clear();               // ✅ Limpia la lista de recetas cargadas
+            mRecipePanel.ClearChildren(); // Limpia todo visual
+            mItems.Clear();               // Limpia la lista de recetas cargadas
 
             // Reiniciar desplazamiento
-            mRecipePanel.SetInnerSize(mRecipePanel.Width, 1); // ⚠️ Evita que se quede "pegado" sin scroll
-            mRecipePanel.UpdateScrollBars(); // 👌 Refresca visualmente
+            mRecipePanel.SetInnerSize(mRecipePanel.Width, 1); // Evita que se quede "pegado" sin scroll
+            mRecipePanel.UpdateScrollBars(); // Refresca visualmente
 
             // Obtener la tabla
             var tableId = Guid.Parse(Options.Instance.JobOpts.RecipesId);

@@ -205,8 +205,8 @@ public sealed class BestiaryWindow : Window
             var killsReq = desc.BestiaryRequirements.TryGetValue(unlock, out var req) ? req : 0;
             var currentKills = BestiaryController.GetKillCount(npcId);
             var lockedText = killsReq > 0
-                ? $"🔒 Derrota {currentKills}/{killsReq} veces para desbloquear."
-                : "🔒 Información bloqueada.";
+                ? $"Derrota {currentKills}/{killsReq} veces para desbloquear."
+                : "Información bloqueada.";
 
             var label = new Label(_detailsContent, $"{unlock}LockedLabel")
             {

@@ -606,7 +606,7 @@ public class Item : IItem
             success = true;
             var name = (isStat ? targetStat : (object)targetVit).ToString();
             resultMessage = isCritical
-                ? $"🔥 ¡Éxito Crítico! {name} +{amount}."
+                ? $"¡Éxito Crítico! {name} +{amount}."
                 : $"¡Éxito! {name} +{amount}.";
         }
         else

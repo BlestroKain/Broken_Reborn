@@ -44,7 +44,7 @@ public partial class MailBoxWindow : Window
         const int fontSize = 12;
         var textColor = Color.White;
 
-        // 📩 Panel Izquierdo: Lista de Correos
+        // Panel Izquierdo: Lista de Correos
         mMailLabel = new Label(this, "Mail")
         {
             Text = Strings.MailBox.mails,
@@ -65,7 +65,7 @@ public partial class MailBoxWindow : Window
         mMailListBox.RowSelected += Selected_MailListBox;
         mMailListBox.AllowMultiSelect = false;
 
-        // 📨 Panel Derecho: Detalles del Correo
+        // Panel Derecho: Detalles del Correo
         mSender = new Label(this, "Sender")
         {
             FontName = defaultFont,
@@ -92,7 +92,7 @@ public partial class MailBoxWindow : Window
         mMessage.SetBounds(300, 100, 350, 150);
         mMessage.Hide();
 
-        // 🎁 Adjuntos (Debajo del Mensaje)
+        // Adjuntos (Debajo del Mensaje)
         mAttachmentLabel = new Label(this, "Attachments")
         {
             Text = "Attachments",
@@ -158,22 +158,22 @@ public partial class MailBoxWindow : Window
 
     private void InitButtons()
         {
-            // 📤 Enviar Correo
+            // Enviar Correo
             mSendMailButton = new Button(this, "SendMailButton");
-            mSendMailButton.SetText("📤 Send Mail");
+            mSendMailButton.SetText("Send Mail");
             mSendMailButton.SetBounds(20, 460, 120, 30);
             mSendMailButton.Clicked += SendMail_Clicked;
 
-            // 🎁 Tomar Adjuntos
+            // Tomar Adjuntos
             mTakeButton = new Button(this, "TakeButton");
             mTakeButton.SetText(Strings.MailBox.take);
             mTakeButton.SetBounds(300, 460, 150, 30);
             mTakeButton.Clicked += Take_Clicked;
             mTakeButton.Hide();
 
-            // ❌ Cerrar Ventana
+            // Cerrar Ventana
             mCloseButton = new Button(this, "CloseButton");
-            mCloseButton.SetText("❌ Close");
+            mCloseButton.SetText("Close");
             mCloseButton.SetBounds(500, 460, 150, 30);
             mCloseButton.Clicked += CloseButton_Clicked;
         }
@@ -244,7 +244,7 @@ public partial class MailBoxWindow : Window
 
         public void UpdateMail()
         {
-            // 🔍 Validar inicialización
+            // Validar inicialización
             if (mMailListBox == null || mAttachmentSlots == null)
             {
                 ApplicationContext.CurrentContext.Logger.LogWarning(
@@ -252,7 +252,7 @@ public partial class MailBoxWindow : Window
                 return;
             }
 
-            // 🔄 Limpiar lista de correos y contenedor de adjuntos
+            // Limpiar lista de correos y contenedor de adjuntos
             mMailListBox.RemoveAllRows();
             mMailListBox.ScrollToTop();
 
@@ -262,7 +262,7 @@ public partial class MailBoxWindow : Window
                 slot.IsHidden = true;
             }
 
-            // 🔍 Validar y actualizar correos
+            // Validar y actualizar correos
             if (Globals.Mails == null || Globals.Mails.Count == 0)
             {
                 mSender?.Hide();
@@ -282,7 +282,7 @@ public partial class MailBoxWindow : Window
                     continue;
                 }
 
-                // 📩 Verificar datos antes de agregar a la lista
+                // Verificar datos antes de agregar a la lista
                 ApplicationContext.CurrentContext.Logger.LogDebug(
                     "Mail received - ID: {MailId}, Sender: {SenderName}, Title: {MailTitle}",
                     mail.MailID,
@@ -291,14 +291,14 @@ public partial class MailBoxWindow : Window
 
                 string senderName = !string.IsNullOrWhiteSpace(mail.SenderName) ? mail.SenderName : "Unknown Sender";
                 string mailTitle = !string.IsNullOrWhiteSpace(mail.Name) ? mail.Name.Trim() : "No Subject";
-                string displayText = $"📩 {senderName}: {mailTitle}";
+                string displayText = $"{senderName}: {mailTitle}";
 
                 var row = mMailListBox.AddRow(displayText, "", mail);
                 row.SetTextColor(Color.White);
             }
 
 
-            // 🔹 Seleccionar el primer correo automáticamente
+            // Seleccionar el primer correo automáticamente
             mMailListBox.SelectByUserData(Globals.Mails[0]);
         }
 

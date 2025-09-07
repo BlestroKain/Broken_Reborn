@@ -1,3 +1,4 @@
+using System;
 using Intersect.Client.Entities.Events;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
@@ -8,6 +9,7 @@ using Intersect.Client.Maps;
 using Intersect.Enums;
 using Intersect.Framework;
 using Intersect.Framework.Core.GameObjects.Guild;
+using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Models;
 using Intersect.Network.Packets.Client;
@@ -95,6 +97,32 @@ public static partial class PacketSender
         };
 
         Network.SendPacket(packet);
+    }
+
+    public static void SendCreateMarketListing(int itemSlot, int quantity, long price, bool autoSplit)
+    {
+        var props = Globals.Me?.Inventory[itemSlot]?.ItemProperties ?? new ItemProperties();
+        Network.SendPacket(new CreateMarketListingPacket(itemSlot, quantity, price, props, autoSplit));
+    }
+
+    public static void SendSearchMarket(string query)
+    {
+        Network.SendPacket(new SearchMarketPacket(query));
+    }
+
+    public static void SendBuyMarketListing(Guid listingId, int quantity)
+    {
+        Network.SendPacket(new BuyMarketListingPacket(listingId, quantity));
+    }
+
+    public static void SendCancelMarketListing(Guid listingId)
+    {
+        Network.SendPacket(new CancelMarketListingPacket(listingId));
+    }
+
+    public static void SendRequestMarketInfo(int itemId)
+    {
+        Network.SendPacket(new RequestMarketPricePacket(itemId));
     }
 
 }

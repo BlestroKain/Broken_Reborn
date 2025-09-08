@@ -192,10 +192,16 @@ public partial class InventoryItem : SlotItem
             _actionItemMenuItem.SetText(Strings.ItemContextMenu.Sell.ToString(descriptor.Name));
         }
 
-        if (Globals.GameShop == null && descriptor.CanSell)
+        var sellMarketOpen = Interface.GameUi?.SellMarketWindow?.IsVisibleInTree == true;
+        if (Globals.GameShop == null && descriptor.CanSell && sellMarketOpen)
         {
             contextMenu.AddChild(_sellItemMenuItem);
             _sellItemMenuItem.SetText(Strings.ItemContextMenu.Sell.ToString(descriptor.Name));
+            _sellItemMenuItem.Show();
+        }
+        else
+        {
+            _sellItemMenuItem.Hide();
         }
 
         // Can we drop this item? if so show the user!

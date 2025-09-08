@@ -6,6 +6,7 @@ using Intersect.Client.Core;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
+using Intersect.Client.Framework.Gwen.DragDrop;
 using Intersect.Client.General;
 using Intersect.Client.Interface.Game;
 using Intersect.Client.Interface.Game.Chat;
@@ -13,7 +14,6 @@ using Intersect.Client.Interface.Game.Inventory;
 using Intersect.Client.Localization;
 using Intersect.Client.Networking;
 using Intersect.Client.Utilities;
-using Intersect.Config;
 using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Items;
 
@@ -22,7 +22,8 @@ namespace Intersect.Client.Interface.Game.Market
     public sealed class SellMarketWindow : Window
     {
         // === UI ===
-        private readonly ScrollControl _inventoryScroll;
+        private readonly SlotItem _sellSlot;
+        private readonly Label _sellSlotQuantity;
         private readonly TextBoxNumeric _priceInput;
         private readonly TextBoxNumeric _quantityInput;
         private readonly Button _confirmButton;
@@ -31,9 +32,6 @@ namespace Intersect.Client.Interface.Game.Market
         private readonly Label _suggestedPriceLabel;
         private readonly Label _suggestedRangeLabel;
         private readonly Checkbox _autoSplitCheckbox;
-
-        // Render helpers por slot
-        public List<SlotItem> Items { get; private set; } = [];
 
         // === State ===
         private int _selectedSlot = -1;
@@ -51,10 +49,19 @@ namespace Intersect.Client.Interface.Game.Market
             Alignment = [Alignments.Center];
             SetSize(600, 460);
 
-            // Controles base (mismo estilo que Enchant)
-            _inventoryScroll = new ScrollControl(this, "SellInventoryScroll"); // mismo nombre que en JSON si aplica
-            _inventoryScroll.EnableScroll(false, true);
-            _inventoryScroll.SetBounds(20, 20, 280, 400);
+            // Slot único para el ítem a vender
+            _sellSlot = new SlotItem(this, "SellSlot", 0, null);
+            _sellSlot.SetBounds(20, 20, DefaultSlotSize, DefaultSlotSize);
+
+            _sellSlotQuantity = new Label(_sellSlot, "Quantity")
+            {
+                Alignment = [Alignments.Bottom, Alignments.Right],
+                BackgroundTemplateName = "quantity.png",
+                FontName = "sourcesansproblack",
+                FontSize = 8,
+                Padding = new Padding(2),
+                IsVisibleInParent = false,
+            };
 
             _infoLabel = new Label(this, "SelectedItem") { Text = Strings.Market.selectitem };
             _suggestedPriceLabel = new Label(this, "SuggestedLabel");
@@ -87,14 +94,12 @@ namespace Intersect.Client.Interface.Game.Market
 
             // ⚠️ Igual que Enchant: carga JSON ANTES de poblar
             LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
-            InitItemContainer();
         }
 
         protected override void EnsureInitialized()
         {
-            // Igual que Enchant: refuerza carga y repuebla por si el JSON alteró tamaños
+            // Igual que Enchant: refuerza carga por si el JSON alteró tamaños
             LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
-            InitItemContainer();
         }
 
         private void BuildLayout()
@@ -122,75 +127,24 @@ namespace Intersect.Client.Interface.Game.Market
             _confirmButton.SetBounds(startX, startY, 210, 40);
         }
 
-        // === Inventario (mismo enfoque que Enchant) ===
-        private void InitItemContainer()
+        public override bool DragAndDrop_CanAcceptPackage(Package package)
         {
-            Items.Clear();
-
-            // Si aún no existe jugador/inventario, no poblar
-            if (Globals.Me?.Inventory == null || Options.Instance.Player.MaxInventory <= 0)
-                return;
-
-            for (int i = 0; i < Options.Instance.Player.MaxInventory; i++)
-            {
-                // Nota: En Enchant pasan null como context menu, replicamos.
-                var slot = new InventoryItem(this, _inventoryScroll, i, null);
-
-                if (slot.Width <= 0 || slot.Height <= 0)
-                    slot.SetSize(DefaultSlotSize, DefaultSlotSize); // por si el JSON no asignó
-
-                Items.Add(slot);
-            }
-
-            // Poblar UNA vez (Enchant lo hace dentro del bucle, pero no es necesario)
-            if (Items.Count > 0)
-            {
-                if (Items[0].Width <= 0 || Items[0].Height <= 0)
-                {
-                    foreach (var it in Items) it.SetSize(DefaultSlotSize, DefaultSlotSize);
-                }
-                PopulateSlotContainer.Populate(_inventoryScroll, Items);
-            }
-
-            // No llamamos Update() aquí: lo hará el Game loop cuando la ventana esté visible.
+            return package.DrawControl?.Parent is InventoryItem;
         }
 
-        public void Update()
+        public override bool DragAndDrop_HandleDrop(Package package, int x, int y)
         {
-            if (!IsVisibleInParent) return;
-            if (Globals.Me?.Inventory == null) return;
-
-            // Igual que Enchant: limita el bucle para no pasarte del tamaño real
-            var slotCount = Math.Min(Options.Instance.Player.MaxInventory, Items.Count);
-
-            for (int i = 0; i < slotCount; i++)
+            if (package.DrawControl?.Parent is InventoryItem inventoryItem)
             {
-                var invSlot = Globals.Me.Inventory[i];
-
-                // 🚫 Diferencia clave vs Enchant:
-                // InventoryItem.Update() NO tolera slots vacíos → evitamos llamarlo si no hay item
-                if (invSlot == null || invSlot.ItemId == Guid.Empty || !ItemDescriptor.TryGet(invSlot.ItemId, out _))
-                {
-                    Items[i].Hide();
-                    continue;
-                }
-
-                Items[i].Show();
-
-                // Si tu InventoryItem hace lazy init y aún no está listo, evita NRE
-                try
-                {
-                    Items[i].Update();
-                }
-                catch (NullReferenceException)
-                {
-                    // lo ignoramos este frame; siguiente frame ya debe estar inicializado
-                }
+                SelectItem(inventoryItem.SlotIndex);
+                return true;
             }
+
+            return false;
         }
 
         // === Publish ===
-        public void SelectItem(InventoryItem itemSlot, int slotIndex)
+        public void SelectItem(int slotIndex)
         {
             if (Globals.Me?.Inventory == null || slotIndex < 0 || slotIndex >= Globals.Me.Inventory.Length)
                 return;
@@ -207,7 +161,24 @@ namespace Intersect.Client.Interface.Game.Market
             _waitingPriceForItemId = slot.ItemId;
 
             if (ItemDescriptor.TryGet(slot.ItemId, out var descriptor))
+            {
                 _infoLabel.Text = Strings.Market.publish_colon + " " + descriptor.Name;
+
+                var texture = GameContentManager.Current.GetTexture(Intersect.Client.Framework.Content.TextureType.Item, descriptor.Icon);
+                _sellSlot.Icon.Texture = texture ?? Graphics.Renderer.WhitePixel;
+                _sellSlot.Icon.RenderColor = descriptor.Color;
+                _sellSlot.Icon.IsVisibleInParent = true;
+            }
+
+            if (slot.Quantity > 1)
+            {
+                _sellSlotQuantity.Text = Strings.FormatQuantityAbbreviated(slot.Quantity);
+                _sellSlotQuantity.IsVisibleInParent = true;
+            }
+            else
+            {
+                _sellSlotQuantity.IsVisibleInParent = false;
+            }
 
             _confirmButton.Enable();
 
@@ -335,6 +306,9 @@ namespace Intersect.Client.Interface.Game.Market
             _suggestedPriceLabel.SetText("");
             _suggestedRangeLabel.SetText("");
             _taxLabel.SetText("");
+            _sellSlot.Icon.Texture = null;
+            _sellSlot.Icon.IsVisibleInParent = false;
+            _sellSlotQuantity.IsVisibleInParent = false;
         }
     }
 

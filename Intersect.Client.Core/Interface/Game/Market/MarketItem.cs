@@ -19,7 +19,7 @@ public partial class MarketItem : SlotItem
 {
     private Guid _listingId;
     private Guid _sellerId;
-    private int _itemId;
+    private Guid _itemId;
     private int _quantity;
     private long _price;
     private ItemProperties _properties = new();
@@ -33,7 +33,7 @@ public partial class MarketItem : SlotItem
     private readonly Button _cancelButton;
 
     public Guid ListingId => _listingId;
-    public int ItemId => _itemId;
+    public Guid ItemId => _itemId;
     public long Price => _price;
     public ItemType ItemType { get; private set; }
     public string Subtype { get; private set; } = string.Empty;
@@ -68,10 +68,13 @@ public partial class MarketItem : SlotItem
         LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
     }
 
-    public void Load(Guid listingId, Guid sellerId, int itemId, int quantity, long price, ItemProperties properties)
-        => Update(listingId, sellerId, itemId, quantity, price, properties);
+    public void Load(Guid listingId, Guid sellerId, Guid itemId, int quantity, long price, ItemProperties properties)
+    {
+        Update(listingId, sellerId, itemId, quantity, price, properties);
+    }
 
-    public void Update(Guid listingId, Guid sellerId, int itemId, int quantity, long price, ItemProperties properties)
+
+    public void Update(Guid listingId, Guid sellerId, Guid itemId, int quantity, long price, ItemProperties properties)
     {
         _listingId = listingId;
         _sellerId = sellerId;
@@ -81,7 +84,7 @@ public partial class MarketItem : SlotItem
         _properties = properties ?? new ItemProperties();
 
         // Convertir id de lista a GUID real del descriptor
-        var descriptorId = ItemDescriptor.IdFromList(itemId);
+        var descriptorId = ItemDescriptor.IdFromList(_itemId.GetHashCode());
         if (!ItemDescriptor.TryGet(descriptorId, out var descriptor))
         {
             // Si no hay descriptor, oculta el item para evitar NRE
@@ -126,7 +129,8 @@ public partial class MarketItem : SlotItem
 
     private void Icon_HoverEnter(Base sender, EventArgs args)
     {
-        var descriptorId = ItemDescriptor.IdFromList(_itemId);
+        // Convertir id de lista a GUID real del descriptor
+        var descriptorId = ItemDescriptor.IdFromList(_itemId.GetHashCode());
         if (!ItemDescriptor.TryGet(descriptorId, out var descriptor)) return;
 
         // Garantiza ventana de descripción

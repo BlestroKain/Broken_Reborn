@@ -184,7 +184,7 @@ namespace Intersect.Client.Interface.Game.Market
 
             UpdateSuggestedPrice(slot.ItemId);
 
-            PacketSender.SendRequestMarketInfo(ItemDescriptor.ListIndex(slot.ItemId));
+            PacketSender.SendRequestMarketInfo(slot.ItemId);
 
             _quantityInput.SetText(slot.Quantity.ToString(), false);
             if (MarketPriceCache.TryGet(slot.ItemId, out var avg, out _, out _))

@@ -273,8 +273,7 @@ internal sealed partial class PacketHandler
 
     public void HandlePacket(IPacketSender packetSender, MarketPriceInfoPacket packet)
     {
-        var descriptorId = ItemDescriptor.IdFromList(packet.ItemId);
-        MarketPriceCache.Update(descriptorId, (int)packet.SuggestedPrice, (int)packet.MinPrice, (int)packet.MaxPrice);
+        MarketPriceCache.Update(packet.ItemId, (int)packet.SuggestedPrice, (int)packet.MinPrice, (int)packet.MaxPrice);
     }
 
     public void HandlePacket(IPacketSender packetSender, MarketWindowPacket packet)

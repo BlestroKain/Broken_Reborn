@@ -9,7 +9,7 @@ namespace Intersect.Server.Database.PlayerData.Market;
 
 public static class MarketStatisticsManager
 {
-    private static Dictionary<int, MarketStatistics> _statistics = new();
+    private static Dictionary<Guid, MarketStatistics> _statistics = new();
 
     private static readonly string StatsFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "market_stats.json");
 
@@ -28,7 +28,7 @@ public static class MarketStatisticsManager
         try
         {
             var json = File.ReadAllText(StatsFilePath);
-            var data = JsonConvert.DeserializeObject<Dictionary<int, MarketStatistics>>(json);
+            var data = JsonConvert.DeserializeObject<Dictionary<Guid, MarketStatistics>>(json);
             if (data != null)
             {
                 _statistics = data;
@@ -53,7 +53,7 @@ public static class MarketStatisticsManager
         }
     }
 
-    private static MarketStatistics GetOrCreateStats(int itemId)
+    private static MarketStatistics GetOrCreateStats(Guid itemId)
     {
         if (!_statistics.TryGetValue(itemId, out var stats))
         {
@@ -64,19 +64,19 @@ public static class MarketStatisticsManager
         return stats;
     }
 
-    public static void RecordListing(int itemId, long price)
+    public static void RecordListing(Guid itemId, long price)
     {
         GetOrCreateStats(itemId).Record(price);
         Save();
     }
 
-    public static void RecordSale(int itemId, long price)
+    public static void RecordSale(Guid itemId, long price)
     {
         GetOrCreateStats(itemId).Record(price);
         Save();
     }
 
-    public static (long suggested, long min, long max) GetStatistics(int itemId)
+    public static (long suggested, long min, long max) GetStatistics(Guid itemId)
     {
         var stats = GetOrCreateStats(itemId);
         var average = stats.SuggestedPrice;
@@ -84,7 +84,7 @@ public static class MarketStatisticsManager
         long basePrice = average;
         if (basePrice <= 0)
         {
-            var descriptor = ItemDescriptor.Get(ItemDescriptor.IdFromList(itemId));
+            var descriptor = ItemDescriptor.Get(itemId);
             basePrice = descriptor?.Price ?? 0;
         }
 

@@ -14,7 +14,7 @@ public partial class SearchMarketPacket : IntersectPacket
     public SearchMarketPacket(
         int page,
         int pageSize,
-        int? itemId,
+        Guid? itemId,
         int? minPrice,
         int? maxPrice,
         bool? status,
@@ -37,7 +37,7 @@ public partial class SearchMarketPacket : IntersectPacket
     public int PageSize { get; set; }
 
     [Key(2)]
-    public int? ItemId { get; set; }
+    public Guid? ItemId { get; set; }
 
     [Key(3)]
     public int? MinPrice { get; set; }

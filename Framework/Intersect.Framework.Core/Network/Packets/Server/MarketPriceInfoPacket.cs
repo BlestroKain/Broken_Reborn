@@ -10,7 +10,7 @@ public partial class MarketPriceInfoPacket : IntersectPacket
     {
     }
 
-    public MarketPriceInfoPacket(int itemId, long suggestedPrice, long minPrice, long maxPrice)
+    public MarketPriceInfoPacket(Guid itemId, long suggestedPrice, long minPrice, long maxPrice)
     {
         ItemId = itemId;
         SuggestedPrice = suggestedPrice;
@@ -19,7 +19,7 @@ public partial class MarketPriceInfoPacket : IntersectPacket
     }
 
     [Key(0)]
-    public int ItemId { get; set; }
+    public Guid ItemId { get; set; }
 
     [Key(1)]
     public long SuggestedPrice { get; set; }

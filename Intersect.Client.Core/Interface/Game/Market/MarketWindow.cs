@@ -41,9 +41,9 @@ public partial class MarketWindow : Window
 
     public MarketWindow(Canvas gameCanvas) : base(gameCanvas, Strings.Market.Title, false, nameof(MarketWindow))
     {
-        DisableResizing();
+      IsResizable=false;
         Alignment = [Alignments.Center];
-        SetSize(800, 600);
+        SetSize(800, 620);
 
         var topPanel = new ImagePanel(this, "TopControlsPanel");
         topPanel.SetBounds(10, 10, 780, 40);
@@ -271,11 +271,44 @@ public partial class MarketWindow : Window
     {
         Interface.GameUi.OpenSellMarket();
     }
+    public void SendSearch()
+    {
+        var name = _searchBox.Text?.Trim() ?? "";
 
+        int? minPrice = null;
+        if (!string.IsNullOrWhiteSpace(_minPriceBox.Text) && int.TryParse(_minPriceBox.Text, out var minVal))
+        {
+            minPrice = minVal;
+        }
+
+        int? maxPrice = null;
+        if (!string.IsNullOrWhiteSpace(_maxPriceBox.Text) && int.TryParse(_maxPriceBox.Text, out var maxVal))
+        {
+            maxPrice = maxVal;
+        }
+        ItemType? type = null;
+        if (_typeBox.SelectedItem?.UserData?.ToString() != "all")
+        {
+            if (Enum.TryParse<ItemType>(_typeBox.SelectedItem.UserData.ToString(), out var parsed))
+            {
+                type = parsed;
+            }
+        }
+        string subType = null;
+        if (_subtypeBox.SelectedItem?.UserData?.ToString() != "all")
+        {
+            subType = _subtypeBox.SelectedItem.UserData.ToString();
+        }
+
+        // Enviar con subtipo adicional
+        PacketSender.SendSearchMarket(name, minPrice, maxPrice, type, subType);
+
+    }
     protected override void EnsureInitialized()
     {
         LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
-        SetSize(800, 600);
+        PacketSender.SendSearchMarket();
+        SendSearch();
         _listingScroll.SetBounds(10, 60, Width - 20, Height - 110);
     }
 }

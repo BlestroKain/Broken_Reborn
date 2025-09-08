@@ -286,19 +286,14 @@ public partial class MarketWindow : Window
         {
             maxPrice = maxVal;
         }
+
         ItemType? type = null;
-        if (_typeBox.SelectedItem?.UserData?.ToString() != "all")
+        if (_typeBox.SelectedItem?.UserData is ItemType parsedType)
         {
-            if (Enum.TryParse<ItemType>(_typeBox.SelectedItem.UserData.ToString(), out var parsed))
-            {
-                type = parsed;
-            }
+            type = parsedType;
         }
-        string subType = null;
-        if (_subtypeBox.SelectedItem?.UserData?.ToString() != "all")
-        {
-            subType = _subtypeBox.SelectedItem.UserData.ToString();
-        }
+
+        string? subType = _subtypeBox.SelectedItem?.UserData as string;
 
         // Enviar con subtipo adicional
         PacketSender.SendSearchMarket(name, minPrice, maxPrice, type, subType);

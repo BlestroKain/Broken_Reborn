@@ -253,7 +253,18 @@ public partial class InventoryItem : SlotItem
 
     private void _sellItemContextItem_Clicked(Base sender, MouseButtonState arguments)
     {
-        Interface.EnqueueInGame(gameInterface => gameInterface.NotifyOpenSellMarket(SlotIndex));
+        Interface.EnqueueInGame(gameInterface =>
+        {
+            var sellWindow = gameInterface.SellMarketWindow;
+            if (sellWindow != null && sellWindow.IsVisibleInTree)
+            {
+                sellWindow.SelectItem(SlotIndex);
+            }
+            else
+            {
+                gameInterface.NotifyOpenSellMarket(SlotIndex);
+            }
+        });
     }
 
     private void _dropItemContextItem_Clicked(Base sender, MouseButtonState arguments)

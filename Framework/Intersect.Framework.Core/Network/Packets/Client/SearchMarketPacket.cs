@@ -1,5 +1,6 @@
 using System;
 using MessagePack;
+using Intersect.Framework.Core.GameObjects.Items;
 
 namespace Intersect.Network.Packets.Client;
 
@@ -18,7 +19,10 @@ public partial class SearchMarketPacket : IntersectPacket
         int? minPrice,
         int? maxPrice,
         bool? status,
-        Guid? sellerId
+        Guid? sellerId,
+        string itemName = "",
+        ItemType? type = null,
+        string? subtype = null
     )
     {
         Page = page;
@@ -28,6 +32,9 @@ public partial class SearchMarketPacket : IntersectPacket
         MaxPrice = maxPrice;
         Status = status;
         SellerId = sellerId;
+        ItemName = itemName;
+        Type = type;
+        Subtype = subtype;
     }
 
     [Key(0)]
@@ -50,4 +57,13 @@ public partial class SearchMarketPacket : IntersectPacket
 
     [Key(6)]
     public Guid? SellerId { get; set; }
+
+    [Key(7)]
+    public string ItemName { get; set; } = string.Empty;
+
+    [Key(8)]
+    public ItemType? Type { get; set; }
+
+    [Key(9)]
+    public string? Subtype { get; set; }
 }

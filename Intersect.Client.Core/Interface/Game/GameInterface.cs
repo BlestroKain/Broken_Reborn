@@ -320,7 +320,15 @@ public partial class GameInterface : MutableInterface
     public void NotifyOpenSellMarket(int slot)
     {
         _sellMarketSlot = slot;
-        _shouldOpenSellMarket = true;
+
+        if (_sellMarketWindow != null && _sellMarketWindow.IsVisibleInTree)
+        {
+            _sellMarketWindow.SelectItem(slot);
+        }
+        else
+        {
+            _shouldOpenSellMarket = true;
+        }
     }
 
     public void NotifyCloseSellMarket()
@@ -332,6 +340,10 @@ public partial class GameInterface : MutableInterface
     {
         _sellMarketWindow = new SellMarketWindow(GameCanvas);
         _sellMarketWindow.Show();
+        if (_sellMarketSlot >= 0)
+        {
+            _sellMarketWindow.SelectItem(_sellMarketSlot);
+        }
         _shouldOpenSellMarket = false;
     }
 
@@ -424,6 +436,8 @@ public partial class GameInterface : MutableInterface
     {
         return _marketWindow;
     }
+
+    public SellMarketWindow? SellMarketWindow => _sellMarketWindow;
 
     public void RefreshBank()
     {

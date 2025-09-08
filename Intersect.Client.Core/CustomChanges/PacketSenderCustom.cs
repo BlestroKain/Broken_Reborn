@@ -108,7 +108,7 @@ public static partial class PacketSender
     public static void SendSearchMarket(
         int page,
         int pageSize,
-        int? itemId = null,
+        Guid? itemId = null,
         int? minPrice = null,
         int? maxPrice = null,
         bool? status = null,
@@ -128,7 +128,7 @@ public static partial class PacketSender
         Network.SendPacket(new CancelMarketListingPacket(listingId));
     }
 
-    public static void SendRequestMarketInfo(int itemId)
+    public static void SendRequestMarketInfo(Guid itemId)
     {
         Network.SendPacket(new RequestMarketPricePacket(itemId));
     }

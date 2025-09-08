@@ -13,7 +13,7 @@ public partial class MarketListingPacket : IntersectPacket
     {
     }
 
-    public MarketListingPacket(Guid listingId, Guid sellerId, int itemId, int quantity, long price, ItemProperties properties)
+    public MarketListingPacket(Guid listingId, Guid sellerId, Guid itemId, int quantity, long price, ItemProperties properties)
     {
         ListingId = listingId;
         SellerId = sellerId;
@@ -30,7 +30,7 @@ public partial class MarketListingPacket : IntersectPacket
     public Guid SellerId { get; set; }
 
     [Key(2)]
-    public int ItemId { get; set; }
+    public Guid ItemId { get; set; }
 
     [Key(3)]
     public int Quantity { get; set; }

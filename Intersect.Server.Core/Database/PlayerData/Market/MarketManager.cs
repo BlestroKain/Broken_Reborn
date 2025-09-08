@@ -24,7 +24,7 @@ namespace Intersect.Server.Database.PlayerData.Market
         public static (List<MarketListing> Listings, int Total) SearchMarket(
             int page,
             int pageSize,
-            int? itemId = null,
+            Guid? itemId = null,
             int? minPrice = null,
             int? maxPrice = null,
             bool? status = null,
@@ -137,7 +137,7 @@ namespace Intersect.Server.Database.PlayerData.Market
                 return false;
             }
 
-            var stats = MarketStatisticsManager.GetStatistics(ItemDescriptor.ListIndex(item.ItemId));
+            var stats = MarketStatisticsManager.GetStatistics(item.ItemId);
             var min = stats.min;
             var max = stats.max;
 
@@ -189,7 +189,7 @@ namespace Intersect.Server.Database.PlayerData.Market
                     {
                         Seller = seller,
                         SellerId = seller.Id,
-                        ItemId = ItemDescriptor.ListIndex(item.ItemId),
+                        ItemId = item.ItemId,
                         Quantity = size,
                         Price = totalPrice,
                         ItemProperties = itemProperties,
@@ -306,7 +306,7 @@ namespace Intersect.Server.Database.PlayerData.Market
                     return false;
                 }
 
-                itemToGive = new Item(ItemDescriptor.IdFromList(listing.ItemId), listing.Quantity) { Properties = listing.ItemProperties };
+                itemToGive = new Item(listing.ItemId, listing.Quantity) { Properties = listing.ItemProperties };
                 if (!buyer.CanGiveItem(itemToGive.ItemId, itemToGive.Quantity))
                 {
                     PacketSender.SendChatMsg(buyer, Strings.Market.inventoryfull, ChatMessageType.Error, CustomColors.Alerts.Declined);
@@ -383,7 +383,7 @@ namespace Intersect.Server.Database.PlayerData.Market
                     sender: buyer,
                     receiver: listing.Seller,
                     title: Strings.Market.salecompleted,
-                    message: Strings.Market.yoursolditem.ToString(ItemDescriptor.GetName(ItemDescriptor.IdFromList(listing.ItemId))),
+                    message: Strings.Market.yoursolditem.ToString(ItemDescriptor.GetName(listing.ItemId)),
                     attachments: new List<MailAttachment> { goldAttachment }
                 );
 
@@ -457,11 +457,11 @@ namespace Intersect.Server.Database.PlayerData.Market
 
             context.Market_Listings.Remove(listing);
 
-            if (!seller.TryGiveItem(ItemDescriptor.IdFromList(listing.ItemId), listing.Quantity, listing.ItemProperties))
+            if (!seller.TryGiveItem(listing.ItemId, listing.Quantity, listing.ItemProperties))
             {
                 var attachment = new MailAttachment
                 {
-                    ItemId = ItemDescriptor.IdFromList(listing.ItemId),
+                    ItemId = listing.ItemId,
                     Quantity = listing.Quantity,
                     Properties = listing.ItemProperties
                 };
@@ -519,7 +519,7 @@ namespace Intersect.Server.Database.PlayerData.Market
                     {
                         var item = new MailAttachment
                         {
-                            ItemId = ItemDescriptor.IdFromList(listing.ItemId),
+                            ItemId = listing.ItemId,
                             Quantity = listing.Quantity,
                             Properties = listing.ItemProperties
                         };

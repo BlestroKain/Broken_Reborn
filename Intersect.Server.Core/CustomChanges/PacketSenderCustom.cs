@@ -263,7 +263,7 @@ public static partial class PacketSender
         player.SendPacket(new MarketTransactionsPacket(transactions));
     }
 
-    public static void SendMarketPriceInfo(Player player, int itemId, long suggestedPrice, long minPrice, long maxPrice)
+    public static void SendMarketPriceInfo(Player player, Guid itemId, long suggestedPrice, long minPrice, long maxPrice)
     {
         player.SendPacket(new MarketPriceInfoPacket(itemId, suggestedPrice, minPrice, maxPrice));
     }

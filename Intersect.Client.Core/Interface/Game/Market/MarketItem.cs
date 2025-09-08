@@ -18,7 +18,7 @@ public partial class MarketItem : SlotItem
 {
     private Guid _listingId;
     private Guid _sellerId;
-    private int _itemId;
+    private Guid _itemId;
     private int _quantity;
     private long _price;
     private ItemProperties _properties = new();
@@ -29,7 +29,7 @@ public partial class MarketItem : SlotItem
     private readonly Button _buyButton;
 
     public Guid ListingId => _listingId;
-    public int ItemId => _itemId;
+    public Guid ItemId => _itemId;
     public long Price => _price;
     public ItemType ItemType { get; private set; }
     public string Subtype { get; private set; } = string.Empty;
@@ -71,12 +71,12 @@ public partial class MarketItem : SlotItem
         Icon.SetBounds(4, 4, 32, 32);
     }
 
-    public void Load(Guid listingId, Guid sellerId, int itemId, int quantity, long price, ItemProperties properties)
+    public void Load(Guid listingId, Guid sellerId, Guid itemId, int quantity, long price, ItemProperties properties)
     {
         Update(listingId, sellerId, itemId, quantity, price, properties);
     }
 
-    public void Update(Guid listingId, Guid sellerId, int itemId, int quantity, long price, ItemProperties properties)
+    public void Update(Guid listingId, Guid sellerId, Guid itemId, int quantity, long price, ItemProperties properties)
     {
         _listingId = listingId;
         _sellerId = sellerId;
@@ -85,8 +85,7 @@ public partial class MarketItem : SlotItem
         _price = price;
         _properties = properties ?? new ItemProperties();
 
-        var descriptorId = ItemDescriptor.IdFromList(itemId);
-        if (!ItemDescriptor.TryGet(descriptorId, out var descriptor))
+        if (!ItemDescriptor.TryGet(itemId, out var descriptor))
         {
             return;
         }
@@ -113,8 +112,7 @@ public partial class MarketItem : SlotItem
 
     private void Icon_HoverEnter(Base sender, EventArgs args)
     {
-        var descriptorId = ItemDescriptor.IdFromList(_itemId);
-        if (!ItemDescriptor.TryGet(descriptorId, out var descriptor))
+        if (!ItemDescriptor.TryGet(_itemId, out var descriptor))
         {
             return;
         }

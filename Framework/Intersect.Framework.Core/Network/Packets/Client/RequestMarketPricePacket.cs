@@ -10,12 +10,12 @@ public partial class RequestMarketPricePacket : IntersectPacket
     {
     }
 
-    public RequestMarketPricePacket(int itemId)
+    public RequestMarketPricePacket(Guid itemId)
     {
         ItemId = itemId;
     }
 
     [Key(0)]
-    public int ItemId { get; set; }
+    public Guid ItemId { get; set; }
 }
 

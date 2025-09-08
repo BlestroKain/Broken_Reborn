@@ -20,7 +20,9 @@ public static class PopulateSlotContainer
 
             var outerSize = slot.OuterBounds.Size;
 
-            var itemsPerRow = (int)(containerInnerWidth / outerSize.X);
+            var itemsPerRow = outerSize.X > 0
+                ? Math.Max(1, (int)(containerInnerWidth / outerSize.X))
+                : 1;
 
             var column = visibleIndex % itemsPerRow;
             var row = visibleIndex / itemsPerRow;

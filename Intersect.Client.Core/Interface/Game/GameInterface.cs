@@ -592,7 +592,7 @@ public partial class GameInterface : MutableInterface
             OpenSellMarket();
         }
 
-        if (_sellMarketWindow != null && (!_sellMarketWindow.IsVisible() || _shouldCloseSellMarket))
+        if (_sellMarketWindow != null && (!_sellMarketWindow.IsVisibleInTree || _shouldCloseSellMarket))
         {
             _sellMarketWindow.Close();
             _sellMarketWindow = null;

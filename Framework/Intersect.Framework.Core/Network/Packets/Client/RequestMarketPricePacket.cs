@@ -1,21 +1,16 @@
+using System;
 using MessagePack;
 
-namespace Intersect.Network.Packets.Client;
-
-[MessagePackObject]
-public partial class RequestMarketPricePacket : IntersectPacket
+namespace Intersect.Network.Packets.Client
 {
-    // Parameterless constructor for MessagePack
-    public RequestMarketPricePacket()
+    [MessagePackObject]
+    public class RequestMarketPricePacket : IntersectPacket
     {
-    }
+        [Key(0)] public Guid ItemId { get; set; }
 
-    public RequestMarketPricePacket(Guid itemId)
-    {
-        ItemId = itemId;
+        public RequestMarketPricePacket(Guid itemId)
+        {
+            ItemId = itemId;
+        }
     }
-
-    [Key(0)]
-    public Guid ItemId { get; set; }
 }
-

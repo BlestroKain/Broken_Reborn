@@ -1,110 +1,86 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Linq;
 using Intersect.Framework.Core.GameObjects.Items;
-using Newtonsoft.Json;
-using Intersect;
-
-namespace Intersect.Server.Database.PlayerData.Market;
+using Intersect.GameObjects;
+using Intersect.Server.Database;
+using Intersect.Server.Database.PlayerData;
+using Intersect.Server.Database.PlayerData.Market;
 
 public static class MarketStatisticsManager
 {
-    private static Dictionary<Guid, MarketStatistics> _statistics = new();
+    private static readonly Dictionary<Guid, MarketStatistics> _statisticsCache = new();
 
-    private static readonly string StatsFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "market_stats.json");
-
-    static MarketStatisticsManager()
+    public static void LoadFromDatabase()
     {
-        Load();
-    }
+        using var context = DbInterface.CreatePlayerContext(readOnly: true);
 
-    private static void Load()
-    {
-        if (!File.Exists(StatsFilePath))
+        var allTransactions = context.Market_Transactions.ToList();
+
+        var grouped = allTransactions
+            .GroupBy(tx => tx.ItemId);
+
+        foreach (var group in grouped)
         {
-            return;
+            var stats = new MarketStatistics(group.Key, group);
+            _statisticsCache[group.Key] = stats;
         }
 
-        try
+       
+    }
+
+    /// <summary>
+    /// Devuelve las estadísticas desde caché o base de datos si no existen aún.
+    /// </summary>
+    public static MarketStatistics GetStatistics(Guid itemId)
+    {
+        //LoadFromDatabase();
+        if (_statisticsCache.TryGetValue(itemId, out var cachedStats))
         {
-            var json = File.ReadAllText(StatsFilePath);
-            var data = JsonConvert.DeserializeObject<Dictionary<Guid, MarketStatistics>>(json);
-            if (data != null)
+            return cachedStats;
+        }
+
+        using var context = DbInterface.CreatePlayerContext(readOnly: true);
+        var transactions = context.Market_Transactions
+            .Where(t => t.ItemId == itemId)
+            .ToList();
+
+        MarketStatistics stats;
+
+        if (transactions.Any())
+        {
+            stats = new MarketStatistics(itemId, transactions);
+        }
+        else
+        {
+            var basePrice = ItemDescriptor.Get(itemId)?.Price ?? 1;
+            if (basePrice <= 0) basePrice = 1;
+
+            stats = new MarketStatistics(itemId)
             {
-                _statistics = data;
-            }
-        }
-        catch
-        {
-            // ignore load errors
-        }
-    }
-
-    private static void Save()
-    {
-        try
-        {
-            var json = JsonConvert.SerializeObject(_statistics, Formatting.Indented);
-            File.WriteAllText(StatsFilePath, json);
-        }
-        catch
-        {
-            // ignore save errors
-        }
-    }
-
-    private static MarketStatistics GetOrCreateStats(Guid itemId)
-    {
-        if (!_statistics.TryGetValue(itemId, out var stats))
-        {
-            stats = new MarketStatistics();
-            _statistics[itemId] = stats;
+                TotalRevenue = basePrice,
+                TotalSold = 1,
+                NumberOfSales = 1
+            };
         }
 
+        _statisticsCache[itemId] = stats;
         return stats;
     }
 
-    public static void RecordListing(Guid itemId, long price)
+    /// <summary>
+    /// Agrega una venta al historial y actualiza el caché.
+    /// </summary>
+    public static void UpdateStatistics(MarketTransaction tx)
     {
-        GetOrCreateStats(itemId).Record(price);
-        Save();
-    }
-
-    public static void RecordSale(Guid itemId, long price)
-    {
-        GetOrCreateStats(itemId).Record(price);
-        Save();
-    }
-
-    public static (long suggested, long min, long max) GetStatistics(Guid itemId)
-    {
-        var stats = GetOrCreateStats(itemId);
-        var average = stats.SuggestedPrice;
-
-        long basePrice = average;
-        if (basePrice <= 0)
+        //LoadFromDatabase();
+        if (!_statisticsCache.TryGetValue(tx.ItemId, out var stats))
         {
-            var descriptor = ItemDescriptor.Get(itemId);
-            basePrice = descriptor?.Price ?? 0;
+            stats = new MarketStatistics(tx.ItemId);
+            _statisticsCache[tx.ItemId] = stats;
         }
 
-        if (basePrice <= 0)
-        {
-            return (0, 0, long.MaxValue);
-        }
-
-        var variance = Options.Instance.Market.AllowedPriceVariance;
-        var min = (long)Math.Floor(basePrice * (1 - variance));
-        var max = (long)Math.Ceiling(basePrice * (1 + variance));
-
-        var suggested = average > 0 ? average : basePrice;
-
-        return (suggested, min, max);
+        stats.AddTransaction(tx);
     }
 
-    public static void UpdateStatistics(MarketTransaction transaction)
-    {
-        RecordSale(transaction.ItemId, transaction.Price);
-    }
 }
-

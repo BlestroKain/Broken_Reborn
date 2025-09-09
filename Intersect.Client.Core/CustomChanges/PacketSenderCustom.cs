@@ -99,38 +99,9 @@ public static partial class PacketSender
         Network.SendPacket(packet);
     }
 
-    public static void SendCreateMarketListing(int itemSlot, int quantity, long price, bool autoSplit)
+    public static void SendBuyMarketListing(Guid listingId)
     {
-        var props = Globals.Me?.Inventory[itemSlot]?.ItemProperties ?? new ItemProperties();
-        Network.SendPacket(new CreateMarketListingPacket(itemSlot, quantity, price, props, autoSplit));
-    }
-
-    public static void SendSearchMarket(
-        int page,
-        int pageSize,
-        Guid? itemId = null,
-        int? minPrice = null,
-        int? maxPrice = null,
-        bool? status = null,
-        Guid? sellerId = null
-    )
-    {
-        Network.SendPacket(new SearchMarketPacket(page, pageSize, itemId, minPrice, maxPrice, status, sellerId));
-    }
-
-    public static void SendBuyMarketListing(Guid listingId, int quantity)
-    {
-        Network.SendPacket(new BuyMarketListingPacket(listingId, quantity));
-    }
-
-    public static void SendCancelMarketListing(Guid listingId)
-    {
-        Network.SendPacket(new CancelMarketListingPacket(listingId));
-    }
-
-    public static void SendRequestMarketInfo(Guid itemId)
-    {
-        Network.SendPacket(new RequestMarketPricePacket(itemId));
+        Network.SendPacket(new BuyMarketListingPacket(listingId));
     }
 
     public static void SendSearchMarket(string name = "", int? min = null, int? max = null, ItemType? type = null, string? subType = null)
@@ -145,4 +116,27 @@ public static partial class PacketSender
         });
     }
 
+    public static void SendCreateMarketListing(Guid itemId, int quantity, int price,ItemProperties props, bool autoSplit = false)
+
+    {
+        Network.SendPacket(new CreateMarketListingPacket
+        {
+            ItemId = itemId,
+            Quantity = quantity,
+            Price = price,
+            Properties = props,
+            AutoSplit = autoSplit
+        });
+    }
+    public static void SendCancelMarketListing(Guid listingId)
+    {
+        var packet = new CancelMarketListingPacket(listingId);
+        Network.SendPacket(packet);
+    }
+
+    public static void SendRequestMarketInfo(Guid itemId)
+    {
+        var packet = new RequestMarketPricePacket(itemId);
+        Network.SendPacket(packet);
+    }
 }

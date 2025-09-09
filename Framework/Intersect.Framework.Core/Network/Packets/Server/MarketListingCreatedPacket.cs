@@ -1,21 +1,15 @@
-using System;
 using MessagePack;
 
-namespace Intersect.Network.Packets.Server;
-
-[MessagePackObject]
-public partial class MarketListingCreatedPacket : IntersectPacket
+namespace Intersect.Network.Packets.Server
 {
-    // Parameterless constructor for MessagePack
-    public MarketListingCreatedPacket()
+    [MessagePackObject]
+    public class MarketListingCreatedPacket : IntersectPacket
     {
-    }
+        [Key(0)] public string Message { get; set; }
 
-    public MarketListingCreatedPacket(Guid listingId)
-    {
-        ListingId = listingId;
+        public MarketListingCreatedPacket(string msg)
+        {
+            Message = msg;
+        }
     }
-
-    [Key(0)]
-    public Guid ListingId { get; set; }
 }

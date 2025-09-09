@@ -1,25 +1,16 @@
 using System;
 using MessagePack;
 
-namespace Intersect.Network.Packets.Client;
-
-[MessagePackObject]
-public partial class BuyMarketListingPacket : IntersectPacket
+namespace Intersect.Network.Packets.Client
 {
-    // Parameterless constructor for MessagePack
-    public BuyMarketListingPacket()
+    [MessagePackObject]
+    public class BuyMarketListingPacket : IntersectPacket
     {
+        public BuyMarketListingPacket(Guid listingId)
+        {
+            ListingId = listingId;
+        }
+
+        [Key(0)] public Guid ListingId { get; set; }
     }
-
-    public BuyMarketListingPacket(Guid listingId, int quantity)
-    {
-        ListingId = listingId;
-        Quantity = quantity;
-    }
-
-    [Key(0)]
-    public Guid ListingId { get; set; }
-
-    [Key(1)]
-    public int Quantity { get; set; }
 }

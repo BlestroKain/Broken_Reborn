@@ -1,21 +1,19 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using MessagePack;
 
 namespace Intersect.Network.Packets.Client;
-
 [MessagePackObject]
-public partial class CancelMarketListingPacket : IntersectPacket
+public class CancelMarketListingPacket : IntersectPacket
 {
-    // Parameterless constructor for MessagePack
-    public CancelMarketListingPacket()
-    {
-    }
+    [Key(0)] public Guid ListingId { get; set; }
 
     public CancelMarketListingPacket(Guid listingId)
     {
         ListingId = listingId;
     }
-
-    [Key(0)]
-    public Guid ListingId { get; set; }
 }
+

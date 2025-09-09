@@ -605,147 +605,93 @@ internal sealed partial class PacketHandler
         PacketSender.SendEntityDataToProximity(player);
     }
 
-    public void HandlePacket(Client client, SearchMarketPacket packet)
-    {
-        var player = client.Entity;
-        if (player == null)
-        {
-            return;
-        }
-
-        var sw = Stopwatch.StartNew();
-
-        var (listings, total) = MarketManager.SearchMarket(
-            packet.Page,
-            packet.PageSize,
-            packet.ItemId,
-            packet.MinPrice,
-            packet.MaxPrice,
-            packet.Status,
-            packet.SellerId
-        );
-
-        sw.Stop();
-
-        var packets = listings.Select(l => new MarketListingPacket(
-            l.Id,
-            l.SellerId,
-            l.ItemId,
-            l.Quantity,
-            l.Price,
-            l.ItemProperties
-        )).ToList();
-
-        PacketSender.SendMarketListings(player, packets, packet.Page, packet.PageSize, total);
-
-        if (Options.Instance.Metrics.Enable)
-        {
-            MetricsRoot.Instance.Game.MarketSearchTime.Record(sw.ElapsedMilliseconds);
-        }
-
-        Log.Information(
-            "Player {PlayerId} searched market (page {Page}, size {Size}) -> {Returned}/{Total} results in {Elapsed}ms",
-            player.Id,
-            packet.Page,
-            packet.PageSize,
-            packets.Count,
-            total,
-            sw.ElapsedMilliseconds
-        );
-    }
-
-    public void HandlePacket(Client client, RequestMarketPricePacket packet)
-    {
-        var player = client.Entity;
-        if (player == null)
-        {
-            return;
-        }
-
-        var (suggested, min, max) = MarketStatisticsManager.GetStatistics(packet.ItemId);
-        PacketSender.SendMarketPriceInfo(player, packet.ItemId, suggested, min, max);
-    }
-
-    public void HandlePacket(Client client, CreateMarketListingPacket packet)
-    {
-        var player = client.Entity;
-        if (player == null)
-        {
-            return;
-        }
-
-        if (!MarketManager.CreateListing(player, packet.ItemSlot, packet.Quantity, packet.Price,packet.Properties, packet.AutoSplit))
-        {
-            PacketSender.SendChatMsg(player, "No se pudo crear el listado.", ChatMessageType.Error);
-        }
-    }
-
     public void HandlePacket(Client client, BuyMarketListingPacket packet)
     {
         var player = client.Entity;
-        if (player == null)
+        if (player == null) return;
+
+        MarketManager.TryBuyListing(player, packet.ListingId);
+    }
+    public void HandlePacket(Client client, SearchMarketPacket packet)
+    {
+        var player = client.Entity;
+        if (player == null) return;
+
+        using var context = DbInterface.CreatePlayerContext(readOnly: true);
+        var listings = context.Market_Listings
+            .Where(l => !l.IsSold && l.ExpireAt > DateTime.UtcNow)
+            .ToList();
+
+        if (!string.IsNullOrWhiteSpace(packet.ItemName))
+            listings = listings.Where(l => ItemDescriptor.Get(l.ItemId)?.Name?.ToLower().Contains(packet.ItemName.ToLower()) == true).ToList();
+
+        if (packet.Type.HasValue)
+            listings = listings.Where(l => ItemDescriptor.Get(l.ItemId)?.ItemType == packet.Type).ToList();
+
+        if (packet.MinPrice.HasValue)
+            listings = listings.Where(l => l.Price >= packet.MinPrice.Value).ToList();
+
+        if (packet.MaxPrice.HasValue)
+            listings = listings.Where(l => l.Price <= packet.MaxPrice.Value).ToList();
+
+        PacketSender.SendMarketListings(player, listings);
+    }
+    public void HandlePacket(Client client, CreateMarketListingPacket packet)
+    {
+        var player = client.Entity;
+        if (player == null) return;
+
+        // Clonar los datos necesarios antes de perder el ítem
+        var clone = new Item(packet.ItemId, packet.Quantity)
         {
-            return;
-        }
+            Properties = packet.Properties
+        };
 
-        var sw = Stopwatch.StartNew();
-
-        var success = MarketManager.BuyAsync(player, packet.ListingId)
-            .ConfigureAwait(false).GetAwaiter().GetResult();
-
-        sw.Stop();
-
-        if (Options.Instance.Metrics.Enable)
-        {
-            MetricsRoot.Instance.Game.MarketPurchaseTime.Record(sw.ElapsedMilliseconds);
-        }
+        var success = MarketManager.TryListItem(
+            seller: player,
+            item: clone,
+            quantity: packet.Quantity,
+            pricePerUnit: packet.Price,
+            autoSplit: packet.AutoSplit // <-- NUEVO argumento
+        );
 
         if (success)
         {
-            PacketSender.SendMarketPurchaseSuccess(player, packet.ListingId);
-            PacketSender.SendRefreshMarket(player);
-            PacketSender.SendChatMsg(
-                player,
-                Strings.Market.itempurchased,
-                ChatMessageType.Trading,
-                CustomColors.Alerts.Accepted
-            );
-
-            Log.Information(
-                "Player {PlayerId} purchased listing {ListingId} in {Elapsed}ms",
-                player.Id,
-                packet.ListingId,
-                sw.ElapsedMilliseconds
-            );
-        }
-        else
-        {
-            PacketSender.SendChatMsg(
-                player,
-                Strings.Market.transactionfailed,
-                ChatMessageType.Error,
-                CustomColors.Alerts.Error
-            );
-
-            Log.Warning(
-                "Player {PlayerId} failed to purchase listing {ListingId} after {Elapsed}ms",
-                player.Id,
-                packet.ListingId,
-                sw.ElapsedMilliseconds
-            );
+            PacketSender.SendMarketListingCreated(player);
         }
     }
-
     public void HandlePacket(Client client, CancelMarketListingPacket packet)
     {
         var player = client.Entity;
+        if (player == null) return;
+
+        var context = DbInterface.CreatePlayerContext(readOnly: false);
+        var listing = context.Market_Listings.Include(l => l.Seller).FirstOrDefault(l => l.Id == packet.ListingId);
+
+        if (listing == null || listing.IsSold || listing.Seller.Name != player.Name)
+        {
+            PacketSender.SendChatMsg(player, "❌ No puedes cancelar este listado.", ChatMessageType.Error, CustomColors.Alerts.Error);
+            return;
+        }
+
+        listing.IsSold = true;
+        context.Update(listing);
+
+        // Devolver el ítem
+        player.TryGiveItem(listing.ItemId, listing.Quantity);
+
+        context.SaveChanges();
+        PacketSender.SendChatMsg(player, "🛑 Listado cancelado y objeto devuelto.", ChatMessageType.Trading, CustomColors.Alerts.Accepted);
+        PacketSender.SendRefreshMarket(player);
+    }
+    public void HandlePacket(Client client, RequestMarketPricePacket packet)
+    {
+        var player = client?.Entity;
         if (player == null)
         {
             return;
         }
 
-        MarketManager.CancelListing(player, packet.ListingId);
+        PacketSender.SendPriceInfo(player, packet.ItemId);
     }
-
-
 }

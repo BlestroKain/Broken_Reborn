@@ -39,6 +39,8 @@ public partial class MarketWindow : Window
     private ItemType? _selectedType;
     private string? _selectedSubtype;
 
+    public static MarketWindow Instance;
+
     public MarketWindow(Canvas gameCanvas) : base(gameCanvas, Strings.Market.Title, false, nameof(MarketWindow))
     {
       IsResizable=false;

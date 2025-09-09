@@ -1,51 +1,29 @@
 using System;
 using System.Collections.Generic;
+using Intersect.Framework.Core.GameObjects.Items;
 using MessagePack;
 
-namespace Intersect.Network.Packets.Server;
-
-[MessagePackObject]
-public partial class MarketTransactionsPacket : IntersectPacket
+namespace Intersect.Network.Packets.Server
 {
-    // Parameterless constructor for MessagePack
-    public MarketTransactionsPacket()
+    [MessagePackObject]
+    public class MarketTransactionPacket
     {
+        [Key(0)] public string BuyerName { get; set; }
+        [Key(1)] public Guid ItemId { get; set; }
+        [Key(2)] public int Quantity { get; set; }
+        [Key(3)] public int Price { get; set; }
+        [Key(4)] public ItemProperties Properties { get; set; }
+        [Key(5)] public DateTime SoldAt { get; set; }
     }
 
-    public MarketTransactionsPacket(List<MarketTransactionInfo> transactions)
+    [MessagePackObject]
+    public class MarketTransactionsPacket : IntersectPacket
     {
-        Transactions = transactions;
+        [Key(0)] public List<MarketTransactionPacket> Transactions { get; set; }
+
+        public MarketTransactionsPacket(List<MarketTransactionPacket> transactions)
+        {
+            Transactions = transactions ?? new List<MarketTransactionPacket>();
+        }
     }
-
-    [Key(0)]
-    public List<MarketTransactionInfo> Transactions { get; set; } = new();
-}
-
-[MessagePackObject]
-public partial class MarketTransactionInfo
-{
-    // Parameterless constructor for MessagePack
-    public MarketTransactionInfo()
-    {
-    }
-
-    public MarketTransactionInfo(Guid listingId, Guid buyerId, int quantity, long price)
-    {
-        ListingId = listingId;
-        BuyerId = buyerId;
-        Quantity = quantity;
-        Price = price;
-    }
-
-    [Key(0)]
-    public Guid ListingId { get; set; }
-
-    [Key(1)]
-    public Guid BuyerId { get; set; }
-
-    [Key(2)]
-    public int Quantity { get; set; }
-
-    [Key(3)]
-    public long Price { get; set; }
 }

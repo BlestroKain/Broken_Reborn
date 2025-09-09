@@ -23,6 +23,7 @@ using Intersect.Network;
 using Intersect.Network.Packets.Server;
 using Intersect.Server.Database;
 using Intersect.Server.Database.Logging.Entities;
+using Intersect.Server.Database.PlayerData.Market;
 using Intersect.Server.Database.PlayerData.Players;
 using Intersect.Server.Database.PlayerData.Security;
 using Intersect.Server.Entities;
@@ -156,32 +157,33 @@ public static partial class PacketSender
         player.SendPacket(new BrokeItemWindowPacket());
     }
 
-    public static void SendOpenMarket(Player player)
-    {
-        player.SendPacket(new MarketWindowPacket(MarketWindowPacketType.OpenMarket));
-    }
 
-    public static void SendCloseMarket(Player player)
-    {
-        player.SendPacket(new MarketWindowPacket(MarketWindowPacketType.CloseMarket));
-    }
-
-    public static void SendOpenSellMarket(Player player, int slot)
-    {
-        player.SendPacket(new MarketWindowPacket(MarketWindowPacketType.OpenSell, slot));
-    }
-
-    public static void SendCloseSellMarket(Player player)
-    {
-        player.SendPacket(new MarketWindowPacket(MarketWindowPacketType.CloseSell));
-    }
-
+   
     public static void SendRefreshMarket(Player player)
     {
-        // Placeholder implementation: reopen market window to refresh listings
-        SendOpenMarket(player);
-    }
+        if (player == null)
+        {
+            return;
+        }
 
+        // Obtener todos los listados activos en el mercado
+        var listings = MarketManager.SearchMarket();
+
+        // Construir el paquete de listado de mercado
+        var packet = new MarketListingsPacket(
+            listings.Select(listing => new MarketListingPacket
+            {
+                ListingId = listing.Id,
+                ItemId = listing.ItemId,
+                Quantity = listing.Quantity,
+                Price = listing.Price,
+                Properties = listing.ItemProperties
+            }).ToList()
+        );
+
+        // Enviar al cliente
+        player.SendPacket(packet);
+    }
     public static void SendOpenMailBox(Player player)
     {
         var mails = new List<MailBoxUpdatePacket>();
@@ -243,30 +245,43 @@ public static partial class PacketSender
         player.SendPacket(new UnlockedBestiaryEntriesPacket(unlocks, killCounts));
     }
 
-    public static void SendMarketListingCreated(Player player, Guid listingId)
+    public static void SendMarketListings(Player player, List<MarketListing> listings)
     {
-        player.SendPacket(new MarketListingCreatedPacket(listingId));
+        var listingPackets = listings.Select(l => new MarketListingPacket
+        {
+            ListingId = l.Id,
+            ItemId = l.ItemId,
+            Quantity = l.Quantity,
+            Price = l.Price,
+            SellerName = l.Seller?.Name ?? "???",
+            Properties = l.ItemProperties
+        }).ToList();
+
+        player.SendPacket(new MarketListingsPacket(listingPackets));
+    }
+    public static void SendMarketListingCreated(Player player)
+    {
+        player.SendPacket(new MarketListingCreatedPacket(Strings.Market.listingcreated));
+    }
+    public static void SendMarketPurchaseSuccess(Player player)
+    {
+        player.SendPacket(new MarketPurchaseSuccessPacket(Strings.Market.itempurchased));
+    }
+    public static void SendMarketTransactions(Player player, List<MarketTransaction> transactions)
+    {
+        var packets = transactions.Select(t => new MarketTransactionPacket
+        {
+            BuyerName = t.BuyerName,
+            ItemId = t.ItemId,
+            Quantity = t.Quantity,
+            Price = (int)t.Price,
+            Properties = t.ItemProperties,
+            SoldAt = t.SoldAt
+        }).ToList();
+
+        player.SendPacket(new MarketTransactionsPacket(packets));
     }
 
-    public static void SendMarketListings(Player player, List<MarketListingPacket> listings, int page, int pageSize, int total)
-    {
-        player.SendPacket(new MarketListingsPacket(listings, page, pageSize, total));
-    }
-
-    public static void SendMarketPurchaseSuccess(Player player, Guid listingId)
-    {
-        player.SendPacket(new MarketPurchaseSuccessPacket(listingId));
-    }
-
-    public static void SendMarketTransactions(Player player, List<MarketTransactionInfo> transactions)
-    {
-        player.SendPacket(new MarketTransactionsPacket(transactions));
-    }
-
-    public static void SendMarketPriceInfo(Player player, Guid itemId, long suggestedPrice, long minPrice, long maxPrice)
-    {
-        player.SendPacket(new MarketPriceInfoPacket(itemId, suggestedPrice, minPrice, maxPrice));
-    }
-
+  
 
 }

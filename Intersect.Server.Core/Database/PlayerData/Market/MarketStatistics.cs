@@ -1,28 +1,67 @@
 using System.Collections.Generic;
 using System.Linq;
+using Intersect.Framework.Core.GameObjects.Items;
 using Newtonsoft.Json;
 
 namespace Intersect.Server.Database.PlayerData.Market;
 
 public class MarketStatistics
 {
-    private const int MaxSamples = 20;
+    public Guid ItemId { get; set; }
+    public int TotalSold { get; set; }
+    public int TotalRevenue { get; set; } // Acumula el valor total pagado
+    public int NumberOfSales { get; set; }
 
-    [JsonProperty]
-    private readonly List<long> _prices = new();
+    // ✅ Precio promedio por unidad
+    public float AveragePricePerUnit => TotalSold > 0 ? (float)TotalRevenue / TotalSold : 0;
 
-    public void Record(long price)
+    public MarketStatistics(Guid itemId, IEnumerable<MarketTransaction> transactions)
     {
-        _prices.Add(price);
-        if (_prices.Count > MaxSamples)
+        ItemId = itemId;
+
+        foreach (var tx in transactions)
         {
-            _prices.RemoveAt(0);
+            AddTransaction(tx);
         }
     }
 
-    public long SuggestedPrice => _prices.Count > 0 ? (long)_prices.Average() : 0;
+    public MarketStatistics(Guid itemId)
+    {
+        ItemId = itemId;
+    }
 
-    public long MinPrice => _prices.Count > 0 ? _prices.Min() : 0;
+    // ✅ Rango basado en precio promedio por unidad
+    public int GetMinAllowedPrice(float marginPercent = 0.5f)
+    {
+        var baseAvg = GetFallbackAverage();
+        return (int)Math.Floor(baseAvg * (1f - marginPercent));
+    }
 
-    public long MaxPrice => _prices.Count > 0 ? _prices.Max() : 0;
+    public int GetMaxAllowedPrice(float marginPercent = 0.5f)
+    {
+        var baseAvg = GetFallbackAverage();
+        return (int)Math.Ceiling(baseAvg * (1f + marginPercent));
+    }
+
+    public void AddTransaction(MarketTransaction tx)
+    {
+        if (tx == null || tx.Quantity <= 0 || tx.Price <= 0)
+            return;
+
+        TotalSold += tx.Quantity;
+        TotalRevenue += (int)tx.Price;
+        NumberOfSales++;
+    }
+
+    // ✅ Si no hay datos, se usa precio base del ítem
+    public float GetFallbackAverage()
+    {
+        if (AveragePricePerUnit > 0)
+        {
+            return AveragePricePerUnit;
+        }
+
+        var basePrice = ItemDescriptor.Get(ItemId)?.Price ?? 0;
+        return basePrice > 0 ? basePrice : 1; // Nunca menor que 1
+    }
 }

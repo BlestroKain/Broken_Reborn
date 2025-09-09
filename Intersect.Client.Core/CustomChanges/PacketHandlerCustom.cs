@@ -242,60 +242,83 @@ internal sealed partial class PacketHandler
         BestiaryController.ApplyPacket(packet);
     }
 
-    public void HandlePacket(IPacketSender packetSender, MarketListingCreatedPacket packet)
+    public void HandlePacket(IPacketSender sender, MarketListingsPacket packet)
     {
-        // Placeholder for handling market listing creation confirmation
-    }
+        if (packet?.Listings == null)
+            return;
 
-    public void HandlePacket(IPacketSender packetSender, MarketListingPacket packet)
-    {
-        // Placeholder for handling a single market listing
-        var _ = packet.Properties;
-    }
+        // Aquí deberás pasar los listados a la ventana del mercado.
+        // Puedes almacenarlos en una variable global temporal o llamar directamente a la ventana.
 
-    public void HandlePacket(IPacketSender packetSender, MarketListingsPacket packet)
+        Interface.Interface.GameUi.UpdateListings(packet.Listings);
+    }
+    public void HandlePacket(IPacketSender sender, MarketListingCreatedPacket packet)
     {
-        Interface.Interface.EnqueueInGame(gameInterface =>
+        // Mostrar confirmación en el chat o ventana flotante
+        ChatboxMsg.AddMessage(new ChatboxMsg(
+            packet.Message,
+            CustomColors.Alerts.Accepted,
+            ChatMessageType.Trading
+        ));
+    }
+    public void HandlePacket(IPacketSender sender, MarketPurchaseSuccessPacket packet)
+    {
+        ChatboxMsg.AddMessage(new ChatboxMsg(
+            packet.Message,
+            CustomColors.Alerts.Accepted,
+            ChatMessageType.Trading
+        ));
+
+        // Opcional: cerrar ventana o refrescar
+        Interface.Interface.GameUi?.RefreshAfterPurchase();
+    }
+    public void HandlePacket(IPacketSender sender, MarketTransactionsPacket packet)
+    {
+        if (packet?.Transactions == null)
+            return;
+
+        // Mostrar historial al usuario (en una pestaña de la ventana de mercado, por ejemplo)
+        Interface.Interface.GameUi?.UpdateTransactionHistory(packet.Transactions);
+    }
+    public void HandlePacket(IPacketSender sender, MarketPriceInfoPacket packet)
+    {
+        Interface.Game.Market.MarketPriceCache.Update(packet.ItemId, packet.SuggestedPrice, packet.MinAllowedPrice, packet.MaxAllowedPrice);
+
+        var sellWindow = Interface.Interface.GameUi.SellMarketWindow;
+
+        if (sellWindow != null && sellWindow.IsVisible())
         {
-            gameInterface.GetMarketWindow()?.LoadListings(packet.Listings, packet.Page, packet.PageSize, packet.Total);
-        });
-    }
+            // Si aún está esperando ese ítem, forzar refresco
+            if (sellWindow.GetSelectedItemId() == packet.ItemId || sellWindow._waitingPriceForItemId == packet.ItemId)
+            {
+                sellWindow.UpdateSuggestedPrice(packet.ItemId);
+            }
+        }
 
-    public void HandlePacket(IPacketSender packetSender, MarketPurchaseSuccessPacket packet)
-    {
-        // Placeholder for handling successful market purchases
     }
-
-    public void HandlePacket(IPacketSender packetSender, MarketTransactionsPacket packet)
-    {
-        // Placeholder for handling market transaction history
-    }
-
-    public void HandlePacket(IPacketSender packetSender, MarketPriceInfoPacket packet)
-    {
-        MarketPriceCache.Update(packet.ItemId, (int)packet.SuggestedPrice, (int)packet.MinPrice, (int)packet.MaxPrice);
-    }
-
+    // PacketHandler.cs  (lado cliente)
     public void HandlePacket(IPacketSender packetSender, MarketWindowPacket packet)
     {
-        Interface.Interface.EnqueueInGame(gameInterface =>
+        // 1. Si el servidor envía ambas banderas en false entendemos que quiere cerrar todo
+        if (!packet.OpenMarket && !packet.OpenSell)
         {
-            switch (packet.Action)
-            {
-                case MarketWindowPacketType.OpenMarket:
-                    gameInterface.NotifyOpenMarket();
-                    break;
-                case MarketWindowPacketType.CloseMarket:
-                    gameInterface.NotifyCloseMarket();
-                    break;
-                case MarketWindowPacketType.OpenSell:
-                    gameInterface.NotifyOpenSellMarket(packet.Slot);
-                    break;
-                case MarketWindowPacketType.CloseSell:
-                    gameInterface.NotifyCloseSellMarket();
-                    break;
-            }
-        });
+            Interface.Interface.GameUi.CloseMarket();     // ventana de compra
+            Interface.Interface.GameUi.CloseSellMarket(); // ventana de venta
+            return;
+        }
+
+        // 2. Si solamente quiere abrir una de las dos, primero cerramos la otra
+        if (packet.OpenMarket)
+        {
+            Interface.Interface.GameUi.CloseSellMarket();
+            Interface.Interface.GameUi.OpenMarket();      // muestra la lista de artículos en venta
+        }
+        else if (packet.OpenSell)
+        {
+            Interface.Interface.GameUi.CloseMarket();
+            Interface.Interface.GameUi.OpenSellMarket();  // muestra tu inventario para poner objetos a la venta
+        }
     }
+
 
 }

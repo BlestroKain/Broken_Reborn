@@ -26,6 +26,7 @@ using Intersect.GameObjects;
 using Microsoft.Extensions.Logging;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Client.Interface.Game.Spells;
+using Intersect.Network.Packets.Server;
 
 namespace Intersect.Client.Interface.Game;
 
@@ -888,4 +889,32 @@ public partial class GameInterface : MutableInterface
         mMailBoxWindow?.Hide();
     }
 
+    public void CloseSellMarket()
+    {
+        _sellMarketWindow?.Close();
+        _sellMarketWindow = null;
+    }
+
+    public void CloseMarket()
+    {
+        _marketWindow?.Close();
+        _marketWindow = null;
+    }
+
+    public void UpdateTransactionHistory(List<MarketTransactionPacket> transactions)
+    {
+        MarketWindow.Instance?.UpdateTransactionHistory(transactions);
+    }
+
+    public void RefreshAfterPurchase()
+    {
+        MarketWindow.Instance?.RefreshAfterPurchase();
+    }
+
+
+    public void UpdateListings(List<MarketListingPacket> listings)
+    {
+        MarketWindow.Instance?.UpdateListings(listings);
+
+    }
 }

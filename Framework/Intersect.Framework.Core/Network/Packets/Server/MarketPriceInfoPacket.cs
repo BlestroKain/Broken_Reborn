@@ -1,33 +1,16 @@
+using System;
 using MessagePack;
 
-namespace Intersect.Network.Packets.Server;
-
-[MessagePackObject]
-public partial class MarketPriceInfoPacket : IntersectPacket
+namespace Intersect.Network.Packets.Server
 {
-    // Parameterless constructor for MessagePack
-    public MarketPriceInfoPacket()
+    [MessagePackObject]
+    public class MarketPriceInfoPacket : IntersectPacket
     {
+        [Key(0)] public Guid ItemId { get; set; }
+        [Key(1)] public int SuggestedPrice { get; set; }
+        [Key(2)] public int MinAllowedPrice { get; set; }
+        [Key(3)] public int MaxAllowedPrice { get; set; }
+
+             
     }
-
-    public MarketPriceInfoPacket(Guid itemId, long suggestedPrice, long minPrice, long maxPrice)
-    {
-        ItemId = itemId;
-        SuggestedPrice = suggestedPrice;
-        MinPrice = minPrice;
-        MaxPrice = maxPrice;
-    }
-
-    [Key(0)]
-    public Guid ItemId { get; set; }
-
-    [Key(1)]
-    public long SuggestedPrice { get; set; }
-
-    [Key(2)]
-    public long MinPrice { get; set; }
-
-    [Key(3)]
-    public long MaxPrice { get; set; }
 }
-

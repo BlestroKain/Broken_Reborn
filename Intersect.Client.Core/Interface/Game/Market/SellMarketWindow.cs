@@ -290,7 +290,9 @@ namespace Intersect.Client.Interface.Game.Market
             }
 
             var firstSlot = slotsToUse.First();
-            PacketSender.SendCreateMarketListing(firstSlot.SlotIndex, qty, price, _autoSplitCheckbox.IsChecked);
+            Guid itemId = _selectedItemId;
+            var itemProperties = Globals.Me.Inventory[firstSlot.SlotIndex].Properties;
+            PacketSender.SendCreateMarketListing(itemId, qty, price, itemProperties, _autoSplitCheckbox.IsChecked);
 
             ResetSelection();
         }

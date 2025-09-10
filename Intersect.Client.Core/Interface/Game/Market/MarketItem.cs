@@ -153,7 +153,11 @@ public partial class MarketItem : SlotItem
     }
 
     private void BuyButton_Clicked(Base sender, MouseButtonState args)
-        => Icon_Clicked(sender, args);
+    {
+        if (Globals.Me?.Name == _sellerName) return;
+
+        PacketSender.SendBuyMarketListing(_listingId);
+    }
 
     private void CancelButton_Clicked(Base sender, MouseButtonState args)
         => PacketSender.SendCancelMarketListing(_listingId);

@@ -1474,6 +1474,9 @@ public static partial class Strings
         public readonly LocalizedString transactionfailed = @"Transaction failed.";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString listingcreated = @"Listing created.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public readonly LocalizedString salecompleted = @"Sale completed.";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

@@ -8,6 +8,7 @@
     "Quantity": "Cantidad",
     "Price": "Precio",
     "SuggestedPrice": "Precio sugerido: {00}",
-    "Sell": "Vender"
+    "Sell": "Vender",
+    "ListingCreated": "Anuncio creado."
   }
 }

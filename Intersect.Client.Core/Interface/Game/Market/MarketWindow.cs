@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Intersect;
 using Intersect.Client.Core;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen;
@@ -9,6 +10,7 @@ using Intersect.Client.Framework.Gwen.Control.EventArguments;
 using Intersect.Client.Framework.Gwen.Input;
 using Intersect.Client.General;
 using Intersect.Client.Interface.Game;
+using Intersect.Client.Interface.Game.Chat;
 using Intersect.Client.Localization;
 using Intersect.Client.Networking;
 using Intersect.Client.Utilities;
@@ -21,6 +23,7 @@ namespace Intersect.Client.Interface.Game.Market;
 public partial class MarketWindow : Window
 {
     private readonly List<MarketItem> _items = [];
+    private List<MarketListingPacket> _allListings = [];
     private readonly ScrollControl _listingScroll;
     private readonly TextBox _searchBox;
     private readonly TextBoxNumeric _minPriceBox;
@@ -201,7 +204,6 @@ public partial class MarketWindow : Window
         _items.AddRange(orderedItems);
 
         _listingScroll.SetInnerSize(_listingScroll.Width - 16, _items.Count * 44);
-        ApplyFilters();
         UpdatePagination();
 
         _listingScroll.VerticalScrollBar.ScrollAmount = scroll;
@@ -219,12 +221,7 @@ public partial class MarketWindow : Window
     private void RequestPage(int page)
     {
         _page = page;
-
-        var name = _searchBox.Text?.Trim() ?? string.Empty;
-        int? minPrice = int.TryParse(_minPriceBox.Text, out var mn) ? mn : null;
-        int? maxPrice = int.TryParse(_maxPriceBox.Text, out var mx) ? mx : null;
-
-        PacketSender.SendSearchMarket(name, minPrice, maxPrice, _selectedType, _selectedSubtype);
+        ApplyFilters();
     }
 
     private void ApplyFilters()
@@ -233,51 +230,92 @@ public partial class MarketWindow : Window
         int? minPrice = int.TryParse(_minPriceBox.Text, out var mn) ? mn : null;
         int? maxPrice = int.TryParse(_maxPriceBox.Text, out var mx) ? mx : null;
 
-        var visible = 0;
-        foreach (var item in _items)
+        var filtered = new List<MarketListingPacket>();
+
+        foreach (var listing in _allListings)
         {
-            if (_selectedType.HasValue && item.ItemType != _selectedType)
+            var descriptorId = ItemDescriptor.IdFromList(listing.ItemId.GetHashCode());
+            if (!ItemDescriptor.TryGet(descriptorId, out var descriptor))
             {
-                item.IsVisibleInParent = false;
+                continue;
+            }
+
+            if (_selectedType.HasValue && descriptor.ItemType != _selectedType)
+            {
                 continue;
             }
 
             if (!string.IsNullOrEmpty(_selectedSubtype) &&
-                !item.Subtype.Equals(_selectedSubtype, StringComparison.OrdinalIgnoreCase))
+                !descriptor.Subtype.Equals(_selectedSubtype, StringComparison.OrdinalIgnoreCase))
             {
-                item.IsVisibleInParent = false;
                 continue;
             }
 
-            if (minPrice.HasValue && item.Price < minPrice.Value)
+            if (minPrice.HasValue && listing.Price < minPrice.Value)
             {
-                item.IsVisibleInParent = false;
                 continue;
             }
 
-            if (maxPrice.HasValue && item.Price > maxPrice.Value)
+            if (maxPrice.HasValue && listing.Price > maxPrice.Value)
             {
-                item.IsVisibleInParent = false;
                 continue;
             }
 
-            if (!SearchHelper.Matches(searchText, item.Name))
+            if (!SearchHelper.Matches(searchText, descriptor.Name))
             {
-                item.IsVisibleInParent = false;
                 continue;
             }
 
-            item.IsVisibleInParent = true;
-            item.SetPosition(0, visible * 44);
-            visible++;
+            filtered.Add(listing);
         }
 
-        _listingScroll.SetInnerSize(_listingScroll.Width - 16, visible * 44);
+        _total = filtered.Count;
+        var maxPage = Math.Max(1, (int)Math.Ceiling(_total / (double)_pageSize));
+        if (_page > maxPage)
+        {
+            _page = maxPage;
+        }
+
+        var pageListings = filtered.Skip((_page - 1) * _pageSize).Take(_pageSize).ToList();
+        LoadListings(pageListings, _page, _pageSize, _total);
     }
 
     private void SellButton_Clicked(Base sender, MouseButtonState args)
     {
         Interface.GameUi.OpenSellMarket();
+    }
+
+    public void UpdateTransactionHistory(List<MarketTransactionPacket> transactions)
+    {
+        if (transactions == null)
+        {
+            return;
+        }
+
+        foreach (var t in transactions)
+        {
+            var descriptor = ItemDescriptor.Get(t.ItemId);
+            var itemName = descriptor?.Name ?? "?";
+            var message = $"{t.SoldAt:g} {t.BuyerName} x{t.Quantity} {itemName} -> {t.Price}";
+            ChatboxMsg.AddMessage(new ChatboxMsg(message, Color.White, ChatMessageType.Trading));
+        }
+    }
+
+    public void RefreshAfterPurchase()
+    {
+        SendSearch();
+    }
+
+    public void UpdateListings(List<MarketListingPacket> listings)
+    {
+        _allListings = listings ?? [];
+        var maxPage = Math.Max(1, (int)Math.Ceiling(_allListings.Count / (double)_pageSize));
+        if (_page > maxPage)
+        {
+            _page = maxPage;
+        }
+
+        ApplyFilters();
     }
     public void SendSearch()
     {

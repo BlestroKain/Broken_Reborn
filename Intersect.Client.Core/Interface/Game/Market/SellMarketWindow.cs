@@ -255,6 +255,8 @@ namespace Intersect.Client.Interface.Game.Market
             var matchingSlots = Globals.Me.Inventory
                 .Select((slot, index) => new { Slot = slot, Index = index })
                 .Where(x => x.Slot != null && x.Slot.ItemId == _selectedItemId)
+                .OrderByDescending(x => x.Index == _selectedSlot)
+                .ThenBy(x => x.Index)
                 .ToList();
 
             int totalQuantity = matchingSlots.Sum(x => x.Slot.Quantity);
@@ -281,18 +283,74 @@ namespace Intersect.Client.Interface.Game.Market
             int quantityToTake = qty;
             List<(int SlotIndex, int Amount)> slotsToUse = new();
 
+            var baseProperties = Globals.Me.Inventory[_selectedSlot].Properties;
+
             foreach (var entry in matchingSlots)
             {
+                if (!AreItemPropertiesEqual(entry.Slot.Properties, baseProperties))
+                {
+                    ChatboxMsg.AddMessage(new ChatboxMsg(Strings.Market.differentProperties, Color.Red, ChatMessageType.Error));
+                    return;
+                }
+
                 int takeFromThisSlot = Math.Min(entry.Slot.Quantity, quantityToTake);
                 slotsToUse.Add((entry.Index, takeFromThisSlot));
                 quantityToTake -= takeFromThisSlot;
                 if (quantityToTake <= 0) break;
             }
 
-            var firstSlot = slotsToUse.First();
-            PacketSender.SendCreateMarketListing(firstSlot.SlotIndex, qty, price, _autoSplitCheckbox.IsChecked);
+            Guid itemId = _selectedItemId;
+            PacketSender.SendCreateMarketListing(itemId, qty, price, baseProperties, _autoSplitCheckbox.IsChecked);
 
             ResetSelection();
+        }
+
+        private static bool AreItemPropertiesEqual(ItemProperties? a, ItemProperties? b)
+        {
+            if (a == null && b == null)
+            {
+                return true;
+            }
+
+            if (a == null || b == null)
+            {
+                return false;
+            }
+
+            if (a.EnchantmentLevel != b.EnchantmentLevel)
+            {
+                return false;
+            }
+
+            if (a.MageSink != b.MageSink)
+            {
+                return false;
+            }
+
+            if (!a.StatModifiers.SequenceEqual(b.StatModifiers))
+            {
+                return false;
+            }
+
+            if (!a.VitalModifiers.SequenceEqual(b.VitalModifiers))
+            {
+                return false;
+            }
+
+            if (a.EnchantmentRolls.Count != b.EnchantmentRolls.Count)
+            {
+                return false;
+            }
+
+            foreach (var kvp in a.EnchantmentRolls)
+            {
+                if (!b.EnchantmentRolls.TryGetValue(kvp.Key, out var arr) || !kvp.Value.SequenceEqual(arr))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private void ResetSelection()

@@ -3210,6 +3210,8 @@ If you are sure you want to hand over your guild enter '\c{{#ff8080}}{02}\c{{}}'
         public static LocalizedString quantityExceeds = @"Quantity exceeds available.";
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString priceOutOfRange = @"Price must be between {00} and {01}.";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString differentProperties = @"Cannot mix item stacks with different properties.";
     }
 
 }

@@ -182,12 +182,12 @@ public partial class MarketWindow : Window
             if (existing.TryGetValue(listing.ListingId, out item))
             {
                 existing.Remove(listing.ListingId);
-                item.Update(listing.ListingId, listing.SellerId, listing.ItemId, listing.Quantity, listing.Price, listing.Properties);
+                item.Update(listing.ListingId, listing.SellerName, listing.ItemId, listing.Quantity, listing.Price, listing.Properties);
             }
             else
             {
                 item = new MarketItem(_listingScroll, orderedItems.Count, new ContextMenu(this));
-                item.Update(listing.ListingId, listing.SellerId, listing.ItemId, listing.Quantity, listing.Price, listing.Properties);
+                item.Update(listing.ListingId, listing.SellerName, listing.ItemId, listing.Quantity, listing.Price, listing.Properties);
             }
 
             item.SetBounds(0, orderedItems.Count * 44, _listingScroll.Width - 16, 40);

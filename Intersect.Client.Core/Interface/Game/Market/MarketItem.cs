@@ -16,7 +16,7 @@ namespace Intersect.Client.Interface.Game.Market;
 public partial class MarketItem : SlotItem
 {
     private Guid _listingId;
-    private Guid _sellerId;
+    private string _sellerName = string.Empty;
     private Guid _itemId;
     private int _quantity;
     private long _price;
@@ -66,16 +66,16 @@ public partial class MarketItem : SlotItem
         LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
     }
 
-    public void Load(Guid listingId, Guid sellerId, Guid itemId, int quantity, long price, ItemProperties properties)
+    public void Load(Guid listingId, string sellerName, Guid itemId, int quantity, long price, ItemProperties properties)
     {
-        Update(listingId, sellerId, itemId, quantity, price, properties);
+        Update(listingId, sellerName, itemId, quantity, price, properties);
     }
 
 
-    public void Update(Guid listingId, Guid sellerId, Guid itemId, int quantity, long price, ItemProperties properties)
+    public void Update(Guid listingId, string sellerName, Guid itemId, int quantity, long price, ItemProperties properties)
     {
         _listingId = listingId;
-        _sellerId = sellerId;
+        _sellerName = sellerName;
         _itemId = itemId;
         _quantity = quantity;
         _price = price;
@@ -115,7 +115,7 @@ public partial class MarketItem : SlotItem
         _priceLabel.Text = _price.ToString();
 
         // Mostrar botón según vendedor
-        var isSeller = Globals.Me?.Id == _sellerId;
+        var isSeller = Globals.Me?.Name == _sellerName;
         _cancelButton.IsVisibleInParent = isSeller;
         _buyButton.IsVisibleInParent = !isSeller;
 
@@ -147,7 +147,7 @@ public partial class MarketItem : SlotItem
 
     private void Icon_Clicked(Base sender, MouseButtonState args)
     {
-        if (Globals.Me?.Id == _sellerId) return;
+        if (Globals.Me?.Name == _sellerName) return;
 
         PacketSender.SendBuyMarketListing(_listingId);
     }

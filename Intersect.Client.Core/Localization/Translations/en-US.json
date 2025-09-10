@@ -8,6 +8,7 @@
     "Quantity": "Quantity",
     "Price": "Price",
     "SuggestedPrice": "Suggested Price: {00}",
-    "Sell": "Sell"
+    "Sell": "Sell",
+    "ListingCreated": "Listing created."
   }
 }

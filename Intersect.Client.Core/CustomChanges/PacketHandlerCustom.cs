@@ -286,7 +286,7 @@ internal sealed partial class PacketHandler
 
         var sellWindow = Interface.Interface.GameUi.SellMarketWindow;
 
-        if (sellWindow != null && sellWindow.IsVisible())
+        if (sellWindow != null && sellWindow.IsVisibleInTree)
         {
             // Si aún está esperando ese ítem, forzar refresco
             if (sellWindow.GetSelectedItemId() == packet.ItemId || sellWindow._waitingPriceForItemId == packet.ItemId)

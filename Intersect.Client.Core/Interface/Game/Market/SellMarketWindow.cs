@@ -353,6 +353,10 @@ namespace Intersect.Client.Interface.Game.Market
             return true;
         }
 
+        public bool IsVisible() => IsVisibleInTree;
+
+        public Guid GetSelectedItemId() => _selectedItemId;
+
         private void ResetSelection()
         {
             _selectedSlot = -1;

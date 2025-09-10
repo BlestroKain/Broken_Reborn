@@ -3,11 +3,9 @@ using Intersect.Client.Core;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
-using Intersect.Client.Framework.Gwen.Control.EventArguments.InputSubmissionEvent;
 using Intersect.Client.General;
 using Intersect.Client.Interface.Game;
 using Intersect.Client.Interface.Game.DescriptionWindows;
-using Intersect.Client.Interface.Shared;
 using Intersect.Client.Localization;
 using Intersect.Client.Networking;
 using Intersect.Framework.Core.GameObjects.Items;
@@ -151,26 +149,7 @@ public partial class MarketItem : SlotItem
     {
         if (Globals.Me?.Id == _sellerId) return;
 
-        new InputBox(
-            title: Strings.Market.Buy,
-            prompt: $"{Strings.Market.Quantity} (max {_quantity}) - {Strings.Market.Price} {_price} c/u",
-            inputType: InputType.NumericInput,
-            onSubmit: (s, e) =>
-            {
-                if (e.Value is NumericalSubmissionValue value)
-                {
-                    var qty = (int)value.Value;
-                    if (qty <= 0) qty = 1;
-                    if (qty > _quantity) qty = _quantity;
-                    PacketSender.SendBuyMarketListing(_listingId, qty);
-                }
-            },
-            onCancel: null,
-            userData: null,
-            quantity: _quantity,
-            maximumQuantity: _quantity,
-            minimumQuantity: 1
-        );
+        PacketSender.SendBuyMarketListing(_listingId);
     }
 
     private void BuyButton_Clicked(Base sender, MouseButtonState args)

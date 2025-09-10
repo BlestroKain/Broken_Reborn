@@ -40,6 +40,23 @@ public static class MarketStatisticsManager
             return cachedStats;
         }
 
+        var descriptor = ItemDescriptor.Get(itemId);
+        if (descriptor == null || !descriptor.CanSell)
+        {
+            var basePrice = descriptor?.Price ?? 1;
+            if (basePrice <= 0)
+            {
+                basePrice = 1;
+            }
+
+            return new MarketStatistics(itemId)
+            {
+                TotalRevenue = basePrice,
+                TotalSold = 1,
+                NumberOfSales = 1
+            };
+        }
+
         using var context = DbInterface.CreatePlayerContext(readOnly: true);
         var transactions = context.Market_Transactions
             .Where(t => t.ItemId == itemId)
@@ -53,8 +70,11 @@ public static class MarketStatisticsManager
         }
         else
         {
-            var basePrice = ItemDescriptor.Get(itemId)?.Price ?? 1;
-            if (basePrice <= 0) basePrice = 1;
+            var basePrice = descriptor.Price;
+            if (basePrice <= 0)
+            {
+                basePrice = 1;
+            }
 
             stats = new MarketStatistics(itemId)
             {

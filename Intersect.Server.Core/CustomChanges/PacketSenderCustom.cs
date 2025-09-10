@@ -282,6 +282,45 @@ public static partial class PacketSender
         player.SendPacket(new MarketTransactionsPacket(packets));
     }
 
+    public static void SendPriceInfo(Player player, Guid itemId)
+    {
+        if (player == null)
+        {
+            return;
+        }
+
+        // Ensure the item exists and is sellable before requesting statistics
+        var descriptor = ItemDescriptor.Get(itemId);
+        if (descriptor == null || !descriptor.CanSell)
+        {
+            return;
+        }
+
+        var stats = MarketStatisticsManager.GetStatistics(itemId);
+
+        var suggested = (int)Math.Round(stats.AveragePricePerUnit > 0
+            ? stats.AveragePricePerUnit
+            : stats.GetFallbackAverage());
+
+        if (suggested <= 0)
+        {
+            suggested = 1;
+        }
+
+        var min = stats.GetMinAllowedPrice();
+        var max = stats.GetMaxAllowedPrice();
+
+        var packet = new MarketPriceInfoPacket
+        {
+            ItemId = itemId,
+            SuggestedPrice = suggested,
+            MinAllowedPrice = min,
+            MaxAllowedPrice = max
+        };
+
+        player.SendPacket(packet);
+    }
+
   
 
 }

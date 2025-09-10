@@ -289,6 +289,12 @@ public static partial class PacketSender
             return;
         }
 
+        // Ensure the item exists and is sellable before requesting statistics
+        var descriptor = ItemDescriptor.Get(itemId);
+        if (descriptor == null || !descriptor.CanSell)
+        {
+            return;
+        }
         var stats = MarketStatisticsManager.GetStatistics(itemId);
 
         var suggested = (int)Math.Round(stats.AveragePricePerUnit > 0

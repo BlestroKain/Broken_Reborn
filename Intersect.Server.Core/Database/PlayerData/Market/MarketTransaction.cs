@@ -21,6 +21,10 @@ namespace Intersect.Server.Database.PlayerData.Market;
         public string BuyerName { get; set; }
 
         [Required]
+        public Guid SellerId { get; set; }
+
+        [Required]
+        [ForeignKey(nameof(SellerId))]
         public virtual Player Seller { get; set; }
 
         [Required]

@@ -260,6 +260,7 @@ namespace Intersect.Server.Database.PlayerData.Players
             var transaction = new MarketTransaction
             {
                 ListingId = listing.Id,
+                SellerId = listing.Seller.Id,
                 Seller = listing.Seller,
                 BuyerName = buyer.Name,
                 ItemId = listing.ItemId,

@@ -162,8 +162,7 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
         modelBuilder.Entity<MarketListing>()
             .HasIndex(l => new { l.Price, l.ListedAt });
 
-        modelBuilder.Entity<MarketListing>()
-            .HasIndex(l => l.ReturnPending);
+ 
 
         modelBuilder.Entity<MarketListing>()
             .HasCheckConstraint("CK_Market_Listings_Positive", "Price > 0 AND Quantity > 0");

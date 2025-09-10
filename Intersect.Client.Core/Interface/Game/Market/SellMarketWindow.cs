@@ -283,11 +283,11 @@ namespace Intersect.Client.Interface.Game.Market
             int quantityToTake = qty;
             List<(int SlotIndex, int Amount)> slotsToUse = new();
 
-            var baseProperties = Globals.Me.Inventory[_selectedSlot].Properties;
+            var baseProperties = Globals.Me.Inventory[_selectedSlot].ItemProperties;
 
             foreach (var entry in matchingSlots)
             {
-                if (!AreItemPropertiesEqual(entry.Slot.Properties, baseProperties))
+                if (!AreItemPropertiesEqual(entry.Slot.ItemProperties, baseProperties))
                 {
                     ChatboxMsg.AddMessage(new ChatboxMsg(Strings.Market.differentProperties, Color.Red, ChatMessageType.Error));
                     return;

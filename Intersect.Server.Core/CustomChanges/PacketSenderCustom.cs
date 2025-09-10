@@ -157,6 +157,28 @@ public static partial class PacketSender
         player.SendPacket(new BrokeItemWindowPacket());
     }
 
+    public static void SendOpenMarket(Player player)
+    {
+        if (player == null)
+        {
+            return;
+        }
+
+        player.SendPacket(new MarketWindowPacket(true, false));
+    }
+
+    public static void SendOpenSellMarket(Player player, int slot)
+    {
+        if (player == null)
+        {
+            return;
+        }
+
+        SendInventory(player);
+
+        player.SendPacket(new MarketWindowPacket(false, true, slot));
+    }
+
 
    
     public static void SendRefreshMarket(Player player)

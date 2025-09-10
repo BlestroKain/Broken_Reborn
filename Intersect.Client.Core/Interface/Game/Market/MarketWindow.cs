@@ -218,7 +218,13 @@ public partial class MarketWindow : Window
 
     private void RequestPage(int page)
     {
-        PacketSender.SendSearchMarket(page, _pageSize);
+        _page = page;
+
+        var name = _searchBox.Text?.Trim() ?? string.Empty;
+        int? minPrice = int.TryParse(_minPriceBox.Text, out var mn) ? mn : null;
+        int? maxPrice = int.TryParse(_maxPriceBox.Text, out var mx) ? mx : null;
+
+        PacketSender.SendSearchMarket(name, minPrice, maxPrice, _selectedType, _selectedSubtype);
     }
 
     private void ApplyFilters()

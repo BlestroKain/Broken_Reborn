@@ -295,7 +295,6 @@ public static partial class PacketSender
         {
             return;
         }
-
         var stats = MarketStatisticsManager.GetStatistics(itemId);
 
         var suggested = (int)Math.Round(stats.AveragePricePerUnit > 0

@@ -308,14 +308,7 @@ public partial class MarketWindow : Window
 
     public void UpdateListings(List<MarketListingPacket> listings)
     {
-        _allListings = listings ?? [];
-        var maxPage = Math.Max(1, (int)Math.Ceiling(_allListings.Count / (double)_pageSize));
-        if (_page > maxPage)
-        {
-            _page = maxPage;
-        }
-
-        ApplyFilters();
+        LoadListings(listings ?? [], _page, _pageSize, listings?.Count ?? 0);
     }
     public void SendSearch()
     {

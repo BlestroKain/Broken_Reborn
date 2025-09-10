@@ -353,6 +353,9 @@ namespace Intersect.Client.Interface.Game.Market
             return true;
         }
 
+        /// <summary>
+        /// Wrapper for <see cref="IsVisibleInTree"/> maintained for compatibility.
+        /// </summary>
         public bool IsVisible() => IsVisibleInTree;
 
         public Guid GetSelectedItemId() => _selectedItemId;

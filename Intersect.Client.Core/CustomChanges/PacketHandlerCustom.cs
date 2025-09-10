@@ -316,7 +316,7 @@ internal sealed partial class PacketHandler
         else if (packet.OpenSell)
         {
             Interface.Interface.GameUi.CloseMarket();
-            Interface.Interface.GameUi.OpenSellMarket();  // muestra tu inventario para poner objetos a la venta
+            Interface.Interface.GameUi.NotifyOpenSellMarket(packet.Slot);
         }
     }
 

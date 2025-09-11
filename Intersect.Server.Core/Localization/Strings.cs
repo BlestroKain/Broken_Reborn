@@ -1475,6 +1475,50 @@ public static partial class Strings
         public readonly LocalizedString invaliditem = @"The selected item is invalid or cannot be attached to the mail.";
 
     }
+
+    public static MarketNamespace Market => Root.Market;
+
+    public sealed class MarketNamespace : LocaleNamespace
+    {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString invalidlisting = @"Invalid listing.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString listingcreated = @"Your item has been listed in the market.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString listingunavailable = @"This listing is no longer available.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString notenoughmoney = @"You don't have enough money.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString inventoryfull = @"Your inventory is full.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString itempurchased = @"You have purchased the item.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString salecompleted = @"Market Sale Completed";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString yoursolditem = @"You have sold an item through the market!";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString expiredlisting = @"Listing Expired";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString yourlistingexpired = @"One of your market listings has expired. The item has been returned to you.";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString transactionfailed = @"The market transaction failed.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString cannotlist = @"You cannot list this item.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString cannotremoveitem = @"Could not remove item from your inventory.";
+
+    }
     #region Serialization
 
     public static bool Load()
@@ -1614,6 +1658,8 @@ public static partial class Strings
         public readonly GuildsNamespace Guilds = new GuildsNamespace();
 
         public readonly MailNamespace Mails = new MailNamespace();
+
+        public MarketNamespace Market = new MarketNamespace();
     }
 
     // ReSharper restore MemberHidesStaticFromOuterClass

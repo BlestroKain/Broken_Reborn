@@ -113,6 +113,9 @@ namespace Intersect.Editor.Forms.Editors.Events
             var treeNode74 = new TreeNode("Send Mail");
             var treeNode75 = new TreeNode("Open Mail Box");
             var treeNode76 = new TreeNode("Mail Box", new TreeNode[] { treeNode74, treeNode75 });
+            var treeNode80 = new TreeNode("Open Market");
+            var treeNode81 = new TreeNode("Open Sell Market");
+            var treeNode82 = new TreeNode("Market", new TreeNode[] { treeNode80, treeNode81 });
             lblName = new Label();
             txtEventname = new DarkTextBox();
             grpEntityOptions = new DarkGroupBox();
@@ -1014,7 +1017,13 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode75.Text = "Open Mail Box";
             treeNode76.Name = "mailbox";
             treeNode76.Text = "Mail Box";
-            lstCommands.Nodes.AddRange(new TreeNode[] { treeNode5, treeNode13, treeNode33, treeNode43, treeNode52, treeNode56, treeNode58, treeNode62, treeNode67, treeNode69, treeNode73, treeNode76 });
+            treeNode80.Name = "openmarket";
+            treeNode80.Text = "Open Market";
+            treeNode81.Name = "opensellmarket";
+            treeNode81.Text = "Open Sell Market";
+            treeNode82.Name = "market";
+            treeNode82.Text = "Market";
+            lstCommands.Nodes.AddRange(new TreeNode[] { treeNode5, treeNode13, treeNode33, treeNode43, treeNode52, treeNode56, treeNode58, treeNode62, treeNode67, treeNode69, treeNode73, treeNode76, treeNode82 });
             lstCommands.Size = new Size(500, 536);
             lstCommands.TabIndex = 2;
             lstCommands.NodeMouseDoubleClick += lstCommands_NodeMouseDoubleClick;

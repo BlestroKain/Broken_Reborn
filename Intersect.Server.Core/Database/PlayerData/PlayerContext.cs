@@ -52,7 +52,8 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
     public DbSet<UserVariable> User_Variables { get; set; }
     public DbSet<MailBox> Player_MailBox { get; set; }
     public DbSet<KillLog> Player_KillLogs { get; set; }
-
+    public DbSet<MarketListing> Market_Listings { get; set; }
+    public DbSet<MarketTransaction> Market_Transactions { get; set; }
 
     internal async ValueTask Commit(
         bool commit = false,

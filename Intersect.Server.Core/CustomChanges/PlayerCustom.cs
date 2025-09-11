@@ -490,6 +490,16 @@ namespace Intersect.Server.Entities
         {
             return Level >= 10; //Nivel minimo para comerciar
         }
+        [JsonIgnore]
+        public virtual List<MarketListing> MarketListings { get; set; } = new List<MarketListing>();
+        public void OpenMarket()
+        {
+            PacketSender.SendOpenMarketWindow(this);
+        }
 
+        public void OpenSellMarket()
+        {
+            PacketSender.SendOpenSellMarketWindow(this);
+        }
     }
 }

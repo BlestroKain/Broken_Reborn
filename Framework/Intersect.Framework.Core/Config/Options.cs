@@ -226,6 +226,8 @@ public partial record Options
 
     public ItemOptions Items { get; set; } = new();
 
+    public MarketOptions Market { get; set; } = new();
+
     public AlignmentOptions Alignment { get; set; } = new();
 
 

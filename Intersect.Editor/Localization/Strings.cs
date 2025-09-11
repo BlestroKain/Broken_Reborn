@@ -2406,6 +2406,10 @@ Tick timer saved in server config.json.";
         public static LocalizedString sendmail = @"Send Mail";
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString openmailbox = @"Open Mail Box";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString openmarket = @"Open Market";
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString opensellmarket = @"Open Sell Market";
     }
 
     public partial struct EventChangePlayerColor
@@ -2517,6 +2521,9 @@ Tick timer saved in server config.json.";
             {"mailbox", @"Mail Box"},
             {"sendmail", @"Send Mail"},
             {"openmailbox", @"Open Mail Box"},
+               { "openmarket", @"Open Market" },
+            {"opensellmarket", @"Open Sell Market" },
+            {"market", @"Market" },
         };
 
     }

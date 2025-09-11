@@ -308,7 +308,8 @@ public partial class MarketWindow : Window
 
     public void UpdateListings(List<MarketListingPacket> listings)
     {
-        LoadListings(listings ?? [], _page, _pageSize, listings?.Count ?? 0);
+        _allListings = listings ?? [];
+        ApplyFilters();
     }
     public void SendSearch()
     {

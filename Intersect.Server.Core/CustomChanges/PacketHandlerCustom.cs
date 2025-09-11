@@ -648,7 +648,8 @@ internal sealed partial class PacketHandler
             item: clone,
             quantity: packet.Quantity,
             pricePerUnit: packet.Price,
-            autoSplit: packet.AutoSplit // <-- NUEVO argumento
+            autoSplit: packet.AutoSplit,
+            slotIndex: packet.SlotIndex
         );
 
         if (success)

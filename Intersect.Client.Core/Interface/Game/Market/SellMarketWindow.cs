@@ -281,12 +281,12 @@ namespace Intersect.Client.Interface.Game.Market
                 }
             }
 
-            // Propiedades del primer slot
-            var first = matching.First();
-            var props = Globals.Me.Inventory[first.idx].ItemProperties ?? new ItemProperties();
+            // Propiedades del slot seleccionado
+            var slot = Globals.Me.Inventory[_selectedSlot];
+            var props = slot.ItemProperties ?? new ItemProperties();
 
-            // Enviar al server (usa GUID + props actuales)
-            PacketSender.SendCreateMarketListing(_selectedItemId, qty, price, props, _autoSplitCheckbox.IsChecked);
+            // Enviar al server con el índice del slot
+            PacketSender.SendCreateMarketListing(_selectedItemId, qty, price, props, _autoSplitCheckbox.IsChecked, _selectedSlot);
 
             ResetSelection();
         }

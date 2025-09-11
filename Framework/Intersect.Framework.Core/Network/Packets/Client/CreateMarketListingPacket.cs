@@ -13,5 +13,6 @@ namespace Intersect.Network.Packets.Client
         [Key(2)] public int Price { get; set; }
         [Key(3)] public ItemProperties Properties { get; set; }
         [Key(4)] public bool AutoSplit { get; set; }
+        [Key(5)] public int SlotIndex { get; set; }
     }
 }

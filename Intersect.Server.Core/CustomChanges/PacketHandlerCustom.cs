@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Diagnostics;
 using System.Text;
+using System.Linq;
 using Intersect.Core;
 using Intersect.Framework.Core;
 using Intersect.Framework.Core.GameObjects.Crafting;
@@ -30,6 +31,7 @@ using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.Security;
 using Intersect.Network.Packets.Server;
 using Intersect.Server.Core;
+using Intersect;
 using Microsoft.Extensions.Logging;
 using ChatMsgPacket = Intersect.Network.Packets.Client.ChatMsgPacket;
 using LoginPacket = Intersect.Network.Packets.Client.LoginPacket;
@@ -470,6 +472,16 @@ internal sealed partial class PacketHandler
         PacketSender.SendInventory(player);
         PacketSender.SendOpenMailBox(player);
     }
+    public void HandlePacket(Client client, MailBoxClosePacket packet)
+    {
+        var player = client?.Entity;
+        if (player == null)
+        {
+            return;
+        }
+
+        player.CloseMailBox();
+    }
 
     public void HandlePacket(Client client, SpellPropertiesChangePacket packet)
     {
@@ -601,6 +613,117 @@ internal sealed partial class PacketHandler
         player.Wings = packet.State;
         PacketSender.SendEntityDataToProximity(player);
     }
+    public void HandlePacket(Client client, BuyMarketListingPacket packet)
+    {
+        var player = client.Entity;
+        if (player == null) return;
 
+        MarketManager.TryBuyListing(player, packet.ListingId);
+    }
+    public void HandlePacket(Client client, SearchMarketPacket packet)
+    {
+        var player = client.Entity;
+        if (player == null) return;
+
+        using var context = DbInterface.CreatePlayerContext(readOnly: true);
+        var listings = context.Market_Listings
+            .Where(l => !l.IsSold && l.ExpireAt > DateTime.UtcNow)
+            .ToList();
+
+        if (!string.IsNullOrWhiteSpace(packet.ItemName))
+            listings = listings.Where(l => ItemDescriptor.Get(l.ItemId)?.Name?.ToLower().Contains(packet.ItemName.ToLower()) == true).ToList();
+
+        if (packet.Type.HasValue)
+            listings = listings.Where(l => ItemDescriptor.Get(l.ItemId)?.ItemType == packet.Type).ToList();
+
+        if (packet.MinPrice.HasValue)
+            listings = listings.Where(l => l.Price >= packet.MinPrice.Value).ToList();
+
+        if (packet.MaxPrice.HasValue)
+            listings = listings.Where(l => l.Price <= packet.MaxPrice.Value).ToList();
+
+        var total = listings.Count;
+        var pageSize = Options.Instance.Market.PageSize;
+        var maxPage = Math.Max((int)Math.Ceiling(total / (double)pageSize) - 1, 0);
+        var page = Math.Clamp(packet.Page, 0, maxPage);
+        listings = listings.Skip(page * pageSize).Take(pageSize).ToList();
+
+        PacketSender.SendMarketListings(player, listings, total);
+    }
+    public void HandlePacket(Client client, CreateMarketListingPacket packet)
+    {
+        var player = client.Entity;
+        if (player == null) return;
+
+        // Clonar los datos necesarios antes de perder el ítem
+        var clone = new Item(packet.ItemId, packet.Quantity)
+        {
+            Properties = packet.Properties
+        };
+
+        var success = MarketManager.TryListItem(
+            seller: player,
+            item: clone,
+            quantity: packet.Quantity,
+            pricePerUnit: packet.Price,
+            autoSplit: packet.AutoSplit,
+            slotIndex: packet.SlotIndex
+        );
+
+        if (success)
+        {
+            PacketSender.SendMarketListingCreated(player);
+        }
+    }
+    public void HandlePacket(Client client, CancelMarketListingPacket packet)
+    {
+        var player = client.Entity;
+        if (player == null) return;
+
+        var cooldown = Options.Instance.Market.ActionCooldownSeconds;
+        if (cooldown > 0 && player.LastMarketAction.HasValue)
+        {
+            var elapsed = DateTime.UtcNow - player.LastMarketAction.Value;
+            if (elapsed.TotalSeconds < cooldown)
+            {
+                var remaining = (int)Math.Ceiling(cooldown - elapsed.TotalSeconds);
+                PacketSender.SendChatMsg(player, $"⏳ Debes esperar {remaining}s antes de realizar otra operación en el mercado.", ChatMessageType.Error, CustomColors.Alerts.Error);
+                return;
+            }
+        }
+
+        using var context = DbInterface.CreatePlayerContext(readOnly: false);
+        context.StopTrackingUsersExcept(player.User);
+        context.Attach(player);
+        var listing = context.Market_Listings.Include(l => l.Seller).FirstOrDefault(l => l.Id == packet.ListingId);
+
+        if (listing == null || listing.IsSold || listing.Seller.Name != player.Name)
+        {
+            PacketSender.SendChatMsg(player, "❌ No puedes cancelar este listado.", ChatMessageType.Error, CustomColors.Alerts.Error);
+            return;
+        }
+
+        listing.IsSold = true;
+        context.Update(listing);
+
+        // Devolver el ítem
+        player.TryGiveItem(listing.ItemId, listing.Quantity);
+        player.LastMarketAction = DateTime.UtcNow;
+        context.Update(player);
+
+        context.SaveChanges();
+        PacketSender.SendChatMsg(player, "🛑 Listado cancelado y objeto devuelto.", ChatMessageType.Trading, CustomColors.Alerts.Accepted);
+        PacketSender.SendRefreshMarket(player);
+    }
+    public void HandlePacket(Client client, RequestMarketPricePacket packet)
+    {
+        var player = client?.Entity;
+        if (player == null)
+        {
+            return;
+        }
+
+        PacketSender.SendPriceInfo(player, packet.ItemId);
+    }
 
 }

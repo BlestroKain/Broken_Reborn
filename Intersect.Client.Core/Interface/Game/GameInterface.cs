@@ -25,6 +25,8 @@ using Intersect.GameObjects;
 using Microsoft.Extensions.Logging;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Client.Interface.Game.Spells;
+using Intersect.Client.Interface.Game.Market;
+using Intersect.Network.Packets.Server;
 
 namespace Intersect.Client.Interface.Game;
 
@@ -136,6 +138,9 @@ public partial class GameInterface : MutableInterface
     private TargetContextMenu? _targetContextMenu;
     private SendMailBoxWindow mSendMailBoxWindow;
     private MailBoxWindow mMailBoxWindow;
+    private MarketWindow mMarketWindow;
+    public SellMarketWindow mSellMarketWindow;
+
     public EscapeMenuWindow EscapeMenu => _escapeMenu ??= new EscapeMenuWindow(GameCanvas, GetOrCreateSettingsWindow)
     {
         IsHidden = true,
@@ -797,5 +802,48 @@ public partial class GameInterface : MutableInterface
         // Ocultar la ventana de bandeja de entrada
         mMailBoxWindow?.Hide();
     }
+    // Mostrar ventana de mercado
+    public void OpenMarket()
+    {
+        mMarketWindow?.Close();
+        mMarketWindow = new MarketWindow(GameCanvas);
+    }
 
+    // Mostrar ventana de venta
+    public void OpenSellMarket()
+    {
+        mSellMarketWindow?.Close();
+        mSellMarketWindow = new SellMarketWindow(GameCanvas);
+        mSellMarketWindow.Show();
+    }
+
+    public void CloseMarket()
+    {
+        mMarketWindow?.Close();
+        mMarketWindow = null;
+    }
+
+    public void CloseSellMarket()
+    {
+        mSellMarketWindow?.Close();
+        mSellMarketWindow = null;
+    }
+
+
+    public void UpdateTransactionHistory(List<MarketTransactionPacket> transactions)
+    {
+        MarketWindow.Instance?.UpdateTransactionHistory(transactions);
+    }
+
+    public void RefreshAfterPurchase()
+    {
+        MarketWindow.Instance?.RefreshAfterPurchase();
+    }
+
+
+    public void UpdateListings(List<MarketListingPacket> listings)
+    {
+        MarketWindow.Instance?.UpdateListings(listings);
+
+    }
 }

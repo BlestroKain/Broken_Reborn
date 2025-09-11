@@ -21,6 +21,7 @@ using Intersect.Network;
 using Intersect.Network.Packets.Server;
 using Intersect.Server.Database;
 using Intersect.Server.Database.Logging.Entities;
+using Intersect.Server.Database.PlayerData;
 using Intersect.Server.Database.PlayerData.Players;
 using Intersect.Server.Database.PlayerData.Security;
 using Intersect.Server.Entities;
@@ -215,5 +216,106 @@ public static partial class PacketSender
         player.SendPacket(new UnlockedBestiaryEntriesPacket(unlocks, killCounts));
     }
 
+    public static void SendMarketListings(Player player, List<MarketListing> listings)
+    {
+        var listingPackets = listings.Select(l => new MarketListingPacket
+        {
+            ListingId = l.Id,
+            ItemId = l.ItemId,
+            Quantity = l.Quantity,
+            Price = l.Price,
+            SellerName = l.Seller?.Name ?? "???",
+            Properties = l.ItemProperties
+        }).ToList();
 
+        player.SendPacket(new MarketListingsPacket(listingPackets));
+    }
+    public static void SendMarketListingCreated(Player player)
+    {
+        player.SendPacket(new MarketListingCreatedPacket(Strings.Market.listingcreated));
+    }
+    public static void SendMarketPurchaseSuccess(Player player)
+    {
+        player.SendPacket(new MarketPurchaseSuccessPacket(Strings.Market.itempurchased));
+    }
+    public static void SendMarketTransactions(Player player, List<MarketTransaction> transactions)
+    {
+        var packets = transactions.Select(t => new MarketTransactionPacket
+        {
+            BuyerName = t.BuyerName,
+            ItemId = t.ItemId,
+            Quantity = t.Quantity,
+            Price = t.Price,
+            Properties = t.ItemProperties,
+            SoldAt = t.SoldAt
+        }).ToList();
+
+        player.SendPacket(new MarketTransactionsPacket(packets));
+    }
+
+    public static void SendRefreshMarket(Player player)
+    {
+        if (player == null)
+        {
+            return;
+        }
+
+        // Obtener todos los listados activos en el mercado
+        var listings = MarketManager.SearchMarket();
+
+        // Construir el paquete de listado de mercado
+        var packet = new MarketListingsPacket(
+            listings.Select(listing => new MarketListingPacket
+            {
+                ListingId = listing.Id,
+                ItemId = listing.ItemId,
+                Quantity = listing.Quantity,
+                Price = listing.Price,
+                Properties = listing.ItemProperties
+            }).ToList()
+        );
+
+        // Enviar al cliente
+        player.SendPacket(packet);
+    }
+
+    public static void SendPriceInfo(Player player, Guid itemId)
+    {
+        var stats = MarketStatisticsManager.GetStatistics(itemId);
+
+        var avgPrice = (int)(stats?.AveragePricePerUnit ?? (ItemDescriptor.Get(itemId)?.Price ?? 1));
+        var margin = 0.5f;
+
+        var min = (int)Math.Floor(avgPrice * (1 - margin));
+        var max = (int)Math.Ceiling(avgPrice * (1 + margin));
+
+        var packet = new MarketPriceInfoPacket
+        {
+            ItemId = itemId,
+            SuggestedPrice = (int)avgPrice,
+            MinAllowedPrice = min,
+            MaxAllowedPrice = max
+        };
+        player.SendPacket(packet);
+    }
+
+    public static void SendOpenMarketWindow(Player player)
+    {
+        // Abre la ventana general del mercado
+        player.SendPacket(new MarketWindowPacket(true, false));
+        MarketStatisticsManager.LoadFromDatabase();
+    }
+
+    public static void SendOpenSellMarketWindow(Player player)
+    {
+        // Abre la ventana para vender ítems
+        player.SendPacket(new MarketWindowPacket(false, true));
+        MarketStatisticsManager.LoadFromDatabase();
+    }
+
+    public static void SendCloseMarketWindow(Player player)
+    {
+        // Opción futura si quieres permitir cerrarla desde el servidor
+        player.SendPacket(new MarketWindowPacket(false, false));
+    }
 }

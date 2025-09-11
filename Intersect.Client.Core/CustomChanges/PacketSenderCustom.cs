@@ -8,6 +8,7 @@ using Intersect.Client.Maps;
 using Intersect.Enums;
 using Intersect.Framework;
 using Intersect.Framework.Core.GameObjects.Guild;
+using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Models;
 using Intersect.Network.Packets.Client;
@@ -96,5 +97,44 @@ public static partial class PacketSender
 
         Network.SendPacket(packet);
     }
+    public static void SendBuyMarketListing(Guid listingId)
+    {
+        Network.SendPacket(new BuyMarketListingPacket(listingId));
+    }
 
+    public static void SendSearchMarket(string name = "", int? min = null, int? max = null, ItemType? type = null, string? subType = null)
+    {
+        Network.SendPacket(new SearchMarketPacket
+        {
+            ItemName = name,
+            MinPrice = min,
+            MaxPrice = max,
+            Type = type,
+            Subtype = subType
+        });
+    }
+
+    public static void SendCreateMarketListing(Guid itemId, int quantity, int price, ItemProperties props, bool autoSplit = false)
+
+    {
+        Network.SendPacket(new CreateMarketListingPacket
+        {
+            ItemId = itemId,
+            Quantity = quantity,
+            Price = price,
+            Properties = props,
+            AutoSplit = autoSplit
+        });
+    }
+    public static void SendCancelMarketListing(Guid listingId)
+    {
+        var packet = new CancelMarketListingPacket(listingId);
+        Network.SendPacket(packet);
+    }
+
+    public static void SendRequestMarketInfo(Guid itemId)
+    {
+        var packet = new RequestMarketPricePacket(itemId);
+        Network.SendPacket(packet);
+    }
 }

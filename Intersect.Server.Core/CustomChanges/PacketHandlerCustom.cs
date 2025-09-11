@@ -601,6 +601,94 @@ internal sealed partial class PacketHandler
         player.Wings = packet.State;
         PacketSender.SendEntityDataToProximity(player);
     }
+    public void HandlePacket(Client client, BuyMarketListingPacket packet)
+    {
+        var player = client.Entity;
+        if (player == null) return;
 
+        MarketManager.TryBuyListing(player, packet.ListingId);
+    }
+    public void HandlePacket(Client client, SearchMarketPacket packet)
+    {
+        var player = client.Entity;
+        if (player == null) return;
+
+        using var context = DbInterface.CreatePlayerContext(readOnly: true);
+        var listings = context.Market_Listings
+            .Where(l => !l.IsSold && l.ExpireAt > DateTime.UtcNow)
+            .ToList();
+
+        if (!string.IsNullOrWhiteSpace(packet.ItemName))
+            listings = listings.Where(l => ItemDescriptor.Get(l.ItemId)?.Name?.ToLower().Contains(packet.ItemName.ToLower()) == true).ToList();
+
+        if (packet.Type.HasValue)
+            listings = listings.Where(l => ItemDescriptor.Get(l.ItemId)?.ItemType == packet.Type).ToList();
+
+        if (packet.MinPrice.HasValue)
+            listings = listings.Where(l => l.Price >= packet.MinPrice.Value).ToList();
+
+        if (packet.MaxPrice.HasValue)
+            listings = listings.Where(l => l.Price <= packet.MaxPrice.Value).ToList();
+
+        PacketSender.SendMarketListings(player, listings);
+    }
+    public void HandlePacket(Client client, CreateMarketListingPacket packet)
+    {
+        var player = client.Entity;
+        if (player == null) return;
+
+        // Clonar los datos necesarios antes de perder el ítem
+        var clone = new Item(packet.ItemId, packet.Quantity)
+        {
+            Properties = packet.Properties
+        };
+
+        var success = MarketManager.TryListItem(
+            seller: player,
+            item: clone,
+            quantity: packet.Quantity,
+            pricePerUnit: packet.Price,
+            autoSplit: packet.AutoSplit // <-- NUEVO argumento
+        );
+
+        if (success)
+        {
+            PacketSender.SendMarketListingCreated(player);
+        }
+    }
+    public void HandlePacket(Client client, CancelMarketListingPacket packet)
+    {
+        var player = client.Entity;
+        if (player == null) return;
+
+        var context = DbInterface.CreatePlayerContext(readOnly: false);
+        var listing = context.Market_Listings.Include(l => l.Seller).FirstOrDefault(l => l.Id == packet.ListingId);
+
+        if (listing == null || listing.IsSold || listing.Seller.Name != player.Name)
+        {
+            PacketSender.SendChatMsg(player, "❌ No puedes cancelar este listado.", ChatMessageType.Error, CustomColors.Alerts.Error);
+            return;
+        }
+
+        listing.IsSold = true;
+        context.Update(listing);
+
+        // Devolver el ítem
+        player.TryGiveItem(listing.ItemId, listing.Quantity);
+
+        context.SaveChanges();
+        PacketSender.SendChatMsg(player, "🛑 Listado cancelado y objeto devuelto.", ChatMessageType.Trading, CustomColors.Alerts.Accepted);
+        PacketSender.SendRefreshMarket(player);
+    }
+    public void HandlePacket(Client client, RequestMarketPricePacket packet)
+    {
+        var player = client?.Entity;
+        if (player == null)
+        {
+            return;
+        }
+
+        PacketSender.SendPriceInfo(player, packet.ItemId);
+    }
 
 }

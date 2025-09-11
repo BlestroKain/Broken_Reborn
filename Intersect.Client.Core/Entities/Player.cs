@@ -476,28 +476,24 @@ public partial class Player : Entity, IPlayer
         }
 
         var fromSlot = Inventory[fromSlotIndex];
-        if (fromSlot == null || fromSlot.ItemId == Guid.Empty)
-        {
-            ApplicationContext.Context.Value?.Logger.LogWarning($"Tried to swap item from slot {fromSlotIndex}, but the slot was empty");
-            return;
-        }
-
         var toSlot = Inventory[toSlotIndex];
-        if (toSlot == null || toSlot.ItemId == Guid.Empty)
+
+        var fromEmpty = fromSlot == null || fromSlot.ItemId == Guid.Empty;
+        var toEmpty = toSlot == null || toSlot.ItemId == Guid.Empty;
+
+        if (fromEmpty && toEmpty)
         {
-            ApplicationContext.Context.Value?.Logger.LogWarning($"Tried to swap item with slot {toSlotIndex}, but the slot was empty");
             return;
         }
 
         PacketSender.SendSwapInvItems(fromSlotIndex, toSlotIndex);
 
-        if (
+        if (!fromEmpty && !toEmpty &&
             fromSlot.ItemId == toSlot.ItemId &&
             ItemDescriptor.TryGet(toSlot.ItemId, out var itemInSlot) &&
             itemInSlot.IsStackable &&
             fromSlot.Quantity < itemInSlot.MaxInventoryStack &&
-            toSlot.Quantity < itemInSlot.MaxInventoryStack
-        )
+            toSlot.Quantity < itemInSlot.MaxInventoryStack)
         {
             var combinedQuantity = fromSlot.Quantity + toSlot.Quantity;
             var toQuantity = Math.Min(itemInSlot.MaxInventoryStack, combinedQuantity);

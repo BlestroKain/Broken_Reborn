@@ -1,3 +1,4 @@
+using System;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Interface.Game;
 
@@ -19,8 +20,13 @@ public static class PopulateSlotContainer
             }
 
             var outerSize = slot.OuterBounds.Size;
+            var itemWidth = outerSize.X;
+            if (itemWidth <= 0)
+            {
+                continue;
+            }
 
-            var itemsPerRow = (int)(containerInnerWidth / outerSize.X);
+            var itemsPerRow = Math.Max(1, (int)(containerInnerWidth / itemWidth));
 
             var column = visibleIndex % itemsPerRow;
             var row = visibleIndex / itemsPerRow;

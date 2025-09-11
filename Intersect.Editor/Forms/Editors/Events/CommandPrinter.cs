@@ -1717,4 +1717,12 @@ public static partial class CommandPrinter
     {
         return Strings.EventCommandList.sendmail;
     }
+    private static string GetCommandText(OpenMarketWindowCommand command, MapInstance map)
+    {
+        return Strings.EventCommandList.openmarket;
+    }
+    private static string GetCommandText(OpenMarketSellWindowCommand command, MapInstance map)
+    {
+        return Strings.EventCommandList.opensellmarket;
+    }
 }

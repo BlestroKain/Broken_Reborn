@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 
 using System.Diagnostics;
 using Intersect.Framework.Core.GameObjects.Items;
+using Serilog;
 
 namespace Intersect.Server.Database.PlayerData.Players
 
@@ -71,7 +72,7 @@ namespace Intersect.Server.Database.PlayerData.Players
             return result;
         }
 
-        public static bool TryListItem(Player seller, Item item, int quantity, int pricePerUnit, bool autoSplit = false)
+        public static bool TryListItem(Player seller, Item item, int quantity, int pricePerUnit, bool autoSplit = false, int slotIndex = -1)
         {
             if (item == null || quantity <= 0 || pricePerUnit <= 0)
             {
@@ -116,6 +117,12 @@ namespace Intersect.Server.Database.PlayerData.Players
             var itemProperties = item.Properties;
             var packageSizes = autoSplit ? new[] { 1000,500, 100,50, 10, 1 } : new[] { quantity };
 
+            if (slotIndex < 0 || slotIndex >= seller.Items.Count)
+            {
+                PacketSender.SendChatMsg(seller, Strings.Market.invalidlisting, ChatMessageType.Error, CustomColors.Alerts.Error);
+                return false;
+            }
+
             int remaining = quantity;
             bool atLeastOneListed = false;
 
@@ -126,7 +133,7 @@ namespace Intersect.Server.Database.PlayerData.Players
                     var tax = CalculateTax(pricePerUnit, size);
                     var totalPrice = pricePerUnit * size;
 
-                    if (!seller.TryTakeItem(item.ItemId, size)) break;
+                    if (!seller.TryTakeItem(seller.Items[slotIndex], size)) break;
                     if (!seller.TryTakeItem(currencyBase.Id, tax))
                     {
                         seller.TryGiveItem(item.ItemId, size);
@@ -277,9 +284,9 @@ namespace Intersect.Server.Database.PlayerData.Players
 
             var mail = new MailBox(
                 sender: buyer,
-                to: listing.Seller,
+                receiver: listing.Seller,
                 title: Strings.Market.salecompleted,
-                msg: Strings.Market.yoursolditem.ToString(ItemDescriptor.GetName(listing.ItemId)),
+               message: Strings.Market.yoursolditem.ToString(ItemDescriptor.GetName(listing.ItemId)),
                 attachments: new List<MailAttachment> { goldAttachment }
             );
 
@@ -359,9 +366,9 @@ namespace Intersect.Server.Database.PlayerData.Players
 
                 var mail = new MailBox(
                     sender: null,
-                    to: listing.Seller,
+                    receiver: listing.Seller,
                     title: Strings.Market.expiredlisting,
-                    msg: Strings.Market.yourlistingexpired,
+                    message: Strings.Market.yourlistingexpired,
                     attachments: new List<MailAttachment> { item }
                 );
 

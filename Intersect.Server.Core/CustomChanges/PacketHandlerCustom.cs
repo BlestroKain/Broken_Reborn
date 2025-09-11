@@ -628,6 +628,15 @@ internal sealed partial class PacketHandler
         if (packet.Type.HasValue)
             listings = listings.Where(l => ItemDescriptor.Get(l.ItemId)?.ItemType == packet.Type).ToList();
 
+        if (!string.IsNullOrWhiteSpace(packet.Subtype))
+            listings = listings.Where(
+                l => string.Equals(
+                    ItemDescriptor.Get(l.ItemId)?.Subtype,
+                    packet.Subtype,
+                    StringComparison.OrdinalIgnoreCase
+                )
+            ).ToList();
+
         if (packet.MinPrice.HasValue)
             listings = listings.Where(l => l.Price >= packet.MinPrice.Value).ToList();
 

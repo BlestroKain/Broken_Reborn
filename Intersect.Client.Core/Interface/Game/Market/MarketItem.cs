@@ -31,6 +31,9 @@ namespace Intersect.Client.Interface.Game.Market
         private MarketListingPacket _listing;
         private ItemDescriptor _itemDescriptor;
 
+        public ItemDescriptor? Descriptor => _itemDescriptor;
+        public MarketListingPacket Listing => _listing;
+
         public MarketItem(MarketWindow marketWindow, MarketListingPacket listing)
         {
             _marketWindow = marketWindow;

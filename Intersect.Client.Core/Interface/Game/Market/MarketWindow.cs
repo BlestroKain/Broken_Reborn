@@ -342,7 +342,6 @@ public partial class MarketWindow : Window
     protected override void EnsureInitialized()
     {
         LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
-        PacketSender.SendSearchMarket();
         SendSearch();
         _listingScroll.SetBounds(10, 60, Width - 20, Height - 110);
     }

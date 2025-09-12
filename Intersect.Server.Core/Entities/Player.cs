@@ -204,6 +204,8 @@ public partial class Player : Entity
 
     public DateTime? LastOnline { get; set; }
 
+    public DateTime? LastMarketAction { get; set; }
+
     public DateTime? CreationDate { get; set; } = DateTime.UtcNow;
 
     private ulong mLoadedPlaytime { get; set; } = 0;

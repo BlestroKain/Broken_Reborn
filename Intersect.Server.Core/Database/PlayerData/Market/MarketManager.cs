@@ -117,10 +117,14 @@ namespace Intersect.Server.Database.PlayerData.Players
             var itemProperties = item.Properties;
             var packageSizes = autoSplit ? new[] { 1000,500, 100,50, 10, 1 } : new[] { quantity };
 
-            if (slotIndex < 0 || slotIndex >= seller.Items.Count)
+            bool isStackable = itemBase.Stackable;
+            if (!isStackable)
             {
-                PacketSender.SendChatMsg(seller, Strings.Market.invalidlisting, ChatMessageType.Error, CustomColors.Alerts.Error);
-                return false;
+                if (slotIndex < 0 || slotIndex >= seller.Items.Count)
+                {
+                    PacketSender.SendChatMsg(seller, Strings.Market.invalidlisting, ChatMessageType.Error, CustomColors.Alerts.Error);
+                    return false;
+                }
             }
 
             int remaining = quantity;
@@ -133,7 +137,17 @@ namespace Intersect.Server.Database.PlayerData.Players
                     var tax = CalculateTax(pricePerUnit, size);
                     var totalPrice = pricePerUnit * size;
 
-                    if (!seller.TryTakeItem(seller.Items[slotIndex], size)) break;
+                    bool tookItem;
+                    if (isStackable)
+                    {
+                        tookItem = seller.TryTakeItem(item.ItemId, size);
+                    }
+                    else
+                    {
+                        tookItem = seller.TryTakeItem(seller.Items[slotIndex], size);
+                    }
+                    if (!tookItem) break;
+
                     if (!seller.TryTakeItem(currencyBase.Id, tax))
                     {
                         seller.TryGiveItem(item.ItemId, size);

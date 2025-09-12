@@ -2521,6 +2521,9 @@ Tick timer saved in server config.json.";
             {"mailbox", @"Mail Box"},
             {"sendmail", @"Send Mail"},
             {"openmailbox", @"Open Mail Box"},
+               { "openmarket", @"Open Market" },
+            {"opensellmarket", @"Open Sell Market" },
+            {"market", @"Market" },
         };
 
     }

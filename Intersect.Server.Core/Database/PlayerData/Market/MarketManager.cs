@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 
 using System.Diagnostics;
 using Intersect.Framework.Core.GameObjects.Items;
+using Serilog;
 
 namespace Intersect.Server.Database.PlayerData.Players
 
@@ -146,6 +147,7 @@ namespace Intersect.Server.Database.PlayerData.Players
                         tookItem = seller.TryTakeItem(seller.Items[slotIndex], size);
                     }
                     if (!tookItem) break;
+
                     if (!seller.TryTakeItem(currencyBase.Id, tax))
                     {
                         seller.TryGiveItem(item.ItemId, size);
@@ -296,9 +298,9 @@ namespace Intersect.Server.Database.PlayerData.Players
 
             var mail = new MailBox(
                 sender: buyer,
-                to: listing.Seller,
+                receiver: listing.Seller,
                 title: Strings.Market.salecompleted,
-                msg: Strings.Market.yoursolditem.ToString(ItemDescriptor.GetName(listing.ItemId)),
+               message: Strings.Market.yoursolditem.ToString(ItemDescriptor.GetName(listing.ItemId)),
                 attachments: new List<MailAttachment> { goldAttachment }
             );
 
@@ -378,9 +380,9 @@ namespace Intersect.Server.Database.PlayerData.Players
 
                 var mail = new MailBox(
                     sender: null,
-                    to: listing.Seller,
+                    receiver: listing.Seller,
                     title: Strings.Market.expiredlisting,
-                    msg: Strings.Market.yourlistingexpired,
+                    message: Strings.Market.yourlistingexpired,
                     attachments: new List<MailAttachment> { item }
                 );
 

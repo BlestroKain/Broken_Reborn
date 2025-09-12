@@ -29,6 +29,7 @@ namespace Intersect.Client.Interface.Game.Market
         private readonly SellMarketWindow _owner;
 
         private readonly Label _qty;
+        private bool _filterMatch = true;
 
         public SellInventoryItem(SellMarketWindow owner, Base parent, int slotIndex, ContextMenu contextMenu)
             : base(parent, nameof(SellInventoryItem), slotIndex, contextMenu)
@@ -84,6 +85,7 @@ namespace Intersect.Client.Interface.Game.Market
 
         public override void Update()
         {
+            if (!_filterMatch) { _reset(); return; }
             if (Globals.Me?.Inventory == null) { _reset(); return; }
             var slot = Globals.Me.Inventory[SlotIndex];
             if (slot == null || slot.ItemId == Guid.Empty) { _reset(); return; }
@@ -112,6 +114,11 @@ namespace Intersect.Client.Interface.Game.Market
             Icon.Texture = null;
             _qty.IsVisibleInParent = false;
             IsVisibleInParent = false;
+        }
+
+        public void SetFilterMatch(bool match)
+        {
+            _filterMatch = match;
         }
     }
 }

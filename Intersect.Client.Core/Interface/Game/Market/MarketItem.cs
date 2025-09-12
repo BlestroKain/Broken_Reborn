@@ -95,28 +95,15 @@ namespace Intersect.Client.Interface.Game.Market
             _priceLabel.SetBounds(310, 5, 120, 30);
 
             // Botón comprar/cancelar según vendedor
-            var isSeller = string.Equals(Globals.Me?.Name, _listing.SellerName, StringComparison.OrdinalIgnoreCase);
-
-            if (!isSeller)
-            {
-                _buyButton = new Button(Container, "BuyMarketItemButton");
-                _buyButton.SetText("🛒 " + Intersect.Client.Localization.Strings.Market.Buy);
-                _buyButton.SetBounds(500, 5, 100, 30);
-                _buyButton.Clicked += OnBuyClick;    // (Base, MouseButtonState)
-            }
-            else
-            {
-                _cancelButton = new Button(Container, "CancelMarketItemButton");
-                _cancelButton.SetText("❌ " + Intersect.Client.Localization.Strings.InputBox.Cancel);
-                _cancelButton.SetBounds(500, 5, 100, 30);
-                _cancelButton.Clicked += OnCancelClick; // (Base, MouseButtonState)
-            }
+            UpdateActionButton();
         }
 
         public void Update(MarketListingPacket newListing)
         {
             _listing = newListing;
             ResetBuying();
+
+            UpdateActionButton();
 
             if (!ItemDescriptor.TryGet(_listing.ItemId, out _itemDescriptor))
             {
@@ -144,6 +131,55 @@ namespace Intersect.Client.Interface.Game.Market
             {
                 _iconPanel.Texture = tex;
                 _iconPanel.RenderColor = _itemDescriptor.Color;
+            }
+        }
+
+        private void UpdateActionButton()
+        {
+            if (Container == null)
+            {
+                return;
+            }
+
+            var isSeller = string.Equals(Globals.Me?.Name, _listing.SellerName, StringComparison.OrdinalIgnoreCase);
+
+            if (isSeller)
+            {
+                if (_buyButton != null)
+                {
+                    _buyButton.DelayedDelete();
+                    _buyButton = null;
+                }
+
+                if (_cancelButton == null)
+                {
+                    _cancelButton = new Button(Container, "CancelMarketItemButton");
+                    _cancelButton.SetText("❌ " + Intersect.Client.Localization.Strings.InputBox.Cancel);
+                    _cancelButton.SetBounds(500, 5, 100, 30);
+                    _cancelButton.Clicked += OnCancelClick;
+                    _cancelButton.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+                }
+
+                _cancelButton.Show();
+            }
+            else
+            {
+                if (_cancelButton != null)
+                {
+                    _cancelButton.DelayedDelete();
+                    _cancelButton = null;
+                }
+
+                if (_buyButton == null)
+                {
+                    _buyButton = new Button(Container, "BuyMarketItemButton");
+                    _buyButton.SetText("🛒 " + Intersect.Client.Localization.Strings.Market.Buy);
+                    _buyButton.SetBounds(500, 5, 100, 30);
+                    _buyButton.Clicked += OnBuyClick;
+                    _buyButton.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+                }
+
+                _buyButton.Show();
             }
         }
 

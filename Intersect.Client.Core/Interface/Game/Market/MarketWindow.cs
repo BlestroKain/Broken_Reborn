@@ -70,6 +70,15 @@ namespace Intersect.Client.Interface.Game.Market
 
         private bool _waiting;
 
+        // Virtualization fields
+        private const int ItemHeight = 44;
+        private const int VirtualizationThreshold = 40;
+        private const int VirtualBuffer = 2;
+        private bool _useVirtualization;
+        private readonly List<MarketListingPacket> _allListings = new();
+        private readonly List<MarketListingPacket> _filteredListings = new();
+        private readonly List<MarketItem> _virtualRows = new();
+
 
         public MarketWindow(Canvas parent)
         {
@@ -370,6 +379,53 @@ namespace Intersect.Client.Interface.Game.Market
             _selectedType = (ItemType?)mItemTypeCombo.SelectedItem?.UserData;
             _selectedSubtype = (string?)mItemSubTypeCombo.SelectedItem?.UserData;
 
+            if (_useVirtualization)
+            {
+                _filteredListings.Clear();
+                foreach (var listing in _allListings)
+                {
+                    if (!ItemDescriptor.TryGet(listing.ItemId, out var desc))
+                    {
+                        continue;
+                    }
+
+                    var match = true;
+                    if (_selectedType.HasValue && desc.ItemType != _selectedType)
+                    {
+                        match = false;
+                    }
+
+                    if (!string.IsNullOrEmpty(_selectedSubtype) && !string.Equals(desc.Subtype, _selectedSubtype, StringComparison.OrdinalIgnoreCase))
+                    {
+                        match = false;
+                    }
+
+                    if (!SearchHelper.Matches(query, desc.Name ?? string.Empty))
+                    {
+                        match = false;
+                    }
+
+                    if (match)
+                    {
+                        _filteredListings.Add(listing);
+                    }
+                }
+
+                if (_filteredListings.Count > 0)
+                {
+                    mNoResultsLabel.Hide();
+                }
+                else
+                {
+                    mNoResultsLabel.Show();
+                }
+                mListingScroll.InnerPanel.SetSize(mListingScroll.InnerPanel.Width, _filteredListings.Count * ItemHeight);
+                mListingScroll.VerticalScrollBar.ContentSize = _filteredListings.Count * ItemHeight;
+                mListingScroll.VerticalScrollBar.ViewableContentSize = mListingScroll.Height;
+                UpdateVirtualRows();
+                return;
+            }
+
             var visible = new List<MarketItem>();
             foreach (var id in mListingOrder)
             {
@@ -409,71 +465,154 @@ namespace Intersect.Client.Interface.Game.Market
             }
 
             int offsetY = 0;
-            const int itemHeight = 44;
             foreach (var item in visible)
             {
-                item.Container.SetBounds(0, offsetY, 750, itemHeight);
-                offsetY += itemHeight;
+                item.Container.SetBounds(0, offsetY, 750, ItemHeight);
+                offsetY += ItemHeight;
             }
             mListingScroll.UpdateScrollBars();
         }
 
+        private void OnScroll(Base sender, EventArgs args)
+        {
+            UpdateVirtualRows();
+        }
+
+        private void UpdateVirtualRows()
+        {
+            if (!_useVirtualization)
+            {
+                return;
+            }
+
+            var totalHeight = _filteredListings.Count * ItemHeight;
+            var viewHeight = mListingScroll.Height;
+            var scrollPixels = (int)(mListingScroll.VerticalScrollBar.ScrollAmount * Math.Max(0, totalHeight - viewHeight));
+            var firstIndex = scrollPixels / ItemHeight;
+            var startIndex = Math.Max(0, firstIndex - VirtualBuffer);
+
+            for (var i = 0; i < _virtualRows.Count; i++)
+            {
+                var dataIndex = startIndex + i;
+                var row = _virtualRows[i];
+                if (dataIndex >= _filteredListings.Count)
+                {
+                    row.Container.Hide();
+                    continue;
+                }
+
+                var listing = _filteredListings[dataIndex];
+                row.Update(listing);
+                row.Container.Show();
+                row.Container.SetBounds(0, dataIndex * ItemHeight, 750, ItemHeight);
+            }
+        }
+
         public void UpdateListings(List<MarketListingPacket> listings, int total)
         {
-            var newIds = new HashSet<Guid>();
-            foreach (var listing in listings)
-            {
-                newIds.Add(listing.ListingId);
-            }
-
-            var toRemove = new List<Guid>();
-            foreach (var id in mCurrentItems.Keys)
-            {
-                if (!newIds.Contains(id))
-                {
-                    toRemove.Add(id);
-                }
-            }
-
-            foreach (var id in toRemove)
-            {
-                if (mCurrentItems.TryGetValue(id, out var item))
-                {
-                    item.Container?.DelayedDelete();
-                }
-                mCurrentItems.Remove(id);
-            }
-
-            mListingOrder.Clear();
-            foreach (var listing in listings)
-            {
-                MarketItem item;
-                if (!mCurrentItems.TryGetValue(listing.ListingId, out item))
-                {
-                    item = new MarketItem(this, listing)
-                    {
-                        Container = new ImagePanel(mListingScroll, "MarketItemRow"),
-                    };
-                    item.Setup();
-                    item.Container.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
-                    item.Container.Show();
-                    mCurrentItems[listing.ListingId] = item;
-                }
-                else
-                {
-                    item.Update(listing);
-                }
-
-                mListingOrder.Add(listing.ListingId);
-            }
-
             _total = total;
-
             _waiting = false;
             mErrorLabel.Hide();
             mRetryButton.Hide();
 
-            if (total == 0)
+            mListingScroll.VerticalScrollBar.BarMoved -= OnScroll;
+
+            if (listings.Count > VirtualizationThreshold)
+            {
+                _useVirtualization = true;
+                _allListings.Clear();
+                _allListings.AddRange(listings);
+
+                var visibleRows = Math.Max(1, mListingScroll.Height / ItemHeight);
+                var requiredRows = visibleRows + VirtualBuffer * 2;
+
+                if (_virtualRows.Count != requiredRows)
+                {
+                    foreach (var row in _virtualRows)
+                    {
+                        row.Container?.DelayedDelete();
+                    }
+                    _virtualRows.Clear();
+                    for (var i = 0; i < requiredRows; i++)
+                    {
+                        var dummy = listings[0];
+                        var item = new MarketItem(this, dummy)
+                        {
+                            Container = new ImagePanel(mListingScroll, "MarketItemRow"),
+                        };
+                        item.Setup();
+                        item.Container.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+                        item.Container.Show();
+                        _virtualRows.Add(item);
+                    }
+                }
+
+                mListingScroll.VerticalScrollBar.BarMoved += OnScroll;
+                ApplyFilters();
+            }
+            else
+            {
+                _useVirtualization = false;
+
+                foreach (var row in _virtualRows)
+                {
+                    row.Container?.DelayedDelete();
+                }
+                _virtualRows.Clear();
+                _allListings.Clear();
+                _filteredListings.Clear();
+
+                var newIds = new HashSet<Guid>();
+                foreach (var listing in listings)
+                {
+                    newIds.Add(listing.ListingId);
+                }
+
+                var toRemove = new List<Guid>();
+                foreach (var id in mCurrentItems.Keys)
+                {
+                    if (!newIds.Contains(id))
+                    {
+                        toRemove.Add(id);
+                    }
+                }
+
+                foreach (var id in toRemove)
+                {
+                    if (mCurrentItems.TryGetValue(id, out var item))
+                    {
+                        item.Container?.DelayedDelete();
+                    }
+                    mCurrentItems.Remove(id);
+                }
+
+                mListingOrder.Clear();
+                foreach (var listing in listings)
+                {
+                    MarketItem item;
+                    if (!mCurrentItems.TryGetValue(listing.ListingId, out item))
+                    {
+                        item = new MarketItem(this, listing)
+                        {
+                            Container = new ImagePanel(mListingScroll, "MarketItemRow"),
+                        };
+                        item.Setup();
+                        item.Container.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+                        item.Container.Show();
+                        mCurrentItems[listing.ListingId] = item;
+                    }
+                    else
+                    {
+                        item.Update(listing);
+                    }
+
+                    mListingOrder.Add(listing.ListingId);
+                }
+
+                ApplyFilters();
+            }
+
+            if ((_useVirtualization ? _filteredListings.Count : mListingOrder.Count) == 0)
             {
                 mNoResultsLabel.Show();
             }
@@ -482,7 +621,6 @@ namespace Intersect.Client.Interface.Game.Market
                 mNoResultsLabel.Hide();
             }
 
-            ApplyFilters();
             UpdatePagination();
         }
 
@@ -511,12 +649,22 @@ namespace Intersect.Client.Interface.Game.Market
 
         public void RefreshAfterPurchase()
         {
-        
-            foreach (var item in mCurrentItems.Values)
+            if (_useVirtualization)
             {
-                item.ResetBuying();
+                foreach (var item in _virtualRows)
+                {
+                    item.ResetBuying();
+                }
             }
-    QueueSearch();
+            else
+            {
+                foreach (var item in mCurrentItems.Values)
+                {
+                    item.ResetBuying();
+                }
+            }
+
+            QueueSearch();
         }
 
         public void UpdateTransactionHistory(List<MarketTransactionPacket> transactions)

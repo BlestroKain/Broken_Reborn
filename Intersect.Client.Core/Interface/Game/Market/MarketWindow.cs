@@ -48,9 +48,16 @@ namespace Intersect.Client.Interface.Game.Market
         private Label mSubTypeLabel;
         private ComboBox mItemSubTypeCombo;
 
+        private Button mPrevButton;
+        private Button mNextButton;
+
         private ItemType? _selectedType;
         private string? _selectedSubtype;
         private readonly Timer _debounce;
+
+        private int _page;
+        private readonly int _pageSize = 10;
+        private int _total;
 
 
         public MarketWindow(Canvas parent)
@@ -127,7 +134,12 @@ namespace Intersect.Client.Interface.Game.Market
             mSearchButton = new Button(mMarketWindow, "MarketSearchButton");
 
             mSearchButton.SetText(Strings.Market.searchButton);
-            mSearchButton.Clicked += (s, a) => QueueSearch();
+            mSearchButton.Clicked += (s, a) =>
+            {
+                _page = 0;
+                UpdatePagination();
+                QueueSearch();
+            };
 
             mSellButton = new Button(mMarketWindow, "MarketSellButton");
             mSellButton.SetText(Strings.Market.sellButton);
@@ -149,6 +161,27 @@ namespace Intersect.Client.Interface.Game.Market
 
             mSearchButton.SetBounds(450, 75, 100, 30);
             mSellButton.SetBounds(560, 75, 100, 30);
+
+            mPrevButton = new Button(mMarketWindow, "MarketPrevButton");
+            mPrevButton.SetText("<");
+            mPrevButton.SetBounds(20, 570, 100, 25);
+            mPrevButton.Clicked += (s, a) =>
+            {
+                _page--;
+                UpdatePagination();
+                QueueSearch();
+            };
+
+            mNextButton = new Button(mMarketWindow, "MarketNextButton");
+            mNextButton.SetText(">");
+            mNextButton.SetBounds(680, 570, 100, 25);
+            mNextButton.Clicked += (s, a) =>
+            {
+                _page++;
+                UpdatePagination();
+                QueueSearch();
+            };
+
             // 📦 Contenedor general del listado (incluye encabezados + scroll)
             mListContainer = new ImagePanel(mMarketWindow, "MarketContainer");
             mListContainer.SetBounds(20, 115, 760, 450); // Estira casi hasta el fondo
@@ -181,8 +214,9 @@ namespace Intersect.Client.Interface.Game.Market
             mMarketWindow.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
 
 
-            PacketSender.SendSearchMarket();
+            PacketSender.SendSearchMarket(page: _page);
             QueueSearch(); // Ejecutar búsqueda inicial
+            UpdatePagination();
            
         }
 
@@ -241,7 +275,7 @@ namespace Intersect.Client.Interface.Game.Market
             var type = (ItemType?)mItemTypeCombo.SelectedItem?.UserData;
             var subType = (string?)mItemSubTypeCombo.SelectedItem?.UserData;
 
-            PacketSender.SendSearchMarket(name, minPrice, maxPrice, type, subType);
+            PacketSender.SendSearchMarket(name, minPrice, maxPrice, type, subType, _page);
 
         }
         private void UpdateSubTypeCombo()
@@ -334,7 +368,7 @@ namespace Intersect.Client.Interface.Game.Market
             mListingScroll.UpdateScrollBars();
         }
 
-        public void UpdateListings(List<MarketListingPacket> listings)
+        public void UpdateListings(List<MarketListingPacket> listings, int total)
         {
             var newIds = new HashSet<Guid>();
             foreach (var listing in listings)
@@ -383,7 +417,9 @@ namespace Intersect.Client.Interface.Game.Market
                 mListingOrder.Add(listing.ListingId);
             }
 
-            if (listings.Count == 0)
+            _total = total;
+
+            if (total == 0)
             {
                 mNoResultsLabel.Show();
             }
@@ -393,6 +429,30 @@ namespace Intersect.Client.Interface.Game.Market
             }
 
             ApplyFilters();
+            UpdatePagination();
+        }
+
+        private void UpdatePagination()
+        {
+            var maxPage = Math.Max((_total + _pageSize - 1) / _pageSize - 1, 0);
+            if (_page < 0)
+            {
+                _page = 0;
+            }
+            else if (_page > maxPage)
+            {
+                _page = maxPage;
+            }
+
+            if (mPrevButton != null)
+            {
+                mPrevButton.IsDisabled = _page <= 0;
+            }
+
+            if (mNextButton != null)
+            {
+                mNextButton.IsDisabled = _page >= maxPage;
+            }
         }
 
         public void RefreshAfterPurchase()

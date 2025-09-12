@@ -216,7 +216,7 @@ public static partial class PacketSender
         player.SendPacket(new UnlockedBestiaryEntriesPacket(unlocks, killCounts));
     }
 
-    public static void SendMarketListings(Player player, List<MarketListing> listings)
+    public static void SendMarketListings(Player player, List<MarketListing> listings, int total)
     {
         var listingPackets = listings.Select(l => new MarketListingPacket
         {
@@ -228,7 +228,7 @@ public static partial class PacketSender
             Properties = l.ItemProperties
         }).ToList();
 
-        player.SendPacket(new MarketListingsPacket(listingPackets));
+        player.SendPacket(new MarketListingsPacket(listingPackets, total));
     }
     public static void SendMarketListingCreated(Player player)
     {
@@ -264,16 +264,16 @@ public static partial class PacketSender
         var listings = MarketManager.SearchMarket();
 
         // Construir el paquete de listado de mercado
-        var packet = new MarketListingsPacket(
-            listings.Select(listing => new MarketListingPacket
-            {
-                ListingId = listing.Id,
-                ItemId = listing.ItemId,
-                Quantity = listing.Quantity,
-                Price = listing.Price,
-                Properties = listing.ItemProperties
-            }).ToList()
-        );
+        var listingPackets = listings.Select(listing => new MarketListingPacket
+        {
+            ListingId = listing.Id,
+            ItemId = listing.ItemId,
+            Quantity = listing.Quantity,
+            Price = listing.Price,
+            Properties = listing.ItemProperties
+        }).ToList();
+
+        var packet = new MarketListingsPacket(listingPackets, listings.Count);
 
         // Enviar al cliente
         player.SendPacket(packet);

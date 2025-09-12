@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Diagnostics;
 using System.Text;
+using System.Linq;
 using Intersect.Core;
 using Intersect.Framework.Core;
 using Intersect.Framework.Core.GameObjects.Crafting;
@@ -630,7 +631,13 @@ internal sealed partial class PacketHandler
         if (packet.MaxPrice.HasValue)
             listings = listings.Where(l => l.Price <= packet.MaxPrice.Value).ToList();
 
-        PacketSender.SendMarketListings(player, listings);
+        var total = listings.Count;
+        const int pageSize = 10;
+        var maxPage = Math.Max((int)Math.Ceiling(total / (double)pageSize) - 1, 0);
+        var page = Math.Clamp(packet.Page, 0, maxPage);
+        listings = listings.Skip(page * pageSize).Take(pageSize).ToList();
+
+        PacketSender.SendMarketListings(player, listings, total);
     }
     public void HandlePacket(Client client, CreateMarketListingPacket packet)
     {

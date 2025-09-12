@@ -69,6 +69,7 @@ namespace Intersect.Client.Interface.Game.Market
         private int _lastPage;
 
         private bool _waiting;
+        private bool _closed;
 
         // Virtualization fields
         private const int ItemHeight = 44;
@@ -136,6 +137,8 @@ namespace Intersect.Client.Interface.Game.Market
                 AutoReset = false,
             };
             _debounce.Elapsed += DebounceElapsed;
+            mMarketWindow.Closed += OnWindowClosed;
+            mMarketWindow.Disposed += OnWindowClosed;
 
             mMinLabel = new Label(mMarketWindow, "MarketMinLabel");
             mMinLabel.Text = Strings.Market.minPriceLabel;
@@ -277,7 +280,18 @@ namespace Intersect.Client.Interface.Game.Market
 
         private void DebounceElapsed(object? sender, ElapsedEventArgs e)
         {
+            if (_closed)
+            {
+                return;
+            }
             mMarketWindow?.RunOnMainThread(SendSearch);
+        }
+
+        private void OnWindowClosed(Base sender, EventArgs args)
+        {
+            _closed = true;
+            _debounce.Stop();
+            _debounce.Dispose();
         }
 
         public void QueueSearch()

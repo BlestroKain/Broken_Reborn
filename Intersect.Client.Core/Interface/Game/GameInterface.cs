@@ -472,6 +472,7 @@ public partial class GameInterface : MutableInterface
         mRuneItemWindow?.Update();
         _bestiaryWindow?.Update();
         mMailBoxWindow?.UpdateMail();
+        mSellMarketWindow?.Update();
         var questDescriptorId = Globals.QuestOffers.FirstOrDefault();
         if (questDescriptorId == default)
         {

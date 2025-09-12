@@ -247,7 +247,7 @@ internal sealed partial class PacketHandler
         // Aquí deberás pasar los listados a la ventana del mercado.
         // Puedes almacenarlos en una variable global temporal o llamar directamente a la ventana.
 
-        Interface.Interface.GameUi.UpdateListings(packet.Listings);
+        Interface.Interface.GameUi.UpdateListings(packet.Listings, packet.Total);
     }
     public void HandlePacket(IPacketSender sender, MarketListingCreatedPacket packet)
     {

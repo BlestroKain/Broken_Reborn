@@ -20,10 +20,12 @@ namespace Intersect.Network.Packets.Server
     public class MarketListingsPacket : IntersectPacket
     {
         [Key(0)] public List<MarketListingPacket> Listings { get; set; }
+        [Key(1)] public int Total { get; set; }
 
-        public MarketListingsPacket(List<MarketListingPacket> listings)
+        public MarketListingsPacket(List<MarketListingPacket> listings, int total)
         {
             Listings = listings ?? new List<MarketListingPacket>();
+            Total = total;
         }
     }
 }

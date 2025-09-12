@@ -379,6 +379,11 @@ namespace Intersect.Client.Interface.Game.Market
 
         public void RefreshAfterPurchase()
         {
+            foreach (var item in mCurrentItems.Values)
+            {
+                item.ResetBuying();
+            }
+
             SendSearch();
         }
 

@@ -105,6 +105,9 @@ namespace Intersect.Client.Interface.Game.Market
             _sortButton.Clicked += SortButton_Clicked;
             UpdateSortButtonText();
 
+            _searchBox.TextChanged += (_, _) => Update();
+            _subtypeBox.ItemSelected += (_, _) => { _slotsDirty = true; Update(); };
+
             var allType = _typeBox.AddItem(Strings.Inventory.All, userData: null);
             _typeBox.SelectedItem = allType;
             foreach (var type in Enum.GetValues<ItemType>())
@@ -115,7 +118,7 @@ namespace Intersect.Client.Interface.Game.Market
 
             BuildSubtypeLookup();
             PopulateSubtypeComboForType(null);
-            _typeBox.ItemSelected += TypeBox_Selected;
+            _typeBox.ItemSelected += (s, a) => { TypeBox_Selected(s, a); Update(); };
 
             _lastQuery = _searchBox.Text;
             _selectedType = (ItemType?)_typeBox.SelectedItem?.UserData;
@@ -320,6 +323,7 @@ namespace Intersect.Client.Interface.Game.Market
 
             UpdateSortButtonText();
             SortItems(sender, arguments);
+            Update();
         }
 
         private void UpdateSortButtonText()
@@ -401,6 +405,7 @@ namespace Intersect.Client.Interface.Game.Market
         private void PlayerOnInventoryUpdated(object? sender, EventArgs e)
         {
             _slotsDirty = true;
+            Update();
         }
 
         public void SelectItem(SlotItem itemSlot, int slotIndex)

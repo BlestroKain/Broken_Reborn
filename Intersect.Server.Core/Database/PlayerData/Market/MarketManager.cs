@@ -71,7 +71,7 @@ namespace Intersect.Server.Database.PlayerData.Players
             return result;
         }
 
-        public static bool TryListItem(Player seller, Item item, int quantity, int pricePerUnit, bool autoSplit = false)
+        public static bool TryListItem(Player seller, Item item, int quantity, int pricePerUnit, bool autoSplit = false, int slotIndex = -1)
         {
             if (item == null || quantity <= 0 || pricePerUnit <= 0)
             {
@@ -116,6 +116,16 @@ namespace Intersect.Server.Database.PlayerData.Players
             var itemProperties = item.Properties;
             var packageSizes = autoSplit ? new[] { 1000,500, 100,50, 10, 1 } : new[] { quantity };
 
+            bool isStackable = itemBase.Stackable;
+            if (!isStackable)
+            {
+                if (slotIndex < 0 || slotIndex >= seller.Items.Count)
+                {
+                    PacketSender.SendChatMsg(seller, Strings.Market.invalidlisting, ChatMessageType.Error, CustomColors.Alerts.Error);
+                    return false;
+                }
+            }
+
             int remaining = quantity;
             bool atLeastOneListed = false;
 
@@ -126,7 +136,16 @@ namespace Intersect.Server.Database.PlayerData.Players
                     var tax = CalculateTax(pricePerUnit, size);
                     var totalPrice = pricePerUnit * size;
 
-                    if (!seller.TryTakeItem(item.ItemId, size)) break;
+                    bool tookItem;
+                    if (isStackable)
+                    {
+                        tookItem = seller.TryTakeItem(item.ItemId, size);
+                    }
+                    else
+                    {
+                        tookItem = seller.TryTakeItem(seller.Items[slotIndex], size);
+                    }
+                    if (!tookItem) break;
                     if (!seller.TryTakeItem(currencyBase.Id, tax))
                     {
                         seller.TryGiveItem(item.ItemId, size);

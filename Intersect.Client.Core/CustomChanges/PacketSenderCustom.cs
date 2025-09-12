@@ -114,7 +114,7 @@ public static partial class PacketSender
         });
     }
 
-    public static void SendCreateMarketListing(Guid itemId, int quantity, int price, ItemProperties props, bool autoSplit = false)
+    public static void SendCreateMarketListing(Guid itemId, int quantity, int price, ItemProperties props, bool autoSplit = false, int slotIndex = -1)
 
     {
         Network.SendPacket(new CreateMarketListingPacket
@@ -123,7 +123,8 @@ public static partial class PacketSender
             Quantity = quantity,
             Price = price,
             Properties = props,
-            AutoSplit = autoSplit
+            AutoSplit = autoSplit,
+            SlotIndex = slotIndex
         });
     }
     public static void SendCancelMarketListing(Guid listingId)

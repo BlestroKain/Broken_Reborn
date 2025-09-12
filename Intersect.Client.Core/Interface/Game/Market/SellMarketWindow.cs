@@ -42,6 +42,7 @@ namespace Intersect.Client.Interface.Game.Market
 
         private int _selectedSlot = -1;
         private Guid _selectedItemId = Guid.Empty;
+        private bool _selectedItemStackable;
         public Guid _waitingPriceForItemId = Guid.Empty;
         #endregion
 
@@ -74,7 +75,8 @@ namespace Intersect.Client.Interface.Game.Market
             _taxLabel = new Label(_window, "TaxLabel") { Text = Strings.Market.taxes_0 };
 
             _autoSplitCheckbox = new Checkbox(_window, "SplitCheckBox") { Text = Strings.Market.splitpackages };
-            _autoSplitCheckbox.IsChecked = true;
+            _autoSplitCheckbox.Disable();
+            _autoSplitCheckbox.IsChecked = false;
 
             _confirmButton = new Button(_window, "CorfimButton") { Text = Strings.Market.publish };
             _confirmButton.Disable();
@@ -174,6 +176,24 @@ namespace Intersect.Client.Interface.Game.Market
             if (ItemDescriptor.TryGet(slot.ItemId, out var desc))
             {
                 _infoLabel.Text = Strings.Market.publish_colon + " " + desc.Name;
+
+                _selectedItemStackable = desc.Stackable;
+                if (_selectedItemStackable)
+                {
+                    _autoSplitCheckbox.Enable();
+                    _autoSplitCheckbox.IsChecked = true;
+                }
+                else
+                {
+                    _autoSplitCheckbox.Disable();
+                    _autoSplitCheckbox.IsChecked = false;
+                }
+            }
+            else
+            {
+                _selectedItemStackable = false;
+                _autoSplitCheckbox.Disable();
+                _autoSplitCheckbox.IsChecked = false;
             }
 
             // Pide info de mercado al server (usa GUID)
@@ -257,13 +277,19 @@ namespace Intersect.Client.Interface.Game.Market
                 return;
             }
 
-            // Sumar cantidades del mismo ítem
-            var matching = Globals.Me.Inventory
-                .Select((s, idx) => new { s, idx })
-                .Where(x => x.s != null && x.s.ItemId == _selectedItemId)
-                .ToList();
+            int totalQty;
+            if (_selectedItemStackable)
+            {
+                var matching = Globals.Me.Inventory
+                    .Where(s => s != null && s.ItemId == _selectedItemId)
+                    .ToList();
+                totalQty = matching.Sum(x => x.Quantity);
+            }
+            else
+            {
+                totalQty = Globals.Me.Inventory[_selectedSlot].Quantity;
+            }
 
-            int totalQty = matching.Sum(x => x.s.Quantity);
             if (totalQty < qty)
             {
                 ChatboxMsg.AddMessage(new ChatboxMsg(Strings.Market.quantityExceeds, Color.Red, ChatMessageType.Error));
@@ -281,12 +307,20 @@ namespace Intersect.Client.Interface.Game.Market
                 }
             }
 
-            // Propiedades del primer slot
-            var first = matching.First();
-            var props = Globals.Me.Inventory[first.idx].ItemProperties ?? new ItemProperties();
+            // Propiedades del slot seleccionado
+            var slot = Globals.Me.Inventory[_selectedSlot];
+            var props = slot.ItemProperties ?? new ItemProperties();
 
-            // Enviar al server (usa GUID + props actuales)
-            PacketSender.SendCreateMarketListing(_selectedItemId, qty, price, props, _autoSplitCheckbox.IsChecked);
+            // Enviar al server
+            var slotIndexToSend = _selectedItemStackable ? -1 : _selectedSlot;
+            PacketSender.SendCreateMarketListing(
+                _selectedItemId,
+                qty,
+                price,
+                props,
+                _autoSplitCheckbox.IsChecked,
+                slotIndexToSend
+            );
 
             ResetSelection();
         }
@@ -295,6 +329,7 @@ namespace Intersect.Client.Interface.Game.Market
         {
             _selectedSlot = -1;
             _selectedItemId = Guid.Empty;
+            _selectedItemStackable = false;
             _infoLabel.Text = Strings.Market.selectitem;
             _priceInput.SetText(string.Empty, false);
             _quantityInput.SetText(string.Empty, false);
@@ -302,6 +337,8 @@ namespace Intersect.Client.Interface.Game.Market
             _suggestedPriceLabel.SetText("");
             _suggestedRangeLabel.SetText("");
             _taxLabel.SetText("");
+            _autoSplitCheckbox.Disable();
+            _autoSplitCheckbox.IsChecked = false;
 
             Update();
         }

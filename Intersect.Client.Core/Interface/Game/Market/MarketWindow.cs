@@ -58,7 +58,7 @@ namespace Intersect.Client.Interface.Game.Market
         private readonly Timer _debounce;
 
         private int _page;
-        private readonly int _pageSize = 10;
+        private readonly int _pageSize;
         private int _total;
 
         private string _lastName = string.Empty;
@@ -83,6 +83,7 @@ namespace Intersect.Client.Interface.Game.Market
         public MarketWindow(Canvas parent)
         {
             Instance = this;
+            _pageSize = Options.Instance.Market.PageSize;
             mMarketWindow = new WindowControl(parent, Strings.Market.windowTitle, false, "MarketWindow");
             mMarketWindow.SetSize(800, 600);
             mMarketWindow.DisableResizing();

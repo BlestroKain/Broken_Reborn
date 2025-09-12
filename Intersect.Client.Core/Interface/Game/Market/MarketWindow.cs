@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Timers;
 using Intersect.Client.Core;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen.Control;
@@ -49,6 +50,7 @@ namespace Intersect.Client.Interface.Game.Market
 
         private ItemType? _selectedType;
         private string? _selectedSubtype;
+        private readonly Timer _debounce;
 
 
         public MarketWindow(Canvas parent)
@@ -102,6 +104,11 @@ namespace Intersect.Client.Interface.Game.Market
             _selectedType = (ItemType?)mItemTypeCombo.SelectedItem?.UserData;
             _selectedSubtype = (string?)mItemSubTypeCombo.SelectedItem?.UserData;
 
+            _debounce = new Timer(500)
+            {
+                AutoReset = false,
+            };
+            _debounce.Elapsed += DebounceElapsed;
 
             mMinLabel = new Label(mMarketWindow, "MarketMinLabel");
             mMinLabel.Text = Strings.Market.minPriceLabel;
@@ -119,8 +126,8 @@ namespace Intersect.Client.Interface.Game.Market
 
             mSearchButton = new Button(mMarketWindow, "MarketSearchButton");
 
-            mSearchButton.SetText(Strings.Market.searchButton);           
-            mSearchButton.Clicked += (s, a) => SendSearch();
+            mSearchButton.SetText(Strings.Market.searchButton);
+            mSearchButton.Clicked += (s, a) => QueueSearch();
 
             mSellButton = new Button(mMarketWindow, "MarketSellButton");
             mSellButton.SetText(Strings.Market.sellButton);
@@ -172,10 +179,10 @@ namespace Intersect.Client.Interface.Game.Market
             InitScrollPanel();
 
             mMarketWindow.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
-      
-         
+
+
             PacketSender.SendSearchMarket();
-            SendSearch(); // Ejecutar búsqueda inicial
+            QueueSearch(); // Ejecutar búsqueda inicial
            
         }
 
@@ -203,6 +210,17 @@ namespace Intersect.Client.Interface.Game.Market
                 Interface.GameUi.mSellMarketWindow.Show();
                 Interface.GameUi.mSellMarketWindow.Update();
             }
+        }
+
+        private void DebounceElapsed(object? sender, ElapsedEventArgs e)
+        {
+            mMarketWindow?.RunOnMainThread(SendSearch);
+        }
+
+        public void QueueSearch()
+        {
+            _debounce.Stop();
+            _debounce.Start();
         }
 
         public void SendSearch()
@@ -379,12 +397,12 @@ namespace Intersect.Client.Interface.Game.Market
 
         public void RefreshAfterPurchase()
         {
+        
             foreach (var item in mCurrentItems.Values)
             {
                 item.ResetBuying();
             }
-
-            SendSearch();
+    QueueSearch();
         }
 
         public void UpdateTransactionHistory(List<MarketTransactionPacket> transactions)

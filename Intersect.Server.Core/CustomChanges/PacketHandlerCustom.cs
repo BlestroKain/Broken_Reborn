@@ -31,6 +31,7 @@ using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.Security;
 using Intersect.Network.Packets.Server;
 using Intersect.Server.Core;
+using Intersect;
 using Microsoft.Extensions.Logging;
 using ChatMsgPacket = Intersect.Network.Packets.Client.ChatMsgPacket;
 using LoginPacket = Intersect.Network.Packets.Client.LoginPacket;
@@ -669,7 +670,21 @@ internal sealed partial class PacketHandler
         var player = client.Entity;
         if (player == null) return;
 
-        var context = DbInterface.CreatePlayerContext(readOnly: false);
+        var cooldown = Options.Instance.Market.ActionCooldownSeconds;
+        if (cooldown > 0 && player.LastMarketAction.HasValue)
+        {
+            var elapsed = DateTime.UtcNow - player.LastMarketAction.Value;
+            if (elapsed.TotalSeconds < cooldown)
+            {
+                var remaining = (int)Math.Ceiling(cooldown - elapsed.TotalSeconds);
+                PacketSender.SendChatMsg(player, $"⏳ Debes esperar {remaining}s antes de realizar otra operación en el mercado.", ChatMessageType.Error, CustomColors.Alerts.Error);
+                return;
+            }
+        }
+
+        using var context = DbInterface.CreatePlayerContext(readOnly: false);
+        context.StopTrackingUsersExcept(player.User);
+        context.Attach(player);
         var listing = context.Market_Listings.Include(l => l.Seller).FirstOrDefault(l => l.Id == packet.ListingId);
 
         if (listing == null || listing.IsSold || listing.Seller.Name != player.Name)
@@ -683,6 +698,8 @@ internal sealed partial class PacketHandler
 
         // Devolver el ítem
         player.TryGiveItem(listing.ItemId, listing.Quantity);
+        player.LastMarketAction = DateTime.UtcNow;
+        context.Update(player);
 
         context.SaveChanges();
         PacketSender.SendChatMsg(player, "🛑 Listado cancelado y objeto devuelto.", ChatMessageType.Trading, CustomColors.Alerts.Accepted);

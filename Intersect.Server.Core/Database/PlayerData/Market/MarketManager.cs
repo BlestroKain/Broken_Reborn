@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Intersect;
 using Intersect.Server.Database;
 using Intersect.Server.Entities;
 using Intersect.Server.Localization;
@@ -109,10 +110,29 @@ namespace Intersect.Server.Database.PlayerData.Players
                 PacketSender.SendChatMsg(seller, "Currency item not configured!", ChatMessageType.Error, CustomColors.Alerts.Error);
                 return false;
             }
+            var cooldown = Options.Instance.Market.ActionCooldownSeconds;
+            if (cooldown > 0 && seller.LastMarketAction.HasValue)
+            {
+                var elapsed = DateTime.UtcNow - seller.LastMarketAction.Value;
+                if (elapsed.TotalSeconds < cooldown)
+                {
+                    var remaining = (int)Math.Ceiling(cooldown - elapsed.TotalSeconds);
+                    PacketSender.SendChatMsg(seller, $"⏳ Debes esperar {remaining}s antes de realizar otra operación en el mercado.", ChatMessageType.Error, CustomColors.Alerts.Error);
+                    return false;
+                }
+            }
 
             using var context = DbInterface.CreatePlayerContext(readOnly: false);
             context.StopTrackingUsersExcept(seller.User);
             context.Attach(seller);
+
+            var maxListings = Options.Instance.Market.MaxActiveListings;
+            var activeListings = context.Market_Listings.Count(l => l.Seller.Name == seller.Name && !l.IsSold && l.ExpireAt > DateTime.UtcNow);
+            if (maxListings > 0 && activeListings >= maxListings)
+            {
+                PacketSender.SendChatMsg(seller, $"❌ Has alcanzado el máximo de listados activos ({maxListings}).", ChatMessageType.Error, CustomColors.Alerts.Error);
+                return false;
+            }
 
             var itemProperties = item.Properties;
             var packageSizes = autoSplit ? new[] { 1000,500, 100,50, 10, 1 } : new[] { quantity };
@@ -129,11 +149,18 @@ namespace Intersect.Server.Database.PlayerData.Players
 
             int remaining = quantity;
             bool atLeastOneListed = false;
+            bool hitLimit = false;
 
             foreach (var size in packageSizes)
             {
                 while (remaining >= size)
                 {
+                    if (maxListings > 0 && activeListings >= maxListings)
+                    {
+                        hitLimit = true;
+                        break;
+                    }
+
                     var tax = CalculateTax(pricePerUnit, size);
                     var totalPrice = pricePerUnit * size;
 
@@ -169,7 +196,24 @@ namespace Intersect.Server.Database.PlayerData.Players
                     context.Market_Listings.Add(listing);
                     remaining -= size;
                     atLeastOneListed = true;
+                    activeListings++;
                 }
+
+                if (hitLimit)
+                {
+                    break;
+                }
+            }
+
+            if (hitLimit)
+            {
+                PacketSender.SendChatMsg(seller, $"❌ Has alcanzado el máximo de listados activos ({maxListings}).", ChatMessageType.Error, CustomColors.Alerts.Error);
+            }
+
+            if (atLeastOneListed)
+            {
+                seller.LastMarketAction = DateTime.UtcNow;
+                context.Update(seller);
             }
 
             try

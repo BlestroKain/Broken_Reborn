@@ -387,6 +387,9 @@ public static partial class Strings
         public static LocalizedString sellButton = @"Sell";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString retryButton = @"Retry";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString headerItemName = @"Item Name";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

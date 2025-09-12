@@ -138,7 +138,7 @@ public partial class GameInterface : MutableInterface
     private TargetContextMenu? _targetContextMenu;
     private SendMailBoxWindow mSendMailBoxWindow;
     private MailBoxWindow mMailBoxWindow;
-    private MarketWindow mMarketWindow;
+   public MarketWindow mMarketWindow;
     public SellMarketWindow mSellMarketWindow;
 
     public EscapeMenuWindow EscapeMenu => _escapeMenu ??= new EscapeMenuWindow(GameCanvas, GetOrCreateSettingsWindow)

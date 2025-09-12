@@ -16,6 +16,7 @@ using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.GameObjects;
 using Intersect.Network.Packets.Server;
+using Timer = System.Timers.Timer;
 
 
 namespace Intersect.Client.Interface.Game.Market

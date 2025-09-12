@@ -36,7 +36,9 @@ namespace Intersect.Client.Interface.Game.Market
         private ComboBox mItemTypeCombo;
         private Button mSearchButton;
         private Button mSellButton;
+        private Button mRetryButton;
         private Label mNoResultsLabel;
+        private Label mErrorLabel;
         private Label mMaxLabel;
         private Label mMinLabel;
         private Label mNameLabel;
@@ -58,6 +60,15 @@ namespace Intersect.Client.Interface.Game.Market
         private int _page;
         private readonly int _pageSize = 10;
         private int _total;
+
+        private string _lastName = string.Empty;
+        private int? _lastMinPrice;
+        private int? _lastMaxPrice;
+        private ItemType? _lastType;
+        private string? _lastSubtype;
+        private int _lastPage;
+
+        private bool _waiting;
 
 
         public MarketWindow(Canvas parent)
@@ -209,13 +220,22 @@ namespace Intersect.Client.Interface.Game.Market
             mNoResultsLabel.SetBounds(250, 300, 300, 30);
 
             mNoResultsLabel.Hide(); // Oculto por defecto
+
+            mErrorLabel = new Label(mMarketWindow);
+            mErrorLabel.SetBounds(250, 300, 300, 30);
+            mErrorLabel.Hide();
+
+            mRetryButton = new Button(mMarketWindow);
+            mRetryButton.SetText(Strings.Market.retryButton);
+            mRetryButton.SetBounds(350, 335, 100, 30);
+            mRetryButton.Clicked += (s, a) => ResendLastSearch();
+            mRetryButton.Hide();
             InitScrollPanel();
 
             mMarketWindow.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
 
 
-            PacketSender.SendSearchMarket(page: _page);
-            QueueSearch(); // Ejecutar búsqueda inicial
+            SendSearch(); // Ejecutar búsqueda inicial
             UpdatePagination();
            
         }
@@ -259,7 +279,7 @@ namespace Intersect.Client.Interface.Game.Market
 
         public void SendSearch()
         {
-            var name = mSearchBox.Text?.Trim() ?? "";
+            var name = mSearchBox.Text?.Trim() ?? string.Empty;
 
             int? minPrice = null;
             if (!string.IsNullOrWhiteSpace(mMinPriceBox.Text) && int.TryParse(mMinPriceBox.Text, out var minVal))
@@ -272,12 +292,42 @@ namespace Intersect.Client.Interface.Game.Market
             {
                 maxPrice = maxVal;
             }
+
             var type = (ItemType?)mItemTypeCombo.SelectedItem?.UserData;
             var subType = (string?)mItemSubTypeCombo.SelectedItem?.UserData;
+
+            _lastName = name;
+            _lastMinPrice = minPrice;
+            _lastMaxPrice = maxPrice;
+            _lastType = type;
+            _lastSubtype = subType;
+            _lastPage = _page;
+            _waiting = true;
+
+            mErrorLabel.Hide();
+            mRetryButton.Hide();
 
             PacketSender.SendSearchMarket(name, minPrice, maxPrice, type, subType, _page);
 
         }
+
+        private void ResendLastSearch()
+        {
+            PacketSender.SendSearchMarket(_lastName, _lastMinPrice, _lastMaxPrice, _lastType, _lastSubtype, _lastPage);
+            _waiting = true;
+            mErrorLabel.Hide();
+            mRetryButton.Hide();
+        }
+
+        public void SearchFailed(string message)
+        {
+            _waiting = false;
+            mErrorLabel.SetText(message);
+            mErrorLabel.Show();
+            mRetryButton.Show();
+        }
+
+        public bool IsWaitingSearch => _waiting;
         private void UpdateSubTypeCombo()
         {
             mItemSubTypeCombo.ClearItems();
@@ -418,6 +468,10 @@ namespace Intersect.Client.Interface.Game.Market
             }
 
             _total = total;
+
+            _waiting = false;
+            mErrorLabel.Hide();
+            mRetryButton.Hide();
 
             if (total == 0)
             {

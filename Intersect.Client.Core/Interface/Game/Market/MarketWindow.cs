@@ -397,7 +397,12 @@ namespace Intersect.Client.Interface.Game.Market
 
         public void RefreshAfterPurchase()
         {
-            QueueSearch();
+        
+            foreach (var item in mCurrentItems.Values)
+            {
+                item.ResetBuying();
+            }
+    QueueSearch();
         }
 
         public void UpdateTransactionHistory(List<MarketTransactionPacket> transactions)

@@ -446,7 +446,7 @@ namespace Intersect.Client.Interface.Game.Market
             // Valores por defecto
             _quantityInput.SetText(slot.Quantity.ToString(), false);
 
-            if (MarketPriceCache.TryGet(slot.ItemId, out var avg, out var min, out var max))
+            if (MarketPriceCache.TryGet(slot.ItemId, out var avg, out var min, out var max, out var dev))
             {
                 _priceInput.SetText(avg.ToString(), false);
                 _suggestedPriceLabel.SetText(Strings.Market.pricehint.ToString(avg));
@@ -467,6 +467,10 @@ namespace Intersect.Client.Interface.Game.Market
             if (!int.TryParse(_priceInput.Text, out var unitPrice) || unitPrice <= 0)
             {
                 _taxLabel.Text = Strings.Market.taxes_0;
+                _suggestedPriceLabel.SetTextColor(Color.Orange, ComponentState.Normal);
+                _suggestedRangeLabel.SetTextColor(Color.Orange, ComponentState.Normal);
+                _suggestedPriceLabel.SetToolTipText(string.Empty);
+                _suggestedRangeLabel.SetToolTipText(string.Empty);
                 return;
             }
 
@@ -479,11 +483,28 @@ namespace Intersect.Client.Interface.Game.Market
 
             int tax = (int)Math.Ceiling(unitPrice * qty * 0.02f);
             _taxLabel.Text = Strings.Market.taxes_estimated.ToString(tax);
+
+            if (_selectedItemId != Guid.Empty && MarketPriceCache.TryGet(_selectedItemId, out var avg, out var min, out var max, out var dev))
+            {
+                var diff = unitPrice - avg;
+                var percent = avg > 0 ? diff / (float)avg * 100f : 0f;
+                var within = Math.Abs(diff) <= dev;
+
+                var warnColor = new Color(255, 255, 160, 160);
+                var color = within ? Color.Orange : warnColor;
+                _suggestedPriceLabel.SetTextColor(color, ComponentState.Normal);
+                _suggestedRangeLabel.SetTextColor(color, ComponentState.Normal);
+
+                var direction = percent >= 0 ? "above" : "below";
+                var tooltip = $"{Math.Abs(percent):0.##}% {direction} average";
+                _suggestedPriceLabel.SetToolTipText(tooltip);
+                _suggestedRangeLabel.SetToolTipText(tooltip);
+            }
         }
 
         public void UpdateSuggestedPrice(Guid itemId)
         {
-            if (!MarketPriceCache.TryGet(itemId, out int avg, out int min, out int max))
+            if (!MarketPriceCache.TryGet(itemId, out int avg, out int min, out int max, out int dev))
             {
                 Console.WriteLine($"[SellMarket] Esperando precio para {itemId}...");
                 return;
@@ -495,6 +516,7 @@ namespace Intersect.Client.Interface.Game.Market
             _suggestedRangeLabel.Show();
             _suggestedPriceLabel.SetTextColor(Color.Orange, ComponentState.Normal);
             _suggestedRangeLabel.SetTextColor(Color.Orange, ComponentState.Normal);
+            RefreshTax();
         }
 
         #endregion
@@ -540,7 +562,7 @@ namespace Intersect.Client.Interface.Game.Market
                 return;
             }
 
-            if (MarketPriceCache.TryGet(_selectedItemId, out var avg, out var min, out var max))
+            if (MarketPriceCache.TryGet(_selectedItemId, out var avg, out var min, out var max, out var dev))
             {
                 if (price < min || price > max)
                 {
@@ -604,19 +626,19 @@ namespace Intersect.Client.Interface.Game.Market
     /// <summary> Cache local de precios de mercado. </summary>
     public static class MarketPriceCache
     {
-        private static readonly Dictionary<Guid, (int Avg, int Min, int Max)> Cache = new();
+        private static readonly Dictionary<Guid, (int Avg, int Min, int Max, int Dev)> Cache = new();
 
-        public static void Update(Guid itemId, int avg, int min, int max) => Cache[itemId] = (avg, min, max);
+        public static void Update(Guid itemId, int avg, int min, int max, int dev) => Cache[itemId] = (avg, min, max, dev);
 
-        public static bool TryGet(Guid itemId, out int avg, out int min, out int max)
+        public static bool TryGet(Guid itemId, out int avg, out int min, out int max, out int dev)
         {
             if (Cache.TryGetValue(itemId, out var t))
             {
-                (avg, min, max) = t;
+                (avg, min, max, dev) = t;
                 return true;
             }
 
-            avg = min = max = 0;
+            avg = min = max = dev = 0;
             return false;
         }
     }

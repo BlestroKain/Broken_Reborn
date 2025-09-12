@@ -12,8 +12,17 @@ public class MarketStatistics
     public int TotalRevenue { get; set; } // Acumula el valor total pagado
     public int NumberOfSales { get; set; }
 
+    // Suma acumulada de cuadrados del precio por unidad (ponderado por cantidad)
+    public double SumOfSquaredPrices { get; set; }
+
     // ✅ Precio promedio por unidad
     public float AveragePricePerUnit => TotalSold > 0 ? (float)TotalRevenue / TotalSold : 0;
+
+    // Desviación estándar del precio por unidad
+    public float StandardDeviation =>
+        TotalSold > 0
+            ? (float)Math.Sqrt(Math.Max(0, (SumOfSquaredPrices / TotalSold) - Math.Pow(AveragePricePerUnit, 2)))
+            : 0;
 
     public MarketStatistics(Guid itemId, IEnumerable<MarketTransaction> transactions)
     {
@@ -51,6 +60,9 @@ public class MarketStatistics
         TotalSold += tx.Quantity;
         TotalRevenue += tx.Price;
         NumberOfSales++;
+
+        var unitPrice = (double)tx.Price / tx.Quantity;
+        SumOfSquaredPrices += unitPrice * unitPrice * tx.Quantity;
     }
 
     // ✅ Si no hay datos, se usa precio base del ítem

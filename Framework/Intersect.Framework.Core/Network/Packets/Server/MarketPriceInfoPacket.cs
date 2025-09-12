@@ -10,6 +10,7 @@ namespace Intersect.Network.Packets.Server
         [Key(1)] public int SuggestedPrice { get; set; }
         [Key(2)] public int MinAllowedPrice { get; set; }
         [Key(3)] public int MaxAllowedPrice { get; set; }
+        [Key(4)] public int Deviation { get; set; }
 
              
     }

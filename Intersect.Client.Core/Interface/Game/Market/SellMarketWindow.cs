@@ -124,8 +124,10 @@ namespace Intersect.Client.Interface.Game.Market
             _selectedType = (ItemType?)_typeBox.SelectedItem?.UserData;
             _selectedSubtype = (string?)_subtypeBox.SelectedItem?.UserData;
             _lastAsc = _sortAscending;
-
        
+            Globals.Me.InventoryUpdated += PlayerOnInventoryUpdated;
+            _window.Disposed += (s, e) => Globals.Me.InventoryUpdated -= PlayerOnInventoryUpdated;
+
             BuildLayout();
             _window.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
 

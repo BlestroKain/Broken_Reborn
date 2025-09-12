@@ -59,7 +59,8 @@ public static class MarketStatisticsManager
             {
                 TotalRevenue = basePrice,
                 TotalSold = 1,
-                NumberOfSales = 1
+                NumberOfSales = 1,
+                SumOfSquaredPrices = basePrice * basePrice
             };
         }
 

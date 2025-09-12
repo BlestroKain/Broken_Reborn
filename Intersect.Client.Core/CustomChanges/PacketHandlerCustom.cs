@@ -279,7 +279,7 @@ internal sealed partial class PacketHandler
     }
     public void HandlePacket(IPacketSender sender, MarketPriceInfoPacket packet)
     {
-        Interface.Game.Market.MarketPriceCache.Update(packet.ItemId, packet.SuggestedPrice, packet.MinAllowedPrice, packet.MaxAllowedPrice);
+        Interface.Game.Market.MarketPriceCache.Update(packet.ItemId, packet.SuggestedPrice, packet.MinAllowedPrice, packet.MaxAllowedPrice, packet.Deviation);
 
         var sellWindow = Interface.Interface.GameUi.mSellMarketWindow;
 

@@ -288,13 +288,15 @@ public static partial class PacketSender
 
         var min = (int)Math.Floor(avgPrice * (1 - margin));
         var max = (int)Math.Ceiling(avgPrice * (1 + margin));
+        var dev = (int)Math.Ceiling(stats?.StandardDeviation ?? 0);
 
         var packet = new MarketPriceInfoPacket
         {
             ItemId = itemId,
             SuggestedPrice = (int)avgPrice,
             MinAllowedPrice = min,
-            MaxAllowedPrice = max
+            MaxAllowedPrice = max,
+            Deviation = dev
         };
         player.SendPacket(packet);
     }

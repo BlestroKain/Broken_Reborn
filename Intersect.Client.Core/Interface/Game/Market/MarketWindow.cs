@@ -627,7 +627,10 @@ namespace Intersect.Client.Interface.Game.Market
 
             ApplyFilters();
 
-            mListingScroll.UpdateScrollBars();
+            if (!_useVirtualization)
+            {
+                mListingScroll.UpdateScrollBars();
+            }
 
             if ((_useVirtualization ? _filteredListings.Count : mListingOrder.Count) == 0)
             {

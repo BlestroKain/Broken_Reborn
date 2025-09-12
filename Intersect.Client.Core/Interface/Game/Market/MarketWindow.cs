@@ -564,7 +564,6 @@ namespace Intersect.Client.Interface.Game.Market
                 }
 
                 mListingScroll.VerticalScrollBar.BarMoved += OnScroll;
-                ApplyFilters();
             }
             else
             {
@@ -624,9 +623,11 @@ namespace Intersect.Client.Interface.Game.Market
 
                     mListingOrder.Add(listing.ListingId);
                 }
-
-                ApplyFilters();
             }
+
+            ApplyFilters();
+
+            mListingScroll.UpdateScrollBars();
 
             if ((_useVirtualization ? _filteredListings.Count : mListingOrder.Count) == 0)
             {

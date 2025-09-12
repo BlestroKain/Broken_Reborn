@@ -362,7 +362,7 @@ namespace Intersect.Server.Database.PlayerData.Players
         }
 
 
-        public static void CleanExpiredListings()
+        public static int CleanExpiredListings()
         {
             using var context = DbInterface.CreatePlayerContext(readOnly: false);
             var expired = context.Market_Listings
@@ -403,6 +403,8 @@ namespace Intersect.Server.Database.PlayerData.Players
             {
                 context.SaveChanges();
             }
+
+            return expired.Count;
         }
 
         private static readonly Dictionary<Guid, MarketStatistics> _statisticsCache = new();

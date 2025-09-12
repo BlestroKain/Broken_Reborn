@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Intersect;
 using Intersect.Client.Core;
 using Intersect.Client.Framework.File_Management;
@@ -26,6 +27,7 @@ namespace Intersect.Client.Interface.Game.Market
         private Label _priceLabel;
         private Button _buyButton;
         private Button _cancelButton;
+        private bool _buying;
 
         private readonly MarketWindow _marketWindow;
         private MarketListingPacket _listing;
@@ -114,6 +116,7 @@ namespace Intersect.Client.Interface.Game.Market
         public void Update(MarketListingPacket newListing)
         {
             _listing = newListing;
+            ResetBuying();
 
             if (!ItemDescriptor.TryGet(_listing.ItemId, out _itemDescriptor))
             {
@@ -153,8 +156,7 @@ namespace Intersect.Client.Interface.Game.Market
 
         private void OnBuyClick(Base sender, MouseButtonState args)
         {
-            // Compra directa (si quieres prompt de cantidad, aquí pones un InputBox)
-            PacketSender.SendBuyMarketListing(_listing.ListingId);
+            AttemptPurchase();
         }
 
         private void OnClick(Base sender, MouseButtonState args)
@@ -162,7 +164,7 @@ namespace Intersect.Client.Interface.Game.Market
             // Click sobre el icono: mismo comportamiento que el botón
             if (!string.Equals(Globals.Me?.Name, _listing.SellerName, StringComparison.OrdinalIgnoreCase))
             {
-                PacketSender.SendBuyMarketListing(_listing.ListingId);
+                AttemptPurchase();
             }
         }
 
@@ -178,6 +180,30 @@ namespace Intersect.Client.Interface.Game.Market
         private void OnHoverLeave(Base sender, EventArgs args)
         {
             Interface.GameUi.ItemDescriptionWindow?.Hide();
+        }
+
+        private async void AttemptPurchase()
+        {
+            if (_buying)
+            {
+                return;
+            }
+
+            _buying = true;
+            _buyButton?.Disable();
+            PacketSender.SendBuyMarketListing(_listing.ListingId);
+
+            await Task.Delay(5000);
+            if (_buying)
+            {
+                ResetBuying();
+            }
+        }
+
+        public void ResetBuying()
+        {
+            _buying = false;
+            _buyButton?.Enable();
         }
     }
 }

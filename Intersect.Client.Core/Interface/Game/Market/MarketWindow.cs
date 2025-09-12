@@ -1,23 +1,20 @@
 using System;
 using System.Collections.Generic;
-using System;
-using System.Collections.Generic;
+using Intersect.Client.Core;
+using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen.Control;
+using Intersect.Client.Framework.Gwen.Control.EventArguments;
 using Intersect.Client.Framework.Gwen.Control.Layout;
+using Intersect.Client.General;
 using Intersect.Client.Interface.Game.DescriptionWindows;
+using Intersect.Client.Localization;
 using Intersect.Client.Networking;
+using Intersect.Client.Utilities;
+using Intersect.Config;
 using Intersect.Enums;
+using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.GameObjects;
 using Intersect.Network.Packets.Server;
-using Intersect.Client.Framework.File_Management;
-using Intersect.Client.General;
-using Intersect.Client.Core;
-using Intersect.Client.Framework.Gwen.Control.EventArguments;
-
-using Intersect.Client.Localization;
-using Intersect.Config;
-using Intersect.Framework.Core.GameObjects.Items;
-using Intersect.Client.Utilities;
 
 
 namespace Intersect.Client.Interface.Game.Market
@@ -29,7 +26,8 @@ namespace Intersect.Client.Interface.Game.Market
         private WindowControl mMarketWindow;
         private ScrollControl mListingScroll;
         private Label mTitle;
-        private List<MarketItem> mCurrentItems = new();
+        private readonly Dictionary<Guid, MarketItem> mCurrentItems = new();
+        private readonly List<Guid> mListingOrder = new();
 
         private TextBox mSearchBox;
         private TextBoxNumeric mMinPriceBox;
@@ -271,8 +269,13 @@ namespace Intersect.Client.Interface.Game.Market
             _selectedSubtype = (string?)mItemSubTypeCombo.SelectedItem?.UserData;
 
             var visible = new List<MarketItem>();
-            foreach (var item in mCurrentItems)
+            foreach (var id in mListingOrder)
             {
+                if (!mCurrentItems.TryGetValue(id, out var item))
+                {
+                    continue;
+                }
+
                 var desc = item.Descriptor;
                 if (desc == null)
                 {
@@ -280,13 +283,27 @@ namespace Intersect.Client.Interface.Game.Market
                     continue;
                 }
 
-                bool match = true;
-                if (_selectedType.HasValue && desc.ItemType != _selectedType) match = false;
-                if (!string.IsNullOrEmpty(_selectedSubtype) && !string.Equals(desc.Subtype, _selectedSubtype, StringComparison.OrdinalIgnoreCase)) match = false;
-                if (!SearchHelper.Matches(query, desc.Name ?? string.Empty)) match = false;
+                var match = true;
+                if (_selectedType.HasValue && desc.ItemType != _selectedType)
+                {
+                    match = false;
+                }
+
+                if (!string.IsNullOrEmpty(_selectedSubtype) && !string.Equals(desc.Subtype, _selectedSubtype, StringComparison.OrdinalIgnoreCase))
+                {
+                    match = false;
+                }
+
+                if (!SearchHelper.Matches(query, desc.Name ?? string.Empty))
+                {
+                    match = false;
+                }
 
                 item.Container.IsVisibleInParent = match;
-                if (match) visible.Add(item);
+                if (match)
+                {
+                    visible.Add(item);
+                }
             }
 
             int offsetY = 0;
@@ -301,39 +318,60 @@ namespace Intersect.Client.Interface.Game.Market
 
         public void UpdateListings(List<MarketListingPacket> listings)
         {
-            mListingScroll.DeleteAllChildren();
-            mCurrentItems.Clear();
+            var newIds = new HashSet<Guid>();
+            foreach (var listing in listings)
+            {
+                newIds.Add(listing.ListingId);
+            }
 
-            // 🔽 Scroll dentro del contenedor
-            mListingScroll = new ScrollControl(mListContainer, "MarketListingScroll");
-            var verticalScrollBar = mListingScroll.VerticalScrollBar;
-            mListingScroll.EnableScroll(false, true);
-            mListingScroll.SetBounds(0, 25, 760, 425); // Más alto, acorde al nuevo mListContainer
+            var toRemove = new List<Guid>();
+            foreach (var id in mCurrentItems.Keys)
+            {
+                if (!newIds.Contains(id))
+                {
+                    toRemove.Add(id);
+                }
+            }
 
-            mListingScroll.Show(); // Forzar creación visual
+            foreach (var id in toRemove)
+            {
+                if (mCurrentItems.TryGetValue(id, out var item))
+                {
+                    item.Container?.DelayedDelete();
+                }
+                mCurrentItems.Remove(id);
+            }
 
-           
+            mListingOrder.Clear();
+            foreach (var listing in listings)
+            {
+                MarketItem item;
+                if (!mCurrentItems.TryGetValue(listing.ListingId, out item))
+                {
+                    item = new MarketItem(this, listing)
+                    {
+                        Container = new ImagePanel(mListingScroll, "MarketItemRow"),
+                    };
+                    item.Setup();
+                    item.Container.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+                    item.Container.Show();
+                    mCurrentItems[listing.ListingId] = item;
+                }
+                else
+                {
+                    item.Update(listing);
+                }
+
+                mListingOrder.Add(listing.ListingId);
+            }
+
             if (listings.Count == 0)
             {
                 mNoResultsLabel.Show();
-                return;
             }
-
-            mNoResultsLabel.Hide();
-
-            foreach (var listing in listings)
+            else
             {
-                var marketItem = new MarketItem(this, listing);
-                marketItem.Container = new ImagePanel(mListingScroll, "MarketItemRow");
-                marketItem.Setup();
-                marketItem.Container.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
-                marketItem.Container.Show();
-                mCurrentItems.Add(marketItem);
-            }
-
-            for (int i = 0; i < listings.Count; i++)
-            {
-                mCurrentItems[i].Update(listings[i]);
+                mNoResultsLabel.Hide();
             }
 
             ApplyFilters();

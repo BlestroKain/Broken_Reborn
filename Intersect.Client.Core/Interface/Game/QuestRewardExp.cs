@@ -29,7 +29,10 @@ public partial class QuestRewardExp : Base
         {
             foreach (var pair in jobExp)
             {
-                AddLabel($"+{pair.Value} {pair.Key} EXP");
+                if (pair.Value > 0)
+                {
+                    AddLabel($"+{pair.Value} {pair.Key} EXP");
+                }
             }
         }
 
@@ -42,7 +45,10 @@ public partial class QuestRewardExp : Base
         {
             foreach (var pair in factionHonor)
             {
-                AddLabel($"+{pair.Value} {pair.Key} Honor");
+                if (pair.Value > 0)
+                {
+                    AddLabel($"+{pair.Value} {pair.Key} Honor");
+                }
             }
         }
 

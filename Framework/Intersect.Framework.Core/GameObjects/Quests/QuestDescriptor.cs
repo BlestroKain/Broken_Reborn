@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using Intersect.Config;
 using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Conditions;
 using Intersect.Framework.Core.GameObjects.Events;
+using Intersect.Framework.Core.GameObjects.Events.Commands;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.Quests;
@@ -180,6 +182,144 @@ public partial class QuestDescriptor : DatabaseObject<QuestDescriptor>, IFoldera
 
         return null;
     }
+
+    public Dictionary<Guid, int> GetRewardItems()
+    {
+        var rewardItems = new Dictionary<Guid, int>();
+        if (EndEvent != null)
+        {
+            foreach (var page in EndEvent.Pages)
+            {
+                foreach (var commandList in page.CommandLists.Values)
+                {
+                    foreach (var command in commandList)
+                    {
+                        if (command is ChangeItemsCommand changeItemsCommand && changeItemsCommand.Add)
+                        {
+                            if (rewardItems.ContainsKey(changeItemsCommand.ItemId))
+                            {
+                                rewardItems[changeItemsCommand.ItemId] += changeItemsCommand.Quantity;
+                            }
+                            else
+                            {
+                                rewardItems[changeItemsCommand.ItemId] = changeItemsCommand.Quantity;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return rewardItems;
+    }
+
+    public (long playerExp, Dictionary<JobType, long> jobExp, long guildExp, Dictionary<Factions, int> honor) GetRewardExperience()
+    {
+        long playerExp = 0;
+        var jobExp = new Dictionary<JobType, long>();
+        long guildExp = 0;
+        var honor = new Dictionary<Factions, int>();
+
+        if (EndEvent != null)
+        {
+            foreach (var page in EndEvent.Pages)
+            {
+                foreach (var commandList in page.CommandLists.Values)
+                {
+                    foreach (var command in commandList)
+                    {
+                        switch (command)
+                        {
+                            case GiveExperienceCommand giveExperience:
+                                playerExp += giveExperience.Exp;
+                                break;
+
+                            case GiveJobExperienceCommand giveJobExperience:
+                                foreach (var kvp in giveJobExperience.JobExp)
+                                {
+                                    if (kvp.Key == JobType.None)
+                                    {
+                                        continue;
+                                    }
+
+                                    if (jobExp.ContainsKey(kvp.Key))
+                                    {
+                                        jobExp[kvp.Key] += kvp.Value;
+                                    }
+                                    else
+                                    {
+                                        jobExp[kvp.Key] = kvp.Value;
+                                    }
+                                }
+
+                                break;
+
+                            default:
+                                var typeName = command.GetType().Name;
+
+                                if (typeName == "GiveGuildExperienceCommand")
+                                {
+                                    var expProperty = command.GetType().GetProperty("Exp") ??
+                                                      command.GetType().GetProperty("Experience") ??
+                                                      command.GetType().GetProperty("Amount");
+
+                                    if (expProperty?.GetValue(command) is long expValue)
+                                    {
+                                        guildExp += expValue;
+                                    }
+                                }
+                                else if (typeName == "GiveFactionHonorCommand")
+                                {
+                                    var honorProperty = command.GetType().GetProperty("Honor");
+
+                                    if (honorProperty?.GetValue(command) is Dictionary<Factions, int> honorDict)
+                                    {
+                                        foreach (var kvp in honorDict)
+                                        {
+                                            if (honor.ContainsKey(kvp.Key))
+                                            {
+                                                honor[kvp.Key] += kvp.Value;
+                                            }
+                                            else
+                                            {
+                                                honor[kvp.Key] = kvp.Value;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        var factionProperty = command.GetType().GetProperty("Faction") ??
+                                                              command.GetType().GetProperty("Factions") ??
+                                                              command.GetType().GetProperty("FactionId");
+
+                                        var amountProperty = command.GetType().GetProperty("Honor") ??
+                                                            command.GetType().GetProperty("Amount") ??
+                                                            command.GetType().GetProperty("Value");
+
+                                        if (factionProperty?.GetValue(command) is Factions faction &&
+                                            amountProperty?.GetValue(command) is int honorAmount)
+                                        {
+                                            if (honor.ContainsKey(faction))
+                                            {
+                                                honor[faction] += honorAmount;
+                                            }
+                                            else
+                                            {
+                                                honor[faction] = honorAmount;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+
+        return (playerExp, jobExp, guildExp, honor);
+    }
 }
 
 public partial class QuestTaskDescriptor
@@ -244,3 +384,4 @@ public partial class QuestTaskDescriptor
         return taskString;
     }
 }
+

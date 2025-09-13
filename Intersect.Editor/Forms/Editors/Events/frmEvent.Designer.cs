@@ -59,7 +59,8 @@ namespace Intersect.Editor.Forms.Editors.Events
             var treeNode23 = new TreeNode("Change Face");
             var treeNode24 = new TreeNode("Change Gender");
             var treeNode78 = new TreeNode("Set Alignment");
-            var treeNode79 = new TreeNode("Alignment", new TreeNode[] { treeNode78 });
+            var treeNode84 = new TreeNode("Give Faction Honor");
+            var treeNode79 = new TreeNode("Alignment", new TreeNode[] { treeNode78, treeNode84 });
             var treeNode25 = new TreeNode("Set Access");
             var treeNode26 = new TreeNode("Change Class");
             var treeNode27 = new TreeNode("Equip/Unequip Item");
@@ -103,7 +104,8 @@ namespace Intersect.Editor.Forms.Editors.Events
             var treeNode64 = new TreeNode("Disband Guild");
             var treeNode65 = new TreeNode("Open Guild Bank");
             var treeNode66 = new TreeNode("Set Guild Bank Slots Count");
-            var treeNode67 = new TreeNode("Guilds", new TreeNode[] { treeNode63, treeNode64, treeNode65, treeNode66 });
+            var treeNode83 = new TreeNode("Give Guild Experience");
+            var treeNode67 = new TreeNode("Guilds", new TreeNode[] { treeNode63, treeNode64, treeNode65, treeNode66, treeNode83 });
             var treeNode68 = new TreeNode("Give Job Experience");
             var treeNode69 = new TreeNode("Jobs", new TreeNode[] { treeNode68 });
             var treeNode70 = new TreeNode("Open Enchant Window");
@@ -909,6 +911,8 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode24.Text = "Change Gender";
             treeNode78.Name = "setalignment";
             treeNode78.Text = "Set Alignment";
+            treeNode84.Name = "givefactionhonor";
+            treeNode84.Text = "Give Faction Honor";
             treeNode79.Name = "alignment";
             treeNode79.Text = "Alignment";
             treeNode25.Name = "setaccess";
@@ -997,6 +1001,8 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode65.Text = "Open Guild Bank";
             treeNode66.Name = "setguildbankslots";
             treeNode66.Text = "Set Guild Bank Slots Count";
+            treeNode83.Name = "giveguildexperience";
+            treeNode83.Text = "Give Guild Experience";
             treeNode67.Name = "guilds";
             treeNode67.Text = "Guilds";
             treeNode68.Name = "givejobexperience";

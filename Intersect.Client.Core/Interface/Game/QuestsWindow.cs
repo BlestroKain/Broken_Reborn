@@ -16,7 +16,7 @@ using Intersect.Utilities;
 namespace Intersect.Client.Interface.Game;
 
 
-public partial class QuestsWindow
+public partial class QuestsWindow : IQuestWindow
 {
 
     private readonly Button mBackButton;
@@ -37,6 +37,8 @@ public partial class QuestsWindow
     private readonly Label mQuestTitle;
 
     private readonly Button mQuitButton;
+
+    private readonly ScrollControl _rewardContainer;
 
     private QuestDescriptor mSelectedQuest;
 
@@ -60,6 +62,8 @@ public partial class QuestsWindow
         mQuestDescTemplateLabel = new Label(mQuestsWindow, "QuestDescriptionTemplate");
 
         mQuestDescLabel = new RichLabel(mQuestDescArea);
+
+        _rewardContainer = new ScrollControl(mQuestsWindow, "QuestRewardContainer");
 
         mBackButton = new Button(mQuestsWindow, "BackButton");
         mBackButton.Text = Strings.QuestLog.Back;
@@ -90,6 +94,7 @@ public partial class QuestsWindow
                     if (s is InputBox inputBox && inputBox.UserData is Guid questId)
                     {
                         PacketSender.SendAbandonQuest(questId);
+                        Globals.RemoveQuestRewards(questId);
                     }
                 }
             );
@@ -98,7 +103,9 @@ public partial class QuestsWindow
 
     void AbandonQuest(object sender, EventArgs e)
     {
-        PacketSender.SendAbandonQuest((Guid) ((InputBox) sender).UserData);
+        var questId = (Guid) ((InputBox) sender).UserData;
+        PacketSender.SendAbandonQuest(questId);
+        Globals.RemoveQuestRewards(questId);
     }
 
     private void _backButton_Clicked(Base sender, MouseButtonState arguments)
@@ -461,6 +468,16 @@ public partial class QuestsWindow
     {
         mQuestsWindow.IsHidden = true;
         mSelectedQuest = null;
+    }
+
+    public void AddRewardWidget(Base widget)
+    {
+        widget.Parent = _rewardContainer;
+    }
+
+    public void ClearRewardWidgets()
+    {
+        _rewardContainer.DeleteAllChildren();
     }
 
 }

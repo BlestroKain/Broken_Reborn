@@ -1,16 +1,19 @@
+using System.Collections.Generic;
 using Intersect.Client.Core;
 using Intersect.Client.Framework.File_Management;
+using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
 using Intersect.Client.General;
 using Intersect.Client.Localization;
 using Intersect.Client.Networking;
+using Intersect.Enums;
 using Intersect.GameObjects;
 
 namespace Intersect.Client.Interface.Game;
 
 
-public partial class QuestOfferWindow
+public partial class QuestOfferWindow : IQuestWindow
 {
 
     private Button mAcceptButton;
@@ -30,6 +33,14 @@ public partial class QuestOfferWindow
 
     private Label mQuestTitle;
 
+    private readonly ScrollControl _rewardItemContainer;
+
+    private readonly ScrollControl _rewardExpContainer;
+
+    private readonly ScrollControl _rewardItemContainer;
+
+    private readonly ScrollControl _rewardExpContainer;
+
     public QuestOfferWindow(Canvas gameCanvas)
     {
         mQuestOfferWindow = new WindowControl(gameCanvas, Strings.QuestOffer.Title, false, "QuestOfferWindow");
@@ -45,6 +56,9 @@ public partial class QuestOfferWindow
 
         mQuestPromptLabel = new RichLabel(mQuestPromptArea);
 
+        _rewardItemContainer = new ScrollControl(mQuestOfferWindow, "QuestRewardItemContainer");
+        _rewardExpContainer = new ScrollControl(mQuestOfferWindow, "QuestRewardExpContainer");
+
         //Accept Button
         mAcceptButton = new Button(mQuestOfferWindow, "AcceptButton");
         mAcceptButton.SetText(Strings.QuestOffer.Accept);
@@ -56,15 +70,51 @@ public partial class QuestOfferWindow
         mDeclineButton.Clicked += _declineButton_Clicked;
 
         mQuestOfferWindow.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+
+        _rewardItemContainer = new ScrollControl(_rewardContainer)
+        {
+            Dock = Pos.Top,
+        };
+
+        _rewardExpContainer = new ScrollControl(_rewardContainer)
+        {
+            Dock = Pos.Top,
+        };
+
         Interface.InputBlockingComponents.Add(mQuestOfferWindow);
+    }
+
+    public void AddRewardWidget(Base widget)
+    {
+        switch (widget)
+        {
+            case QuestRewardItem:
+                widget.Parent = _rewardItemContainer;
+                break;
+            case QuestRewardExp:
+                widget.Parent = _rewardExpContainer;
+                break;
+            default:
+                widget.Parent = _rewardItemContainer;
+                break;
+        }
+    }
+
+    public void ClearRewardWidgets()
+    {
+        _rewardItemContainer.DeleteAllChildren();
+        _rewardExpContainer.DeleteAllChildren();
     }
 
     private void _declineButton_Clicked(Base sender, MouseButtonState arguments)
     {
         if (Globals.QuestOffers.Count > 0)
         {
-            PacketSender.SendDeclineQuest(Globals.QuestOffers[0]);
+            var questId = Globals.QuestOffers[0];
+            PacketSender.SendDeclineQuest(questId);
             Globals.QuestOffers.RemoveAt(0);
+            Globals.RemoveQuestRewards(questId);
+            ClearRewardWidgets();
         }
     }
 
@@ -72,8 +122,11 @@ public partial class QuestOfferWindow
     {
         if (Globals.QuestOffers.Count > 0)
         {
-            PacketSender.SendAcceptQuest(Globals.QuestOffers[0]);
+            var questId = Globals.QuestOffers[0];
+            PacketSender.SendAcceptQuest(questId);
             Globals.QuestOffers.RemoveAt(0);
+            Globals.RemoveQuestRewards(questId);
+            ClearRewardWidgets();
         }
     }
 
@@ -82,6 +135,7 @@ public partial class QuestOfferWindow
         if (quest == null)
         {
             Hide();
+            ClearRewardWidgets();
         }
         else
         {
@@ -95,6 +149,27 @@ public partial class QuestOfferWindow
 
                 mQuestPromptLabel.SizeToChildren(false, true);
                 mQuestOfferText = quest.StartDescription;
+
+                ClearRewardWidgets();
+
+                if (Globals.QuestRewards.TryGetValue(quest.Id, out var rewards))
+                {
+                    foreach (var reward in rewards)
+                    {
+                        _ = new QuestRewardItem(this, reward.Key, reward.Value);
+                    }
+                }
+
+                Globals.QuestExperience.TryGetValue(quest.Id, out var playerExp);
+                Globals.QuestJobExperience.TryGetValue(quest.Id, out Dictionary<JobType, long>? jobExp);
+                Globals.QuestGuildExperience.TryGetValue(quest.Id, out var guildExp);
+                Globals.QuestFactionHonor.TryGetValue(quest.Id, out Dictionary<Factions, int>? factionHonor);
+
+                if (playerExp > 0 || (jobExp != null && jobExp.Count > 0) || guildExp > 0 ||
+                    (factionHonor != null && factionHonor.Count > 0))
+                {
+                    _ = new QuestRewardExp(this, playerExp, jobExp, guildExp, factionHonor);
+                }
             }
         }
     }

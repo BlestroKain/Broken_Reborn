@@ -22,6 +22,7 @@ using Intersect.Server.Maps;
 using Intersect.Server.Networking;
 using Intersect.Utilities;
 using Intersect.Server.Services;
+using Intersect.Server.Core.Services;
 
 namespace Intersect.Server.Entities.Events;
 
@@ -2320,6 +2321,36 @@ public static partial class CommandProcessing
             {
                 player.GiveJobExperience(jobExp.Key, jobExp.Value);
             }
+        }
+    }
+
+    // Give Guild Experience Command
+    private static void ProcessCommand(
+        GiveGuildExperienceCommand command,
+        Player player,
+        Event instance,
+        CommandInstance stackInfo,
+        Stack<CommandInstance> callStack
+    )
+    {
+        if (command.Exp > 0)
+        {
+            player.DonateGuildExperience(command.Exp);
+        }
+    }
+
+    // Give Faction Honor Command
+    private static void ProcessCommand(
+        GiveFactionHonorCommand command,
+        Player player,
+        Event instance,
+        CommandInstance stackInfo,
+        Stack<CommandInstance> callStack
+    )
+    {
+        if (command.Honor.TryGetValue(player.Faction, out var amount) && amount != 0)
+        {
+            HonorService.AdjustHonor(player, amount);
         }
     }
 

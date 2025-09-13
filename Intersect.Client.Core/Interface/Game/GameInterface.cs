@@ -457,6 +457,12 @@ public partial class GameInterface : MutableInterface
             PlayerBox?.SetEntity(Globals.Me);
         }
 
+        if (Globals.QuestDirty)
+        {
+            mShouldUpdateQuestLog = true;
+            Globals.QuestDirty = false;
+        }
+
         GameMenu?.Update(mShouldUpdateQuestLog);
         mShouldUpdateQuestLog = false;
         Hotbar?.Update();

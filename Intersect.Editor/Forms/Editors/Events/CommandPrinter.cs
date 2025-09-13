@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text;
 using Intersect.Editor.Localization;
 using Intersect.Editor.Maps;
@@ -764,6 +765,35 @@ public static partial class CommandPrinter
         {
             return Strings.EventCommandList.giveexp.ToString(command.Exp);
         }
+    }
+
+    private static string GetCommandText(GiveGuildExperienceCommand command, MapInstance map)
+    {
+        return Strings.EventCommandList.giveguildexp.ToString(command.Exp);
+    }
+
+    private static string GetCommandText(GiveFactionHonorCommand command, MapInstance map)
+    {
+        var parts = new List<string>();
+        foreach (var kvp in command.Honor)
+        {
+            if (kvp.Value == 0)
+            {
+                continue;
+            }
+
+            var name = kvp.Key switch
+            {
+                Factions.Serolf => Strings.EventCommandList.serolf.ToString(),
+                Factions.Nidraj => Strings.EventCommandList.nidraj.ToString(),
+                _ => Strings.EventCommandList.neutral.ToString(),
+            };
+
+            parts.Add($"{name}: {kvp.Value}");
+        }
+
+        var text = string.Join(", ", parts);
+        return Strings.EventCommandList.givefactionhonor.ToString(text);
     }
 
     private static string GetCommandText(ChangeLevelCommand command, MapInstance map)

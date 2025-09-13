@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Intersect.Client.Core;
 using Intersect.Client.Framework.File_Management;
+using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
 using Intersect.Client.General;
@@ -62,7 +63,7 @@ namespace Intersect.Client.Interface.Game
 
         // Tamaño/spacing de filas
         private const int TaskRowHeight = 22;
-        private const int TaskIconSize = 16;
+        private const int TaskIconSize = 22;
         public QuestsWindow(Canvas gameCanvas)
         {
             mQuestsWindow = new WindowControl(gameCanvas, Strings.QuestLog.Title, false, "QuestsWindow");
@@ -82,8 +83,11 @@ namespace Intersect.Client.Interface.Game
             mQuestDescLabel = new RichLabel(mQuestDescArea);
 
             mQuestTasksContainer = new ScrollControl(mQuestsWindow, "QuestTasksContainer");
+            mQuestTasksContainer.EnableScroll(false, false);
             mQuestTasksList = new ListBox(mQuestTasksContainer, "QuestTasksList");
             mQuestTasksList.EnableScroll(false, true);
+            mQuestTasksList.Dock = Pos.Fill;
+            mQuestTasksList.Margin = new Margin(0, 0, 0, 0);
             _taskTemplateLabel = new Label(mQuestTasksContainer, "QuestTaskTemplate");
             // Si no existe en JSON, le damos defaults amables:
             if (_taskTemplateLabel.Font == null)
@@ -711,29 +715,19 @@ namespace Intersect.Client.Interface.Game
         }
         private static void ApplyTaskStyle(Label label, Label template, Color color)
         {
-            // Fuente desde el template (si existe)
             if (template?.Font != null)
             {
                 label.Font = template.Font; // o label.SetFont(template.Font) según tu build
             }
 
-            // Color de texto
             label.SetTextColor(color, ComponentState.Normal);
-            // Si tu build usa Label.ControlState:
-            // label.SetTextColor(color, Label.ControlState.Normal);
 
-            // Tamaño de fila consistente
-            // Calculamos el ancho disponible en base al padre ya dimensionado.
-            // Restamos el espacio del icono (TaskIconSize), margen izquierdo y un padding a la derecha.
-            int parentW = label.Parent?.Width ?? 300;
-            int leftOffset = 2 + TaskIconSize + 4; // mismo offset que usas en SetPosition(20, 0)
-            int rightPadding = 8;
-
-            int w = Math.Max(parentW - leftOffset - rightPadding, 100);
+            // Altura consistente; el ListBox maneja el ancho
             int h = Math.Max(TaskRowHeight - 2, 12);
+            label.Height = h;
 
-            label.SetSize(w, h);
-            // Si tu Label soporta escala: label.TextScale = 0.95f;
+            // Opcional: recortar para evitar overflow horizontal
+            // label.Clip = true; // si tu Label lo soporta
         }
 
         private void UpdateQuestTasks()
@@ -784,14 +778,15 @@ namespace Intersect.Client.Interface.Game
 
                 // Fila
                 var row = mQuestTasksList.AddRow(string.Empty);
-                row.SetSize(Math.Max(mQuestTasksList.Width - 10, 280), TaskRowHeight);
+                // Altura fija; el ancho lo maneja el ListBox
+                row.Height = TaskRowHeight;
 
                 var icon = new ImagePanel(row) { Width = TaskIconSize, Height = TaskIconSize };
               
 
                 var texture = GameContentManager.Current.GetTexture(
                     Framework.Content.TextureType.Gui,
-                    completed ? "checkbox_checked.png" : "checkbox.png"
+                    completed ? "checkboxfull.png" : "checkboxempty.png"
                 );
                 if (texture != null) icon.Texture = texture;
                 icon.SetPosition(2, (TaskRowHeight - TaskIconSize) / 2);
@@ -804,6 +799,8 @@ namespace Intersect.Client.Interface.Game
                 ApplyTaskStyle(lbl, _taskTemplateLabel, completed ? TaskColorDone : (isCurrent ? TaskColorActive : TaskColorPending));
 
             }
+
+            mQuestTasksList.Invalidate();
         }
 
     }

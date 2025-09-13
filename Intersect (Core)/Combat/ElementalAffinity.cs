@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Intersect.Enums;
+using Intersect;
 
 namespace Intersect.Combat;
 
@@ -8,11 +9,15 @@ namespace Intersect.Combat;
 /// </summary>
 public static class ElementalAffinity
 {
-    public const float Advantage = 1.5f;
-    public const float Neutral = 1.0f;
-    public const float Disadvantage = 0.5f;
+    public static float Advantage { get; private set; } = 1.5f;
 
-    private static readonly Dictionary<ElementType, Dictionary<ElementType, float>> Multipliers = new()
+    public static float Neutral { get; private set; } = 1.0f;
+
+    public static float Disadvantage { get; private set; } = 0.5f;
+
+    private static Dictionary<ElementType, Dictionary<ElementType, float>> Multipliers = BuildMultipliers();
+
+    private static Dictionary<ElementType, Dictionary<ElementType, float>> BuildMultipliers() => new()
     {
         [ElementType.Water] = new()
         {
@@ -46,6 +51,14 @@ public static class ElementalAffinity
             [ElementType.Light] = Advantage,
         },
     };
+
+    public static void LoadFromOptions(Options options)
+    {
+        Advantage = options.Combat.ElementalAdvantage;
+        Neutral = options.Combat.ElementalNeutral;
+        Disadvantage = options.Combat.ElementalDisadvantage;
+        Multipliers = BuildMultipliers();
+    }
 
     /// <summary>
     /// Get the multiplier for an attacker/defender elemental combination.

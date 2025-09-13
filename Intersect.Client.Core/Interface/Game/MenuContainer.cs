@@ -52,9 +52,6 @@ public partial class MenuContainer : Panel
     private readonly FactionWindow _factionWindow;
 
 
-    private readonly ImagePanel _wingsButtonContainer;
-    private readonly Button _wingsButton;
-
     private readonly ImagePanel _escapeMenuButtonContainer;
     private readonly Button _escapeMenuButton;
     private readonly JobsWindow mJobsWindow;
@@ -205,35 +202,6 @@ public partial class MenuContainer : Panel
 
         _factionWindow = new FactionWindow(gameCanvas) { IsHidden = true };
 
-
-        _wingsButtonContainer = new ImagePanel(parent: this, name: nameof(_wingsButtonContainer))
-        {
-            Dock = Pos.Left,
-            MaximumSize = new Point(x: 36, y: 36),
-            MinimumSize = new Point(x: 36, y: 36),
-            Padding = new Padding(size: 2),
-            Size = new Point(x: 36, y: 36),
-            TextureFilename = "menuitem.png",
-        };
-        _wingsButton = new Button(parent: _wingsButtonContainer, name: nameof(_wingsButton), disableText: true)
-        {
-            Alignment = [Alignments.Center],
-            Size = new Point(x: 32, y: 32),
-        };
-        _wingsButton.SetStateTexture(componentState: ComponentState.Normal, textureName: "wingicon.png");
-        _wingsButton.SetStateTexture(componentState: ComponentState.Hovered, textureName: "wingicon_hovered.png");
-        _wingsButton.SetToolTipText(text: "Toggle Wings");
-        _wingsButton.Clicked += (s, e) =>
-        {
-            if (Globals.Me == null)
-            {
-                return;
-            }
-
-            var newState = Globals.Me.Wings == WingState.On ? WingState.Off : WingState.On;
-            Globals.Me.Wings = newState;
-            PacketSender.SendToggleWings(newState);
-        };
 
         _escapeMenuButtonContainer = new ImagePanel(parent: this, name: nameof(_escapeMenuButtonContainer))
         {

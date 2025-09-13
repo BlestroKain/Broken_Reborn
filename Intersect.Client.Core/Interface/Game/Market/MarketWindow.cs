@@ -530,9 +530,191 @@ namespace Intersect.Client.Interface.Game.Market
             }
         }
 
+        private Guid? CaptureScrollAnchor(float scrollAmount)
+        {
+            if (mListingScroll?.VerticalScrollBar == null)
+            {
+                return null;
+            }
+
+            var scrollBar = mListingScroll.VerticalScrollBar;
+            var totalHeight = scrollBar.ContentSize;
+            var viewHeight = scrollBar.ViewableContentSize;
+            var scrollPixels = (int)(scrollAmount * Math.Max(0, totalHeight - viewHeight));
+            var firstIndex = scrollPixels / ItemHeight;
+
+            var query = mSearchBox.Text ?? string.Empty;
+            var selectedType = (ItemType?)mItemTypeCombo.SelectedItem?.UserData;
+            var selectedSubtype = (string?)mItemSubTypeCombo.SelectedItem?.UserData;
+
+            if (_useVirtualization)
+            {
+                if (firstIndex >= 0 && firstIndex < _filteredListings.Count)
+                {
+                    return _filteredListings[firstIndex].ListingId;
+                }
+
+                return null;
+            }
+
+            var visibleIndex = 0;
+            foreach (var id in mListingOrder)
+            {
+                if (!mCurrentItems.TryGetValue(id, out var item))
+                {
+                    continue;
+                }
+
+                var desc = item.Descriptor;
+                if (desc == null)
+                {
+                    continue;
+                }
+
+                var match = true;
+                if (selectedType.HasValue && desc.ItemType != selectedType)
+                {
+                    match = false;
+                }
+
+                if (!string.IsNullOrEmpty(selectedSubtype) &&
+                    !string.Equals(desc.Subtype, selectedSubtype, StringComparison.OrdinalIgnoreCase))
+                {
+                    match = false;
+                }
+
+                if (!SearchHelper.Matches(query, desc.Name ?? string.Empty))
+                {
+                    match = false;
+                }
+
+                if (!match)
+                {
+                    continue;
+                }
+
+                if (visibleIndex == firstIndex)
+                {
+                    return id;
+                }
+
+                visibleIndex++;
+            }
+
+            return null;
+        }
+
+        private void RestoreScrollPosition(Guid? anchorId, float prevScroll)
+        {
+            if (mListingScroll?.VerticalScrollBar == null)
+            {
+                return;
+            }
+
+            var scrollBar = mListingScroll.VerticalScrollBar;
+
+            if (anchorId.HasValue)
+            {
+                var query = mSearchBox.Text ?? string.Empty;
+                var selectedType = (ItemType?)mItemTypeCombo.SelectedItem?.UserData;
+                var selectedSubtype = (string?)mItemSubTypeCombo.SelectedItem?.UserData;
+
+                var newIndex = -1;
+                if (_useVirtualization)
+                {
+                    for (var i = 0; i < _filteredListings.Count; i++)
+                    {
+                        if (_filteredListings[i].ListingId == anchorId.Value)
+                        {
+                            newIndex = i;
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    var visibleIndex = 0;
+                    foreach (var id in mListingOrder)
+                    {
+                        if (!mCurrentItems.TryGetValue(id, out var item))
+                        {
+                            continue;
+                        }
+
+                        var desc = item.Descriptor;
+                        if (desc == null)
+                        {
+                            continue;
+                        }
+
+                        var match = true;
+                        if (selectedType.HasValue && desc.ItemType != selectedType)
+                        {
+                            match = false;
+                        }
+
+                        if (!string.IsNullOrEmpty(selectedSubtype) &&
+                            !string.Equals(desc.Subtype, selectedSubtype, StringComparison.OrdinalIgnoreCase))
+                        {
+                            match = false;
+                        }
+
+                        if (!SearchHelper.Matches(query, desc.Name ?? string.Empty))
+                        {
+                            match = false;
+                        }
+
+                        if (!match)
+                        {
+                            continue;
+                        }
+
+                        if (id == anchorId.Value)
+                        {
+                            newIndex = visibleIndex;
+                            break;
+                        }
+
+                        visibleIndex++;
+                    }
+                }
+
+                if (newIndex >= 0)
+                {
+                    var newOffset = newIndex * ItemHeight;
+                    var denominator = Math.Max(0, scrollBar.ContentSize - scrollBar.ViewableContentSize);
+                    var s = denominator > 0 ? (float)newOffset / denominator : 0f;
+                    if (s < 0f)
+                    {
+                        s = 0f;
+                    }
+                    else if (s > 1f)
+                    {
+                        s = 1f;
+                    }
+
+                    scrollBar.ScrollAmount = s;
+                    return;
+                }
+            }
+
+            var fallback = prevScroll;
+            if (fallback < 0f)
+            {
+                fallback = 0f;
+            }
+            else if (fallback > 1f)
+            {
+                fallback = 1f;
+            }
+
+            scrollBar.ScrollAmount = fallback;
+        }
+
         public void UpdateListings(List<MarketListingPacket> listings, int total)
         {
             var prevScroll = mListingScroll?.VerticalScrollBar?.ScrollAmount ?? 0f;
+            var anchorId = CaptureScrollAnchor(prevScroll);
 
             _total = total;
             _waiting = false;
@@ -646,13 +828,11 @@ namespace Intersect.Client.Interface.Game.Market
             {
                 mListingScroll.UpdateScrollBars();
             }
-            if (mListingScroll?.VerticalScrollBar != null)
+
+            RestoreScrollPosition(anchorId, prevScroll);
+            if (_useVirtualization)
             {
-                // clamp por seguridad
-                var s = prevScroll;
-                if (s < 0f) s = 0f;
-                if (s > 1f) s = 1f;
-                mListingScroll.VerticalScrollBar.ScrollAmount = s;
+                UpdateVirtualRows();
             }
             if ((_useVirtualization ? _filteredListings.Count : mListingOrder.Count) == 0)
             {

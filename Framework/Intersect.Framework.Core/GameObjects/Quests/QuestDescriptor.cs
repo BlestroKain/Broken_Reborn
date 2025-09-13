@@ -2,6 +2,7 @@
 using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Conditions;
 using Intersect.Framework.Core.GameObjects.Events;
+using Intersect.Framework.Core.GameObjects.Events.Commands;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.Quests;
@@ -180,6 +181,36 @@ public partial class QuestDescriptor : DatabaseObject<QuestDescriptor>, IFoldera
 
         return null;
     }
+
+    public Dictionary<Guid, int> GetRewardItems()
+    {
+        var rewardItems = new Dictionary<Guid, int>();
+        if (EndEvent != null)
+        {
+            foreach (var page in EndEvent.Pages)
+            {
+                foreach (var commandList in page.CommandLists.Values)
+                {
+                    foreach (var command in commandList)
+                    {
+                        if (command is ChangeItemsCommand changeItemsCommand && changeItemsCommand.Add)
+                        {
+                            if (rewardItems.ContainsKey(changeItemsCommand.ItemId))
+                            {
+                                rewardItems[changeItemsCommand.ItemId] += changeItemsCommand.Quantity;
+                            }
+                            else
+                            {
+                                rewardItems[changeItemsCommand.ItemId] = changeItemsCommand.Quantity;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return rewardItems;
+    }
 }
 
 public partial class QuestTaskDescriptor
@@ -244,3 +275,4 @@ public partial class QuestTaskDescriptor
         return taskString;
     }
 }
+

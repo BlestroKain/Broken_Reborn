@@ -164,7 +164,7 @@ public partial class DamageOverTimeEffect
             SpellDescriptor.Combat.GetEffectiveCritChance(properties),
             SpellDescriptor.Combat.GetEffectiveCritMultiplier(properties),
             deadAnimations,
-            aliveAnimations, false, level
+            aliveAnimations, false, level, SpellDescriptor.Combat.Element
         );
 
         var interval = SpellDescriptor.Combat.GetEffectiveHotDotInterval(properties);

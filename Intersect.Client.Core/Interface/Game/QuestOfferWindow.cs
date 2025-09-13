@@ -10,7 +10,7 @@ using Intersect.GameObjects;
 namespace Intersect.Client.Interface.Game;
 
 
-public partial class QuestOfferWindow
+public partial class QuestOfferWindow : IQuestWindow
 {
 
     private Button mAcceptButton;
@@ -30,6 +30,8 @@ public partial class QuestOfferWindow
 
     private Label mQuestTitle;
 
+    private readonly ScrollControl _rewardContainer;
+
     public QuestOfferWindow(Canvas gameCanvas)
     {
         mQuestOfferWindow = new WindowControl(gameCanvas, Strings.QuestOffer.Title, false, "QuestOfferWindow");
@@ -45,6 +47,8 @@ public partial class QuestOfferWindow
 
         mQuestPromptLabel = new RichLabel(mQuestPromptArea);
 
+        _rewardContainer = new ScrollControl(mQuestOfferWindow, "QuestRewardContainer");
+
         //Accept Button
         mAcceptButton = new Button(mQuestOfferWindow, "AcceptButton");
         mAcceptButton.SetText(Strings.QuestOffer.Accept);
@@ -57,6 +61,16 @@ public partial class QuestOfferWindow
 
         mQuestOfferWindow.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
         Interface.InputBlockingComponents.Add(mQuestOfferWindow);
+    }
+
+    public void AddRewardWidget(Base widget)
+    {
+        widget.Parent = _rewardContainer;
+    }
+
+    public void ClearRewardWidgets()
+    {
+        _rewardContainer.DeleteAllChildren();
     }
 
     private void _declineButton_Clicked(Base sender, MouseButtonState arguments)

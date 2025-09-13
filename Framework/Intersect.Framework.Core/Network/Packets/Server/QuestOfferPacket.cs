@@ -1,4 +1,5 @@
 using MessagePack;
+using Intersect.Config;
 using Intersect.Enums;
 
 namespace Intersect.Network.Packets.Server;

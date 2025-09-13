@@ -2138,6 +2138,10 @@ Tick timer saved in server config.json.";
 
         public static LocalizedString giveexp = @"Give Player {00} Experience";
 
+        public static LocalizedString giveguildexp = @"Give Guild {00} Experience";
+
+        public static LocalizedString givefactionhonor = @"Give Faction Honor [{00}]";
+
         public static LocalizedString globalswitch = @"Set Global Switch {00} to {01}";
 
         public static LocalizedString globalvariable = @"Set Global Variable {00} ({01})";
@@ -2462,6 +2466,8 @@ Tick timer saved in server config.json.";
             {"exiteventprocess", @"Exit Event Process"},
             {"fadeoutbgm", @"Fadeout BGM"},
             {"giveexperience", @"Give Experience"},
+            {"giveguildexperience", @"Give Guild Experience"},
+            {"givefactionhonor", @"Give Faction Honor"},
             {"gotolabel", @"Go To Label"},
             {"hidepicture", @"Hide Picture"},
             {"holdplayer", @"Hold Player"},
@@ -3156,6 +3162,21 @@ Tick timer saved in server config.json.";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString Variable = @"Variable";
+    }
+
+    public partial struct EventGiveGuildExperience
+    {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Title = @"Give Guild Experience";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Label = @"Amount:";
+    }
+
+    public partial struct EventGiveFactionHonor
+    {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Title = @"Give Faction Honor";
     }
 
     public partial struct EventGotoLabel

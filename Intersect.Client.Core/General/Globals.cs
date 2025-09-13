@@ -12,6 +12,7 @@ using Intersect.Client.Maps;
 using Intersect.Client.Plugins.Interfaces;
 using Intersect.Core;
 using Intersect.Enums;
+using Intersect.Config;
 using Intersect.Framework.Core.GameObjects.Crafting;
 using Intersect.GameObjects;
 using Intersect.Network.Packets.Server;
@@ -92,6 +93,27 @@ public static partial class Globals
     public static ShowPicturePacket? Picture;
 
     public static readonly List<Guid> QuestOffers = new();
+
+    public static readonly Dictionary<Guid, Dictionary<Guid, int>> QuestRewards = new();
+
+    public static readonly Dictionary<Guid, long> QuestExperience = new();
+
+    public static readonly Dictionary<Guid, Dictionary<JobType, long>> QuestJobExperience = new();
+
+    public static readonly Dictionary<Guid, long> QuestGuildExperience = new();
+
+    public static readonly Dictionary<Guid, Dictionary<Factions, int>> QuestFactionHonor = new();
+
+    public static bool QuestDirty;
+
+    public static void RemoveQuestRewards(Guid questId)
+    {
+        QuestRewards.Remove(questId);
+        QuestExperience.Remove(questId);
+        QuestJobExperience.Remove(questId);
+        QuestGuildExperience.Remove(questId);
+        QuestFactionHonor.Remove(questId);
+    }
 
     public static readonly Random Random = new();
 

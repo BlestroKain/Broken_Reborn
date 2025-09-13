@@ -127,6 +127,9 @@ public partial class ItemDescriptor : DatabaseObject<ItemDescriptor>, IFolderabl
 
     public int DamageType { get; set; }
 
+    [Column("Element")]
+    public ElementType Element { get; set; } = ElementType.Neutral;
+
     public int AttackSpeedModifier { get; set; }
 
     public int AttackSpeedValue { get; set; }

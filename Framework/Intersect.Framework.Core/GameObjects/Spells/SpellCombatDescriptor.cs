@@ -19,6 +19,9 @@ public partial class SpellCombatDescriptor
 
     public int DamageType { get; set; } = 1;
 
+    [Column("Element")]
+    public ElementType Element { get; set; } = ElementType.Neutral;
+
     public int HitRadius { get; set; }
 
     public bool Friendly { get; set; }

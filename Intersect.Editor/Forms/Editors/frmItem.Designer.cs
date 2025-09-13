@@ -96,7 +96,9 @@ namespace Intersect.Editor.Forms.Editors
             btnAddFolder = new DarkButton();
             lblFolder = new Label();
             cmbFolder = new DarkComboBox();
+            cmbElement = new DarkComboBox();
             cmbRarity = new DarkComboBox();
+            lblElement = new Label();
             lblRarity = new Label();
             nudPrice = new DarkNumericUpDown();
             chkCanDrop = new DarkCheckBox();
@@ -449,6 +451,8 @@ namespace Intersect.Editor.Forms.Editors
             grpGeneral.Controls.Add(btnAddFolder);
             grpGeneral.Controls.Add(lblFolder);
             grpGeneral.Controls.Add(cmbFolder);
+            grpGeneral.Controls.Add(cmbElement);
+            grpGeneral.Controls.Add(lblElement);
             grpGeneral.Controls.Add(cmbRarity);
             grpGeneral.Controls.Add(lblRarity);
             grpGeneral.Controls.Add(nudPrice);
@@ -1193,9 +1197,41 @@ namespace Intersect.Editor.Forms.Editors
             cmbFolder.Text = null;
             cmbFolder.TextPadding = new Padding(2);
             cmbFolder.SelectedIndexChanged += cmbFolder_SelectedIndexChanged;
-            // 
+            //
+            // cmbElement
+            //
+            cmbElement.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            cmbElement.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+            cmbElement.BorderStyle = ButtonBorderStyle.Solid;
+            cmbElement.ButtonColor = System.Drawing.Color.FromArgb(43, 43, 43);
+            cmbElement.DrawDropdownHoverOutline = false;
+            cmbElement.DrawFocusRectangle = false;
+            cmbElement.DrawMode = DrawMode.OwnerDrawFixed;
+            cmbElement.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbElement.FlatStyle = FlatStyle.Flat;
+            cmbElement.ForeColor = System.Drawing.Color.Gainsboro;
+            cmbElement.FormattingEnabled = true;
+            cmbElement.Location = new System.Drawing.Point(62, 197);
+            cmbElement.Margin = new Padding(4, 3, 4, 3);
+            cmbElement.Name = "cmbElement";
+            cmbElement.Size = new Size(221, 24);
+            cmbElement.TabIndex = 48;
+            cmbElement.Text = null;
+            cmbElement.TextPadding = new Padding(2);
+            cmbElement.SelectedIndexChanged += cmbElement_SelectedIndexChanged;
+            //
+            // lblElement
+            //
+            lblElement.AutoSize = true;
+            lblElement.Location = new System.Drawing.Point(9, 200);
+            lblElement.Margin = new Padding(4, 0, 4, 0);
+            lblElement.Name = "lblElement";
+            lblElement.Size = new Size(53, 15);
+            lblElement.TabIndex = 48;
+            lblElement.Text = "Element:";
+            //
             // cmbRarity
-            // 
+            //
             cmbRarity.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
             cmbRarity.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
             cmbRarity.BorderStyle = ButtonBorderStyle.Solid;
@@ -3592,7 +3628,9 @@ namespace Intersect.Editor.Forms.Editors
         private DarkCheckBox chkSingleUseSpell;
         private DarkCheckBox chkSingleUseEvent;
         private DarkCheckBox chkQuickCast;
+        private DarkComboBox cmbElement;
         private DarkComboBox cmbRarity;
+        private Label lblElement;
         private Label lblRarity;
         private DarkButton btnClearSearch;
         private DarkTextBox txtSearch;

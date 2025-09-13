@@ -31,6 +31,10 @@ public partial class QuestsWindow : IQuestWindow
 
     private readonly Label mQuestStatus;
 
+    private readonly ScrollControl mQuestTasksContainer;
+
+    private readonly ListBox mQuestTasksList;
+
     //Controls
     private readonly WindowControl mQuestsWindow;
 
@@ -62,6 +66,11 @@ public partial class QuestsWindow : IQuestWindow
         mQuestDescTemplateLabel = new Label(mQuestsWindow, "QuestDescriptionTemplate");
 
         mQuestDescLabel = new RichLabel(mQuestDescArea);
+
+        mQuestTasksContainer = new ScrollControl(mQuestsWindow, "QuestTasksContainer");
+
+        mQuestTasksList = new ListBox(mQuestTasksContainer, "QuestTasksList");
+        mQuestTasksList.EnableScroll(false, true);
 
         _rewardContainer = new ScrollControl(mQuestsWindow, "QuestRewardContainer");
 
@@ -142,6 +151,8 @@ public partial class QuestsWindow : IQuestWindow
 
         if (mSelectedQuest != null)
         {
+            UpdateQuestTasks();
+
             if (Globals.Me.QuestProgress.ContainsKey(mSelectedQuest.Id))
             {
                 if (Globals.Me.QuestProgress[mSelectedQuest.Id].Completed &&
@@ -322,6 +333,7 @@ public partial class QuestsWindow : IQuestWindow
 
         mSelectedQuest = questDescriptor;
         UpdateSelectedQuest();
+        UpdateQuestTasks();
     }
 
     private void UpdateSelectedQuest()
@@ -446,6 +458,8 @@ public partial class QuestsWindow : IQuestWindow
             mBackButton.Show();
             mQuitButton.Show();
         }
+
+        UpdateQuestTasks();
     }
 
     public void Show()
@@ -478,6 +492,122 @@ public partial class QuestsWindow : IQuestWindow
     public void ClearRewardWidgets()
     {
         _rewardContainer.DeleteAllChildren();
+    }
+
+    private bool IsTaskCompleted(QuestTaskDescriptor task)
+    {
+        if (mSelectedQuest == null || Globals.Me?.QuestProgress == null)
+        {
+            return false;
+        }
+
+        if (!Globals.Me.QuestProgress.TryGetValue(mSelectedQuest.Id, out var progress))
+        {
+            return false;
+        }
+
+        if (progress.Completed)
+        {
+            return true;
+        }
+
+        var currentIndex = mSelectedQuest.GetTaskIndex(progress.TaskId);
+        var taskIndex = mSelectedQuest.GetTaskIndex(task.Id);
+
+        return currentIndex > taskIndex;
+    }
+
+    private int GetTaskProgress(QuestTaskDescriptor task)
+    {
+        if (mSelectedQuest == null || Globals.Me?.QuestProgress == null)
+        {
+            return 0;
+        }
+
+        if (!Globals.Me.QuestProgress.TryGetValue(mSelectedQuest.Id, out var progress))
+        {
+            return 0;
+        }
+
+        var currentIndex = mSelectedQuest.GetTaskIndex(progress.TaskId);
+        var taskIndex = mSelectedQuest.GetTaskIndex(task.Id);
+
+        if (progress.Completed || currentIndex > taskIndex)
+        {
+            return task.Quantity;
+        }
+
+        if (currentIndex == taskIndex)
+        {
+            return progress.TaskProgress;
+        }
+
+        return 0;
+    }
+
+    private void UpdateQuestTasks()
+    {
+        mQuestTasksList.RemoveAllRows();
+
+        if (mSelectedQuest == null || mSelectedQuest.Tasks.Count == 0)
+        {
+            mQuestTasksContainer.Hide();
+            return;
+        }
+
+        mQuestTasksContainer.Show();
+
+        foreach (var task in mSelectedQuest.Tasks)
+        {
+            var completed = IsTaskCompleted(task);
+            var progress = GetTaskProgress(task);
+
+            var row = mQuestTasksList.AddRow(string.Empty);
+
+            var icon = new ImagePanel(row)
+            {
+                Width = 16,
+                Height = 16,
+            };
+
+            var texture = GameContentManager.Current.GetTexture(
+                Framework.Content.TextureType.Gui,
+                completed ? "checkbox_checked.png" : "checkbox.png"
+            );
+
+            if (texture != null)
+            {
+                icon.Texture = texture;
+            }
+
+            var description = task.Description;
+            switch (task.Objective)
+            {
+                case QuestObjective.GatherItems:
+                    description = Strings.QuestLog.TaskItem.ToString(
+                        progress,
+                        task.Quantity,
+                        ItemDescriptor.GetName(task.TargetId)
+                    );
+
+                    break;
+                case QuestObjective.KillNpcs:
+                    description = Strings.QuestLog.TaskNpc.ToString(
+                        progress,
+                        task.Quantity,
+                        NPCDescriptor.GetName(task.TargetId)
+                    );
+
+                    break;
+            }
+
+            var label = new Label(row)
+            {
+                Text = description,
+            };
+
+            label.SetPosition(20, 0);
+        }
     }
 
 }

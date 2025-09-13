@@ -84,9 +84,8 @@ namespace Intersect.Client.Interface.Game
 
         public void ClearRewardWidgets()
         {
-            // Dependiendo de tu versión de Gwen, usa DeleteChildren() o limpia manualmente
-            _rewardItemContainer.ClearChildren();
-            _rewardExpContainer.ClearChildren();
+            _rewardItemContainer.ClearChildren(true);
+            _rewardExpContainer.ClearChildren(true);
         }
 
         private void _declineButton_Clicked(Base sender, MouseButtonState arguments)

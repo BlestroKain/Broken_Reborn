@@ -768,6 +768,14 @@ public partial class FrmEvent : Form
                 tmpCommand = new GiveJobExperienceCommand();
 
                 break;
+            case EventCommandType.GiveGuildExperience:
+                tmpCommand = new GiveGuildExperienceCommand();
+
+                break;
+            case EventCommandType.GiveFactionHonor:
+                tmpCommand = new GiveFactionHonorCommand();
+
+                break;
             case EventCommandType.OpenEnchantment:
                 tmpCommand = new OpenEnchantmentWindowCommand();
                 break;
@@ -1462,6 +1470,14 @@ public partial class FrmEvent : Form
              
             case EventCommandType.GiveJobExperience:
                 cmdWindow = new EventCommandGiveJobExperience((GiveJobExperienceCommand)command, this);
+
+                break;
+            case EventCommandType.GiveGuildExperience:
+                cmdWindow = new EventCommandGiveGuildExperience((GiveGuildExperienceCommand)command, this);
+
+                break;
+            case EventCommandType.GiveFactionHonor:
+                cmdWindow = new EventCommandGiveFactionHonor((GiveFactionHonorCommand)command, this);
 
                 break;
             case EventCommandType.OpenEnchantment:

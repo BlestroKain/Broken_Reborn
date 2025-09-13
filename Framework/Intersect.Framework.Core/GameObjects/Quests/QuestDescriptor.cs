@@ -270,24 +270,43 @@ public partial class QuestDescriptor : DatabaseObject<QuestDescriptor>, IFoldera
                                 }
                                 else if (typeName == "GiveFactionHonorCommand")
                                 {
-                                    var factionProperty = command.GetType().GetProperty("Faction") ??
-                                                          command.GetType().GetProperty("Factions") ??
-                                                          command.GetType().GetProperty("FactionId");
+                                    var honorProperty = command.GetType().GetProperty("Honor");
 
-                                    var amountProperty = command.GetType().GetProperty("Honor") ??
-                                                        command.GetType().GetProperty("Amount") ??
-                                                        command.GetType().GetProperty("Value");
-
-                                    if (factionProperty?.GetValue(command) is Factions faction &&
-                                        amountProperty?.GetValue(command) is int honorAmount)
+                                    if (honorProperty?.GetValue(command) is Dictionary<Factions, int> honorDict)
                                     {
-                                        if (honor.ContainsKey(faction))
+                                        foreach (var kvp in honorDict)
                                         {
-                                            honor[faction] += honorAmount;
+                                            if (honor.ContainsKey(kvp.Key))
+                                            {
+                                                honor[kvp.Key] += kvp.Value;
+                                            }
+                                            else
+                                            {
+                                                honor[kvp.Key] = kvp.Value;
+                                            }
                                         }
-                                        else
+                                    }
+                                    else
+                                    {
+                                        var factionProperty = command.GetType().GetProperty("Faction") ??
+                                                              command.GetType().GetProperty("Factions") ??
+                                                              command.GetType().GetProperty("FactionId");
+
+                                        var amountProperty = command.GetType().GetProperty("Honor") ??
+                                                            command.GetType().GetProperty("Amount") ??
+                                                            command.GetType().GetProperty("Value");
+
+                                        if (factionProperty?.GetValue(command) is Factions faction &&
+                                            amountProperty?.GetValue(command) is int honorAmount)
                                         {
-                                            honor[faction] = honorAmount;
+                                            if (honor.ContainsKey(faction))
+                                            {
+                                                honor[faction] += honorAmount;
+                                            }
+                                            else
+                                            {
+                                                honor[faction] = honorAmount;
+                                            }
                                         }
                                     }
                                 }

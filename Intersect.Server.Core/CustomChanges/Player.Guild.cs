@@ -33,7 +33,7 @@ namespace Intersect.Server.Entities
             Guild?.UpdateMemberList();
         }
 
-        private void DonateGuildExperience(long amount)
+        public void DonateGuildExperience(long amount)
         {
             if (Guild == null || amount <= 0) return;
 

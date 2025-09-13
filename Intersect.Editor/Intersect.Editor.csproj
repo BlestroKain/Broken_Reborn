@@ -267,6 +267,18 @@
     <Compile Update="Forms\Editors\Events\Event Commands\EventCommand_GiveExperience.Designer.cs">
       <DependentUpon>EventCommand_GiveExperience.cs</DependentUpon>
     </Compile>
+    <Compile Update="Forms\Editors\Events\Event Commands\EventCommand_GiveGuildExperience.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Forms\Editors\Events\Event Commands\EventCommand_GiveGuildExperience.Designer.cs">
+      <DependentUpon>EventCommand_GiveGuildExperience.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Forms\Editors\Events\Event Commands\EventCommand_GiveFactionHonor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Forms\Editors\Events\Event Commands\EventCommand_GiveFactionHonor.Designer.cs">
+      <DependentUpon>EventCommand_GiveFactionHonor.cs</DependentUpon>
+    </Compile>
     <Compile Update="Forms\Editors\Events\Event Commands\EventCommand_GotoLabel.cs">
       <SubType>UserControl</SubType>
     </Compile>

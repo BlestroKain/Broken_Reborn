@@ -1,6 +1,4 @@
 using System;
-using System.Threading.Tasks;
-using Intersect;
 using Intersect.Client.Core;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen.Control;
@@ -27,7 +25,6 @@ namespace Intersect.Client.Interface.Game.Market
         private Label _priceLabel;
         private Button _buyButton;
         private Button _cancelButton;
-        private bool _buying;
 
         private readonly MarketWindow _marketWindow;
         private MarketListingPacket _listing;
@@ -62,11 +59,18 @@ namespace Intersect.Client.Interface.Game.Market
                     Framework.Content.TextureType.Item,
                     _itemDescriptor.Icon
                 );
+                _iconPanel.Texture = tex;
                 if (tex != null)
                 {
-                    _iconPanel.Texture = tex;
                     _iconPanel.RenderColor = _itemDescriptor.Color;
                 }
+
+                _iconPanel.IsVisibleInParent = tex != null;
+            }
+            else
+            {
+                _iconPanel.Texture = null;
+                _iconPanel.IsVisibleInParent = false;
             }
 
             _iconPanel.HoverEnter += OnHoverEnter;   // (Base, EventArgs)
@@ -112,10 +116,27 @@ namespace Intersect.Client.Interface.Game.Market
 
             if (_itemDescriptor == null)
             {
-                if (_nameLabel != null) _nameLabel.Text = "???";
-                if (_iconPanel != null) _iconPanel.Texture = null;
-                if (_quantityLabel != null) _quantityLabel.Text = $"x{_listing.Quantity}";
-                if (_priceLabel != null) _priceLabel.Text = $"{_listing.Price}";
+                if (_nameLabel != null)
+                {
+                    _nameLabel.Text = "???";
+                }
+
+                if (_iconPanel != null)
+                {
+                    _iconPanel.Texture = null;
+                    _iconPanel.IsVisibleInParent = false;
+                }
+
+                if (_quantityLabel != null)
+                {
+                    _quantityLabel.Text = $"x{_listing.Quantity}";
+                }
+
+                if (_priceLabel != null)
+                {
+                    _priceLabel.Text = $"{_listing.Price}";
+                }
+
                 return;
             }
 
@@ -127,11 +148,12 @@ namespace Intersect.Client.Interface.Game.Market
                 Framework.Content.TextureType.Item,
                 _itemDescriptor.Icon
             );
+            _iconPanel.Texture = tex;
             if (tex != null)
             {
-                _iconPanel.Texture = tex;
                 _iconPanel.RenderColor = _itemDescriptor.Color;
             }
+            _iconPanel.IsVisibleInParent = tex != null;
         }
 
         private void UpdateActionButton()
@@ -192,16 +214,24 @@ namespace Intersect.Client.Interface.Game.Market
 
         private void OnBuyClick(Base sender, MouseButtonState args)
         {
-            AttemptPurchase();
+            if (string.Equals(Globals.Me?.Name, _listing.SellerName, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            if (_buyButton != null && _buyButton.IsDisabled)
+            {
+                return;
+            }
+
+            SetBuying(true);
+            PacketSender.SendBuyMarketListing(_listing.ListingId);
         }
 
         private void OnClick(Base sender, MouseButtonState args)
         {
             // Click sobre el icono: mismo comportamiento que el botón
-            if (!string.Equals(Globals.Me?.Name, _listing.SellerName, StringComparison.OrdinalIgnoreCase))
-            {
-                AttemptPurchase();
-            }
+            OnBuyClick(sender, args);
         }
 
         private void OnHoverEnter(Base sender, EventArgs args)
@@ -220,27 +250,50 @@ namespace Intersect.Client.Interface.Game.Market
 
         public void SetBuying(bool on)
         {
-            _buying = on;
             if (_buyButton != null)
             {
                 _buyButton.IsDisabled = on;
             }
         }
 
-        private async void AttemptPurchase()
+        /// <summary>
+        /// Detaches all event handlers to avoid ObjectDisposedException when disposing.
+        /// </summary>
+        public void DetachEvents()
         {
-            if (_buying)
+            try
             {
-                return;
+                if (_iconPanel != null)
+                {
+                    _iconPanel.HoverEnter -= OnHoverEnter;
+                    _iconPanel.HoverLeave -= OnHoverLeave;
+                    _iconPanel.Clicked -= OnClick;
+                }
+            }
+            catch
+            {
             }
 
-            SetBuying(true);
-            PacketSender.SendBuyMarketListing(_listing.ListingId);
-
-            await Task.Delay(5000);
-            if (_buying)
+            try
             {
-                SetBuying(false);
+                if (_buyButton != null)
+                {
+                    _buyButton.Clicked -= OnBuyClick;
+                }
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                if (_cancelButton != null)
+                {
+                    _cancelButton.Clicked -= OnCancelClick;
+                }
+            }
+            catch
+            {
             }
         }
     }

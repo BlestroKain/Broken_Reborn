@@ -72,6 +72,7 @@ namespace Intersect.Client.Interface.Game.Market
 
         private bool _waiting;
         private bool _closed;
+        private bool _disposing; // prevent re-entrancy during dispose
 
         // Virtualization fields
         private const int ItemHeight = 44;
@@ -288,32 +289,141 @@ namespace Intersect.Client.Interface.Game.Market
 
         private void DebounceElapsed(object? sender, ElapsedEventArgs e)
         {
-            if (_closed)
+            if (_closed || _disposing || mMarketWindow == null)
             {
                 return;
             }
-            mMarketWindow?.RunOnMainThread(SendSearch);
+
+            mMarketWindow.RunOnMainThread(SendSearch);
         }
 
         private void OnWindowClosed(Base sender, EventArgs args)
         {
-            _closed = true;
-            if (mListingScroll?.VerticalScrollBar != null)
+            if (_disposing)
             {
-                mListingScroll.VerticalScrollBar.BarMoved -= OnScroll;
+                return;
             }
-            _debounce.Stop();
-            _debounce.Dispose();
+
+            _disposing = true;
+            _closed = true;
+
+            try
+            {
+                _debounce?.Stop();
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                _debounce?.Dispose();
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                if (mListingScroll != null)
+                {
+                    try
+                    {
+                        mListingScroll.SizeChanged -= OnListingScrollSizeChanged;
+                    }
+                    catch
+                    {
+                    }
+
+                    try
+                    {
+                        mListingScroll.VerticalScrollBar.BarMoved -= OnScroll;
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                foreach (var row in _virtualRows)
+                {
+                    try
+                    {
+                        row.DetachEvents();
+                    }
+                    catch
+                    {
+                    }
+
+                    try
+                    {
+                        row.Container?.DelayedDelete();
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                _virtualRows.Clear();
+
+                foreach (var kv in mCurrentItems)
+                {
+                    var it = kv.Value;
+
+                    try
+                    {
+                        it.DetachEvents();
+                    }
+                    catch
+                    {
+                    }
+
+                    try
+                    {
+                        it.Container?.DelayedDelete();
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                mCurrentItems.Clear();
+                mListingOrder.Clear();
+            }
+            catch
+            {
+            }
+
+            mListingScroll = null;
+            mListContainer = null;
+            mMarketWindow = null;
+
+            _disposing = false;
         }
 
         public void QueueSearch()
         {
+            if (_closed || _disposing)
+            {
+                return;
+            }
+
             _debounce.Stop();
             _debounce.Start();
         }
 
         public void SendSearch()
         {
+            if (_closed || _disposing)
+            {
+                return;
+            }
+
             var name = mSearchBox.Text?.Trim() ?? string.Empty;
 
             int? minPrice = null;
@@ -348,6 +458,11 @@ namespace Intersect.Client.Interface.Game.Market
 
         private void ResendLastSearch()
         {
+            if (_closed || _disposing)
+            {
+                return;
+            }
+
             PacketSender.SendSearchMarket(_lastName, _lastMinPrice, _lastMaxPrice, _lastType, _lastSubtype, _lastPage);
             _waiting = true;
             mErrorLabel.Hide();
@@ -356,6 +471,11 @@ namespace Intersect.Client.Interface.Game.Market
 
         public void SearchFailed(string message)
         {
+            if (_closed || _disposing)
+            {
+                return;
+            }
+
             _waiting = false;
             if (_useVirtualization)
             {
@@ -416,6 +536,11 @@ namespace Intersect.Client.Interface.Game.Market
 
         private void ApplyFilters()
         {
+            if (_closed || _disposing || mListingScroll == null)
+            {
+                return;
+            }
+
             var query = mSearchBox.Text ?? string.Empty;
             _selectedType = (ItemType?)mItemTypeCombo.SelectedItem?.UserData;
             _selectedSubtype = (string?)mItemSubTypeCombo.SelectedItem?.UserData;
@@ -461,9 +586,16 @@ namespace Intersect.Client.Interface.Game.Market
                     mNoResultsLabel.Show();
                 }
 
-                mListingScroll.InnerPanel.SetSize(mListingScroll.InnerPanel.Width, _filteredListings.Count * ItemHeight);
-                mListingScroll.VerticalScrollBar.ContentSize = _filteredListings.Count * ItemHeight;
-                mListingScroll.VerticalScrollBar.ViewableContentSize = mListingScroll.Height;
+                if (!_closed && !_disposing && mListingScroll != null)
+                {
+                    mListingScroll.InnerPanel.SetSize(mListingScroll.InnerPanel.Width, _filteredListings.Count * ItemHeight);
+                    if (mListingScroll.VerticalScrollBar != null)
+                    {
+                        mListingScroll.VerticalScrollBar.ContentSize = _filteredListings.Count * ItemHeight;
+                        mListingScroll.VerticalScrollBar.ViewableContentSize = mListingScroll.Height;
+                    }
+                }
+
                 UpdateVirtualRows();
                 return;
             }
@@ -512,21 +644,32 @@ namespace Intersect.Client.Interface.Game.Market
                 item.Container.SetBounds(0, offsetY, 750, ItemHeight);
                 offsetY += ItemHeight;
             }
-            mListingScroll.SetInnerSize(
-        mListingScroll.Width - 16,
-        visible.Count * ItemHeight
-    );
-            mListingScroll.UpdateScrollBars();
+
+            if (!_closed && !_disposing && mListingScroll != null)
+            {
+                mListingScroll.SetInnerSize(mListingScroll.Width - 16, visible.Count * ItemHeight);
+                mListingScroll.UpdateScrollBars();
+            }
 
         }
 
         private void OnScroll(Base sender, EventArgs args)
         {
+            if (_closed || _disposing)
+            {
+                return;
+            }
+
             UpdateVirtualRows();
         }
 
         private void OnListingScrollSizeChanged(Base sender, ValueChangedEventArgs<Point> args)
         {
+            if (_closed || _disposing || mListingScroll == null)
+            {
+                return;
+            }
+
             if (!_useVirtualization || _allListings.Count == 0)
             {
                 return;
@@ -562,19 +705,31 @@ namespace Intersect.Client.Interface.Game.Market
             }
 
             UpdateVirtualRows();
-            mListingScroll.UpdateScrollBars();
+            if (!_closed && !_disposing)
+            {
+                mListingScroll.UpdateScrollBars();
+            }
         }
 
         private void UpdateVirtualRows()
         {
-            if (!_useVirtualization)
+            if (_closed || _disposing)
+            {
+                return;
+            }
+
+            if (!_useVirtualization || mListingScroll == null)
             {
                 return;
             }
 
             var totalHeight = _filteredListings.Count * ItemHeight;
             var viewHeight = mListingScroll.Height;
-            var scrollPixels = (int)(mListingScroll.VerticalScrollBar.ScrollAmount * Math.Max(0, totalHeight - viewHeight));
+            var scrollPixels = 0;
+            if (mListingScroll.VerticalScrollBar != null)
+            {
+                scrollPixels = (int)(mListingScroll.VerticalScrollBar.ScrollAmount * Math.Max(0, totalHeight - viewHeight));
+            }
             var firstIndex = scrollPixels / ItemHeight;
             var startIndex = Math.Max(0, firstIndex - VirtualBuffer);
 
@@ -778,7 +933,12 @@ namespace Intersect.Client.Interface.Game.Market
 
         public void UpdateListings(List<MarketListingPacket> listings, int total)
         {
-            var prevScroll = mListingScroll?.VerticalScrollBar?.ScrollAmount ?? 0f;
+            if (_closed || _disposing || mListingScroll == null)
+            {
+                return;
+            }
+
+            var prevScroll = mListingScroll.VerticalScrollBar?.ScrollAmount ?? 0f;
             var anchorId = CaptureScrollAnchor(prevScroll);
 
             _total = total;
@@ -786,8 +946,10 @@ namespace Intersect.Client.Interface.Game.Market
             mErrorLabel.Hide();
             mRetryButton.Hide();
 
-            var scrollBar = mListingScroll.VerticalScrollBar;
-            scrollBar.BarMoved -= OnScroll;
+            if (mListingScroll.VerticalScrollBar != null)
+            {
+                mListingScroll.VerticalScrollBar.BarMoved -= OnScroll;
+            }
 
             if (listings.Count > VirtualizationThreshold)
             {
@@ -899,7 +1061,10 @@ namespace Intersect.Client.Interface.Game.Market
                 UpdateVirtualRows();
             }
 
-            scrollBar.BarMoved += OnScroll;
+            if (mListingScroll?.VerticalScrollBar != null)
+            {
+                mListingScroll.VerticalScrollBar.BarMoved += OnScroll;
+            }
 
             if ((_useVirtualization ? _filteredListings.Count : mListingOrder.Count) == 0)
             {
@@ -938,6 +1103,11 @@ namespace Intersect.Client.Interface.Game.Market
 
         public void RefreshAfterPurchase()
         {
+            if (_closed || _disposing)
+            {
+                return;
+            }
+
             if (_useVirtualization)
             {
                 foreach (var item in _virtualRows)

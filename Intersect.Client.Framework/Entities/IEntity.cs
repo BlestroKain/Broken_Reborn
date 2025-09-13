@@ -42,6 +42,7 @@ public interface IEntity : IDisposable
     byte Z { get; }
     int Level { get; }
     IReadOnlyDictionary<Stat, int> Stats { get; }
+    IReadOnlyDictionary<ElementType, float> Resistances { get; }
     IReadOnlyDictionary<Vital, long> Vitals { get; }
     IReadOnlyDictionary<Vital, long> MaxVitals { get; }
     IReadOnlyList<IItem> Items { get; }

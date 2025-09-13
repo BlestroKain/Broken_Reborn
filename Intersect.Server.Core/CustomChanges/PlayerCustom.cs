@@ -366,6 +366,7 @@ namespace Intersect.Server.Entities
             Array.Clear(p.mEquipmentFlatVitals, 0, p.mEquipmentFlatVitals.Length);
             Array.Clear(p.mEquipmentPercentVitals, 0, p.mEquipmentPercentVitals.Length);
             Array.Clear(p.mEquipmentVitalRegen, 0, p.mEquipmentVitalRegen.Length);
+            Array.Clear(p.mEquipmentResistances, 0, p.mEquipmentResistances.Length);
             p.mEquipmentBonusEffects.Clear();
 
             foreach (var item in p.EquippedItems)
@@ -395,6 +396,11 @@ namespace Intersect.Server.Entities
                     }
                     p.mEquipmentPercentVitals[i] += descriptor.PercentageVitalsGiven[i];
                     p.mEquipmentVitalRegen[i] += descriptor.VitalsRegen[i];
+                }
+
+                foreach (var kvp in descriptor.Resistances)
+                {
+                    p.mEquipmentResistances[(int)kvp.Key] += kvp.Value;
                 }
 
                 foreach (var effect in descriptor.EffectsEnabled)
@@ -467,6 +473,7 @@ namespace Intersect.Server.Entities
                 total += p.CalculateVitalStatBonus((Vital)vitalIndex);
                 p.SetMaxVital(vitalIndex, total);
             }
+
         }
 
         public void InvalidateSetBonuses()

@@ -330,6 +330,22 @@ public partial class ItemDescriptor : DatabaseObject<ItemDescriptor>, IFolderabl
     [NotMapped]
     public int[] PercentageStatsGiven { get; set; }
 
+    private static Dictionary<ElementType, float> CreateResistanceDictionary() =>
+        Enum.GetValues<ElementType>().ToDictionary(type => type, _ => 0f);
+
+    [Column("Resistances")]
+    [JsonIgnore]
+    public string ResistancesJson
+    {
+        get => JsonConvert.SerializeObject(Resistances);
+        set => Resistances = string.IsNullOrEmpty(value)
+            ? CreateResistanceDictionary()
+            : JsonConvert.DeserializeObject<Dictionary<ElementType, float>>(value) ?? CreateResistanceDictionary();
+    }
+
+    [NotMapped]
+    public Dictionary<ElementType, float> Resistances { get; set; } = CreateResistanceDictionary();
+
     [Column("UsageRequirements")]
     [JsonIgnore]
     public string JsonUsageRequirements
@@ -503,6 +519,7 @@ public partial class ItemDescriptor : DatabaseObject<ItemDescriptor>, IFolderabl
         VitalsGiven = new long[Enum.GetValues<Vital>().Length];
         VitalsRegen = new long[Enum.GetValues<Vital>().Length];
         PercentageVitalsGiven = new int[Enum.GetValues<Vital>().Length];
+        Resistances = CreateResistanceDictionary();
         Consumable = new ConsumableData();
         Effects = [];
         Color = new Color(255, 255, 255, 255);

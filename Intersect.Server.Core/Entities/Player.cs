@@ -178,6 +178,9 @@ public partial class Player : Entity
     private readonly long[] mEquipmentVitalRegen = new long[Enum.GetValues<Vital>().Length];
 
     [NotMapped, JsonIgnore]
+    private readonly float[] mEquipmentResistances = new float[Enum.GetValues<ElementType>().Length];
+
+    [NotMapped, JsonIgnore]
     private readonly Dictionary<ItemEffect, int> mEquipmentBonusEffects = new();
 
     [NotMapped, JsonIgnore]
@@ -2115,6 +2118,11 @@ public partial class Player : Entity
     public Tuple<int, int> GetItemStatBuffs(Stat statType)
     {
         return new Tuple<int, int>(mEquipmentFlatStats[(int)statType], mEquipmentPercentStats[(int)statType]);
+    }
+
+    public float GetEquipmentResistance(ElementType elementType)
+    {
+        return mEquipmentResistances[(int)elementType];
     }
 
 

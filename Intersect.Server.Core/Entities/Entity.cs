@@ -56,6 +56,27 @@ public abstract partial class Entity : IEntity
     public IReadOnlyDictionary<Vital, long> VitalsLookup => _vitals.Select((value, index) => (value, index))
         .ToDictionary(t => (Vital)t.index, t => t.value).AsReadOnly();
 
+    private static Dictionary<ElementType, float> CreateResistanceDictionary() =>
+        Enum.GetValues<ElementType>().ToDictionary(type => type, type => 0f);
+
+    [NotMapped]
+    public Dictionary<ElementType, float> Resistances { get; set; } = CreateResistanceDictionary();
+
+    [JsonIgnore, Column(nameof(Resistances))]
+    public string ResistancesJson
+    {
+        get => JsonConvert.SerializeObject(Resistances);
+        set => Resistances = string.IsNullOrWhiteSpace(value)
+            ? CreateResistanceDictionary()
+            : JsonConvert.DeserializeObject<Dictionary<ElementType, float>>(value) ?? CreateResistanceDictionary();
+    }
+
+    [JsonIgnore, NotMapped]
+    private readonly ConcurrentDictionary<SpellDescriptor, ResistanceBuff> _resistanceBuffs = new();
+
+    [JsonIgnore, NotMapped]
+    private ResistanceBuff[] _cachedResistanceBuffs = Array.Empty<ResistanceBuff>();
+
     [NotMapped, JsonIgnore] public Entity? Target { get; set; }
 
     public Entity() : this(Guid.NewGuid(), Guid.Empty)
@@ -337,6 +358,39 @@ public abstract partial class Entity : IEntity
 
     public bool HasStatusEffect(SpellEffect spellEffect) => CachedStatuses.Any(s => s.Type == spellEffect);
 
+    public void AddResistanceBuff(ResistanceBuff buff)
+    {
+        _resistanceBuffs.AddOrUpdate(buff.Spell, buff, (_, _) => buff);
+        _cachedResistanceBuffs = _resistanceBuffs.Values.ToArray();
+    }
+
+    private bool UpdateResistanceBuffs(long time)
+    {
+        var changed = false;
+        foreach (var buff in _resistanceBuffs)
+        {
+            if (buff.Value.ExpireTime <= time)
+            {
+                changed |= _resistanceBuffs.TryRemove(buff.Key, out _);
+            }
+        }
+
+        if (changed)
+        {
+            _cachedResistanceBuffs = _resistanceBuffs.Values.ToArray();
+        }
+
+        return changed;
+    }
+
+    public float GetResistance(ElementType element)
+    {
+        var baseVal = Resistances.TryGetValue(element, out var val) ? val : 0f;
+        var buffVal = _cachedResistanceBuffs.Sum(b => b.Resistances[(int)element]);
+        var equipVal = this is Player player ? player.GetEquipmentResistance(element) : 0f;
+        return baseVal + buffVal + equipVal;
+    }
+
     public virtual void Update(long timeMs)
     {
         var lockObtained = false;
@@ -379,7 +433,9 @@ public abstract partial class Entity : IEntity
                         statsUpdated |= stat.Update(statTime);
                     }
 
-                    if (statsUpdated)
+                    var resistanceUpdated = UpdateResistanceBuffs(statTime);
+
+                    if (statsUpdated || resistanceUpdated)
                     {
                         PacketSender.SendEntityStats(this);
                     }
@@ -1878,6 +1934,28 @@ public abstract partial class Entity : IEntity
             if (spellDescriptor.Combat.GetEffectiveStatDiff((Stat)i, spellProperties) != 0 ||
                 spellDescriptor.Combat.PercentageStatDiff[i] != 0)
             {
+                statBuffTime = duration;
+            }
+        }
+
+        var resistanceDiff = spellDescriptor.Combat.ResistanceDiff;
+        if (resistanceDiff != null)
+        {
+            var hasResistance = false;
+            var resistanceCopy = new float[resistanceDiff.Length];
+            for (var r = 0; r < resistanceDiff.Length; r++)
+            {
+                var diff = resistanceDiff[r];
+                resistanceCopy[r] = diff;
+                if (Math.Abs(diff) > float.Epsilon)
+                {
+                    hasResistance = true;
+                }
+            }
+
+            if (hasResistance)
+            {
+                target.AddResistanceBuff(new ResistanceBuff(spellDescriptor, resistanceCopy, expireTime));
                 statBuffTime = duration;
             }
         }

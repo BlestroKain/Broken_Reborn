@@ -73,6 +73,19 @@ public partial class SpellCombatDescriptor
     [NotMapped]
     public int[] PercentageStatDiff { get; set; } = new int[Enum.GetValues<Stat>().Length];
 
+    [Column("ResistanceDiff")]
+    [JsonIgnore]
+    public string ResistanceDiffJson
+    {
+        get => JsonConvert.SerializeObject(ResistanceDiff);
+        set => ResistanceDiff = string.IsNullOrEmpty(value)
+            ? new float[Enum.GetValues<ElementType>().Length]
+            : JsonConvert.DeserializeObject<float[]>(value) ?? new float[Enum.GetValues<ElementType>().Length];
+    }
+
+    [NotMapped]
+    public float[] ResistanceDiff { get; set; } = new float[Enum.GetValues<ElementType>().Length];
+
     public int Scaling { get; set; } = 0;
 
     public int ScalingStat { get; set; }

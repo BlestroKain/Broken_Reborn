@@ -2099,8 +2099,7 @@ internal sealed partial class PacketHandler
             }
 
             Globals.Me.HiddenQuests = packet.HiddenQuests;
-
-            Interface.Interface.EnqueueInGame(uiInGame => uiInGame.NotifyQuestsUpdated());
+            Globals.QuestDirty = true;
         }
     }
 

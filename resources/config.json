@@ -1,0 +1,7 @@
+{
+  "Combat": {
+    "ElementalAdvantage": 1.5,
+    "ElementalNeutral": 1.0,
+    "ElementalDisadvantage": 0.5
+  }
+}

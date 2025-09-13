@@ -24,6 +24,21 @@ public partial class CombatOptions
 
     public bool EnableCombatChatMessages { get; set; } = false; // Enables or disables combat chat messages.
 
+    /// <summary>
+    /// Damage multiplier applied when the attacker has elemental advantage.
+    /// </summary>
+    public float ElementalAdvantage { get; set; } = 1.5f;
+
+    /// <summary>
+    /// Damage multiplier applied when neither element has advantage.
+    /// </summary>
+    public float ElementalNeutral { get; set; } = 1.0f;
+
+    /// <summary>
+    /// Damage multiplier applied when the attacker is at an elemental disadvantage.
+    /// </summary>
+    public float ElementalDisadvantage { get; set; } = 0.5f;
+
     //Spells
 
     /// <summary>

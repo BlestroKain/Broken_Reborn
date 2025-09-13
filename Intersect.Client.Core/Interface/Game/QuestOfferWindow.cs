@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Intersect.Client.Core;
 using Intersect.Client.Framework.File_Management;
@@ -19,6 +20,8 @@ namespace Intersect.Client.Interface.Game
         private Button mDeclineButton;
 
         private string mQuestOfferText = string.Empty;
+
+        private Guid mLastQuestId = Guid.Empty;
 
         // Controls
         private WindowControl mQuestOfferWindow;
@@ -118,13 +121,14 @@ namespace Intersect.Client.Interface.Game
             {
                 Hide();
                 ClearRewardWidgets();
+                mLastQuestId = Guid.Empty;
                 return;
             }
 
             Show();
             mQuestTitle.Text = quest.Name;
 
-            if (mQuestOfferText != quest.StartDescription)
+            if (mQuestOfferText != quest.StartDescription || quest.Id != mLastQuestId)
             {
                 mQuestPromptLabel.ClearText();
                 mQuestPromptLabel.Width = mQuestPromptArea.Width - mQuestPromptArea.VerticalScrollBar.Width;
@@ -152,6 +156,8 @@ namespace Intersect.Client.Interface.Game
                 {
                     _ = new QuestRewardExp(this, playerExp, jobExp, guildExp, factionHonor);
                 }
+
+                mLastQuestId = quest.Id;
             }
         }
 

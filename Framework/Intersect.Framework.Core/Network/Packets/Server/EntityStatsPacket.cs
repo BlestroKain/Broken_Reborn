@@ -11,13 +11,21 @@ public partial class EntityStatsPacket : IntersectPacket
     {
     }
 
-    public EntityStatsPacket(Guid id, EntityType type, Guid mapId, int[] stats, float[] resistances)
+    public EntityStatsPacket(
+        Guid id,
+        EntityType type,
+        Guid mapId,
+        int[] stats,
+        float[] resistances,
+        float[] elementDamageBonuses
+    )
     {
         Id = id;
         Type = type;
         MapId = mapId;
         Stats = stats;
         Resistances = resistances;
+        ElementDamageBonuses = elementDamageBonuses;
     }
 
     [Key(0)]
@@ -34,4 +42,7 @@ public partial class EntityStatsPacket : IntersectPacket
 
     [Key(4)]
     public float[] Resistances { get; set; }
+
+    [Key(5)]
+    public float[] ElementDamageBonuses { get; set; }
 }

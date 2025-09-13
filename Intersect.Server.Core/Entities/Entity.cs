@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
+using System.Linq;
 using Intersect.Collections.Slotting;
 using Intersect.Core;
 using Intersect.Enums;
@@ -59,8 +60,14 @@ public abstract partial class Entity : IEntity
     private static Dictionary<ElementType, float> CreateResistanceDictionary() =>
         Enum.GetValues<ElementType>().ToDictionary(type => type, type => 0f);
 
+    private static Dictionary<ElementType, float> CreateElementDamageBonusDictionary() =>
+        Enum.GetValues<ElementType>().ToDictionary(type => type, type => 0f);
+
     [NotMapped]
     public Dictionary<ElementType, float> Resistances { get; set; } = CreateResistanceDictionary();
+
+    [NotMapped]
+    public Dictionary<ElementType, float> ElementDamageBonus { get; set; } = CreateElementDamageBonusDictionary();
 
     [JsonIgnore, Column(nameof(Resistances))]
     public string ResistancesJson
@@ -69,6 +76,16 @@ public abstract partial class Entity : IEntity
         set => Resistances = string.IsNullOrWhiteSpace(value)
             ? CreateResistanceDictionary()
             : JsonConvert.DeserializeObject<Dictionary<ElementType, float>>(value) ?? CreateResistanceDictionary();
+    }
+
+    [JsonIgnore, Column(nameof(ElementDamageBonus))]
+    public string ElementDamageBonusJson
+    {
+        get => JsonConvert.SerializeObject(ElementDamageBonus);
+        set => ElementDamageBonus = string.IsNullOrWhiteSpace(value)
+            ? CreateElementDamageBonusDictionary()
+            : JsonConvert.DeserializeObject<Dictionary<ElementType, float>>(value)
+              ?? CreateElementDamageBonusDictionary();
     }
 
     [JsonIgnore, NotMapped]
@@ -389,6 +406,13 @@ public abstract partial class Entity : IEntity
         var buffVal = _cachedResistanceBuffs.Sum(b => b.Resistances[(int)element]);
         var equipVal = this is Player player ? player.GetEquipmentResistance(element) : 0f;
         return baseVal + buffVal + equipVal;
+    }
+
+    public float GetElementDamageBonus(ElementType element)
+    {
+        var baseVal = ElementDamageBonus.TryGetValue(element, out var val) ? val : 0f;
+        var equipVal = this is Player player ? player.GetEquipmentElementDamageBonus(element) : 0f;
+        return baseVal + equipVal;
     }
 
     public virtual void Update(long timeMs)

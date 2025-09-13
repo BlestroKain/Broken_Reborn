@@ -64,6 +64,7 @@ public partial class CharacterWindow:Window
     Label mAgilityLabel;
     Label mDamageLabel;
     Label mCureLabel;
+    Label mElementBonusLabel;
     public ImagePanel[] PaperdollPanels;
 
     public string[] PaperdollTextures;
@@ -249,34 +250,37 @@ public partial class CharacterWindow:Window
         mPointsLabel = new Label(this, "PointsLabel");
         mPointsLabel.SetPosition(statsX, statsY + statSpacing * 8);
 
+        mElementBonusLabel = new Label(this, "ElementBonusLabel");
+        mElementBonusLabel.SetPosition(statsX, statsY + statSpacing * 9);
+
         var extraBuffsLabel = new Label(this, "ExtraBuffsLabel");
         extraBuffsLabel.SetText(Strings.Character.ExtraBuffs);
-        extraBuffsLabel.SetPosition(statsX, statsY + statSpacing * 9);
+        extraBuffsLabel.SetPosition(statsX, statsY + statSpacing * 10);
 
         mHpRegen = new Label(this, "HpRegen");
-        mHpRegen.SetPosition(statsX, statsY + statSpacing * 10);
+        mHpRegen.SetPosition(statsX, statsY + statSpacing * 11);
         mManaRegen = new Label(this, "ManaRegen");
-        mManaRegen.SetPosition(statsX, statsY + statSpacing * 11);
+        mManaRegen.SetPosition(statsX, statsY + statSpacing * 12);
         mLifeSteal = new Label(this, "Lifesteal");
-        mLifeSteal.SetPosition(statsX, statsY + statSpacing * 12);
+        mLifeSteal.SetPosition(statsX, statsY + statSpacing * 13);
         mAttackSpeed = new Label(this, "AttackSpeed");
-        mAttackSpeed.SetPosition(statsX, statsY + statSpacing * 13);
+        mAttackSpeed.SetPosition(statsX, statsY + statSpacing * 14);
         mSpeedBuff = new Label(this, "SpeedBuff");
-        mSpeedBuff.SetPosition(statsX, statsY + statSpacing * 14);
+        mSpeedBuff.SetPosition(statsX, statsY + statSpacing * 15);
         mDamageBuff = new Label(this, "DamageBuff");
-        mDamageBuff.SetPosition(statsX, statsY + statSpacing * 15);
+        mDamageBuff.SetPosition(statsX, statsY + statSpacing * 16);
         mCureBuff = new Label(this, "CureBuff");
-        mCureBuff.SetPosition(statsX, statsY + statSpacing * 16);
+        mCureBuff.SetPosition(statsX, statsY + statSpacing * 17);
         mExtraExp = new Label(this, "ExtraExp");
-        mExtraExp.SetPosition(statsX, statsY + statSpacing * 17);
+        mExtraExp.SetPosition(statsX, statsY + statSpacing * 18);
         mLuck = new Label(this, "Luck");
-        mLuck.SetPosition(statsX, statsY + statSpacing * 18);
+        mLuck.SetPosition(statsX, statsY + statSpacing * 19);
         mTenacity = new Label(this, "Tenacity");
-        mTenacity.SetPosition(statsX, statsY + statSpacing * 19);
+        mTenacity.SetPosition(statsX, statsY + statSpacing * 20);
         mCooldownReduction = new Label(this, "CooldownReduction");
-        mCooldownReduction.SetPosition(statsX, statsY + statSpacing * 20);
+        mCooldownReduction.SetPosition(statsX, statsY + statSpacing * 21);
         mManaSteal = new Label(this, "Manasteal");
-        mManaSteal.SetPosition(statsX, statsY + statSpacing * 21);
+        mManaSteal.SetPosition(statsX, statsY + statSpacing * 22);
 
         UpdateExtraBuffs();
 
@@ -476,6 +480,19 @@ public partial class CharacterWindow:Window
             )
         );
         mPointsLabel.SetText(Strings.Character.Points.ToString(player.StatPoints));
+
+        var bonusStrings = new List<string>();
+        for (var i = 0; i < Enum.GetValues<ElementType>().Length; i++)
+        {
+            var val = player.ElementDamageBonuses[i];
+            if (Math.Abs(val) > float.Epsilon)
+            {
+                bonusStrings.Add($"{((ElementType)i)} {val:P0}");
+            }
+        }
+
+        var bonusText = bonusStrings.Count > 0 ? string.Join(", ", bonusStrings) : Strings.Character.None;
+        mElementBonusLabel.SetText(Strings.Character.ElementDamageBonus.ToString(bonusText));
         mAddAbilityPwrBtn.IsHidden = player.StatPoints == 0 ||
                                      player.Stat[(int) Stat.Intelligence] == Options.Instance.Player.MaxStat;
 

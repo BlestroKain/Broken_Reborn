@@ -1007,6 +1007,9 @@ public static partial class Strings
         public static LocalizedString Points = @"Points: {00}";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString ElementDamageBonus = @"Element Bonus: {00}";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString StatLabelValue = @"{00}: {01}";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

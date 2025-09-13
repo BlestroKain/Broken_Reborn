@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -179,6 +180,9 @@ public partial class Player : Entity
 
     [NotMapped, JsonIgnore]
     private readonly float[] mEquipmentResistances = new float[Enum.GetValues<ElementType>().Length];
+
+    [NotMapped, JsonIgnore]
+    private readonly float[] mEquipmentElementDamageBonuses = new float[Enum.GetValues<ElementType>().Length];
 
     [NotMapped, JsonIgnore]
     private readonly Dictionary<ItemEffect, int> mEquipmentBonusEffects = new();
@@ -2123,6 +2127,11 @@ public partial class Player : Entity
     public float GetEquipmentResistance(ElementType elementType)
     {
         return mEquipmentResistances[(int)elementType];
+    }
+
+    public float GetEquipmentElementDamageBonus(ElementType elementType)
+    {
+        return mEquipmentElementDamageBonuses[(int)elementType];
     }
 
 
@@ -6307,8 +6316,46 @@ public partial class Player : Entity
         ProcessEquipmentUpdated(sendUpdate);
     }
 
+    private void RecalculateEquipmentBonuses()
+    {
+        Array.Fill(mEquipmentResistances, 0);
+        Array.Fill(mEquipmentElementDamageBonuses, 0);
+
+        foreach (var kvp in Equipment)
+        {
+            foreach (var index in kvp.Value)
+            {
+                if (index < 0 || index >= Items.Count)
+                {
+                    continue;
+                }
+
+                var invItem = Items[index];
+                var descriptor = invItem?.Descriptor;
+                if (descriptor == null)
+                {
+                    continue;
+                }
+
+                foreach (var resist in descriptor.Resistances)
+                {
+                    mEquipmentResistances[(int)resist.Key] += resist.Value;
+                }
+
+                if (descriptor.ElementDamageBonus != null)
+                {
+                    foreach (var bonus in descriptor.ElementDamageBonus)
+                    {
+                        mEquipmentElementDamageBonuses[(int)bonus.Key] += bonus.Value;
+                    }
+                }
+            }
+        }
+    }
+
     public void ProcessEquipmentUpdated(bool sendPackets, bool ignoreEvents = false)
     {
+        RecalculateEquipmentBonuses();
         ApplySetBonuses(this);
         FixVitals();
         if (!ignoreEvents)

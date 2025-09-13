@@ -385,6 +385,17 @@ internal sealed partial class PacketHandler
         sender.CloseMailBox();
     }
 
+    public void HandlePacket(Client client, MailBoxClosePacket packet)
+    {
+        var player = client?.Entity;
+        if (player == null)
+        {
+            return;
+        }
+
+        player.CloseMailBox();
+    }
+
     public void HandlePacket(Client client, TakeMailPacket packet)
     {
         var player = client?.Entity;

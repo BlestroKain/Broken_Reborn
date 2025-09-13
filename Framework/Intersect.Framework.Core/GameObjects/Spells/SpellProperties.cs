@@ -1,6 +1,20 @@
+using System.Collections.Generic;
+using System.Linq;
 using MessagePack;
+using Intersect.Enums;
 
 namespace Intersect.Framework.Core.GameObjects.Spells;
+
+// Placeholder interfaces for custom spell modifiers such as runes
+public interface IResistanceModifier
+{
+    IReadOnlyDictionary<ElementType, float> GetResistanceModifiers();
+}
+
+public interface IDamageModifier
+{
+    IReadOnlyDictionary<ElementType, float> GetDamageModifiers();
+}
 
 [MessagePackObject]
 public class SpellProperties

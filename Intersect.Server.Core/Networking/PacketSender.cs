@@ -1035,7 +1035,15 @@ public static partial class PacketSender
             stats[i] = en.Stat[i].Value();
         }
 
-        return new EntityStatsPacket(en.Id, en.GetEntityType(), en.MapId, stats);
+        var resistances = new float[Enum.GetValues<ElementType>().Length];
+        var elementBonuses = new float[Enum.GetValues<ElementType>().Length];
+        for (var i = 0; i < Enum.GetValues<ElementType>().Length; i++)
+        {
+            resistances[i] = en.GetResistance((ElementType)i);
+            elementBonuses[i] = en.GetElementDamageBonus((ElementType)i);
+        }
+
+        return new EntityStatsPacket(en.Id, en.GetEntityType(), en.MapId, stats, resistances, elementBonuses);
     }
 
     //EntityStatsPacket

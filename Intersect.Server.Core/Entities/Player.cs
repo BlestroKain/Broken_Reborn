@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -37,6 +38,10 @@ using Intersect.Server.Framework.Entities;
 using Intersect.Server.Framework.Items;
 using Intersect.Server.Localization;
 using Intersect.Server.Maps;
+using ItemResistanceModifier = Intersect.Framework.Core.GameObjects.Items.IResistanceModifier;
+using ItemDamageModifier = Intersect.Framework.Core.GameObjects.Items.IDamageModifier;
+using SpellResistanceModifier = Intersect.Framework.Core.GameObjects.Spells.IResistanceModifier;
+using SpellDamageModifier = Intersect.Framework.Core.GameObjects.Spells.IDamageModifier;
 using Intersect.Server.Networking;
 using Intersect.Server.Core;
 using Intersect.Utilities;
@@ -176,6 +181,12 @@ public partial class Player : Entity
 
     [NotMapped, JsonIgnore]
     private readonly long[] mEquipmentVitalRegen = new long[Enum.GetValues<Vital>().Length];
+
+    [NotMapped, JsonIgnore]
+    private readonly float[] mEquipmentResistances = new float[Enum.GetValues<ElementType>().Length];
+
+    [NotMapped, JsonIgnore]
+    private readonly float[] mEquipmentElementDamageBonuses = new float[Enum.GetValues<ElementType>().Length];
 
     [NotMapped, JsonIgnore]
     private readonly Dictionary<ItemEffect, int> mEquipmentBonusEffects = new();
@@ -2115,6 +2126,68 @@ public partial class Player : Entity
     public Tuple<int, int> GetItemStatBuffs(Stat statType)
     {
         return new Tuple<int, int>(mEquipmentFlatStats[(int)statType], mEquipmentPercentStats[(int)statType]);
+    }
+
+    public float GetEquipmentResistance(ElementType elementType)
+    {
+        return mEquipmentResistances[(int)elementType];
+    }
+
+    public float GetEquipmentElementDamageBonus(ElementType elementType)
+    {
+        return mEquipmentElementDamageBonuses[(int)elementType];
+    }
+
+    public float GetSpellResistance(ElementType elementType)
+    {
+        var total = 0f;
+        foreach (var slot in Spells)
+        {
+            if (slot.SpellId == Guid.Empty)
+            {
+                continue;
+            }
+
+            var props = GetSpellProperties(slot.SpellId);
+            if (props is SpellResistanceModifier resistanceModifier)
+            {
+                foreach (var resist in resistanceModifier.GetResistanceModifiers())
+                {
+                    if (resist.Key == elementType)
+                    {
+                        total += resist.Value;
+                    }
+                }
+            }
+        }
+
+        return total;
+    }
+
+    public float GetSpellElementDamageBonus(ElementType elementType)
+    {
+        var total = 0f;
+        foreach (var slot in Spells)
+        {
+            if (slot.SpellId == Guid.Empty)
+            {
+                continue;
+            }
+
+            var props = GetSpellProperties(slot.SpellId);
+            if (props is SpellDamageModifier damageModifier)
+            {
+                foreach (var bonus in damageModifier.GetDamageModifiers())
+                {
+                    if (bonus.Key == elementType)
+                    {
+                        total += bonus.Value;
+                    }
+                }
+            }
+        }
+
+        return total;
     }
 
 
@@ -6299,8 +6372,63 @@ public partial class Player : Entity
         ProcessEquipmentUpdated(sendUpdate);
     }
 
+    private void RecalculateEquipmentBonuses()
+    {
+        Array.Fill(mEquipmentResistances, 0);
+        Array.Fill(mEquipmentElementDamageBonuses, 0);
+
+        foreach (var kvp in Equipment)
+        {
+            foreach (var index in kvp.Value)
+            {
+                if (index < 0 || index >= Items.Count)
+                {
+                    continue;
+                }
+
+                var invItem = Items[index];
+                var descriptor = invItem?.Descriptor;
+                if (descriptor == null)
+                {
+                    continue;
+                }
+
+                foreach (var resist in descriptor.Resistances)
+                {
+                    mEquipmentResistances[(int)resist.Key] += resist.Value;
+                }
+
+                if (descriptor.ElementDamageBonus != null)
+                {
+                    foreach (var bonus in descriptor.ElementDamageBonus)
+                    {
+                        mEquipmentElementDamageBonuses[(int)bonus.Key] += bonus.Value;
+                    }
+                }
+
+                var props = invItem?.Properties;
+                if (props is ItemResistanceModifier resistanceModifier)
+                {
+                    foreach (var resist in resistanceModifier.GetResistanceModifiers())
+                    {
+                        mEquipmentResistances[(int)resist.Key] += resist.Value;
+                    }
+                }
+
+                if (props is ItemDamageModifier damageModifier)
+                {
+                    foreach (var bonus in damageModifier.GetDamageModifiers())
+                    {
+                        mEquipmentElementDamageBonuses[(int)bonus.Key] += bonus.Value;
+                    }
+                }
+            }
+        }
+    }
+
     public void ProcessEquipmentUpdated(bool sendPackets, bool ignoreEvents = false)
     {
+        RecalculateEquipmentBonuses();
         ApplySetBonuses(this);
         FixVitals();
         if (!ignoreEvents)

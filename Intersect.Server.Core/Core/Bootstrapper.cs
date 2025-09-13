@@ -31,6 +31,7 @@ using Intersect.Threading;
 using Intersect.Utilities;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using Intersect.Combat;
 
 
 namespace Intersect.Server.Core;
@@ -213,6 +214,8 @@ internal static class Bootstrapper
 
             return false;
         }
+
+        ElementalAffinity.LoadFromOptions(Options.Instance);
 
         if (ServerContext.IsDefaultResourceDirectory)
         {

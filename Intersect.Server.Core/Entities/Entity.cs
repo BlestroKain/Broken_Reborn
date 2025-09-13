@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
+using System.Linq;
 using Intersect.Collections.Slotting;
 using Intersect.Core;
 using Intersect.Enums;
@@ -55,6 +56,43 @@ public abstract partial class Entity : IEntity
     [JsonProperty("Vitals"), NotMapped]
     public IReadOnlyDictionary<Vital, long> VitalsLookup => _vitals.Select((value, index) => (value, index))
         .ToDictionary(t => (Vital)t.index, t => t.value).AsReadOnly();
+
+    private static Dictionary<ElementType, float> CreateResistanceDictionary() =>
+        Enum.GetValues<ElementType>().ToDictionary(type => type, type => 0f);
+
+    private static Dictionary<ElementType, float> CreateElementDamageBonusDictionary() =>
+        Enum.GetValues<ElementType>().ToDictionary(type => type, type => 0f);
+
+    [NotMapped]
+    public Dictionary<ElementType, float> Resistances { get; set; } = CreateResistanceDictionary();
+
+    [NotMapped]
+    public Dictionary<ElementType, float> ElementDamageBonus { get; set; } = CreateElementDamageBonusDictionary();
+
+    [JsonIgnore, Column(nameof(Resistances))]
+    public string ResistancesJson
+    {
+        get => JsonConvert.SerializeObject(Resistances);
+        set => Resistances = string.IsNullOrWhiteSpace(value)
+            ? CreateResistanceDictionary()
+            : JsonConvert.DeserializeObject<Dictionary<ElementType, float>>(value) ?? CreateResistanceDictionary();
+    }
+
+    [JsonIgnore, Column(nameof(ElementDamageBonus))]
+    public string ElementDamageBonusJson
+    {
+        get => JsonConvert.SerializeObject(ElementDamageBonus);
+        set => ElementDamageBonus = string.IsNullOrWhiteSpace(value)
+            ? CreateElementDamageBonusDictionary()
+            : JsonConvert.DeserializeObject<Dictionary<ElementType, float>>(value)
+              ?? CreateElementDamageBonusDictionary();
+    }
+
+    [JsonIgnore, NotMapped]
+    private readonly ConcurrentDictionary<SpellDescriptor, ResistanceBuff> _resistanceBuffs = new();
+
+    [JsonIgnore, NotMapped]
+    private ResistanceBuff[] _cachedResistanceBuffs = Array.Empty<ResistanceBuff>();
 
     [NotMapped, JsonIgnore] public Entity? Target { get; set; }
 
@@ -337,6 +375,48 @@ public abstract partial class Entity : IEntity
 
     public bool HasStatusEffect(SpellEffect spellEffect) => CachedStatuses.Any(s => s.Type == spellEffect);
 
+    public void AddResistanceBuff(ResistanceBuff buff)
+    {
+        _resistanceBuffs.AddOrUpdate(buff.Spell, buff, (_, _) => buff);
+        _cachedResistanceBuffs = _resistanceBuffs.Values.ToArray();
+    }
+
+    private bool UpdateResistanceBuffs(long time)
+    {
+        var changed = false;
+        foreach (var buff in _resistanceBuffs)
+        {
+            if (buff.Value.ExpireTime <= time)
+            {
+                changed |= _resistanceBuffs.TryRemove(buff.Key, out _);
+            }
+        }
+
+        if (changed)
+        {
+            _cachedResistanceBuffs = _resistanceBuffs.Values.ToArray();
+        }
+
+        return changed;
+    }
+
+    public float GetResistance(ElementType element)
+    {
+        var baseVal = Resistances.TryGetValue(element, out var val) ? val : 0f;
+        var buffVal = _cachedResistanceBuffs.Sum(b => b.Resistances[(int)element]);
+        var equipVal = this is Player player ? player.GetEquipmentResistance(element) : 0f;
+        var spellVal = this is Player spellPlayer ? spellPlayer.GetSpellResistance(element) : 0f;
+        return baseVal + buffVal + equipVal + spellVal;
+    }
+
+    public float GetElementDamageBonus(ElementType element)
+    {
+        var baseVal = ElementDamageBonus.TryGetValue(element, out var val) ? val : 0f;
+        var equipVal = this is Player player ? player.GetEquipmentElementDamageBonus(element) : 0f;
+        var spellVal = this is Player spellPlayer ? spellPlayer.GetSpellElementDamageBonus(element) : 0f;
+        return baseVal + equipVal + spellVal;
+    }
+
     public virtual void Update(long timeMs)
     {
         var lockObtained = false;
@@ -379,7 +459,9 @@ public abstract partial class Entity : IEntity
                         statsUpdated |= stat.Update(statTime);
                     }
 
-                    if (statsUpdated)
+                    var resistanceUpdated = UpdateResistanceBuffs(statTime);
+
+                    if (statsUpdated || resistanceUpdated)
                     {
                         PacketSender.SendEntityStats(this);
                     }
@@ -1660,7 +1742,7 @@ public abstract partial class Entity : IEntity
         {
             Attack(
                 target, parentItem.Damage, 0, (DamageType)parentItem.DamageType, (Stat)parentItem.ScalingStat,
-                parentItem.Scaling, parentItem.CritChance, parentItem.CritMultiplier, null, null, true
+                parentItem.Scaling, parentItem.CritChance, parentItem.CritMultiplier, null, null, true, null, parentItem.Element
             );
         }
 
@@ -1882,6 +1964,28 @@ public abstract partial class Entity : IEntity
             }
         }
 
+        var resistanceDiff = spellDescriptor.Combat.ResistanceDiff;
+        if (resistanceDiff != null)
+        {
+            var hasResistance = false;
+            var resistanceCopy = new float[resistanceDiff.Length];
+            for (var r = 0; r < resistanceDiff.Length; r++)
+            {
+                var diff = resistanceDiff[r];
+                resistanceCopy[r] = diff;
+                if (Math.Abs(diff) > float.Epsilon)
+                {
+                    hasResistance = true;
+                }
+            }
+
+            if (hasResistance)
+            {
+                target.AddResistanceBuff(new ResistanceBuff(spellDescriptor, resistanceCopy, expireTime));
+                statBuffTime = duration;
+            }
+        }
+
         if (statBuffTime == -1)
         {
             if (spellDescriptor.Combat.HoTDoT && spellDescriptor.Combat.GetEffectiveHotDotInterval(spellProperties) > 0)
@@ -1902,7 +2006,8 @@ public abstract partial class Entity : IEntity
                 (Stat)spellDescriptor.Combat.ScalingStat,
                 spellDescriptor.Combat.GetEffectiveScaling(spellProperties),
                 spellDescriptor.Combat.GetEffectiveCritChance(spellProperties),
-                spellDescriptor.Combat.GetEffectiveCritMultiplier(spellProperties), deadAnimations, aliveAnimations, false, spellLevel
+                spellDescriptor.Combat.GetEffectiveCritMultiplier(spellProperties), deadAnimations, aliveAnimations, false, spellLevel,
+                spellDescriptor.Combat.Element
             );
         }
 
@@ -2073,7 +2178,7 @@ public abstract partial class Entity : IEntity
 
         Attack(
             target, baseDamage, 0, damageType, scalingStat, scaling, critChance, critMultiplier, deadAnimations,
-            aliveAnimations, true
+            aliveAnimations, true, null, weapon?.Element ?? ElementType.Neutral
         );
     }
 
@@ -2089,7 +2194,8 @@ public abstract partial class Entity : IEntity
         List<KeyValuePair<Guid, Direction>> deadAnimations = null,
         List<KeyValuePair<Guid, Direction>> aliveAnimations = null,
         bool isAutoAttack = false,
-        int? spellLevel = null
+        int? spellLevel = null,
+        ElementType element = ElementType.Neutral
     )
     {
         var damagingAttack = baseDamage > 0;
@@ -2133,7 +2239,7 @@ public abstract partial class Entity : IEntity
         if (!(enemy is Resource))
         {
             baseDamage = Formulas.CalculateDamage(
-            baseDamage, damageType, scalingStat, scaling, critMultiplier, this, enemy, spellLevel
+            baseDamage, damageType, scalingStat, scaling, critMultiplier, this, enemy, spellLevel, element
         );
         }
 
@@ -2199,24 +2305,27 @@ public abstract partial class Entity : IEntity
                 }
 
                 enemy.SubVital(Vital.Health, baseDamage);
+                var elementText = " [" + element + "]";
                 switch (damageType)
                 {
                     case DamageType.Physical:
                         PacketSender.SendActionMsg(
-                            enemy, Strings.Combat.RemoveSymbol + baseDamage,
+                            enemy, Strings.Combat.RemoveSymbol + baseDamage + elementText,
                             CustomColors.Combat.PhysicalDamage
                         );
 
                         break;
                     case DamageType.Magic:
                         PacketSender.SendActionMsg(
-                            enemy, Strings.Combat.RemoveSymbol + baseDamage, CustomColors.Combat.MagicDamage
+                            enemy, Strings.Combat.RemoveSymbol + baseDamage + elementText,
+                            CustomColors.Combat.MagicDamage
                         );
 
                         break;
                     case DamageType.True:
                         PacketSender.SendActionMsg(
-                            enemy, Strings.Combat.RemoveSymbol + baseDamage, CustomColors.Combat.TrueDamage
+                            enemy, Strings.Combat.RemoveSymbol + baseDamage + elementText,
+                            CustomColors.Combat.TrueDamage
                         );
 
                         break;
@@ -2258,7 +2367,7 @@ public abstract partial class Entity : IEntity
         if (secondaryDamage != 0)
         {
             secondaryDamage = Formulas.CalculateDamage(
-                secondaryDamage, damageType, scalingStat, scaling, critMultiplier, this, enemy, spellLevel
+                secondaryDamage, damageType, scalingStat, scaling, critMultiplier, this, enemy, spellLevel, element
             );
 
             if (secondaryDamage < 0 && secondaryDamagingAttack)
@@ -2270,8 +2379,9 @@ public abstract partial class Entity : IEntity
             {
                 //If we took damage lets reset our combat timer
                 enemy.SubVital(Vital.Mana, secondaryDamage);
+                var elementText = " [" + element + "]";
                 PacketSender.SendActionMsg(
-                    enemy, Strings.Combat.RemoveSymbol + secondaryDamage, CustomColors.Combat.RemoveMana
+                    enemy, Strings.Combat.RemoveSymbol + secondaryDamage + elementText, CustomColors.Combat.RemoveMana
                 );
 
                 //No Matter what, if we attack the entitiy, make them chase us
@@ -2285,8 +2395,9 @@ public abstract partial class Entity : IEntity
             else if (secondaryDamage < 0 && !enemy.IsFullVital(Vital.Mana))
             {
                 enemy.AddVital(Vital.Mana, -secondaryDamage);
+                var elementText = " [" + element + "]";
                 PacketSender.SendActionMsg(
-                    enemy, Strings.Combat.AddSymbol + Math.Abs(secondaryDamage), CustomColors.Combat.AddMana
+                    enemy, Strings.Combat.AddSymbol + Math.Abs(secondaryDamage) + elementText, CustomColors.Combat.AddMana
                 );
             }
         }

@@ -1,3 +1,4 @@
+using System;
 using System.Drawing.Imaging;
 using DarkUI.Forms;
 using Intersect.Editor.Content;
@@ -228,6 +229,10 @@ public partial class FrmItem : EditorForm
             cmbRarity.Items.Add(Strings.ItemEditor.rarity.GetValueOrDefault(rarityName, $"{rarity}:{rarityName}"));
         }
 
+        lblElement.Text = "Element";
+        cmbElement.Items.Clear();
+        cmbElement.Items.AddRange(Enum.GetNames<ElementType>());
+
         grpEvents.Text = Strings.ItemEditor.EventGroup;
         lblEventForTrigger.Text = Strings.ItemEditor.EventGroupLabel;
 
@@ -366,6 +371,11 @@ public partial class FrmItem : EditorForm
             else if (cmbRarity.Items.Count > 0)
             {
                 cmbRarity.SelectedIndex = 0;
+            }
+
+            if (cmbElement.Items.Count > 0)
+            {
+                cmbElement.SelectedIndex = (int)mEditorItem.Element;
             }
 
             // Stats fijos
@@ -1184,6 +1194,11 @@ public partial class FrmItem : EditorForm
     private void cmbRarity_SelectedIndexChanged(object sender, EventArgs e)
     {
         mEditorItem.Rarity = cmbRarity.SelectedIndex;
+    }
+
+    private void cmbElement_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        mEditorItem.Element = (ElementType)cmbElement.SelectedIndex;
     }
 
     private void cmbCooldownGroup_SelectedIndexChanged(object sender, EventArgs e)

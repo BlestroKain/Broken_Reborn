@@ -197,6 +197,16 @@ public partial class Entity : IEntity
     IReadOnlyDictionary<Stat, int> IEntity.Stats =>
         Enum.GetValues<Stat>().ToDictionary(stat => stat, stat => Stat[(int)stat]);
 
+    public float[] Resistances { get; set; } = new float[Enum.GetValues<ElementType>().Length];
+
+    IReadOnlyDictionary<ElementType, float> IEntity.Resistances =>
+        Enum.GetValues<ElementType>().ToDictionary(elem => elem, elem => Resistances[(int)elem]);
+
+    public float[] ElementDamageBonuses { get; set; } = new float[Enum.GetValues<ElementType>().Length];
+
+    IReadOnlyDictionary<ElementType, float> IEntity.ElementDamageBonuses =>
+        Enum.GetValues<ElementType>().ToDictionary(elem => elem, elem => ElementDamageBonuses[(int)elem]);
+
     public IGameTexture? Texture { get; set; }
 
     #region "Animation Textures and Timing"

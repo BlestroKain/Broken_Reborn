@@ -1716,7 +1716,7 @@ public abstract partial class Entity : IEntity
         {
             Attack(
                 target, parentItem.Damage, 0, (DamageType)parentItem.DamageType, (Stat)parentItem.ScalingStat,
-                parentItem.Scaling, parentItem.CritChance, parentItem.CritMultiplier, null, null, true
+                parentItem.Scaling, parentItem.CritChance, parentItem.CritMultiplier, null, null, true, null, parentItem.Element
             );
         }
 
@@ -1980,7 +1980,8 @@ public abstract partial class Entity : IEntity
                 (Stat)spellDescriptor.Combat.ScalingStat,
                 spellDescriptor.Combat.GetEffectiveScaling(spellProperties),
                 spellDescriptor.Combat.GetEffectiveCritChance(spellProperties),
-                spellDescriptor.Combat.GetEffectiveCritMultiplier(spellProperties), deadAnimations, aliveAnimations, false, spellLevel
+                spellDescriptor.Combat.GetEffectiveCritMultiplier(spellProperties), deadAnimations, aliveAnimations, false, spellLevel,
+                spellDescriptor.Combat.Element
             );
         }
 
@@ -2151,7 +2152,7 @@ public abstract partial class Entity : IEntity
 
         Attack(
             target, baseDamage, 0, damageType, scalingStat, scaling, critChance, critMultiplier, deadAnimations,
-            aliveAnimations, true
+            aliveAnimations, true, null, weapon?.Element ?? ElementType.Neutral
         );
     }
 
@@ -2167,7 +2168,8 @@ public abstract partial class Entity : IEntity
         List<KeyValuePair<Guid, Direction>> deadAnimations = null,
         List<KeyValuePair<Guid, Direction>> aliveAnimations = null,
         bool isAutoAttack = false,
-        int? spellLevel = null
+        int? spellLevel = null,
+        ElementType element = ElementType.Neutral
     )
     {
         var damagingAttack = baseDamage > 0;
@@ -2211,7 +2213,7 @@ public abstract partial class Entity : IEntity
         if (!(enemy is Resource))
         {
             baseDamage = Formulas.CalculateDamage(
-            baseDamage, damageType, scalingStat, scaling, critMultiplier, this, enemy, spellLevel
+            baseDamage, damageType, scalingStat, scaling, critMultiplier, this, enemy, spellLevel, element
         );
         }
 
@@ -2277,24 +2279,27 @@ public abstract partial class Entity : IEntity
                 }
 
                 enemy.SubVital(Vital.Health, baseDamage);
+                var elementText = " [" + element + "]";
                 switch (damageType)
                 {
                     case DamageType.Physical:
                         PacketSender.SendActionMsg(
-                            enemy, Strings.Combat.RemoveSymbol + baseDamage,
+                            enemy, Strings.Combat.RemoveSymbol + baseDamage + elementText,
                             CustomColors.Combat.PhysicalDamage
                         );
 
                         break;
                     case DamageType.Magic:
                         PacketSender.SendActionMsg(
-                            enemy, Strings.Combat.RemoveSymbol + baseDamage, CustomColors.Combat.MagicDamage
+                            enemy, Strings.Combat.RemoveSymbol + baseDamage + elementText,
+                            CustomColors.Combat.MagicDamage
                         );
 
                         break;
                     case DamageType.True:
                         PacketSender.SendActionMsg(
-                            enemy, Strings.Combat.RemoveSymbol + baseDamage, CustomColors.Combat.TrueDamage
+                            enemy, Strings.Combat.RemoveSymbol + baseDamage + elementText,
+                            CustomColors.Combat.TrueDamage
                         );
 
                         break;
@@ -2336,7 +2341,7 @@ public abstract partial class Entity : IEntity
         if (secondaryDamage != 0)
         {
             secondaryDamage = Formulas.CalculateDamage(
-                secondaryDamage, damageType, scalingStat, scaling, critMultiplier, this, enemy, spellLevel
+                secondaryDamage, damageType, scalingStat, scaling, critMultiplier, this, enemy, spellLevel, element
             );
 
             if (secondaryDamage < 0 && secondaryDamagingAttack)
@@ -2348,8 +2353,9 @@ public abstract partial class Entity : IEntity
             {
                 //If we took damage lets reset our combat timer
                 enemy.SubVital(Vital.Mana, secondaryDamage);
+                var elementText = " [" + element + "]";
                 PacketSender.SendActionMsg(
-                    enemy, Strings.Combat.RemoveSymbol + secondaryDamage, CustomColors.Combat.RemoveMana
+                    enemy, Strings.Combat.RemoveSymbol + secondaryDamage + elementText, CustomColors.Combat.RemoveMana
                 );
 
                 //No Matter what, if we attack the entitiy, make them chase us
@@ -2363,8 +2369,9 @@ public abstract partial class Entity : IEntity
             else if (secondaryDamage < 0 && !enemy.IsFullVital(Vital.Mana))
             {
                 enemy.AddVital(Vital.Mana, -secondaryDamage);
+                var elementText = " [" + element + "]";
                 PacketSender.SendActionMsg(
-                    enemy, Strings.Combat.AddSymbol + Math.Abs(secondaryDamage), CustomColors.Combat.AddMana
+                    enemy, Strings.Combat.AddSymbol + Math.Abs(secondaryDamage) + elementText, CustomColors.Combat.AddMana
                 );
             }
         }

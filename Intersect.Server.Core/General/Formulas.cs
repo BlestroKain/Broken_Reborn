@@ -3,6 +3,7 @@ using Intersect.Server.Core;
 using Intersect.Server.Entities;
 using Intersect.Server.Localization;
 using Intersect.Utilities;
+using Intersect.Combat;
 using NCalc;
 using Newtonsoft.Json;
 
@@ -53,7 +54,8 @@ public partial class Formulas
         double critMultiplier,
         Entity attacker,
         Entity victim,
-        int? attackerLevel = null
+        int? attackerLevel = null,
+        ElementType attackerElement = ElementType.Neutral
     )
     {
         if (_formulas == null)
@@ -136,7 +138,19 @@ public partial class Formulas
                 result = -result;
             }
 
-            return (long)Math.Round(result);
+            var attackerElementBonus = attacker.GetResistance(attackerElement);
+            var defenderResistance = victim.GetResistance(attackerElement);
+
+            var defenderElement = ElementType.Neutral;
+            if (victim is Player victimPlayer && victimPlayer.LastAttackingWeapon != null)
+            {
+                defenderElement = victimPlayer.LastAttackingWeapon.Element;
+            }
+
+            var finalDamage = result * (1 + attackerElementBonus - defenderResistance) *
+                              ElementalAffinity.GetMultiplier(attackerElement, defenderElement);
+
+            return (long)Math.Round(finalDamage);
         }
         catch (Exception ex)
         {

@@ -138,7 +138,7 @@ public partial class Formulas
                 result = -result;
             }
 
-            var attackerElementBonus = attacker.GetResistance(attackerElement);
+            var attackerElementBonus = attacker.GetElementDamageBonus(attackerElement);
             var defenderResistance = victim.GetResistance(attackerElement);
 
             var defenderElement = ElementType.Neutral;

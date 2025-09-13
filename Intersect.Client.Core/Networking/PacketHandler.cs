@@ -1079,6 +1079,7 @@ internal sealed partial class PacketHandler
 
         en.Stat = packet.Stats;
         en.Resistances = packet.Resistances;
+        en.ElementDamageBonuses = packet.ElementDamageBonuses;
     }
 
     //EntityDirectionPacket

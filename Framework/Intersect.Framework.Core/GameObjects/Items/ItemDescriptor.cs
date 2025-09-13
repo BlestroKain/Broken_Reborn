@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Animations;
 using Intersect.Framework.Core.GameObjects.Conditions;
@@ -333,6 +334,9 @@ public partial class ItemDescriptor : DatabaseObject<ItemDescriptor>, IFolderabl
     private static Dictionary<ElementType, float> CreateResistanceDictionary() =>
         Enum.GetValues<ElementType>().ToDictionary(type => type, _ => 0f);
 
+    private static Dictionary<ElementType, float> CreateElementDamageBonusDictionary() =>
+        Enum.GetValues<ElementType>().ToDictionary(type => type, _ => 0f);
+
     [Column("Resistances")]
     [JsonIgnore]
     public string ResistancesJson
@@ -345,6 +349,20 @@ public partial class ItemDescriptor : DatabaseObject<ItemDescriptor>, IFolderabl
 
     [NotMapped]
     public Dictionary<ElementType, float> Resistances { get; set; } = CreateResistanceDictionary();
+
+    [Column("ElementDamageBonus")]
+    [JsonIgnore]
+    public string ElementDamageBonusJson
+    {
+        get => JsonConvert.SerializeObject(ElementDamageBonus);
+        set => ElementDamageBonus = string.IsNullOrEmpty(value)
+            ? CreateElementDamageBonusDictionary()
+            : JsonConvert.DeserializeObject<Dictionary<ElementType, float>>(value)
+              ?? CreateElementDamageBonusDictionary();
+    }
+
+    [NotMapped]
+    public Dictionary<ElementType, float> ElementDamageBonus { get; set; } = CreateElementDamageBonusDictionary();
 
     [Column("UsageRequirements")]
     [JsonIgnore]
@@ -520,6 +538,7 @@ public partial class ItemDescriptor : DatabaseObject<ItemDescriptor>, IFolderabl
         VitalsRegen = new long[Enum.GetValues<Vital>().Length];
         PercentageVitalsGiven = new int[Enum.GetValues<Vital>().Length];
         Resistances = CreateResistanceDictionary();
+        ElementDamageBonus = CreateElementDamageBonusDictionary();
         Consumable = new ConsumableData();
         Effects = [];
         Color = new Color(255, 255, 255, 255);

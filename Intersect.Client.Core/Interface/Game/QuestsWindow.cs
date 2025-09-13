@@ -21,7 +21,6 @@ namespace Intersect.Client.Interface.Game
 {
     public partial class QuestsWindow : IQuestWindow
     {
-        private readonly Button mBackButton;
 
         private readonly ScrollControl mQuestDescArea;
         private readonly RichLabel mQuestDescLabel;
@@ -100,9 +99,6 @@ namespace Intersect.Client.Interface.Game
             _rewardExpContainer = TryGetOrCreate(_rewardContainer, "QuestRewardExpContainer", 10, 10, 380, RewardExpHeight);
             _rewardItemsContainer = TryGetOrCreate(_rewardContainer, "QuestRewardItemContainer", 10, 60, 380, 50);
 
-            mBackButton = new Button(mQuestsWindow, "BackButton");
-            mBackButton.Text = Strings.QuestLog.Back;
-            mBackButton.Clicked += _backButton_Clicked;
 
             mQuitButton = new Button(mQuestsWindow, "AbandonQuestButton");
             mQuitButton.SetText(Strings.QuestLog.Abandon);
@@ -159,12 +155,6 @@ namespace Intersect.Client.Interface.Game
                     }
                 );
             }
-        }
-
-        private void _backButton_Clicked(Base sender, MouseButtonState arguments)
-        {
-            mSelectedQuest = null;
-            UpdateSelectedQuest();
         }
 
         private bool _shouldUpdateList;
@@ -375,13 +365,13 @@ namespace Intersect.Client.Interface.Game
 
         private void UpdateSelectedQuest()
         {
+            _questList.Show();
+
             if (mSelectedQuest == null)
             {
-                _questList.Show();
                 mQuestTitle.Hide();
                 mQuestDescArea.Hide();
                 mQuestStatus.Hide();
-                mBackButton.Hide();
                 mQuitButton.Hide();
                 ClearRewardWidgets();
                 return;
@@ -481,14 +471,13 @@ namespace Intersect.Client.Interface.Game
             }
 
             // Mostrar
-            _questList.Hide();
+ 
             mQuestTitle.IsHidden = false;
             mQuestTitle.Text = mSelectedQuest.Name;
             mQuestDescArea.IsHidden = false;
             mQuestDescLabel.Width = mQuestDescArea.Width - mQuestDescArea.VerticalScrollBar.Width;
             mQuestDescLabel.SizeToChildren(false, true);
             mQuestStatus.Show();
-            mBackButton.Show();
             mQuitButton.Show();
 
             // Cargar recompensas de esta quest (ítems + exp) y acomodar

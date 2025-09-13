@@ -1,0 +1,12 @@
+{
+  "Name": "QuestsWindow",
+  "Children": [
+    { "Name": "QuestList" },
+    { "Name": "QuestTitle" },
+    { "Name": "QuestStatus" },
+    { "Name": "QuestDescription" },
+    { "Name": "QuestTasksContainer" },
+    { "Name": "QuestRewardContainer" },
+    { "Name": "AbandonQuestButton" }
+  ]
+}

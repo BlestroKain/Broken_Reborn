@@ -1230,6 +1230,7 @@ partial class frmSets
         toolStripItemNew.Name = "toolStripItemNew";
         toolStripItemNew.Size = new Size(23, 26);
         toolStripItemNew.Text = "New";
+        toolStripItemNew.Click += toolStripItemNew_Click;
         // 
         // toolStripSeparator1
         // 
@@ -1248,6 +1249,7 @@ partial class frmSets
         toolStripItemDelete.Name = "toolStripItemDelete";
         toolStripItemDelete.Size = new Size(23, 26);
         toolStripItemDelete.Text = "Delete";
+        toolStripItemDelete.Click += toolStripItemDelete_Click;
         // 
         // toolStripSeparator2
         // 
@@ -1265,6 +1267,7 @@ partial class frmSets
         btnAlphabetical.Name = "btnAlphabetical";
         btnAlphabetical.Size = new Size(23, 26);
         btnAlphabetical.Text = "Order Chronologically";
+        btnAlphabetical.Click += btnAlphabetical_Click;
         // 
         // toolStripSeparator4
         // 
@@ -1283,6 +1286,7 @@ partial class frmSets
         toolStripItemCopy.Name = "toolStripItemCopy";
         toolStripItemCopy.Size = new Size(23, 26);
         toolStripItemCopy.Text = "Copy";
+        toolStripItemCopy.Click += toolStripItemCopy_Click;
         // 
         // toolStripItemPaste
         // 
@@ -1294,6 +1298,7 @@ partial class frmSets
         toolStripItemPaste.Name = "toolStripItemPaste";
         toolStripItemPaste.Size = new Size(23, 26);
         toolStripItemPaste.Text = "Paste";
+        toolStripItemPaste.Click += toolStripItemPaste_Click;
         // 
         // toolStripSeparator3
         // 
@@ -1312,6 +1317,7 @@ partial class frmSets
         toolStripItemUndo.Name = "toolStripItemUndo";
         toolStripItemUndo.Size = new Size(23, 26);
         toolStripItemUndo.Text = "Undo";
+        toolStripItemUndo.Click += toolStripItemUndo_Click;
         // 
         // frmSets
         // 

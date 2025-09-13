@@ -38,6 +38,10 @@ using Intersect.Server.Framework.Entities;
 using Intersect.Server.Framework.Items;
 using Intersect.Server.Localization;
 using Intersect.Server.Maps;
+using ItemResistanceModifier = Intersect.Framework.Core.GameObjects.Items.IResistanceModifier;
+using ItemDamageModifier = Intersect.Framework.Core.GameObjects.Items.IDamageModifier;
+using SpellResistanceModifier = Intersect.Framework.Core.GameObjects.Spells.IResistanceModifier;
+using SpellDamageModifier = Intersect.Framework.Core.GameObjects.Spells.IDamageModifier;
 using Intersect.Server.Networking;
 using Intersect.Server.Core;
 using Intersect.Utilities;
@@ -2132,6 +2136,58 @@ public partial class Player : Entity
     public float GetEquipmentElementDamageBonus(ElementType elementType)
     {
         return mEquipmentElementDamageBonuses[(int)elementType];
+    }
+
+    public float GetSpellResistance(ElementType elementType)
+    {
+        var total = 0f;
+        foreach (var slot in Spells)
+        {
+            if (slot.SpellId == Guid.Empty)
+            {
+                continue;
+            }
+
+            var props = GetSpellProperties(slot.SpellId);
+            if (props is SpellResistanceModifier resistanceModifier)
+            {
+                foreach (var resist in resistanceModifier.GetResistanceModifiers())
+                {
+                    if (resist.Key == elementType)
+                    {
+                        total += resist.Value;
+                    }
+                }
+            }
+        }
+
+        return total;
+    }
+
+    public float GetSpellElementDamageBonus(ElementType elementType)
+    {
+        var total = 0f;
+        foreach (var slot in Spells)
+        {
+            if (slot.SpellId == Guid.Empty)
+            {
+                continue;
+            }
+
+            var props = GetSpellProperties(slot.SpellId);
+            if (props is SpellDamageModifier damageModifier)
+            {
+                foreach (var bonus in damageModifier.GetDamageModifiers())
+                {
+                    if (bonus.Key == elementType)
+                    {
+                        total += bonus.Value;
+                    }
+                }
+            }
+        }
+
+        return total;
     }
 
 
@@ -6345,6 +6401,23 @@ public partial class Player : Entity
                 if (descriptor.ElementDamageBonus != null)
                 {
                     foreach (var bonus in descriptor.ElementDamageBonus)
+                    {
+                        mEquipmentElementDamageBonuses[(int)bonus.Key] += bonus.Value;
+                    }
+                }
+
+                var props = invItem?.Properties;
+                if (props is ItemResistanceModifier resistanceModifier)
+                {
+                    foreach (var resist in resistanceModifier.GetResistanceModifiers())
+                    {
+                        mEquipmentResistances[(int)resist.Key] += resist.Value;
+                    }
+                }
+
+                if (props is ItemDamageModifier damageModifier)
+                {
+                    foreach (var bonus in damageModifier.GetDamageModifiers())
                     {
                         mEquipmentElementDamageBonuses[(int)bonus.Key] += bonus.Value;
                     }

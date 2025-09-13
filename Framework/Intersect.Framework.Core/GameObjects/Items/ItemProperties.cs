@@ -1,7 +1,19 @@
+using System.Collections.Generic;
 using Intersect.Enums;
 using MessagePack;
 
 namespace Intersect.Framework.Core.GameObjects.Items;
+
+// Placeholder interfaces for custom item modifiers such as equipment or runes
+public interface IResistanceModifier
+{
+    IReadOnlyDictionary<ElementType, float> GetResistanceModifiers();
+}
+
+public interface IDamageModifier
+{
+    IReadOnlyDictionary<ElementType, float> GetDamageModifiers();
+}
 
 [MessagePackObject]
 public partial class ItemProperties

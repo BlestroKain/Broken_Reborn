@@ -405,14 +405,16 @@ public abstract partial class Entity : IEntity
         var baseVal = Resistances.TryGetValue(element, out var val) ? val : 0f;
         var buffVal = _cachedResistanceBuffs.Sum(b => b.Resistances[(int)element]);
         var equipVal = this is Player player ? player.GetEquipmentResistance(element) : 0f;
-        return baseVal + buffVal + equipVal;
+        var spellVal = this is Player spellPlayer ? spellPlayer.GetSpellResistance(element) : 0f;
+        return baseVal + buffVal + equipVal + spellVal;
     }
 
     public float GetElementDamageBonus(ElementType element)
     {
         var baseVal = ElementDamageBonus.TryGetValue(element, out var val) ? val : 0f;
         var equipVal = this is Player player ? player.GetEquipmentElementDamageBonus(element) : 0f;
-        return baseVal + equipVal;
+        var spellVal = this is Player spellPlayer ? spellPlayer.GetSpellElementDamageBonus(element) : 0f;
+        return baseVal + equipVal + spellVal;
     }
 
     public virtual void Update(long timeMs)

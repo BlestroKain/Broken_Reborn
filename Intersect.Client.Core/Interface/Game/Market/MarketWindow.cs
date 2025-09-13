@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Timers;
 using Intersect.Client.Core;
 using Intersect.Client.Framework.File_Management;
+using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
 using Intersect.Client.Framework.Gwen.Control.Layout;
@@ -267,6 +268,8 @@ namespace Intersect.Client.Interface.Game.Market
             verticalScrollBar.BarMoved -= OnScroll;
             verticalScrollBar.BarMoved += OnScroll;
 
+            mListingScroll.SizeChanged += OnListingScrollSizeChanged;
+
         }
         private void SellMarket_Clicked(Base sender, MouseButtonState arguments)
         {
@@ -505,6 +508,46 @@ namespace Intersect.Client.Interface.Game.Market
         private void OnScroll(Base sender, EventArgs args)
         {
             UpdateVirtualRows();
+        }
+
+        private void OnListingScrollSizeChanged(Base sender, ValueChangedEventArgs<Point> args)
+        {
+            if (!_useVirtualization || _allListings.Count == 0)
+            {
+                return;
+            }
+
+            var visibleRows = Math.Max(1, mListingScroll.Height / ItemHeight);
+            var requiredRows = visibleRows + VirtualBuffer * 2;
+
+            if (requiredRows == _virtualRows.Count)
+            {
+                return;
+            }
+
+            foreach (var row in _virtualRows)
+            {
+                row.Container?.DelayedDelete();
+            }
+
+            _virtualRows.Clear();
+
+            for (var i = 0; i < requiredRows; i++)
+            {
+                var dummy = _allListings[0];
+                var item = new MarketItem(this, dummy)
+                {
+                    Container = new ImagePanel(mListingScroll, "MarketItemRow"),
+                };
+                item.Setup();
+                item.Container.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
+                item.Update(dummy);
+                item.Container.Show();
+                _virtualRows.Add(item);
+            }
+
+            UpdateVirtualRows();
+            mListingScroll.UpdateScrollBars();
         }
 
         private void UpdateVirtualRows()

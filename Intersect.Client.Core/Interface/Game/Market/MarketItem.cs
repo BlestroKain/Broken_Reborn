@@ -101,7 +101,7 @@ namespace Intersect.Client.Interface.Game.Market
         public void Update(MarketListingPacket newListing)
         {
             _listing = newListing;
-            ResetBuying();
+            SetBuying(false);
 
             UpdateActionButton();
 
@@ -218,6 +218,15 @@ namespace Intersect.Client.Interface.Game.Market
             Interface.GameUi.ItemDescriptionWindow?.Hide();
         }
 
+        public void SetBuying(bool on)
+        {
+            _buying = on;
+            if (_buyButton != null)
+            {
+                _buyButton.IsDisabled = on;
+            }
+        }
+
         private async void AttemptPurchase()
         {
             if (_buying)
@@ -225,21 +234,14 @@ namespace Intersect.Client.Interface.Game.Market
                 return;
             }
 
-            _buying = true;
-            _buyButton?.Disable();
+            SetBuying(true);
             PacketSender.SendBuyMarketListing(_listing.ListingId);
 
             await Task.Delay(5000);
             if (_buying)
             {
-                ResetBuying();
+                SetBuying(false);
             }
-        }
-
-        public void ResetBuying()
-        {
-            _buying = false;
-            _buyButton?.Enable();
         }
     }
 }

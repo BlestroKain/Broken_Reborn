@@ -472,6 +472,16 @@ internal sealed partial class PacketHandler
         PacketSender.SendInventory(player);
         PacketSender.SendOpenMailBox(player);
     }
+    public void HandlePacket(Client client, MailBoxClosePacket packet)
+    {
+        var player = client?.Entity;
+        if (player == null)
+        {
+            return;
+        }
+
+        player.CloseMailBox();
+    }
 
     public void HandlePacket(Client client, SpellPropertiesChangePacket packet)
     {

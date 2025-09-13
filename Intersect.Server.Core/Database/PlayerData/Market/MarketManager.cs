@@ -248,44 +248,54 @@ namespace Intersect.Server.Database.PlayerData.Players
         public static bool TryBuyListing(Player buyer, Guid listingId)
         {
             using var context = DbInterface.CreatePlayerContext(readOnly: false);
-            context.StopTrackingUsersExcept(buyer.User); // ✅ Prevenir tracking duplicado
 
-            // ✅ Adjuntar comprador (en caso de que lo requiera EF)
-            context.Attach(buyer);
+            // Transacción para evitar ventas dobles y garantizar atomicidad
+            using var tx = context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
 
+            // Cargar listing + seller desde ESTE contexto
             var listing = context.Market_Listings
                 .Include(l => l.Seller)
                 .FirstOrDefault(l => l.Id == listingId);
 
             if (listing == null || listing.IsSold || listing.ExpireAt <= DateTime.UtcNow)
             {
-                PacketSender.SendChatMsg(buyer, Strings.Market.listingunavailable, ChatMessageType.Error, CustomColors.Alerts.Declined);
+                PacketSender.SendChatMsg(
+                    buyer, Strings.Market.listingunavailable, ChatMessageType.Error, CustomColors.Alerts.Declined
+                );
                 return false;
             }
 
+            // Moneda por defecto
             var currencyBase = GetDefaultCurrency();
             if (currencyBase == null)
             {
-                PacketSender.SendChatMsg(buyer, "Currency not configured.", ChatMessageType.Error, CustomColors.Alerts.Error);
+                PacketSender.SendChatMsg(
+                    buyer, "Currency not configured.", ChatMessageType.Error, CustomColors.Alerts.Error
+                );
                 return false;
             }
 
+            // Validaciones sobre el jugador "vivo" (inventario/dinero) – esto es parte del runtime del juego
             var totalCost = listing.Price;
             var currencyAmount = buyer.FindInventoryItemQuantity(currencyBase.Id);
-
             if (currencyAmount < totalCost)
             {
-                PacketSender.SendChatMsg(buyer, Strings.Market.notenoughmoney, ChatMessageType.Error, CustomColors.Alerts.Declined);
+                PacketSender.SendChatMsg(
+                    buyer, Strings.Market.notenoughmoney, ChatMessageType.Error, CustomColors.Alerts.Declined
+                );
                 return false;
             }
 
             var itemToGive = new Item(listing.ItemId, listing.Quantity) { Properties = listing.ItemProperties };
             if (!buyer.CanGiveItem(itemToGive.ItemId, itemToGive.Quantity))
             {
-                PacketSender.SendChatMsg(buyer, Strings.Market.inventoryfull, ChatMessageType.Error, CustomColors.Alerts.Declined);
+                PacketSender.SendChatMsg(
+                    buyer, Strings.Market.inventoryfull, ChatMessageType.Error, CustomColors.Alerts.Declined
+                );
                 return false;
             }
 
+            // Cobro: quitar moneda del comprador (runtime)
             var currencySlots = buyer.FindInventoryItemSlots(currencyBase.Id);
             var remainingCost = totalCost;
             var removedItems = new Dictionary<Guid, int>();
@@ -302,31 +312,35 @@ namespace Intersect.Server.Database.PlayerData.Players
 
                 removedItems[itemSlot.Id] = quantityToRemove;
                 remainingCost -= quantityToRemove;
-
                 if (remainingCost <= 0) break;
             }
 
             if (!success || remainingCost > 0)
             {
+                // Revertir cobro en memoria si algo falló
                 foreach (var kvp in removedItems)
                 {
                     buyer.TryGiveItem(kvp.Key, kvp.Value);
                 }
 
-                PacketSender.SendChatMsg(buyer, Strings.Market.transactionfailed, ChatMessageType.Error, CustomColors.Alerts.Declined);
+                PacketSender.SendChatMsg(
+                    buyer, Strings.Market.transactionfailed, ChatMessageType.Error, CustomColors.Alerts.Declined
+                );
                 return false;
             }
 
-            // ✅ Marcar como vendido y dar el ítem
+            // Marcar vendido y quitar del mercado en BD
             listing.IsSold = true;
-            context.Remove(listing);
-            context.Update(listing);
+            context.Market_Listings.Remove(listing); // ✅ Remove es suficiente; no hagas Update también
+
+            // Entregar ítem al comprador (runtime)
             buyer.TryGiveItem(itemToGive, -1);
 
+            // Registrar transacción
             var transaction = new MarketTransaction
             {
                 ListingId = listing.Id,
-                Seller = listing.Seller,
+                Seller = listing.Seller,           // ya está trackeado por este contexto
                 BuyerName = buyer.Name,
                 ItemId = listing.ItemId,
                 Quantity = listing.Quantity,
@@ -335,61 +349,75 @@ namespace Intersect.Server.Database.PlayerData.Players
             };
             context.Market_Transactions.Add(transaction);
 
+            // Preparar mail con el oro para el vendedor
             var goldAttachment = new MailAttachment
             {
                 ItemId = currencyBase.Id,
                 Quantity = totalCost
             };
 
-            var mail = new MailBox(
-                sender: buyer,
-                receiver: listing.Seller,
-                title: Strings.Market.salecompleted,
-               message: Strings.Market.yoursolditem.ToString(ItemDescriptor.GetName(listing.ItemId)),
-                attachments: new List<MailAttachment> { goldAttachment }
-            );
-
             var sellerOnline = Player.FindOnline(listing.Seller.Name);
             if (sellerOnline != null)
             {
-                sellerOnline.MailBoxs.Add(mail);
+                // En línea: usa el runtime y notifica
+                var mailOnline = new MailBox(
+                    sender: buyer,                       // runtime ok porque NO lo metemos en EF
+                    receiver: sellerOnline,
+                    title: Strings.Market.salecompleted,
+                    message: Strings.Market.yoursolditem.ToString(ItemDescriptor.GetName(listing.ItemId)),
+                    attachments: new List<MailAttachment> { goldAttachment }
+                );
+
+                sellerOnline.MailBoxs.Add(mailOnline);
                 PacketSender.SendChatMsg(sellerOnline, Strings.Market.yoursolditem, ChatMessageType.Trading, CustomColors.Alerts.Accepted);
                 PacketSender.SendOpenMailBox(sellerOnline);
             }
             else
             {
-                // ❌ Ya está traqueado por EF, NO volver a hacer context.Attach(listing.Seller)
-                context.Player_MailBox.Add(mail);
+                // Offline: NUNCA uses la instancia 'buyer' del runtime dentro del contexto EF.
+                // Crea un STUB del comprador y adjúntalo (o usa SenderId si tu modelo lo soporta).
+                var buyerStub = context.Players.Local.FirstOrDefault(p => p.Id == buyer.Id)
+                                ?? context.Attach(new Player { Id = buyer.Id }).Entity;
+
+                var mailOffline = new MailBox(
+                    sender: buyerStub,                 // stub adjuntado al contexto
+                    receiver: listing.Seller,          // ya trackeado
+                    title: Strings.Market.salecompleted,
+                    message: Strings.Market.yoursolditem.ToString(ItemDescriptor.GetName(listing.ItemId)),
+                    attachments: new List<MailAttachment> { goldAttachment }
+                );
+
+                context.Player_MailBox.Add(mailOffline);
             }
 
-            int retries = 3;
-            while (retries > 0)
+            try
             {
-                try
-                {
-                    context.SaveChanges();
-                    break;
-                }
-                catch (DbUpdateException ex)
-                {
-                    Log.Error($"❌ Error de concurrencia al comprar ítem. Reintentos restantes: {retries - 1}", ex);
-                    retries--;
-
-                    if (retries == 0)
-                    {
-                        PacketSender.SendChatMsg(buyer, Strings.Market.transactionfailed, ChatMessageType.Error, CustomColors.Alerts.Declined);
-                        return false;
-                    }
-                }
+                context.SaveChanges();
+                tx.Commit();
             }
-            UpdateStatistics(transaction);
+            catch (Exception ex) // puedes acotar a DbUpdateConcurrencyException/DbUpdateException si prefieres
+            {
+                // Revertir cobro en memoria si la persistencia falló
+                foreach (var kvp in removedItems)
+                {
+                    buyer.TryGiveItem(kvp.Key, kvp.Value);
+                }
 
-            PacketSender.SendChatMsg(buyer, Strings.Market.itempurchased, ChatMessageType.Trading, CustomColors.Alerts.Accepted);
-            PacketSender.SendRefreshMarket(buyer); // Actualiza al cliente con nuevo mercado
+                PacketSender.SendChatMsg(
+                    buyer, Strings.Market.transactionfailed, ChatMessageType.Error, CustomColors.Alerts.Declined
+                );
+                return false;
+            }
+
+            // Actualizaciones auxiliares
+            UpdateStatistics(transaction);
             MarketStatisticsManager.UpdateStatistics(transaction);
+            PacketSender.SendChatMsg(buyer, Strings.Market.itempurchased, ChatMessageType.Trading, CustomColors.Alerts.Accepted);
+            PacketSender.SendRefreshMarket(buyer);
 
             return true;
         }
+
 
 
         private const float DefaultMarketTax = 0.02f; // 2% por publicación

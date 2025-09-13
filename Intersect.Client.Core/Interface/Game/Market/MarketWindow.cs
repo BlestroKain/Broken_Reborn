@@ -264,6 +264,9 @@ namespace Intersect.Client.Interface.Game.Market
 
             mListingScroll.Show(); // Forzar creación visual
 
+            verticalScrollBar.BarMoved -= OnScroll;
+            verticalScrollBar.BarMoved += OnScroll;
+
         }
         private void SellMarket_Clicked(Base sender, MouseButtonState arguments)
         {
@@ -292,6 +295,10 @@ namespace Intersect.Client.Interface.Game.Market
         private void OnWindowClosed(Base sender, EventArgs args)
         {
             _closed = true;
+            if (mListingScroll?.VerticalScrollBar != null)
+            {
+                mListingScroll.VerticalScrollBar.BarMoved -= OnScroll;
+            }
             _debounce.Stop();
             _debounce.Dispose();
         }
@@ -721,7 +728,8 @@ namespace Intersect.Client.Interface.Game.Market
             mErrorLabel.Hide();
             mRetryButton.Hide();
 
-            mListingScroll.VerticalScrollBar.BarMoved -= OnScroll;
+            var scrollBar = mListingScroll.VerticalScrollBar;
+            scrollBar.BarMoved -= OnScroll;
 
             if (listings.Count > VirtualizationThreshold)
             {
@@ -749,15 +757,13 @@ namespace Intersect.Client.Interface.Game.Market
                         };
                         item.Setup();
                         item.Container.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
-                 
+
                         item.Update(dummy); // no imprescindible, pero así evitas “vacíos” iniciales
                         item.Container.Show();
                         _virtualRows.Add(item);
 
                     }
                 }
-
-                mListingScroll.VerticalScrollBar.BarMoved += OnScroll;
             }
             else
             {
@@ -808,7 +814,7 @@ namespace Intersect.Client.Interface.Game.Market
                         };
                         item.Setup();
                         item.Container.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
-                 
+
                         item.Update(listing); // <- importante para que cargue icono/textos ya mismo
                         item.Container.Show();
                         mCurrentItems[listing.ListingId] = item;
@@ -834,6 +840,9 @@ namespace Intersect.Client.Interface.Game.Market
             {
                 UpdateVirtualRows();
             }
+
+            scrollBar.BarMoved += OnScroll;
+
             if ((_useVirtualization ? _filteredListings.Count : mListingOrder.Count) == 0)
             {
                 mNoResultsLabel.Show();

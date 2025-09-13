@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Intersect;
 using Intersect.Client.Core;
+using Intersect.Client.Entities;
 using Intersect.Client.Framework.GenericClasses;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.Layout;
@@ -400,7 +401,7 @@ namespace Intersect.Client.Interface.Game.Market
             PopulateSlotContainer.Populate(_inventoryScroll, visibleItems);
         }
 
-        private void PlayerOnInventoryUpdated(object? sender, EventArgs e)
+        private void PlayerOnInventoryUpdated(Player player, int slotIndex)
         {
             _slotsDirty = true;
             Update();

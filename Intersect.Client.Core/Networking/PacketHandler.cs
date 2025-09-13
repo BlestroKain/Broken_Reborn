@@ -2090,16 +2090,24 @@ internal sealed partial class PacketHandler
                     {
                         Globals.Me.QuestProgress.Remove(quest.Key);
                     }
+
+                    Globals.RemoveQuestRewards(quest.Key);
                 }
                 else
                 {
+                    var progress = new QuestProgress(quest.Value);
                     if (Globals.Me.QuestProgress.ContainsKey(quest.Key))
                     {
-                        Globals.Me.QuestProgress[quest.Key] = new QuestProgress(quest.Value);
+                        Globals.Me.QuestProgress[quest.Key] = progress;
                     }
                     else
                     {
-                        Globals.Me.QuestProgress.Add(quest.Key, new QuestProgress(quest.Value));
+                        Globals.Me.QuestProgress.Add(quest.Key, progress);
+                    }
+
+                    if (progress.Completed)
+                    {
+                        Globals.RemoveQuestRewards(quest.Key);
                     }
                 }
             }

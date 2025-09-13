@@ -106,6 +106,15 @@ public static partial class Globals
 
     public static bool QuestDirty;
 
+    public static void RemoveQuestRewards(Guid questId)
+    {
+        QuestRewards.Remove(questId);
+        QuestExperience.Remove(questId);
+        QuestJobExperience.Remove(questId);
+        QuestGuildExperience.Remove(questId);
+        QuestFactionHonor.Remove(questId);
+    }
+
     public static readonly Random Random = new();
 
     public static GameSystem System;

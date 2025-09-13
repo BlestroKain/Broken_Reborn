@@ -97,11 +97,7 @@ public partial class QuestOfferWindow : IQuestWindow
             var questId = Globals.QuestOffers[0];
             PacketSender.SendDeclineQuest(questId);
             Globals.QuestOffers.RemoveAt(0);
-            Globals.QuestRewards.Remove(questId);
-            Globals.QuestExperience.Remove(questId);
-            Globals.QuestJobExperience.Remove(questId);
-            Globals.QuestGuildExperience.Remove(questId);
-            Globals.QuestFactionHonor.Remove(questId);
+            Globals.RemoveQuestRewards(questId);
             ClearRewardWidgets();
         }
     }
@@ -113,11 +109,7 @@ public partial class QuestOfferWindow : IQuestWindow
             var questId = Globals.QuestOffers[0];
             PacketSender.SendAcceptQuest(questId);
             Globals.QuestOffers.RemoveAt(0);
-            Globals.QuestRewards.Remove(questId);
-            Globals.QuestExperience.Remove(questId);
-            Globals.QuestJobExperience.Remove(questId);
-            Globals.QuestGuildExperience.Remove(questId);
-            Globals.QuestFactionHonor.Remove(questId);
+            Globals.RemoveQuestRewards(questId);
             ClearRewardWidgets();
         }
     }

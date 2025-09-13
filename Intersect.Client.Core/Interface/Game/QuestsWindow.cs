@@ -94,6 +94,7 @@ public partial class QuestsWindow : IQuestWindow
                     if (s is InputBox inputBox && inputBox.UserData is Guid questId)
                     {
                         PacketSender.SendAbandonQuest(questId);
+                        Globals.RemoveQuestRewards(questId);
                     }
                 }
             );
@@ -102,7 +103,9 @@ public partial class QuestsWindow : IQuestWindow
 
     void AbandonQuest(object sender, EventArgs e)
     {
-        PacketSender.SendAbandonQuest((Guid) ((InputBox) sender).UserData);
+        var questId = (Guid) ((InputBox) sender).UserData;
+        PacketSender.SendAbandonQuest(questId);
+        Globals.RemoveQuestRewards(questId);
     }
 
     private void _backButton_Clicked(Base sender, MouseButtonState arguments)

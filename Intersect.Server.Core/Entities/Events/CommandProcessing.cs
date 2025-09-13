@@ -2323,6 +2323,36 @@ public static partial class CommandProcessing
         }
     }
 
+    // Give Guild Experience Command
+    private static void ProcessCommand(
+        GiveGuildExperienceCommand command,
+        Player player,
+        Event instance,
+        CommandInstance stackInfo,
+        Stack<CommandInstance> callStack
+    )
+    {
+        if (command.Exp > 0)
+        {
+            player.DonateGuildExperience(command.Exp);
+        }
+    }
+
+    // Give Faction Honor Command
+    private static void ProcessCommand(
+        GiveFactionHonorCommand command,
+        Player player,
+        Event instance,
+        CommandInstance stackInfo,
+        Stack<CommandInstance> callStack
+    )
+    {
+        if (command.Honor.TryGetValue(player.Faction, out var amount) && amount != 0)
+        {
+            HonorService.AdjustHonor(player, amount);
+        }
+    }
+
 
     private static void ProcessCommand(
     OpenEnchantmentWindowCommand command,

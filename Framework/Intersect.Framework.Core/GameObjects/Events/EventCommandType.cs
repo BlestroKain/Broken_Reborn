@@ -147,4 +147,6 @@ public enum EventCommandType
     ChangeBestiary = 206,
     OpenMarket = 207,
     OpenMarketSell = 208,
+    GiveGuildExperience = 209,
+    GiveFactionHonor = 210,
 }

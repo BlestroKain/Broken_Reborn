@@ -1,7 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations.Schema;
+using Intersect.Config;
 using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Conditions;
 using Intersect.Framework.Core.GameObjects.Events;
+using Intersect.Framework.Core.GameObjects.Events.Commands;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.Quests;
@@ -180,6 +182,99 @@ public partial class QuestDescriptor : DatabaseObject<QuestDescriptor>, IFoldera
 
         return null;
     }
+
+    public Dictionary<Guid, int> GetRewardItems()
+    {
+        var rewardItems = new Dictionary<Guid, int>();
+        if (EndEvent != null)
+        {
+            foreach (var page in EndEvent.Pages)
+            {
+                foreach (var commandList in page.CommandLists.Values)
+                {
+                    foreach (var command in commandList)
+                    {
+                        if (command is ChangeItemsCommand changeItemsCommand && changeItemsCommand.Add)
+                        {
+                            if (rewardItems.ContainsKey(changeItemsCommand.ItemId))
+                            {
+                                rewardItems[changeItemsCommand.ItemId] += changeItemsCommand.Quantity;
+                            }
+                            else
+                            {
+                                rewardItems[changeItemsCommand.ItemId] = changeItemsCommand.Quantity;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return rewardItems;
+    }
+    public (long playerExp, Dictionary<JobType, long> jobExp, long guildExp, Dictionary<Factions, int> honor)
+        GetRewardExperience()
+    {
+        long playerExp = 0;
+        long guildExp = 0;
+
+        var jobExp = new Dictionary<JobType, long>();
+        var honor = new Dictionary<Factions, int>();
+
+        if (EndEvent == null)
+            return (playerExp, jobExp, guildExp, honor);
+
+        // Helpers locales
+        static void AddLong<TKey>(Dictionary<TKey, long> dict, TKey key, long amount)
+        {
+            if (amount <= 0) return;
+            dict[key] = dict.TryGetValue(key, out var prev) ? checked(prev + amount) : amount;
+        }
+
+        static void AddInt<TKey>(Dictionary<TKey, int> dict, TKey key, int amount)
+        {
+            if (amount <= 0) return;
+            dict[key] = dict.TryGetValue(key, out var prev) ? checked(prev + amount) : amount;
+        }
+
+        foreach (var page in EndEvent.Pages)
+        {
+            foreach (var commandList in page.CommandLists.Values)
+            {
+                foreach (var command in commandList)
+                {
+                    switch (command)
+                    {
+                        case GiveExperienceCommand c:
+                            if (c.Exp > 0) playerExp = checked(playerExp + c.Exp);
+                            break;
+
+                        case GiveJobExperienceCommand c when c.JobExp != null:
+                            foreach (var (job, amount) in c.JobExp)
+                            {
+                                if (job == JobType.None) continue;
+                                AddLong(jobExp, job, amount);
+                            }
+                            break;
+
+                        case GiveGuildExperienceCommand c:
+                            if (c.Exp > 0) guildExp = checked(guildExp + c.Exp);
+                            break;
+
+                        case GiveFactionHonorCommand c when c.Honor != null:
+                            foreach (var (faction, amount) in c.Honor)
+                            {
+                                AddInt(honor, faction, amount);
+                            }
+                            break;
+                    }
+                }
+            }
+        }
+
+        return (playerExp, jobExp, guildExp, honor);
+    }
+
 }
 
 public partial class QuestTaskDescriptor
@@ -244,3 +339,4 @@ public partial class QuestTaskDescriptor
         return taskString;
     }
 }
+

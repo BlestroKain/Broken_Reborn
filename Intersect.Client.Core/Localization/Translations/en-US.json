@@ -2,5 +2,16 @@
   "Inventory": {
     "Sort": "Sort",
     "All": "All"
+  },
+  "QuestRewardExp": {
+    "PlayerExpTooltip": "Player EXP",
+    "JobExpTooltip": "{0} EXP",
+    "JobGenericTooltip": "Job EXP",
+    "GuildExpTooltip": "Guild EXP",
+    "FactionHonorTooltip": "{0} Honor",
+    "FactionHonorGenericTooltip": "Faction Honor",
+    "FactionNeutralName": "Neutral",
+    "FactionSerolfName": "Serolf",
+    "FactionNidrajName": "Nidraj"
   }
 }

@@ -2069,6 +2069,12 @@ internal sealed partial class PacketHandler
         {
             Globals.QuestOffers.Add(packet.QuestId);
         }
+
+        Globals.QuestRewards[packet.QuestId] = packet.QuestRewardItems;
+        Globals.QuestExperience[packet.QuestId] = packet.QuestRewardExperience;
+        Globals.QuestJobExperience[packet.QuestId] = packet.QuestRewardJobExperience;
+        Globals.QuestGuildExperience[packet.QuestId] = packet.QuestRewardGuildExperience;
+        Globals.QuestFactionHonor[packet.QuestId] = packet.QuestRewardFactionHonor;
     }
 
     //QuestProgressPacket
@@ -2084,23 +2090,55 @@ internal sealed partial class PacketHandler
                     {
                         Globals.Me.QuestProgress.Remove(quest.Key);
                     }
+
+                    Globals.RemoveQuestRewards(quest.Key);
                 }
                 else
                 {
+                    var progress = new QuestProgress(quest.Value);
                     if (Globals.Me.QuestProgress.ContainsKey(quest.Key))
                     {
-                        Globals.Me.QuestProgress[quest.Key] = new QuestProgress(quest.Value);
+                        Globals.Me.QuestProgress[quest.Key] = progress;
                     }
                     else
                     {
-                        Globals.Me.QuestProgress.Add(quest.Key, new QuestProgress(quest.Value));
+                        Globals.Me.QuestProgress.Add(quest.Key, progress);
+                    }
+
+                    if (progress.Completed)
+                    {
+                        Globals.RemoveQuestRewards(quest.Key);
                     }
                 }
             }
 
-            Globals.Me.HiddenQuests = packet.HiddenQuests;
+            foreach (var reward in packet.QuestRewardItems)
+            {
+                Globals.QuestRewards[reward.Key] = reward.Value;
+            }
 
-            Interface.Interface.EnqueueInGame(uiInGame => uiInGame.NotifyQuestsUpdated());
+            foreach (var exp in packet.QuestRewardExperience)
+            {
+                Globals.QuestExperience[exp.Key] = exp.Value;
+            }
+
+            foreach (var jobExp in packet.QuestRewardJobExperience)
+            {
+                Globals.QuestJobExperience[jobExp.Key] = jobExp.Value;
+            }
+
+            foreach (var guildExp in packet.QuestRewardGuildExperience)
+            {
+                Globals.QuestGuildExperience[guildExp.Key] = guildExp.Value;
+            }
+
+            foreach (var honor in packet.QuestRewardFactionHonor)
+            {
+                Globals.QuestFactionHonor[honor.Key] = honor.Value;
+            }
+
+            Globals.Me.HiddenQuests = packet.HiddenQuests;
+            Globals.QuestDirty = true;
         }
     }
 

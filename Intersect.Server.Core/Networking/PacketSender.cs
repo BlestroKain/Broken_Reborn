@@ -2212,16 +2212,39 @@ public static partial class PacketSender
     //QuestOfferPacket
     public static void SendQuestOffer(Player player, Guid questId)
     {
-        player.SendPacket(new QuestOfferPacket(questId));
+        var quest = QuestDescriptor.Get(questId);
+        var items = quest?.GetRewardItems() ?? new Dictionary<Guid, int>();
+        var (playerExp, jobExp, guildExp, honor) = quest?.GetRewardExperience() ??
+                                                  (0L, new Dictionary<JobType, long>(), 0L, new Dictionary<Factions, int>());
+        player.SendPacket(new QuestOfferPacket(questId, items, playerExp, jobExp, guildExp, honor));
     }
 
     //QuestProgressPacket
     public static void SendQuestsProgress(Player player)
     {
         var dict = new Dictionary<Guid, string>();
+        var rewardItems = new Dictionary<Guid, Dictionary<Guid, int>>();
+        var rewardExperience = new Dictionary<Guid, long>();
+        var rewardJobExperience = new Dictionary<Guid, Dictionary<JobType, long>>();
+        var rewardGuildExperience = new Dictionary<Guid, long>();
+        var rewardFactionHonor = new Dictionary<Guid, Dictionary<Factions, int>>();
+
         foreach (var quest in player.Quests)
         {
             dict.Add(quest.QuestId, quest.Data());
+
+            var questDescriptor = QuestDescriptor.Get(quest.QuestId);
+            if (questDescriptor == null)
+            {
+                continue;
+            }
+
+            rewardItems[quest.QuestId] = questDescriptor.GetRewardItems();
+            var (playerExp, jobExp, guildExp, honor) = questDescriptor.GetRewardExperience();
+            rewardExperience[quest.QuestId] = playerExp;
+            rewardJobExperience[quest.QuestId] = jobExp;
+            rewardGuildExperience[quest.QuestId] = guildExp;
+            rewardFactionHonor[quest.QuestId] = honor;
         }
 
         var hiddenQuests = new List<Guid>();
@@ -2234,7 +2257,8 @@ public static partial class PacketSender
             }
         }
 
-        player.SendPacket(new QuestProgressPacket(dict, hiddenQuests.ToArray()));
+        player.SendPacket(new QuestProgressPacket(dict, hiddenQuests.ToArray(), rewardItems, rewardExperience,
+            rewardJobExperience, rewardGuildExperience, rewardFactionHonor));
     }
 
   

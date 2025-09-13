@@ -17,6 +17,7 @@ using Intersect.Utilities;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Collections.Generic;
+using System;
 using Graphics = System.Drawing.Graphics;
 
 namespace Intersect.Editor.Forms.Editors;
@@ -281,6 +282,10 @@ public partial class FrmSpell : EditorForm
             cmbDamageType.Items.Add(Strings.Combat.damagetypes[i]);
         }
 
+        lblElement.Text = "Element";
+        cmbElement.Items.Clear();
+        cmbElement.Items.AddRange(Enum.GetNames<ElementType>());
+
         lblScalingStat.Text = Strings.SpellEditor.scalingstat;
         lblScaling.Text = Strings.SpellEditor.scalingamount;
 
@@ -531,9 +536,10 @@ public partial class FrmSpell : EditorForm
             nudDmgPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int)Stat.Damages];
             nudCurPercentage.Value = mEditorItem.Combat.PercentageStatDiff[(int)Stat.Cures];
 
-            chkFriendly.Checked = Convert.ToBoolean(mEditorItem.Combat.Friendly);
-            cmbDamageType.SelectedIndex = mEditorItem.Combat.DamageType;
-            cmbScalingStat.SelectedIndex = mEditorItem.Combat.ScalingStat;
+        chkFriendly.Checked = Convert.ToBoolean(mEditorItem.Combat.Friendly);
+        cmbDamageType.SelectedIndex = mEditorItem.Combat.DamageType;
+        cmbElement.SelectedIndex = (int)mEditorItem.Combat.Element;
+        cmbScalingStat.SelectedIndex = mEditorItem.Combat.ScalingStat;
             nudScaling.Value = mEditorItem.Combat.Scaling;
             nudCritChance.Value = mEditorItem.Combat.CritChance;
             nudCritMultiplier.Value = (decimal)mEditorItem.Combat.CritMultiplier;
@@ -884,6 +890,11 @@ public partial class FrmSpell : EditorForm
     private void cmbDamageType_SelectedIndexChanged(object sender, EventArgs e)
     {
         mEditorItem.Combat.DamageType = cmbDamageType.SelectedIndex;
+    }
+
+    private void cmbElement_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        mEditorItem.Combat.Element = (ElementType)cmbElement.SelectedIndex;
     }
 
     private void cmbScalingStat_SelectedIndexChanged(object sender, EventArgs e)

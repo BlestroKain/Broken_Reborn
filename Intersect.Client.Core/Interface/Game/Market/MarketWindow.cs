@@ -357,6 +357,21 @@ namespace Intersect.Client.Interface.Game.Market
         public void SearchFailed(string message)
         {
             _waiting = false;
+            if (_useVirtualization)
+            {
+                foreach (var item in _virtualRows)
+                {
+                    item.SetBuying(false);
+                }
+            }
+            else
+            {
+                foreach (var item in mCurrentItems.Values)
+                {
+                    item.SetBuying(false);
+                }
+            }
+
             mErrorLabel.SetText(message);
             mErrorLabel.Show();
             mRetryButton.Show();
@@ -927,14 +942,14 @@ namespace Intersect.Client.Interface.Game.Market
             {
                 foreach (var item in _virtualRows)
                 {
-                    item.ResetBuying();
+                    item.SetBuying(false);
                 }
             }
             else
             {
                 foreach (var item in mCurrentItems.Values)
                 {
-                    item.ResetBuying();
+                    item.SetBuying(false);
                 }
             }
 

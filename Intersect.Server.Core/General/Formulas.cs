@@ -46,6 +46,28 @@ public partial class Formulas
         }
     }
 
+    /// <summary>
+    /// Calculates the final damage applied to a <paramref name="victim"/> from an <paramref name="attacker"/>.
+    /// </summary>
+    /// <param name="baseDamage">Base damage value before scaling and bonuses.</param>
+    /// <param name="damageType">Type of damage being inflicted.</param>
+    /// <param name="scalingStat">Statistic used for scaling the damage.</param>
+    /// <param name="scaling">Scaling percentage applied to <paramref name="scalingStat"/>.</param>
+    /// <param name="critMultiplier">Critical hit multiplier.</param>
+    /// <param name="attacker">Entity dealing the damage.</param>
+    /// <param name="victim">Entity receiving the damage.</param>
+    /// <param name="attackerLevel">Optional override for the attacker's level.</param>
+    /// <param name="attackerElement">Elemental type of the attack.</param>
+    /// <remarks>
+    /// Final damage is calculated as
+    /// <c>result * (1 + attackerElementBonus) * affinityMultiplier * (1 - defenderResistance)</c> where:
+    /// <list type="bullet">
+    /// <item><c>result</c> is the raw damage determined by the configured formula.</item>
+    /// <item><c>attackerElementBonus</c> is the bonus damage from the attacker's element.</item>
+    /// <item><c>affinityMultiplier</c> is the multiplier from the affinity between attacker and defender elements.</item>
+    /// <item><c>defenderResistance</c> is the defender's resistance to the attacker's element.</item>
+    /// </list>
+    /// </remarks>
     public static long CalculateDamage(
         long baseDamage,
         DamageType damageType,
@@ -147,8 +169,15 @@ public partial class Formulas
                 defenderElement = victimPlayer.LastAttackingWeapon.Element;
             }
 
-            var finalDamage = result * (1 + attackerElementBonus - defenderResistance) *
-                              ElementalAffinity.GetMultiplier(attackerElement, defenderElement);
+            var affinityMultiplier = ElementalAffinity.GetMultiplier(attackerElement, defenderElement);
+
+            // Final damage is calculated using the following factors:
+            //   result:            damage determined by the configured formula
+            //   attackerElementBonus: bonus damage provided by the attacker's elemental affinity
+            //   affinityMultiplier:  multiplier based on the relation between attacker's and defender's elements
+            //   defenderResistance:  damage reduction provided by the defender's elemental resistance
+            // Formula: result * (1 + attackerElementBonus) * affinityMultiplier * (1 - defenderResistance)
+            var finalDamage = result * (1 + attackerElementBonus) * affinityMultiplier * (1 - defenderResistance);
 
             return (long)Math.Round(finalDamage);
         }

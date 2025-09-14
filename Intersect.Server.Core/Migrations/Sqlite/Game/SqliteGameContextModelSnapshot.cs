@@ -242,6 +242,14 @@ namespace Intersect.Server.Migrations.Sqlite.Game
 
                     b.Property<int>("DamageType")
                         .HasColumnType("INTEGER");
+                    b.Property<string>("ElementDamageBonusJson")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("ElementDamageBonus");
+
+                    b.Property<string>("ResistancesJson")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("Resistances");
+
 
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");

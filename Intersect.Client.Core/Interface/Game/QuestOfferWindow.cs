@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Intersect.Client.Core;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen;
@@ -70,25 +71,36 @@ namespace Intersect.Client.Interface.Game
 
         public void AddRewardWidget(Base widget)
         {
-            if (widget is QuestRewardItem)
+            if (widget == null)
             {
-                widget.Parent = _rewardItemContainer;
+                return;
             }
-            else if (widget is QuestRewardExp)
-            {
-                widget.Parent = _rewardExpContainer;
-            }
-            else
-            {
-                // Por defecto al contenedor de ítems
-                widget.Parent = _rewardItemContainer;
-            }
+
+            var widgetName = widget.Name ?? string.Empty;
+            var goesToExp = widgetName.IndexOf("RewardExp", StringComparison.OrdinalIgnoreCase) >= 0;
+
+            widget.Parent = goesToExp ? _rewardExpContainer : _rewardItemContainer;
+            widget.Show();
         }
 
         public void ClearRewardWidgets()
         {
-            _rewardItemContainer.ClearChildren(true);
-            _rewardExpContainer.ClearChildren(true);
+            ClearChildren(_rewardItemContainer);
+            ClearChildren(_rewardExpContainer);
+        }
+
+        private static void ClearChildren(Base container)
+        {
+            var children = container.Children?.ToArray();
+            if (children == null)
+            {
+                return;
+            }
+
+            foreach (var child in children)
+            {
+                container.RemoveChild(child, dispose: true);
+            }
         }
 
         private void _declineButton_Clicked(Base sender, MouseButtonState arguments)

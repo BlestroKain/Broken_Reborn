@@ -99,7 +99,16 @@ public partial class Player : Entity
     [JsonIgnore, Column("MapDiscovery")]
     public string MapDiscoveryJson
     {
-        get => JsonConvert.SerializeObject(MapDiscoveries.ToDictionary(k => k.Key, v => v.Value.Data));
+        get => JsonConvert.SerializeObject(
+            MapDiscoveries.ToDictionary(
+                pair => pair.Key,
+                pair =>
+                {
+                    var clone = pair.Value.Clone();
+                    return clone.Data;
+                }
+            )
+        );
         set => MapDiscoveries = JsonConvert.DeserializeObject<Dictionary<Guid, byte[]>>(value ?? "{}")?
             .ToDictionary(k => k.Key, v => new BitGrid(Options.Instance.Map.MapWidth, Options.Instance.Map.MapHeight, v.Value))
             ?? new();

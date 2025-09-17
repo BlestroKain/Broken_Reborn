@@ -22,6 +22,11 @@ namespace Intersect.Client.Networking;
 
 public static partial class PacketSender
 {
+    private static readonly TimeSpan MapDiscoveriesRequestCooldown = TimeSpan.FromMilliseconds(500);
+    private static DateTime s_lastMapDiscoveriesRequest = DateTime.MinValue;
+
+    public static bool CanSendMapDiscoveriesRequest =>
+        DateTime.UtcNow - s_lastMapDiscoveriesRequest >= MapDiscoveriesRequestCooldown;
 
     public static void SendPing()
     {
@@ -38,9 +43,23 @@ public static partial class PacketSender
         Network.SendPacket(new LogoutPacket(characterSelect));
     }
 
-    public static void SendMapDiscoveriesRequest(Dictionary<Guid, byte[]> discoveries)
+    public static bool SendMapDiscoveriesRequest(Dictionary<Guid, byte[]> discoveries)
     {
+        if (discoveries == null || discoveries.Count == 0)
+        {
+            return false;
+        }
+
+        var now = DateTime.UtcNow;
+        if (now - s_lastMapDiscoveriesRequest < MapDiscoveriesRequestCooldown)
+        {
+            return false;
+        }
+
         Network.SendPacket(new MapDiscoveriesRequestPacket(discoveries));
+        s_lastMapDiscoveriesRequest = now;
+
+        return true;
     }
 
     public static void SendNeedMap(params ObjectCacheKey<MapDescriptor>[] cacheKeys)

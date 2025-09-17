@@ -2348,7 +2348,33 @@ public static partial class CommandProcessing
         Stack<CommandInstance> callStack
     )
     {
-        if (command.Honor.TryGetValue(player.Faction, out var amount) && amount != 0)
+        if (player.Faction == Factions.Neutral)
+        {
+            return;
+        }
+
+        if (command.Honor == null)
+        {
+            return;
+        }
+
+        var amount = 0;
+        switch (player.Faction)
+        {
+            case Factions.Serolf:
+                command.Honor.TryGetValue(Factions.Serolf, out amount);
+                break;
+
+            case Factions.Nidraj:
+                command.Honor.TryGetValue(Factions.Nidraj, out amount);
+                break;
+
+            default:
+                command.Honor.TryGetValue(player.Faction, out amount);
+                break;
+        }
+
+        if (amount != 0)
         {
             HonorService.AdjustHonor(player, amount);
         }

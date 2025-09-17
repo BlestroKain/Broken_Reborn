@@ -64,5 +64,21 @@ public class QuestRewardExpTests
 
         Assert.That(labels, Is.EquivalentTo(new[] {"+5 Serolf Honor"}));
     }
+
+    [Test]
+    public void JobExpIconHasTooltip()
+    {
+        var window = new TestQuestWindow();
+        Dictionary<JobType, long> jobExp = new()
+        {
+            [JobType.Farming] = 25,
+        };
+
+        var reward = new QuestRewardExp(window, 0, jobExp, 0, null);
+
+        var icon = reward.Children.First(control => control.Name == "QuestRewardExpIcon");
+
+        Assert.That(icon.TooltipText, Is.EqualTo("Farming EXP"));
+    }
 }
 

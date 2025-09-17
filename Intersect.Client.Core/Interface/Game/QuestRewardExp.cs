@@ -27,6 +27,28 @@ public sealed class QuestRewardExp
     private readonly IQuestWindow _window;
     private readonly List<ExpChip> _chips = new();
 
+    public IEnumerable<Base> Children
+    {
+        get
+        {
+            foreach (var chip in _chips)
+            {
+                yield return chip.Container;
+
+                var children = chip.Container.Children;
+                if (children == null)
+                {
+                    continue;
+                }
+
+                foreach (var child in children)
+                {
+                    yield return child;
+                }
+            }
+        }
+    }
+
     // Mapeo EXACTO de iconos por oficio (tal como tus archivos)
     private static readonly Dictionary<JobType, string> JobIcon = new()
     {
@@ -129,6 +151,8 @@ public sealed class QuestRewardExp
         // Textura del icono
         SetIconTexture(chip);
 
+        ApplyTooltip(chip, GetTooltipText(kind, job, faction));
+
         // Añadir al contenedor “Exp”
         _window.AddRewardWidget(chip.Container);
 
@@ -150,6 +174,48 @@ public sealed class QuestRewardExp
             default:
                 return amount.ToString();
         }
+    }
+
+    private static void ApplyTooltip(ExpChip chip, string tooltip)
+    {
+        if (string.IsNullOrWhiteSpace(tooltip))
+        {
+            chip.Container.SetToolTipText(null);
+            chip.Icon.SetToolTipText(null);
+            chip.Label.SetToolTipText(null);
+
+            return;
+        }
+
+        chip.Container.SetToolTipText(tooltip);
+        chip.Icon.SetToolTipText(tooltip);
+        chip.Label.SetToolTipText(tooltip);
+    }
+
+    private static string GetTooltipText(ExpKind kind, JobType? job, Factions? faction)
+    {
+        return kind switch
+        {
+            ExpKind.Player => Strings.QuestRewardExp.PlayerExpTooltip,
+            ExpKind.Job when job.HasValue =>
+                Strings.QuestRewardExp.JobExpTooltip.ToString(Strings.Job.GetJobName(job.Value)),
+            ExpKind.Job => Strings.QuestRewardExp.JobGenericTooltip,
+            ExpKind.Guild => Strings.QuestRewardExp.GuildExpTooltip,
+            ExpKind.Faction when faction.HasValue => Strings.QuestRewardExp.FactionHonorTooltip
+                .ToString(GetFactionDisplayName(faction.Value)),
+            ExpKind.Faction => Strings.QuestRewardExp.FactionHonorGenericTooltip,
+            _ => string.Empty,
+        };
+    }
+
+    private static string GetFactionDisplayName(Factions faction)
+    {
+        return faction switch
+        {
+            Factions.Serolf => Strings.QuestRewardExp.FactionSerolfName,
+            Factions.Nidraj => Strings.QuestRewardExp.FactionNidrajName,
+            _ => Strings.QuestRewardExp.FactionNeutralName,
+        };
     }
 
     private static void SetIconTexture(ExpChip chip)

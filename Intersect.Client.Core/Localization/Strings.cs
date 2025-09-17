@@ -2751,6 +2751,36 @@ If you are sure you want to hand over your guild enter '\c{{#ff8080}}{02}\c{{}}'
         public static LocalizedString Title = @"Quest Offer";
     }
 
+    public partial struct QuestRewardExp
+    {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PlayerExpTooltip = @"Player EXP";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString JobExpTooltip = @"{0} EXP";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString JobGenericTooltip = @"Job EXP";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString GuildExpTooltip = @"Guild EXP";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString FactionHonorTooltip = @"{0} Honor";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString FactionHonorGenericTooltip = @"Faction Honor";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString FactionNeutralName = @"Neutral";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString FactionSerolfName = @"Serolf";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString FactionNidrajName = @"Nidraj";
+    }
+
     public partial struct Regex
     {
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

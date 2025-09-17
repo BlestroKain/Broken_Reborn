@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Events;
@@ -9,16 +8,35 @@ public partial class GiveFactionHonorCommand : EventCommand
 {
     public override EventCommandType Type { get; } = EventCommandType.GiveFactionHonor;
 
-    public Dictionary<Factions, int> Honor { get; set; } = new();
+    private Dictionary<Factions, int> mHonor = new();
+
+    public Dictionary<Factions, int> Honor
+    {
+        get => mHonor;
+        set
+        {
+            mHonor = value ?? new Dictionary<Factions, int>();
+            EnsureFactionEntries();
+        }
+    }
 
     public GiveFactionHonorCommand()
     {
-        foreach (Factions faction in Enum.GetValues(typeof(Factions)))
+        EnsureFactionEntries();
+    }
+
+    private void EnsureFactionEntries()
+    {
+        mHonor.Remove(Factions.Neutral);
+
+        if (!mHonor.ContainsKey(Factions.Serolf))
         {
-            if (faction != Factions.Neutral)
-            {
-                Honor[faction] = 0;
-            }
+            mHonor[Factions.Serolf] = 0;
+        }
+
+        if (!mHonor.ContainsKey(Factions.Nidraj))
+        {
+            mHonor[Factions.Nidraj] = 0;
         }
     }
 }

@@ -190,6 +190,45 @@ namespace Intersect.Client.Interface.Game.Map
             DrawMinimap();
         }
 
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Waypoints?.Dispose();
+                Waypoints = null;
+
+                _renderTexture?.Dispose();
+                _renderTexture = null!;
+
+                foreach (var tex in _minimapCache.Values)
+                {
+                    tex.Dispose();
+                }
+                _minimapCache.Clear();
+
+                foreach (var tex in _entityCache.Values)
+                {
+                    tex.Dispose();
+                }
+                _entityCache.Clear();
+
+                if (_mapGrid != null)
+                {
+                    DictionaryPool<MapPosition, MapInstance?>.Return(_mapGrid);
+                    _mapGrid = null!;
+                }
+
+                if (_entityInfoCache != null)
+                {
+                    ReleaseEntityInfo(_entityInfoCache);
+                    DictionaryPool<Guid, List<EntityLocation>>.Return(_entityInfoCache);
+                    _entityInfoCache = null!;
+                }
+            }
+
+            base.Dispose(disposing);
+        }
+
         public void SetPois(IEnumerable<MapPoi> pois)
         {
             _poisByMap.Clear();
@@ -449,7 +488,7 @@ namespace Intersect.Client.Interface.Game.Map
                 }
                 _redrawMaps = true;
                 SyncDiscoveries();
-                Globals.LoadDiscoveries(Globals.MapDiscoveries.ToDictionary(k => k.Key, v => v.Value.Data));
+                Globals.LoadDiscoveries(Globals.SnapshotDiscoveries());
             }
             else
             {
@@ -986,10 +1025,16 @@ namespace Intersect.Client.Interface.Game.Map
 
         private void SyncDiscoveries()
         {
-            PacketSender.SendMapDiscoveriesRequest(
-                Globals.MapDiscoveries.ToDictionary(k => k.Key, v => v.Value.Data)
-            );
-            _lastDiscoverySync = DateTime.UtcNow;
+            if (!PacketSender.CanSendMapDiscoveriesRequest)
+            {
+                return;
+            }
+
+            var snapshot = Globals.SnapshotDiscoveries();
+            if (PacketSender.SendMapDiscoveriesRequest(snapshot))
+            {
+                _lastDiscoverySync = DateTime.UtcNow;
+            }
         }
 
         

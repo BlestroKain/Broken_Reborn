@@ -206,7 +206,7 @@ internal sealed partial class PacketHandler
     //MapDiscoveriesResponsePacket
     public void HandlePacket(IPacketSender packetSender, MapDiscoveriesResponsePacket packet)
     {
-        Globals.LoadDiscoveries(packet.Discoveries ?? new Dictionary<Guid, byte[]>());
+        Globals.MergeDiscoveries(packet.Discoveries ?? new Dictionary<Guid, byte[]>());
     }
 
     public void HandlePacket(IPacketSender packetSender, MapAreaPacket packet)
@@ -362,7 +362,7 @@ internal sealed partial class PacketHandler
         HandleMap(packetSender, packet);
         if (packet.MapId == Globals.Me?.MapId)
         {
-            Globals.LoadDiscoveries(Globals.MapDiscoveries.ToDictionary(k => k.Key, v => v.Value.Data));
+            Globals.LoadDiscoveries(Globals.SnapshotDiscoveries());
         }
         Player.FetchNewMaps();
     }

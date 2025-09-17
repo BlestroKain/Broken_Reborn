@@ -95,7 +95,14 @@ public static partial class PacketSender
 
         client.TimedBufferPacketsRemaining = 5;
         var discovery = client.Entity?.MapDiscoveries
-            ?.ToDictionary(k => k.Key, v => v.Value.Data)
+            ?.ToDictionary(
+                pair => pair.Key,
+                pair =>
+                {
+                    var clone = pair.Value.Clone();
+                    return clone.Data;
+                }
+            )
             ?? new Dictionary<Guid, byte[]>();
         client.Send(new JoinGamePacket(discovery));
         SendGameData(client);

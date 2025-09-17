@@ -525,7 +525,7 @@ internal sealed partial class PacketHandler
         var totalBytes = 0;
 
         var mapOptions = Options.Instance.Map;
-        var expectedSize = (mapOptions.MapWidth * mapOptions.MapHeight + 7) / 8;
+        var expectedSize = BitGrid.GetExpectedSize(mapOptions.MapWidth, mapOptions.MapHeight);
 
         // Coleccionaremos los mapas que efectivamente apliquemos para responder al cliente.
         var applied = new Dictionary<Guid, byte[]>(capacity: Math.Min(packet.Discoveries.Count, maxEntries));
@@ -543,7 +543,7 @@ internal sealed partial class PacketHandler
             }
 
             // ¿El mapa existe en el mundo?
-            if (!MapController.Lookup.Keys.Contains(mapId))
+            if (!MapController.Lookup.ContainsKey(mapId))
             {
                 continue;
             }
@@ -562,21 +562,21 @@ internal sealed partial class PacketHandler
             }
 
             // MERGE: si ya existe grid del jugador, OR para acumular descubrimientos.
+            BitGrid targetGrid;
             if (player.MapDiscoveries.TryGetValue(mapId, out var existing))
             {
-                // Evita alocar si data es igual tamaño/forma (ya lo es por expectedSize).
                 var incoming = new BitGrid(mapOptions.MapWidth, mapOptions.MapHeight, data);
                 existing.OrWith(incoming);
-                // Devolvemos al cliente el estado resultante para asegurar convergencia.
-                applied[mapId] = existing.Data;
+                targetGrid = existing;
             }
             else
             {
-                // Nuevo mapa para este jugador.
-                var grid = new BitGrid(mapOptions.MapWidth, mapOptions.MapHeight, data);
-                player.MapDiscoveries[mapId] = grid;
-                applied[mapId] = grid.Data;
+                targetGrid = new BitGrid(mapOptions.MapWidth, mapOptions.MapHeight, data);
+                player.MapDiscoveries[mapId] = targetGrid;
             }
+
+            // Devolvemos al cliente el estado resultante para asegurar convergencia.
+            applied[mapId] = (byte[])targetGrid.Data.Clone();
 
             entries++;
         }

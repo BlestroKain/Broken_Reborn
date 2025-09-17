@@ -16,7 +16,7 @@ namespace Intersect.Client.Interface.Game.Map
     /// - Limpieza de expirados con SendWaypointClear
     /// - Enumeración de posiciones para que el minimapa pueda representarlos
     /// </summary>
-    public sealed class WaypointLayer
+    public sealed class WaypointLayer : IDisposable
     {
         private readonly Base _parent;
         private readonly Stack<ImagePanel> _panelPool = new();
@@ -116,6 +116,24 @@ namespace Intersect.Client.Interface.Game.Map
                 );
                 yield return (pos, wp.Scope);
             }
+        }
+
+        public void Dispose()
+        {
+            for (var i = _waypoints.Count - 1; i >= 0; i--)
+            {
+                var wp = _waypoints[i];
+                ReturnWaypoint(wp);
+                _waypoints.RemoveAt(i);
+            }
+
+            while (_panelPool.Count > 0)
+            {
+                var panel = _panelPool.Pop();
+                panel.Dispose();
+            }
+
+            _waypointPool.Clear();
         }
 
         public static Color ScopeToColor(WaypointScope scope) => scope switch

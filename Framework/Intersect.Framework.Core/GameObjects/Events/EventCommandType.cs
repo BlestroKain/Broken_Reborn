@@ -63,6 +63,7 @@ public enum EventCommandType
     ReleasePlayer,
 
     SpawnNpc,
+    SpawnPet,
 
     //Special Effects
     PlayAnimation,

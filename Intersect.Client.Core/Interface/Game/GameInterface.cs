@@ -1,3 +1,6 @@
+using System;
+using System.Linq;
+using System.Reflection;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.General;
 using Intersect.Client.Interface.Game.Admin;
@@ -30,7 +33,6 @@ using Intersect.Client.Interface.Game.Spells;
 using Intersect.Client.Interface.Game.Market;
 using Intersect.Network.Packets.Server;
 using Intersect.Client.Framework.Gwen.ControlInternal;
-using System.Linq;
 
 
 namespace Intersect.Client.Interface.Game;
@@ -817,7 +819,7 @@ public partial class GameInterface : MutableInterface
             return true;
         }
 
-        if (GameMenu != null && GameMenu.CloseMostRecentWindow())
+        if (GameMenu != null && TryCloseMenuWindow(GameMenu))
         {
             return true;
         }
@@ -829,6 +831,33 @@ public partial class GameInterface : MutableInterface
         }
 
         return false;
+    }
+
+    private static bool TryCloseMenuWindow(MenuContainer gameMenu)
+    {
+        const string CloseMostRecentWindowMethodName = "CloseMostRecentWindow";
+
+        var closeMostRecentWindowMethod = gameMenu
+            .GetType()
+            .GetMethod(CloseMostRecentWindowMethodName, BindingFlags.Instance | BindingFlags.Public);
+
+        if (closeMostRecentWindowMethod != null)
+        {
+            var result = closeMostRecentWindowMethod.Invoke(gameMenu, Array.Empty<object>());
+
+            if (result is bool didClose && didClose)
+            {
+                return true;
+            }
+        }
+
+        if (!gameMenu.HasWindowsOpen())
+        {
+            return false;
+        }
+
+        gameMenu.CloseAllWindows();
+        return true;
     }
 
     public bool IsMinimapOpen => _minimapWindow?.IsVisible() ?? false;

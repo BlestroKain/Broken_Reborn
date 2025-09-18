@@ -31,6 +31,8 @@ public sealed class Pet : Entity
 
     public Guid OwnerId { get; }
 
+    public bool Despawnable { get; }
+
     public Player? Owner
     {
         get
@@ -47,7 +49,7 @@ public sealed class Pet : Entity
 
     public PetState State { get; private set; } = PetState.Idle;
 
-    public Pet(PetDescriptor descriptor, Player owner)
+    public Pet(PetDescriptor descriptor, Player owner, bool despawnable = false)
     {
         ArgumentNullException.ThrowIfNull(descriptor);
         ArgumentNullException.ThrowIfNull(owner);
@@ -55,6 +57,7 @@ public sealed class Pet : Entity
         Descriptor = descriptor;
         OwnerId = owner.Id;
         Owner = owner;
+        Despawnable = despawnable;
 
         Name = string.IsNullOrWhiteSpace(owner.ActivePet?.CustomName)
             ? descriptor.Name
@@ -225,6 +228,53 @@ public sealed class Pet : Entity
         );
 
         PacketSender.SendEntityAttack(this, CalculateAttackTime());
+    }
+
+    public void NotifyOwnerDamaged()
+    {
+        var owner = Owner;
+        if (owner == null || owner.IsDisposed)
+        {
+            return;
+        }
+
+        lock (EntityLock)
+        {
+            UpdateTarget(owner);
+            UpdateState(owner);
+        }
+    }
+
+    public void Despawn(bool killIfDespawnable = true)
+    {
+        lock (EntityLock)
+        {
+            if (IsDisposed)
+            {
+                return;
+            }
+
+            if (killIfDespawnable && Despawnable && !IsDead)
+            {
+                Die(false, Owner);
+            }
+
+            var mapId = MapId;
+            var mapInstanceId = MapInstanceId;
+
+            if (mapId != Guid.Empty && mapInstanceId != Guid.Empty)
+            {
+                PacketSender.SendEntityLeaveInstanceOfMap(this, mapId, mapInstanceId);
+
+                if (MapController.TryGetInstanceFromMap(mapId, mapInstanceId, out var instance))
+                {
+                    instance.RemoveEntity(this);
+                }
+            }
+
+            Owner = null;
+            Dispose();
+        }
     }
 
     private void UpdateTarget(Player owner)

@@ -49,7 +49,17 @@ public sealed class Pet : Entity
 
     public PetState State { get; private set; } = PetState.Idle;
 
-    public Pet(PetDescriptor descriptor, Player owner, bool despawnable = false)
+    public Pet(
+        PetDescriptor descriptor,
+        Player owner,
+        bool despawnable = false,
+        bool register = true,
+        Guid? mapIdOverride = null,
+        Guid? mapInstanceIdOverride = null,
+        int? xOverride = null,
+        int? yOverride = null,
+        Direction? directionOverride = null
+    )
     {
         ArgumentNullException.ThrowIfNull(descriptor);
         ArgumentNullException.ThrowIfNull(owner);
@@ -58,6 +68,12 @@ public sealed class Pet : Entity
         OwnerId = owner.Id;
         Owner = owner;
         Despawnable = despawnable;
+
+        var spawnMapId = mapIdOverride ?? owner.MapId;
+        var spawnMapInstanceId = mapInstanceIdOverride ?? owner.MapInstanceId;
+        var spawnX = xOverride ?? owner.X;
+        var spawnY = yOverride ?? owner.Y;
+        var spawnDirection = directionOverride ?? owner.Dir;
 
         Name = string.IsNullOrWhiteSpace(owner.ActivePet?.CustomName)
             ? descriptor.Name
@@ -96,19 +112,19 @@ public sealed class Pet : Entity
             DeathAnimation = descriptor.DeathAnimationId;
         }
 
-        MapId = owner.MapId;
-        MapInstanceId = owner.MapInstanceId;
-        X = owner.X;
-        Y = owner.Y;
+        MapId = spawnMapId;
+        MapInstanceId = spawnMapInstanceId;
+        X = spawnX;
+        Y = spawnY;
         Z = owner.Z;
-        Dir = owner.Dir;
+        Dir = spawnDirection;
 
-        _ownerMapId = MapId;
-        _ownerMapInstanceId = MapInstanceId;
+        _ownerMapId = owner.MapId;
+        _ownerMapInstanceId = owner.MapInstanceId;
 
         _pathfinder = new Pathfinder(this);
 
-        if (MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var instance))
+        if (register && MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var instance))
         {
             instance.AddEntity(this);
             PacketSender.SendEntityDataToProximity(this);

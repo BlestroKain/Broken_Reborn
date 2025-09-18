@@ -7,6 +7,7 @@ using Intersect.Framework.Core.GameObjects;
 using Intersect.Framework.Core.GameObjects.Mapping.Tilesets;
 using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Framework.Core.GameObjects.NPCs;
+using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.GameObjects.Resources;
 using Intersect.Framework.Core.GameObjects.Variables;
@@ -27,6 +28,9 @@ public enum GameObjectType
 
     [GameObjectInfo(typeof(NPCDescriptor), "npcs")]
     Npc,
+
+    [GameObjectInfo(typeof(PetDescriptor), "pets")]
+    Pet,
 
     [GameObjectInfo(typeof(ProjectileDescriptor), "projectiles")]
     Projectile,

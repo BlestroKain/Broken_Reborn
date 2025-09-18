@@ -2295,6 +2295,8 @@ Tick timer saved in server config.json.";
 
         public static LocalizedString spawnnpc = @"Spawn Npc {00} {01}";
 
+        public static LocalizedString spawnpet = @"Spawn Pet {00} {01}";
+
         public static LocalizedString spawnonevent = @"On Event #{00} [X Offset: {01} Y Offset: {02} Dir: {03}]";
 
         public static LocalizedString spawnonmap = @"[On Map {00} X: {01} Y: {02} Dir: {03}]";
@@ -2495,6 +2497,7 @@ Tick timer saved in server config.json.";
             {"showpicture", @"Show Picture"},
             {"showtext", @"Show Text"},
             {"spawnnpc", @"Spawn NPC"},
+            {"spawnpet", @"Spawn Pet"},
             {"specialeffects", @"Special Effects"},
             {"startcommonevent", @"Start Common Event"},
             {"startquest", @"Start Quest"},
@@ -3702,6 +3705,35 @@ Tick timer saved in server config.json.";
 
     }
 
+    public partial struct EventSpawnPet
+    {
+
+        public static LocalizedString cancel = @"Cancel";
+
+        public static LocalizedString entity = @"Entity:";
+
+        public static LocalizedString pet = @"Pet:";
+
+        public static LocalizedString okay = @"Ok";
+
+        public static LocalizedString player = @"Player";
+
+        public static LocalizedString relativelocation = @"Relative Location:";
+
+        public static LocalizedString spawnrelative = @"Relative to Entity Direction";
+
+        public static LocalizedString spawntype = @"Spawn Type:";
+
+        public static LocalizedString spawntype0 = @"Specific Tile";
+
+        public static LocalizedString spawntype1 = @"On/Around Entity";
+
+        public static LocalizedString This = @"[THIS EVENT]";
+
+        public static LocalizedString title = @"Spawn Pet";
+
+    }
+
     public partial struct EventStartCommonEvent
     {
 
@@ -4312,6 +4344,8 @@ Tick timer saved in server config.json.";
 
         public static LocalizedString npceditor = @"Npc Editor";
 
+        public static LocalizedString peteditor = @"Pet Editor";
+
         public static LocalizedString options = @"Options";
 
         public static LocalizedString overlay = @"Overlay";
@@ -4872,6 +4906,93 @@ Tick timer saved in server config.json.";
             {SpellEffect.Sleep, @"Sleep"},
             {SpellEffect.Taunt, @"Taunt"},
         };
+
+    }
+
+    public partial struct Pets
+    {
+
+        public static LocalizedString title = @"Pet Editor";
+
+        public static LocalizedString petlist = @"Pets";
+
+        public static LocalizedString searchplaceholder = @"Search...";
+
+        public static LocalizedString clearsearch = @"Clear";
+
+        public static LocalizedString general = @"General";
+
+        public static LocalizedString name = @"Name:";
+
+        public static LocalizedString folderlabel = @"Folder:";
+
+        public static LocalizedString addfolder = @"Add";
+
+        public static LocalizedString folderprompt = @"Enter a folder name:";
+
+        public static LocalizedString foldertitle = @"New Folder";
+
+        public static LocalizedString sprite = @"Sprite";
+
+        public static LocalizedString level = @"Level:";
+
+        public static LocalizedString experience = @"Experience:";
+
+        public static LocalizedString stats = @"Stats";
+
+        public static LocalizedString vitals = @"Vitals";
+
+        public static LocalizedString maxvitals = @"Max";
+
+        public static LocalizedString vitalregen = @"Regeneration";
+
+        public static LocalizedString combat = @"Combat";
+
+        public static LocalizedString attackanimation = @"Attack Animation:";
+
+        public static LocalizedString deathanimation = @"Death Animation:";
+
+        public static LocalizedString idleanimation = @"Idle Animation:";
+
+        public static LocalizedString damagetype = @"Damage Type:";
+
+        public static LocalizedString scalingstat = @"Scaling Stat:";
+
+        public static LocalizedString scalingamount = @"Scaling Amount (%):";
+
+        public static LocalizedString damage = @"Base Damage:";
+
+        public static LocalizedString critchance = @"Crit Chance (%):";
+
+        public static LocalizedString critmultiplier = @"Crit Multiplier:";
+
+        public static LocalizedString attackspeedmodifier = @"Attack Speed Modifier:";
+
+        public static LocalizedString attackspeedvalue = @"Attack Speed Value:";
+
+        public static LocalizedString spells = @"Spells";
+
+        public static LocalizedString addspell = @"Add";
+
+        public static LocalizedString removespell = @"Remove";
+
+        public static LocalizedString immunities = @"Immunities";
+
+        public static LocalizedString tenacity = @"Tenacity (%):";
+
+        public static LocalizedString save = @"Save";
+
+        public static LocalizedString cancel = @"Cancel";
+
+        public static LocalizedString deleteprompt =
+            @"Are you sure you want to delete this pet? This action cannot be reverted!";
+
+        public static LocalizedString deletetitle = @"Delete Pet";
+
+        public static LocalizedString undoprompt =
+            @"Are you sure you want to undo changes made to this pet? This action cannot be reverted!";
+
+        public static LocalizedString undotitle = @"Undo Changes";
 
     }
 

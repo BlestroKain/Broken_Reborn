@@ -109,6 +109,7 @@ namespace Intersect.Editor.Forms
             this.craftingTableEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.itemEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.npcEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.petEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.projectileEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.questEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.resourceEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -812,6 +813,7 @@ namespace Intersect.Editor.Forms
             this.craftingTableEditorToolStripMenuItem,
             this.itemEditorToolStripMenuItem,
             this.npcEditorToolStripMenuItem,
+            this.petEditorToolStripMenuItem,
             this.projectileEditorToolStripMenuItem,
             this.questEditorToolStripMenuItem,
             this.resourceEditorToolStripMenuItem,
@@ -880,6 +882,14 @@ namespace Intersect.Editor.Forms
             this.npcEditorToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
             this.npcEditorToolStripMenuItem.Text = "Npc Editor";
             this.npcEditorToolStripMenuItem.Click += new System.EventHandler(this.npcEditorToolStripMenuItem_Click);
+            //
+            // petEditorToolStripMenuItem
+            //
+            this.petEditorToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(220)))), ((int)(((byte)(220)))));
+            this.petEditorToolStripMenuItem.Name = "petEditorToolStripMenuItem";
+            this.petEditorToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.petEditorToolStripMenuItem.Text = "Pet Editor";
+            this.petEditorToolStripMenuItem.Click += new System.EventHandler(this.petEditorToolStripMenuItem_Click);
             // 
             // projectileEditorToolStripMenuItem
             // 
@@ -1112,7 +1122,8 @@ namespace Intersect.Editor.Forms
 		private ToolStripMenuItem commonEventEditorToolStripMenuItem;
 		private ToolStripMenuItem craftingTableEditorToolStripMenuItem;
 		private ToolStripMenuItem itemEditorToolStripMenuItem;
-		private ToolStripMenuItem npcEditorToolStripMenuItem;
+        private ToolStripMenuItem npcEditorToolStripMenuItem;
+        private ToolStripMenuItem petEditorToolStripMenuItem;
 		private ToolStripMenuItem projectileEditorToolStripMenuItem;
 		private ToolStripMenuItem questEditorToolStripMenuItem;
 		private ToolStripMenuItem resourceEditorToolStripMenuItem;

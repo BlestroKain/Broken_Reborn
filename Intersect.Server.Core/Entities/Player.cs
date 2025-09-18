@@ -75,6 +75,20 @@ public partial class Player : Entity
 
     #endregion
 
+    #region Pets
+
+    [JsonIgnore][NotMapped] public List<Pet> SpawnedPets { get; } = new();
+
+    [JsonIgnore][NotMapped] public Pet? CurrentPet { get; private set; }
+
+    #endregion
+
+    private Entity? _pendingPetAttacker;
+    private long _pendingPetAttackerTimestamp;
+
+    [JsonIgnore, NotMapped]
+    private readonly object _spawnedPetsLock = new();
+
     [JsonIgnore, NotMapped]
     public long[] MaxVitals => GetMaxVitals();
 
@@ -257,6 +271,15 @@ public partial class Player : Entity
 
     //Bestiary
     public virtual List<BestiaryUnlockInstance> BestiaryUnlocks { get; set; } = [];
+
+    //Pets
+    public virtual List<PlayerPet> Pets { get; set; } = [];
+
+    public Guid? ActivePetId { get; set; }
+
+    [JsonIgnore]
+    [ForeignKey(nameof(ActivePetId))]
+    public PlayerPet? ActivePet { get; set; }
 
     [JsonIgnore, NotMapped]
     public bool IsValidPlayer => !IsDisposed && Client?.Entity == this;
@@ -546,6 +569,8 @@ public partial class Player : Entity
             return;
         }
 
+        ClearPets(true);
+
         Guild?.NotifyPlayerDisposed(this);
 
         base.Dispose();
@@ -632,6 +657,8 @@ public partial class Player : Entity
         }
 
         SpawnedNpcs.Clear();
+
+        ClearPets(true);
 
         lock (mEventLock)
         {
@@ -795,6 +822,8 @@ public partial class Player : Entity
             Monitor.TryEnter(EntityLock, ref lockObtained);
             if (lockObtained)
             {
+                UpdatePetState(timeMs);
+
                 if (Client == null) //Client logged out
                 {
                     if (CombatTimer < Timing.Global.Milliseconds)
@@ -1081,6 +1110,159 @@ public partial class Player : Entity
             {
                 Monitor.Exit(EntityLock);
             }
+        }
+    }
+
+    private void UpdatePetState(long timeMs)
+    {
+        _ = timeMs;
+
+        CleanupSpawnedPetsList();
+
+        var activePet = ActivePet;
+        var descriptor = activePet?.Descriptor;
+        var currentPet = CurrentPet;
+
+        if (currentPet != null && currentPet.IsDisposed)
+        {
+            DespawnPet(currentPet);
+            currentPet = null;
+        }
+
+        if (descriptor == null)
+        {
+            if (currentPet != null)
+            {
+                DespawnPet(currentPet, false);
+            }
+
+            return;
+        }
+
+        if (currentPet != null && currentPet.Descriptor.Id != descriptor.Id)
+        {
+            DespawnPet(currentPet);
+            currentPet = null;
+        }
+
+        if (currentPet == null)
+        {
+            var newPet = new Pet(descriptor, this);
+            CurrentPet = newPet;
+
+            lock (_spawnedPetsLock)
+            {
+                SpawnedPets.Add(newPet);
+            }
+
+            return;
+        }
+
+        lock (_spawnedPetsLock)
+        {
+            if (!SpawnedPets.Contains(currentPet))
+            {
+                SpawnedPets.Add(currentPet);
+            }
+        }
+    }
+
+    private void DespawnPet(Pet? pet, bool killIfDespawnable = true)
+    {
+        if (pet == null)
+        {
+            return;
+        }
+
+        pet.Despawn(killIfDespawnable);
+
+        lock (_spawnedPetsLock)
+        {
+            SpawnedPets.Remove(pet);
+        }
+
+        if (ReferenceEquals(CurrentPet, pet))
+        {
+            CurrentPet = null;
+        }
+    }
+
+    private Pet[] GetActivePetsSnapshot()
+    {
+        var pets = new List<Pet>();
+
+        lock (_spawnedPetsLock)
+        {
+            foreach (var pet in SpawnedPets)
+            {
+                if (pet != null && !pet.IsDisposed)
+                {
+                    pets.Add(pet);
+                }
+            }
+        }
+
+        var currentPet = CurrentPet;
+        if (currentPet != null && !currentPet.IsDisposed && !pets.Contains(currentPet))
+        {
+            pets.Add(currentPet);
+        }
+
+        return pets.ToArray();
+    }
+
+    private void CleanupSpawnedPetsList()
+    {
+        lock (_spawnedPetsLock)
+        {
+            for (var index = SpawnedPets.Count - 1; index >= 0; index--)
+            {
+                var pet = SpawnedPets[index];
+                if (pet == null || pet.IsDisposed)
+                {
+                    SpawnedPets.RemoveAt(index);
+                }
+            }
+        }
+    }
+
+    private void ClearPets(bool killDespawnable)
+    {
+        var pets = GetActivePetsSnapshot();
+        foreach (var pet in pets)
+        {
+            DespawnPet(pet, killDespawnable);
+        }
+
+        lock (_spawnedPetsLock)
+        {
+            SpawnedPets.Clear();
+        }
+
+        CurrentPet = null;
+    }
+
+    private Entity? ConsumePendingPetAttacker()
+    {
+        var attacker = _pendingPetAttacker;
+        if (attacker != null)
+        {
+            var expired = Timing.Global.Milliseconds - _pendingPetAttackerTimestamp > Options.Instance.Combat.CombatTime;
+            if (attacker.IsDisposed || attacker.IsDead || expired || IsAllyOf(attacker))
+            {
+                attacker = null;
+            }
+        }
+
+        _pendingPetAttacker = null;
+        return attacker;
+    }
+
+    private void NotifyPetsOfOwnerDamage(Entity? attacker)
+    {
+        foreach (var pet in GetActivePetsSnapshot())
+        {
+            pet.NotifyOwnerDamaged(attacker);
         }
     }
 
@@ -1800,6 +1982,27 @@ public partial class Player : Entity
         base.TryAttack(target, projectile, parentSpell, parentItem, projectileDir);
     }
 
+    internal override void RegisterIncomingAttack(Entity attacker, Vital vital)
+    {
+        if (vital != Vital.Health)
+        {
+            return;
+        }
+
+        if (attacker == null || attacker.IsDisposed || ReferenceEquals(attacker, this))
+        {
+            return;
+        }
+
+        if (IsAllyOf(attacker))
+        {
+            return;
+        }
+
+        _pendingPetAttacker = attacker;
+        _pendingPetAttackerTimestamp = Timing.Global.Milliseconds;
+    }
+
     protected override void ReactToDamage(Vital vital)
     {
         if (IsDead || IsDisposed)
@@ -1813,6 +2016,12 @@ public partial class Player : Entity
             foreach (var trigger in CachedEquipmentOnDamageTriggers)
             {
                 EnqueueStartCommonEvent(trigger);
+            }
+
+            var attacker = ConsumePendingPetAttacker();
+            if (attacker != null)
+            {
+                NotifyPetsOfOwnerDamage(attacker);
             }
         }
 
@@ -2073,6 +2282,8 @@ public partial class Player : Entity
                 }
             );
         }
+
+        NotifyPetsOfOwnerDamage(attacker);
     }
 
     public override int CalculateAttackTime()

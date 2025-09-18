@@ -578,6 +578,102 @@ namespace Intersect.Server.Migrations.MySql.Game
                     b.ToTable("Npcs");
                 });
 
+            modelBuilder.Entity("Intersect.Framework.Core.GameObjects.Pets.PetDescriptor", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("char(36)")
+                        .UseCollation("ascii_general_ci");
+
+                    b.Property<Guid>("AttackAnimationId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("AttackAnimation")
+                        .UseCollation("ascii_general_ci");
+
+                    b.Property<int>("AttackSpeedModifier")
+                        .HasColumnType("int");
+
+                    b.Property<int>("AttackSpeedValue")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CritChance")
+                        .HasColumnType("int");
+
+                    b.Property<double>("CritMultiplier")
+                        .HasColumnType("double");
+
+                    b.Property<int>("Damage")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DamageType")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("DeathAnimationId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("DeathAnimation")
+                        .UseCollation("ascii_general_ci");
+
+                    b.Property<string>("EquipmentScalingJson")
+                        .HasColumnType("longtext")
+                        .HasColumnName("EquipmentScaling");
+
+                    b.Property<long>("Experience")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Folder")
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid>("IdleAnimationId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("IdleAnimation")
+                        .UseCollation("ascii_general_ci");
+
+                    b.Property<string>("ImmunitiesJson")
+                        .HasColumnType("longtext")
+                        .HasColumnName("Immunities");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MaxVitalJson")
+                        .HasColumnType("longtext")
+                        .HasColumnName("MaxVital");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("longtext")
+                        .HasColumnOrder(0);
+
+                    b.Property<int>("Scaling")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ScalingStat")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SpellsJson")
+                        .HasColumnType("longtext")
+                        .HasColumnName("Spells");
+
+                    b.Property<string>("Sprite")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("StatsJson")
+                        .HasColumnType("longtext")
+                        .HasColumnName("Stats");
+
+                    b.Property<double>("Tenacity")
+                        .HasColumnType("double");
+
+                    b.Property<long>("TimeCreated")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("VitalRegenJson")
+                        .HasColumnType("longtext")
+                        .HasColumnName("VitalRegen");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Pets");
+                });
+
             modelBuilder.Entity("Intersect.Framework.Core.GameObjects.PlayerClass.ClassDescriptor", b =>
                 {
                     b.Property<Guid>("Id")

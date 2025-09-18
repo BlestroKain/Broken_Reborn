@@ -14,6 +14,7 @@ using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Framework.Core.GameObjects.Maps.MapList;
 using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
+using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.Framework.Core.GameObjects.Resources;
 using Intersect.Framework.Core.GameObjects.Variables;
 using Intersect.GameObjects;
@@ -525,6 +526,20 @@ internal sealed partial class PacketHandler
                     var npc = new NPCDescriptor(id);
                     npc.Load(json);
                     NPCDescriptor.Lookup.Set(id, npc);
+                }
+
+                break;
+            case GameObjectType.Pet:
+                if (deleted)
+                {
+                    var pet = PetDescriptor.Get(id);
+                    pet.Delete();
+                }
+                else
+                {
+                    var pet = new PetDescriptor(id);
+                    pet.Load(json);
+                    PetDescriptor.Lookup.Set(id, pet);
                 }
 
                 break;

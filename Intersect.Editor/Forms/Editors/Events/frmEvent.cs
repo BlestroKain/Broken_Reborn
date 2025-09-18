@@ -651,6 +651,10 @@ public partial class FrmEvent : Form
                 tmpCommand = new SpawnNpcCommand();
 
                 break;
+            case EventCommandType.SpawnPet:
+                tmpCommand = new SpawnPetCommand();
+
+                break;
             case EventCommandType.PlayAnimation:
                 tmpCommand = new PlayAnimationCommand();
 
@@ -1376,6 +1380,10 @@ public partial class FrmEvent : Form
                 break;
             case EventCommandType.SpawnNpc:
                 cmdWindow = new EventCommandSpawnNpc(this, mCurrentMap, MyEvent, (SpawnNpcCommand)command);
+
+                break;
+            case EventCommandType.SpawnPet:
+                cmdWindow = new EventCommandSpawnPet(this, mCurrentMap, MyEvent, (SpawnPetCommand)command);
 
                 break;
             case EventCommandType.DespawnNpc:

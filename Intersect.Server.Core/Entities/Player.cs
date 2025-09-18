@@ -83,6 +83,9 @@ public partial class Player : Entity
 
     #endregion
 
+    private Entity? _pendingPetAttacker;
+    private long _pendingPetAttackerTimestamp;
+
     [JsonIgnore, NotMapped]
     private readonly object _spawnedPetsLock = new();
 
@@ -1239,11 +1242,27 @@ public partial class Player : Entity
         CurrentPet = null;
     }
 
-    private void NotifyPetsOfOwnerDamage()
+    private Entity? ConsumePendingPetAttacker()
+    {
+        var attacker = _pendingPetAttacker;
+        if (attacker != null)
+        {
+            var expired = Timing.Global.Milliseconds - _pendingPetAttackerTimestamp > Options.Instance.Combat.CombatTime;
+            if (attacker.IsDisposed || attacker.IsDead || expired || IsAllyOf(attacker))
+            {
+                attacker = null;
+            }
+        }
+
+        _pendingPetAttacker = null;
+        return attacker;
+    }
+
+    private void NotifyPetsOfOwnerDamage(Entity? attacker)
     {
         foreach (var pet in GetActivePetsSnapshot())
         {
-            pet.NotifyOwnerDamaged();
+            pet.NotifyOwnerDamaged(attacker);
         }
     }
 
@@ -1963,6 +1982,27 @@ public partial class Player : Entity
         base.TryAttack(target, projectile, parentSpell, parentItem, projectileDir);
     }
 
+    internal override void RegisterIncomingAttack(Entity attacker, Vital vital)
+    {
+        if (vital != Vital.Health)
+        {
+            return;
+        }
+
+        if (attacker == null || attacker.IsDisposed || ReferenceEquals(attacker, this))
+        {
+            return;
+        }
+
+        if (IsAllyOf(attacker))
+        {
+            return;
+        }
+
+        _pendingPetAttacker = attacker;
+        _pendingPetAttackerTimestamp = Timing.Global.Milliseconds;
+    }
+
     protected override void ReactToDamage(Vital vital)
     {
         if (IsDead || IsDisposed)
@@ -1978,7 +2018,11 @@ public partial class Player : Entity
                 EnqueueStartCommonEvent(trigger);
             }
 
-            NotifyPetsOfOwnerDamage();
+            var attacker = ConsumePendingPetAttacker();
+            if (attacker != null)
+            {
+                NotifyPetsOfOwnerDamage(attacker);
+            }
         }
 
         base.ReactToDamage(vital);
@@ -2238,6 +2282,8 @@ public partial class Player : Entity
                 }
             );
         }
+
+        NotifyPetsOfOwnerDamage(attacker);
     }
 
     public override int CalculateAttackTime()

@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Intersect.Config;
 using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.Framework.Core.GameObjects.Spells;
@@ -17,9 +18,12 @@ public sealed class Pet : Entity
 {
     private const int FollowDistance = 3;
     private const long PathUpdateInterval = 100;
+    private const long TargetLostGracePeriod = 2000;
 
     private readonly Pathfinder _pathfinder;
 
+    private long _combatTimeout;
+    private long _lastTargetSeenTime;
     private long _nextPathUpdate;
 
     private Guid _ownerMapId;
@@ -147,7 +151,7 @@ public sealed class Pet : Entity
 
         lock (EntityLock)
         {
-            UpdateTarget(owner);
+            UpdateTarget(owner, timeMs);
             UpdateState(owner);
         }
 
@@ -202,6 +206,42 @@ public sealed class Pet : Entity
         }
     }
 
+    public override bool CanAttack(Entity entity, SpellDescriptor spell)
+    {
+        if (!IsValidCombatTarget(entity))
+        {
+            return false;
+        }
+
+        return base.CanAttack(entity, spell);
+    }
+
+    public override bool IsAllyOf(Entity otherEntity)
+    {
+        var owner = Owner;
+        if (owner == null || owner.IsDisposed)
+        {
+            return base.IsAllyOf(otherEntity);
+        }
+
+        if (ReferenceEquals(otherEntity, this) || ReferenceEquals(otherEntity, owner))
+        {
+            return true;
+        }
+
+        if (otherEntity is Pet otherPet && otherPet.OwnerId == OwnerId)
+        {
+            return true;
+        }
+
+        if (owner.IsAllyOf(otherEntity))
+        {
+            return true;
+        }
+
+        return base.IsAllyOf(otherEntity);
+    }
+
     public override void TryAttack(Entity target)
     {
         if (target.IsDisposed || !CanAttack(target, null))
@@ -246,7 +286,7 @@ public sealed class Pet : Entity
         PacketSender.SendEntityAttack(this, CalculateAttackTime());
     }
 
-    public void NotifyOwnerDamaged()
+    public void NotifyOwnerDamaged(Entity? attacker)
     {
         var owner = Owner;
         if (owner == null || owner.IsDisposed)
@@ -254,10 +294,22 @@ public sealed class Pet : Entity
             return;
         }
 
+        var aggressor = attacker;
+        if (aggressor == null || !IsValidAggressor(aggressor, owner))
+        {
+            return;
+        }
+
+        var timeMs = Timing.Global.Milliseconds;
+
         lock (EntityLock)
         {
-            UpdateTarget(owner);
-            UpdateState(owner);
+            if (!IsValidAggressor(aggressor, owner))
+            {
+                return;
+            }
+
+            TryAssignTarget(aggressor, timeMs);
         }
     }
 
@@ -293,14 +345,40 @@ public sealed class Pet : Entity
         }
     }
 
-    private void UpdateTarget(Player owner)
+    private void UpdateTarget(Player owner, long timeMs)
     {
-        Target = owner.Target != null && !owner.Target.IsDisposed ? owner.Target : null;
+        if (!IsValidCombatTarget(Target))
+        {
+            ClearCombatTarget();
+        }
+
+        if (Target != null)
+        {
+            return;
+        }
+
+        var ownerTarget = owner.Target;
+        if (ownerTarget == null || ownerTarget.IsDisposed)
+        {
+            return;
+        }
+
+        if (!IsValidCombatTarget(ownerTarget))
+        {
+            return;
+        }
+
+        if (ownerTarget.MapInstanceId != MapInstanceId)
+        {
+            return;
+        }
+
+        TryAssignTarget(ownerTarget, timeMs);
     }
 
     private void UpdateState(Player owner)
     {
-        if (Target != null && Target.MapInstanceId == MapInstanceId)
+        if (Target != null)
         {
             State = PetState.Attack;
             return;
@@ -313,33 +391,170 @@ public sealed class Pet : Entity
         }
 
         State = PetState.Idle;
+    }
+
+    private bool IsValidAggressor(Entity? attacker, Player owner)
+    {
+        if (attacker == null || attacker.IsDisposed || attacker.IsDead)
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(attacker, owner) || ReferenceEquals(attacker, this))
+        {
+            return false;
+        }
+
+        if (attacker is Pet otherPet && otherPet.OwnerId == OwnerId)
+        {
+            return false;
+        }
+
+        if (owner.IsAllyOf(attacker) || IsAllyOf(attacker))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool IsValidCombatTarget(Entity? entity)
+    {
+        if (entity == null || entity.IsDisposed || entity.IsDead)
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(entity, this))
+        {
+            return false;
+        }
+
+        if (entity is Resource)
+        {
+            return false;
+        }
+
+        if (entity.MapInstanceId != MapInstanceId)
+        {
+            return false;
+        }
+
+        var owner = Owner;
+        if (owner != null)
+        {
+            if (ReferenceEquals(entity, owner) || owner.IsAllyOf(entity))
+            {
+                return false;
+            }
+        }
+
+        if (IsAllyOf(entity))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool TryAssignTarget(Entity target, long timeMs)
+    {
+        if (!IsValidCombatTarget(target))
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(Target, target))
+        {
+            RefreshCombatTimeout(timeMs);
+            return true;
+        }
+
+        Target = target;
+        State = PetState.Attack;
+        _lastTargetSeenTime = timeMs;
+        RefreshCombatTimeout(timeMs);
+
+        return true;
+    }
+
+    private void ClearCombatTarget()
+    {
         Target = null;
+        _combatTimeout = 0;
+        _lastTargetSeenTime = 0;
+        _pathfinder.SetTarget(null);
+    }
+
+    private void RefreshCombatTimeout(long timeMs)
+    {
+        var duration = (long)Options.Instance.Combat.CombatTime;
+        if (duration <= 0)
+        {
+            _combatTimeout = long.MaxValue;
+            return;
+        }
+
+        var newTimeout = timeMs + duration;
+        _combatTimeout = newTimeout < timeMs ? long.MaxValue : newTimeout;
     }
 
     private void HandleAttackState(long timeMs)
     {
         var target = Target;
-        if (target == null || target.IsDisposed)
+        if (!IsValidCombatTarget(target))
         {
-            State = PetState.Idle;
-            _pathfinder.SetTarget(null);
+            ClearCombatTarget();
+            State = PetState.Follow;
             return;
         }
 
         if (target.MapInstanceId != MapInstanceId)
         {
+            ClearCombatTarget();
             State = PetState.Follow;
-            _pathfinder.SetTarget(null);
+            return;
+        }
+
+        if (timeMs >= _combatTimeout)
+        {
+            ClearCombatTarget();
+            State = PetState.Follow;
             return;
         }
 
         if (!IsOneBlockAway(target))
         {
-            UpdatePathfinder(target.MapId, target.X, target.Y, target.Z, timeMs);
+            var hasPath = UpdatePathfinder(target.MapId, target.X, target.Y, target.Z, timeMs, out var madeProgress);
+            if (!hasPath)
+            {
+                if (timeMs - _lastTargetSeenTime >= TargetLostGracePeriod)
+                {
+                    ClearCombatTarget();
+                    State = PetState.Follow;
+                }
+
+                return;
+            }
+
+            if (madeProgress)
+            {
+                _lastTargetSeenTime = timeMs;
+                RefreshCombatTimeout(timeMs);
+            }
+            else if (timeMs - _lastTargetSeenTime >= TargetLostGracePeriod)
+            {
+                ClearCombatTarget();
+                State = PetState.Follow;
+            }
+
             return;
         }
 
         _pathfinder.SetTarget(null);
+
+        _lastTargetSeenTime = timeMs;
+        RefreshCombatTimeout(timeMs);
 
         if (!IsFacingTarget(target))
         {
@@ -361,14 +576,16 @@ public sealed class Pet : Entity
             return;
         }
 
-        UpdatePathfinder(owner.MapId, owner.X, owner.Y, owner.Z, timeMs);
+        UpdatePathfinder(owner.MapId, owner.X, owner.Y, owner.Z, timeMs, out _);
     }
 
-    private void UpdatePathfinder(Guid mapId, int targetX, int targetY, int targetZ, long timeMs)
+    private bool UpdatePathfinder(Guid mapId, int targetX, int targetY, int targetZ, long timeMs, out bool madeProgress)
     {
+        madeProgress = false;
+
         if (timeMs < _nextPathUpdate)
         {
-            return;
+            return true;
         }
 
         var currentTarget = _pathfinder.GetTarget();
@@ -389,6 +606,7 @@ public sealed class Pet : Entity
                 if (direction > Direction.None && CanMove(direction, out var blockerType, out var blockingEntity))
                 {
                     Move(direction, null);
+                    madeProgress = true;
                 }
                 else if (blockerType == MovementBlockerType.Entity && blockingEntity != null && blockingEntity != Owner)
                 {
@@ -396,6 +614,7 @@ public sealed class Pet : Entity
                     {
                         ChangeDir(direction);
                         TryAttack(blockingEntity);
+                        madeProgress = true;
                     }
                 }
                 break;
@@ -404,10 +623,12 @@ public sealed class Pet : Entity
             case PathfinderResultType.NoPathToTarget:
             case PathfinderResultType.Failure:
                 _pathfinder.SetTarget(null);
-                break;
+                _nextPathUpdate = timeMs + PathUpdateInterval;
+                return false;
         }
 
         _nextPathUpdate = timeMs + PathUpdateInterval;
+        return true;
     }
 
     private bool CanMove(Direction direction, out MovementBlockerType blockerType, [NotNullWhen(true)] out Entity? blockingEntity)
@@ -461,6 +682,7 @@ public sealed class Pet : Entity
         }
 
         PacketSender.SendEntityDataToProximity(this);
-        _pathfinder.SetTarget(null);
+        ClearCombatTarget();
+        State = PetState.Follow;
     }
 }

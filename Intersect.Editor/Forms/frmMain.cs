@@ -57,6 +57,8 @@ public partial class FrmMain : Form
 
     private FrmNpc mNpcEditor;
 
+    private FrmPet mPetEditor;
+
     private FrmProjectile mProjectileEditor;
 
     private FrmQuest mQuestEditor;
@@ -187,6 +189,7 @@ public partial class FrmMain : Form
         craftsEditorToolStripMenuItem.Text = Strings.MainForm.craftingeditor;
         itemEditorToolStripMenuItem.Text = Strings.MainForm.itemeditor;
         npcEditorToolStripMenuItem.Text = Strings.MainForm.npceditor;
+        petEditorToolStripMenuItem.Text = Strings.MainForm.peteditor;
         projectileEditorToolStripMenuItem.Text = Strings.MainForm.projectileeditor;
         questEditorToolStripMenuItem.Text = Strings.MainForm.questeditor;
         resourceEditorToolStripMenuItem.Text = Strings.MainForm.resourceeditor;
@@ -1243,6 +1246,11 @@ public partial class FrmMain : Form
         PacketSender.SendOpenEditor(GameObjectType.Npc);
     }
 
+    private void petEditorToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        PacketSender.SendOpenEditor(GameObjectType.Pet);
+    }
+
     private void spellEditorToolStripMenuItem_Click(object sender, EventArgs e)
     {
         PacketSender.SendOpenEditor(GameObjectType.Spell);
@@ -1634,6 +1642,15 @@ public partial class FrmMain : Form
                         mNpcEditor = new FrmNpc();
                         mNpcEditor.InitEditor();
                         mNpcEditor.Show();
+                    }
+
+                    break;
+                case GameObjectType.Pet:
+                    if (mPetEditor == null || mPetEditor.Visible == false)
+                    {
+                        mPetEditor = new FrmPet();
+                        mPetEditor.InitEditor();
+                        mPetEditor.Show();
                     }
 
                     break;

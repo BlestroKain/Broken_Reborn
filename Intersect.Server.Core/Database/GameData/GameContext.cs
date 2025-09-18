@@ -7,6 +7,7 @@ using Intersect.Framework.Core.GameObjects;
 using Intersect.Framework.Core.GameObjects.Mapping.Tilesets;
 using Intersect.Framework.Core.GameObjects.Maps.MapList;
 using Intersect.Framework.Core.GameObjects.NPCs;
+using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.GameObjects.Resources;
 using Intersect.Framework.Core.GameObjects.Variables;
@@ -54,6 +55,9 @@ public abstract partial class GameContext : IntersectDbContext<GameContext>, IGa
 
     //NPCs
     public DbSet<NPCDescriptor> Npcs { get; set; }
+
+    //Pets
+    public DbSet<PetDescriptor> Pets { get; set; }
 
     //Projectiles
     public DbSet<ProjectileDescriptor> Projectiles { get; set; }

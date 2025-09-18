@@ -258,6 +258,15 @@ public partial class Player : Entity
     //Bestiary
     public virtual List<BestiaryUnlockInstance> BestiaryUnlocks { get; set; } = [];
 
+    //Pets
+    public virtual List<PlayerPet> Pets { get; set; } = [];
+
+    public Guid? ActivePetId { get; set; }
+
+    [JsonIgnore]
+    [ForeignKey(nameof(ActivePetId))]
+    public PlayerPet? ActivePet { get; set; }
+
     [JsonIgnore, NotMapped]
     public bool IsValidPlayer => !IsDisposed && Client?.Entity == this;
 

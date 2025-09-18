@@ -588,6 +588,40 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.ToTable("Player_Variables");
                 });
 
+            modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.PlayerPet", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CustomName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("Experience")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("PetDescriptorId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("TimeCreated")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerId");
+
+                    b.HasIndex("PlayerId", "PetDescriptorId")
+                        .IsUnique();
+
+                    b.ToTable("Player_Pets");
+                });
+
             modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.Quest", b =>
                 {
                     b.Property<Guid>("Id")
@@ -696,6 +730,9 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT")
                         .HasColumnOrder(0);
+
+                    b.Property<Guid?>("ActivePetId")
+                        .HasColumnType("TEXT");
 
                     b.Property<Guid>("ClassId")
                         .HasColumnType("TEXT");
@@ -873,6 +910,8 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ActivePetId");
 
                     b.HasIndex("GuildId");
 
@@ -1145,6 +1184,17 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.Navigation("Player");
                 });
 
+            modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.PlayerPet", b =>
+                {
+                    b.HasOne("Intersect.Server.Entities.Player", "Player")
+                        .WithMany("Pets")
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Player");
+                });
+
             modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.Quest", b =>
                 {
                     b.HasOne("Intersect.Server.Entities.Player", "Player")
@@ -1174,6 +1224,11 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                         .HasForeignKey("GuildId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("Intersect.Server.Database.PlayerData.Players.PlayerPet", "ActivePet")
+                        .WithMany()
+                        .HasForeignKey("ActivePetId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Intersect.Server.Entities.Player", "PendingGuildInviteFrom")
                         .WithMany()
                         .HasForeignKey("PendingGuildInviteFromId")
@@ -1189,6 +1244,8 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("ActivePet");
 
                     b.Navigation("Guild");
 
@@ -1252,6 +1309,8 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.Navigation("MarketListings");
 
                     b.Navigation("Quests");
+
+                    b.Navigation("Pets");
 
                     b.Navigation("Spells");
 

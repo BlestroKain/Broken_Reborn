@@ -77,10 +77,11 @@ namespace Intersect.Editor.Forms.Editors.Events
             var treeNode37 = new TreeNode("Hold Player");
             var treeNode38 = new TreeNode("Release Player");
             var treeNode39 = new TreeNode("Spawn NPC");
+            var treeNode87 = new TreeNode("Spawn Pet");
             var treeNode40 = new TreeNode("Despawn NPC");
             var treeNode41 = new TreeNode("Hide Player");
             var treeNode42 = new TreeNode("Show Player");
-            var treeNode43 = new TreeNode("Movement", new TreeNode[] { treeNode34, treeNode35, treeNode36, treeNode37, treeNode38, treeNode39, treeNode40, treeNode41, treeNode42 });
+            var treeNode43 = new TreeNode("Movement", new TreeNode[] { treeNode34, treeNode35, treeNode36, treeNode37, treeNode38, treeNode39, treeNode87, treeNode40, treeNode41, treeNode42 });
             var treeNode44 = new TreeNode("Play Animation");
             var treeNode45 = new TreeNode("Play BGM");
             var treeNode46 = new TreeNode("Fadeout BGM");
@@ -947,6 +948,8 @@ namespace Intersect.Editor.Forms.Editors.Events
             treeNode38.Text = "Release Player";
             treeNode39.Name = "spawnnpc";
             treeNode39.Text = "Spawn NPC";
+            treeNode87.Name = "spawnpet";
+            treeNode87.Text = "Spawn Pet";
             treeNode40.Name = "despawnnpc";
             treeNode40.Text = "Despawn NPC";
             treeNode41.Name = "hideplayer";

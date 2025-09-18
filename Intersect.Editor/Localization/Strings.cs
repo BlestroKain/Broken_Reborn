@@ -2295,6 +2295,8 @@ Tick timer saved in server config.json.";
 
         public static LocalizedString spawnnpc = @"Spawn Npc {00} {01}";
 
+        public static LocalizedString spawnpet = @"Spawn Pet {00} {01}";
+
         public static LocalizedString spawnonevent = @"On Event #{00} [X Offset: {01} Y Offset: {02} Dir: {03}]";
 
         public static LocalizedString spawnonmap = @"[On Map {00} X: {01} Y: {02} Dir: {03}]";
@@ -2495,6 +2497,7 @@ Tick timer saved in server config.json.";
             {"showpicture", @"Show Picture"},
             {"showtext", @"Show Text"},
             {"spawnnpc", @"Spawn NPC"},
+            {"spawnpet", @"Spawn Pet"},
             {"specialeffects", @"Special Effects"},
             {"startcommonevent", @"Start Common Event"},
             {"startquest", @"Start Quest"},

@@ -10,6 +10,7 @@ using Intersect.Framework.Core.GameObjects.Events.Commands;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Maps.MapList;
 using Intersect.Framework.Core.GameObjects.NPCs;
+using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.GameObjects.Variables;
 using Intersect.GameObjects;
@@ -1066,6 +1067,72 @@ public static partial class CommandPrinter
 
         return Strings.EventCommandList.spawnnpc.ToString(
             NPCDescriptor.GetName(command.NpcId),
+            Strings.EventCommandList.spawnonevent.ToString(
+                Strings.EventCommandList.deletedevent, command.X, command.Y, retain
+            )
+        );
+    }
+
+    private static string GetCommandText(SpawnPetCommand command, MapInstance map)
+    {
+        if (command == null)
+        {
+            return null;
+        }
+
+        if (command.MapId != Guid.Empty)
+        {
+            foreach (var orderedMap in MapList.OrderedMaps)
+            {
+                if (orderedMap == null)
+                {
+                    continue;
+                }
+
+                if (orderedMap.MapId == command.MapId)
+                {
+                    return Strings.EventCommandList.spawnpet.ToString(
+                        PetDescriptor.GetName(command.PetId),
+                        Strings.EventCommandList.spawnonmap.ToString(
+                            orderedMap.Name, command.X, command.Y, Strings.Direction.dir?[command.Dir]
+                        )
+                    );
+                }
+            }
+
+            return Strings.EventCommandList.spawnpet.ToString(
+                PetDescriptor.GetName(command.PetId),
+                Strings.EventCommandList.spawnonmap.ToString(
+                    Strings.EventCommandList.mapnotfound, command.X, command.Y, Strings.Direction.dir[command.Dir]
+                )
+            );
+        }
+
+        var retain = Strings.EventCommandList.False;
+
+        if (Convert.ToBoolean(command.Dir))
+        {
+            retain = Strings.EventCommandList.True;
+        }
+
+        if (command.EntityId == Guid.Empty)
+        {
+            return Strings.EventCommandList.spawnpet.ToString(
+                PetDescriptor.GetName(command.PetId),
+                Strings.EventCommandList.spawnonplayer.ToString(command.X, command.Y, retain)
+            );
+        }
+
+        if (map.LocalEvents.TryGetValue(command.EntityId, out var localEvent))
+        {
+            return Strings.EventCommandList.spawnpet.ToString(
+                PetDescriptor.GetName(command.PetId),
+                Strings.EventCommandList.spawnonevent.ToString(localEvent.Name, command.X, command.Y, retain)
+            );
+        }
+
+        return Strings.EventCommandList.spawnpet.ToString(
+            PetDescriptor.GetName(command.PetId),
             Strings.EventCommandList.spawnonevent.ToString(
                 Strings.EventCommandList.deletedevent, command.X, command.Y, retain
             )

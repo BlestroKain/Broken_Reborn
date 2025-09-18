@@ -1,3 +1,4 @@
+using System;
 using Intersect.Client.Core;
 using Intersect.Client.Entities;
 using Intersect.Client.Entities.Events;
@@ -42,6 +43,21 @@ namespace Intersect.Client.Networking;
 
 internal sealed partial class PacketHandler
 {
+    private const string PetEntityTypeName = "Pet";
+
+    private static readonly bool PetEntityTypeDefined;
+
+    private static readonly EntityType PetEntityType;
+
+    static PacketHandler()
+    {
+        if (Enum.TryParse(PetEntityTypeName, ignoreCase: false, out EntityType petEntityType))
+        {
+            PetEntityTypeDefined = true;
+            PetEntityType = petEntityType;
+        }
+    }
+
     private sealed partial class VirtualPacketSender : IPacketSender
     {
         public IApplicationContext ApplicationContext { get; }
@@ -79,6 +95,15 @@ internal sealed partial class PacketHandler
     public PacketHandlerRegistry Registry { get; }
 
     public IPacketSender VirtualSender { get; }
+
+    private static bool IsGlobalEntityType(EntityType type)
+    {
+        return type == EntityType.GlobalEntity ||
+               type == EntityType.Player ||
+               type == EntityType.Resource ||
+               type == EntityType.Projectile ||
+               (PetEntityTypeDefined && type == PetEntityType);
+    }
 
     public PacketHandler(IClientContext context, PacketHandlerRegistry packetHandlerRegistry)
     {
@@ -587,7 +612,7 @@ internal sealed partial class PacketHandler
         var id = packet.Id;
         var type = packet.Type;
         var mapId = packet.MapId;
-        if (id == Globals.Me?.Id && type < EntityType.Event)
+        if (id == Globals.Me?.Id && IsGlobalEntityType(type))
         {
             return;
         }
@@ -702,7 +727,7 @@ internal sealed partial class PacketHandler
         var type = packet.Type;
         var mapId = packet.MapId;
         Entity en;
-        if (type < EntityType.Event)
+        if (IsGlobalEntityType(type))
         {
             if (!Globals.Entities.ContainsKey(id))
             {
@@ -961,7 +986,7 @@ internal sealed partial class PacketHandler
         var type = packet.Type;
         var mapId = packet.MapId;
         Entity en = null;
-        if (type < EntityType.Event)
+        if (IsGlobalEntityType(type))
         {
             if (!Globals.Entities.ContainsKey(id))
             {
@@ -1047,7 +1072,7 @@ internal sealed partial class PacketHandler
         var type = packet.Type;
         var mapId = packet.MapId;
         Entity en = null;
-        if (type < EntityType.Event)
+        if (IsGlobalEntityType(type))
         {
             if (!Globals.Entities.ContainsKey(id))
             {
@@ -1087,7 +1112,7 @@ internal sealed partial class PacketHandler
         var type = packet.Type;
         var mapId = packet.MapId;
         Entity en = null;
-        if (type < EntityType.Event)
+        if (IsGlobalEntityType(type))
         {
             if (!Globals.Entities.ContainsKey(id))
             {
@@ -1129,7 +1154,7 @@ internal sealed partial class PacketHandler
         var attackTimer = packet.AttackTimer;
 
         Entity en = null;
-        if (type < EntityType.Event)
+        if (IsGlobalEntityType(type))
         {
             if (!Globals.Entities.ContainsKey(id))
             {
@@ -1180,7 +1205,7 @@ internal sealed partial class PacketHandler
         var mapId = packet.MapId;
 
         Entity? en = null;
-        if (type < EntityType.Event)
+        if (IsGlobalEntityType(type))
         {
             if (!Globals.Entities.ContainsKey(id))
             {
@@ -2029,7 +2054,7 @@ internal sealed partial class PacketHandler
         var type = packet.Type;
         var mapId = packet.MapId;
         IEntity en = null;
-        if (type < EntityType.Event)
+        if (IsGlobalEntityType(type))
         {
             if (!Globals.Entities.ContainsKey(id))
             {

@@ -610,6 +610,11 @@ public abstract partial class Entity : IEntity
                     entityType = EntityType.Player;
                     blockingEntity = mapEntity;
                     return false;
+                case Pet pet when !pet.Passable:
+                    blockerType = MovementBlockerType.Entity;
+                    entityType = EntityType.Pet;
+                    blockingEntity = mapEntity;
+                    return false;
                 case Resource resource when !resource.IsPassable():
                     blockerType = MovementBlockerType.Entity;
                     entityType = EntityType.Resource;

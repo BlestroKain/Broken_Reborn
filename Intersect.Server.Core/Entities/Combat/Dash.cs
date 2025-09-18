@@ -117,6 +117,7 @@ public partial class Dash
                             case EntityType.Player:
                                 return;
 
+                            case EntityType.Pet:
                             case EntityType.GlobalEntity:
                             case EntityType.Projectile:
                                 break;

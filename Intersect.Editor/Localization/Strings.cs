@@ -4344,6 +4344,8 @@ Tick timer saved in server config.json.";
 
         public static LocalizedString npceditor = @"Npc Editor";
 
+        public static LocalizedString peteditor = @"Pet Editor";
+
         public static LocalizedString options = @"Options";
 
         public static LocalizedString overlay = @"Overlay";
@@ -4904,6 +4906,93 @@ Tick timer saved in server config.json.";
             {SpellEffect.Sleep, @"Sleep"},
             {SpellEffect.Taunt, @"Taunt"},
         };
+
+    }
+
+    public partial struct Pets
+    {
+
+        public static LocalizedString title = @"Pet Editor";
+
+        public static LocalizedString petlist = @"Pets";
+
+        public static LocalizedString searchplaceholder = @"Search...";
+
+        public static LocalizedString clearsearch = @"Clear";
+
+        public static LocalizedString general = @"General";
+
+        public static LocalizedString name = @"Name:";
+
+        public static LocalizedString folderlabel = @"Folder:";
+
+        public static LocalizedString addfolder = @"Add";
+
+        public static LocalizedString folderprompt = @"Enter a folder name:";
+
+        public static LocalizedString foldertitle = @"New Folder";
+
+        public static LocalizedString sprite = @"Sprite";
+
+        public static LocalizedString level = @"Level:";
+
+        public static LocalizedString experience = @"Experience:";
+
+        public static LocalizedString stats = @"Stats";
+
+        public static LocalizedString vitals = @"Vitals";
+
+        public static LocalizedString maxvitals = @"Max";
+
+        public static LocalizedString vitalregen = @"Regeneration";
+
+        public static LocalizedString combat = @"Combat";
+
+        public static LocalizedString attackanimation = @"Attack Animation:";
+
+        public static LocalizedString deathanimation = @"Death Animation:";
+
+        public static LocalizedString idleanimation = @"Idle Animation:";
+
+        public static LocalizedString damagetype = @"Damage Type:";
+
+        public static LocalizedString scalingstat = @"Scaling Stat:";
+
+        public static LocalizedString scalingamount = @"Scaling Amount (%):";
+
+        public static LocalizedString damage = @"Base Damage:";
+
+        public static LocalizedString critchance = @"Crit Chance (%):";
+
+        public static LocalizedString critmultiplier = @"Crit Multiplier:";
+
+        public static LocalizedString attackspeedmodifier = @"Attack Speed Modifier:";
+
+        public static LocalizedString attackspeedvalue = @"Attack Speed Value:";
+
+        public static LocalizedString spells = @"Spells";
+
+        public static LocalizedString addspell = @"Add";
+
+        public static LocalizedString removespell = @"Remove";
+
+        public static LocalizedString immunities = @"Immunities";
+
+        public static LocalizedString tenacity = @"Tenacity (%):";
+
+        public static LocalizedString save = @"Save";
+
+        public static LocalizedString cancel = @"Cancel";
+
+        public static LocalizedString deleteprompt =
+            @"Are you sure you want to delete this pet? This action cannot be reverted!";
+
+        public static LocalizedString deletetitle = @"Delete Pet";
+
+        public static LocalizedString undoprompt =
+            @"Are you sure you want to undo changes made to this pet? This action cannot be reverted!";
+
+        public static LocalizedString undotitle = @"Undo Changes";
 
     }
 

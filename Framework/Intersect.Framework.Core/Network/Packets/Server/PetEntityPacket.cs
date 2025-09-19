@@ -1,5 +1,6 @@
+
+using System;
 using Intersect.Enums;
-using Intersect.Framework.Core;
 using MessagePack;
 
 namespace Intersect.Network.Packets.Server;
@@ -19,7 +20,8 @@ public sealed class PetEntityPacket : EntityPacket
     public Guid DescriptorId { get; set; }
 
     [Key(26)]
-    public PetState State { get; set; } // Ensure PetState is defined in the correct namespace
+
+    public PetState State { get; set; }
 
     [Key(27)]
     public bool Despawnable { get; set; }

@@ -1267,11 +1267,33 @@ public static partial class Strings
             {"holdtozoomout", "Hold to Zoom Out:"},
             {"togglefullscreen", "Toggle Fullscreen:"},
             {nameof(Control.ToggleAutoSoftRetargetOnSelfCast).ToLowerInvariant(), "Toggle Auto Soft-Retarget on Self-Cast:"},
+            {nameof(Control.PetModeFollow).ToLowerInvariant(), @"Pet Mode - Follow:"},
+            {nameof(Control.PetModeStay).ToLowerInvariant(), @"Pet Mode - Stay:"},
+            {nameof(Control.PetModeDefend).ToLowerInvariant(), @"Pet Mode - Defend:"},
+            {nameof(Control.PetModePassive).ToLowerInvariant(), @"Pet Mode - Passive:"},
         };
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString Listening = @"Listening";
 
+    }
+
+    public partial struct Pets
+    {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString WidgetTitle = @"Pet Modes";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString BehaviorFollow = @"Follow";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString BehaviorStay = @"Stay";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString BehaviorDefend = @"Defend";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString BehaviorPassive = @"Passive";
     }
 
     public partial struct Crafting

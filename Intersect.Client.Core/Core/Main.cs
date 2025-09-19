@@ -314,6 +314,7 @@ internal static partial class Main
         //Dump Game Objects
         Globals.Me = null;
         Globals.HasGameData = false;
+        Globals.PetHub.Reset();
         foreach (var map in MapInstance.Lookup)
         {
             var mp = (MapInstance) map.Value;

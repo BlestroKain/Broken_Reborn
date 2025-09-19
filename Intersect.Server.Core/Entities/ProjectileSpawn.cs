@@ -181,6 +181,7 @@ public partial class ProjectileSpawn
         {
             Player => ProjectileDescriptor.GrappleHookOptions.Contains(Enums.GrappleOption.Player),
             Npc => ProjectileDescriptor.GrappleHookOptions.Contains(Enums.GrappleOption.NPC),
+            Pet => ProjectileDescriptor.GrappleHookOptions.Contains(Enums.GrappleOption.NPC),
             Resource => ProjectileDescriptor.GrappleHookOptions.Contains(Enums.GrappleOption.Resource),
             _ => throw new ArgumentException($"Unsupported entity type {en.GetType().FullName}", nameof(en)),
         };

@@ -610,6 +610,16 @@ public abstract partial class Entity : IEntity
                     entityType = EntityType.Player;
                     blockingEntity = mapEntity;
                     return false;
+                case Pet pet when !pet.Passable:
+                    if (CanPassPet(pet))
+                    {
+                        continue;
+                    }
+
+                    blockerType = MovementBlockerType.Entity;
+                    entityType = EntityType.Pet;
+                    blockingEntity = mapEntity;
+                    return false;
                 case Resource resource when !resource.IsPassable():
                     blockerType = MovementBlockerType.Entity;
                     entityType = EntityType.Resource;
@@ -680,6 +690,46 @@ public abstract partial class Entity : IEntity
     }
 
     protected virtual bool CanPassPlayer(MapController targetMap) => false;
+
+    protected virtual bool CanPassPet(Pet pet)
+    {
+        if (pet.OwnerId == Id)
+        {
+            return true;
+        }
+
+        if (this is Player player)
+        {
+            if (player.Id == pet.OwnerId)
+            {
+                return true;
+            }
+
+            var petOwner = pet.Owner;
+            if (petOwner != null && player.InParty(petOwner))
+            {
+                return true;
+            }
+        }
+
+        if (this is Pet movingPet)
+        {
+            if (movingPet.OwnerId == pet.OwnerId)
+            {
+                return true;
+            }
+
+            var movingPetOwner = movingPet.Owner;
+            var blockingPetOwner = pet.Owner;
+
+            if (movingPetOwner != null && blockingPetOwner != null && movingPetOwner.InParty(blockingPetOwner))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     protected virtual bool IsBlockedByEvent(
         MapInstance mapInstance,
@@ -1596,6 +1646,10 @@ public abstract partial class Entity : IEntity
         return;
     }
 
+    internal virtual void RegisterIncomingAttack(Entity attacker, Vital vital)
+    {
+    }
+
     public virtual int[] GetStatValues()
     {
         var stats = new int[Enum.GetValues<Stat>().Length];
@@ -2198,6 +2252,7 @@ public abstract partial class Entity : IEntity
                     PacketSender.SendActionMsg(enemy, Strings.Combat.Critical, CustomColors.Combat.Critical);
                 }
 
+                enemy.RegisterIncomingAttack(this, Vital.Health);
                 enemy.SubVital(Vital.Health, baseDamage);
                 switch (damageType)
                 {
@@ -2239,7 +2294,8 @@ public abstract partial class Entity : IEntity
                     dmgMap.TryGetValue(this, out var damage);
                     dmgMap[this] = damage + baseDamage;
 
-                    enemyNpc.LootMap.TryAdd(Id, true);
+                    var lootOwnerId = ResolveLootOwnerId(this, Id);
+                    enemyNpc.LootMap.TryAdd(lootOwnerId, true);
                     enemyNpc.LootMapCache = enemyNpc.LootMap.Keys.ToArray();
                     enemyNpc.TryFindNewTarget(Timing.Global.Milliseconds, default, false, this);
                 }
@@ -2269,6 +2325,7 @@ public abstract partial class Entity : IEntity
             if (secondaryDamage > 0 && enemy.HasVital(Vital.Mana) && !invulnerable)
             {
                 //If we took damage lets reset our combat timer
+                enemy.RegisterIncomingAttack(this, Vital.Mana);
                 enemy.SubVital(Vital.Mana, secondaryDamage);
                 PacketSender.SendActionMsg(
                     enemy, Strings.Combat.RemoveSymbol + secondaryDamage, CustomColors.Combat.RemoveMana
@@ -3170,9 +3227,34 @@ public abstract partial class Entity : IEntity
         }
 
         // Run events and other things.
-        killer?.KilledEntity(this);
+        var lootContext = ResolveLootSource(killer);
+        var rewardContext = lootContext;
 
-        if (killer is Player attacker && this is Player victim)
+        if (killer is Pet pet)
+        {
+            var owner = pet.Owner ?? Player.FindOnline(pet.OwnerId);
+            if (owner != null && !owner.IsDisposed)
+            {
+                {
+                    owner.KilledEntity(this);
+                }
+                rewardContext = owner;
+
+                if (this is Npc npc && !ReferenceEquals(owner, pet))
+                {
+                    if (npc.DamageMap.TryRemove(pet, out var petDamage) && petDamage > 0)
+                    {
+                        npc.DamageMap.AddOrUpdate(owner, petDamage, (_, existing) => existing + petDamage);
+                    }
+                }
+            }
+        }
+
+        rewardContext?.KilledEntity(this);
+
+ 
+
+        if (lootContext is Player attacker && this is Player victim)
         {
             AlignmentPvPService.HandleKill(attacker, victim);
         }
@@ -3227,7 +3309,7 @@ public abstract partial class Entity : IEntity
             else
             {
                 // Drop as normal.
-                DropItems(killer);
+                DropItems(lootContext ?? killer);
             }
         }
 
@@ -3245,9 +3327,29 @@ public abstract partial class Entity : IEntity
         IsDead = true;
     }
 
+    protected static Entity? ResolveLootSource(Entity? entity)
+    {
+        if (entity is Pet pet)
+        {
+            return pet.Owner ?? entity;
+        }
+
+        return entity;
+    }
+
+    protected static Guid ResolveLootOwnerId(Entity? entity, Guid fallback)
+    {
+        return entity switch
+        {
+            Player player => player.Id,
+            Pet pet when pet.OwnerId != Guid.Empty => pet.OwnerId,
+            _ => fallback,
+        };
+    }
+
     protected virtual bool ShouldDropItem(Entity killer, ItemDescriptor itemDescriptor, Item item, float dropRateModifier, out Guid lootOwner)
     {
-        lootOwner = default;
+        lootOwner = ResolveLootOwnerId(killer, Guid.Empty);
 
         var dropRate = item.DropChance * 1000 * dropRateModifier;
         var dropResult = Randomization.Next(1, 100001);
@@ -3270,6 +3372,8 @@ public abstract partial class Entity : IEntity
             return;
         }
 
+        var lootSource = ResolveLootSource(killer);
+
         // Drop items
         foreach (var slot in Items)
         {
@@ -3287,10 +3391,10 @@ public abstract partial class Entity : IEntity
                 continue;
             }
 
-            var playerKiller = killer as Player;
+            var playerKiller = lootSource as Player;
             var dropRateModifier = 1 + (playerKiller?.GetEquipmentBonusEffect(ItemEffect.Luck) / 100f ?? 0);
-         
-            if (!ShouldDropItem(killer, itemDescriptor, drop, dropRateModifier, out Guid lootOwner))
+
+            if (!ShouldDropItem(lootSource ?? killer, itemDescriptor, drop, dropRateModifier, out Guid lootOwner))
             {
                 continue;
             }

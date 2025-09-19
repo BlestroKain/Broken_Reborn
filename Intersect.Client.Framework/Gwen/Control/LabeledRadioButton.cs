@@ -1,3 +1,4 @@
+using Intersect.Client.Framework.Graphics;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
 using Intersect.Client.Framework.Gwen.Input;
 
@@ -51,10 +52,51 @@ public partial class LabeledRadioButton : Base, ITextContainer
         set => mLabel.Text = value;
     }
 
+    public IFont? Font
+    {
+        get => mLabel.Font;
+        set => mLabel.Font = value;
+    }
+
+    public string? FontName
+    {
+        get => mLabel.FontName;
+        set => mLabel.FontName = value;
+    }
+
+    public int FontSize
+    {
+        get => mLabel.FontSize;
+        set => mLabel.FontSize = value;
+    }
+
+    public Color? TextColor
+    {
+        get => mLabel.TextColor;
+        set => mLabel.TextColor = value;
+    }
+
+    public Color? TextColorOverride
+    {
+        get => mLabel.TextColorOverride;
+        set => mLabel.TextColorOverride = value;
+    }
+
     public Color? TextPaddingDebugColor { get; set; }
 
     // todo: would be nice to remove that
     internal RadioButton RadioButton => mRadioButton;
+
+    public bool IsChecked
+    {
+        get => mRadioButton.IsChecked;
+        set => mRadioButton.IsChecked = value;
+    }
+
+    public void SetTextColor(Color clr, ComponentState state)
+    {
+        mLabel.SetTextColor(clr, state);
+    }
 
     protected override void Layout(Skin.Base skin)
     {

@@ -1267,11 +1267,118 @@ public static partial class Strings
             {"holdtozoomout", "Hold to Zoom Out:"},
             {"togglefullscreen", "Toggle Fullscreen:"},
             {nameof(Control.ToggleAutoSoftRetargetOnSelfCast).ToLowerInvariant(), "Toggle Auto Soft-Retarget on Self-Cast:"},
+            {nameof(Control.PetModeFollow).ToLowerInvariant(), @"Pet Mode - Follow:"},
+            {nameof(Control.PetModeStay).ToLowerInvariant(), @"Pet Mode - Stay:"},
+            {nameof(Control.PetModeDefend).ToLowerInvariant(), @"Pet Mode - Defend:"},
+            {nameof(Control.PetModePassive).ToLowerInvariant(), @"Pet Mode - Passive:"},
         };
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString Listening = @"Listening";
 
+    }
+
+    public partial struct Pets
+    {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString WidgetTitle = @"Pet Modes";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString BehaviorFollow = @"Follow";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString BehaviorStay = @"Stay";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString BehaviorDefend = @"Defend";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString BehaviorPassive = @"Passive";
+
+        // Faltantes agregados:
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString StatusWithPet = @"You have a pet summoned.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString StatusNoPet = @"No pet summoned.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString HubTitle = @"Pet Hub";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString CustomNameLabel = @"Name: {0}";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString DescriptorNameLabel = @"Descriptor: {0}";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString UnknownDescriptorName = @"Unknown";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString LevelLabel = @"Level: {0}";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString ExperienceLabel = @"Experience: {0}";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString ExperienceToNextLabel = @"Next Level: {0}";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString MaxLevelReached = @"Max Level";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString BehaviorLabel = @"Behavior: {0}";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString BehaviorUnknown = @"Unknown";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString VitalsHeader = @"Vitals";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString VitalFormat = @"{0}: {1}/{2}";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString StatsHeader = @"Stats";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString StatFormat = @"{0}: {1}";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString NoStats = @"No stats available.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString InvokeButton = @"Summon";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString DismissButton = @"Dismiss";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString SummonRequested = @"You begin summoning {0}.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Summoned = @"{0} has answered your call.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString DismissRequested = @"You ask {0} to rest.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Dismissed = @"{0} has returned to rest.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetLost = @"{0} is no longer by your side.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetDied = @"{0} has fallen in battle.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetEvolved = @"{0} evolved into {1}!";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetExperienceGained = @"{0} gained {1} experience.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetLevelGained = @"{0} reached level {1}!";
     }
 
     public partial struct Crafting
@@ -2062,6 +2169,9 @@ If you are sure you want to hand over your guild enter '\c{{#ff8080}}{02}\c{{}}'
         public static LocalizedString Dropped = @"Dropped";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Enabled = @"Enabled";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString GuildBanked = @"Guild Banked";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -2075,6 +2185,39 @@ If you are sure you want to hand over your guild enter '\c{{#ff8080}}{02}\c{{}}'
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString RegularAndPercentage = @"{00} + {01}%";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetSummons = @"Summons Pet:";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetSummonOnEquip = @"Summons on Equip";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetDespawnOnUnequip = @"Despawns on Unequip";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetBindOnEquip = @"Binds on Equip";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetNameOverride = @"Pet Name Override:";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetLevel = @"Pet Level:";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetExperience = @"Pet Experience:";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetCurrentLevel = @"Current Level:";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetCurrentExperience = @"Current Experience:";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetExperienceToNext = @"Experience to Next:";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetMaxLevel = @"Max Level";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString ScalingPercentage = @"Scaling Percentage:";

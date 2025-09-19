@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Security.Cryptography;
+using System.Windows.Forms;
 using DarkUI.Controls;
 using DarkUI.Forms;
 using Intersect.Compression;
@@ -56,6 +57,8 @@ public partial class FrmMain : Form
     private FrmItem mItemEditor;
 
     private FrmNpc mNpcEditor;
+
+    private FrmPet mPetEditor;
 
     private FrmProjectile mProjectileEditor;
 
@@ -187,6 +190,7 @@ public partial class FrmMain : Form
         craftsEditorToolStripMenuItem.Text = Strings.MainForm.craftingeditor;
         itemEditorToolStripMenuItem.Text = Strings.MainForm.itemeditor;
         npcEditorToolStripMenuItem.Text = Strings.MainForm.npceditor;
+        petEditorToolStripMenuItem.Text = Strings.MainForm.peteditor;
         projectileEditorToolStripMenuItem.Text = Strings.MainForm.projectileeditor;
         questEditorToolStripMenuItem.Text = Strings.MainForm.questeditor;
         resourceEditorToolStripMenuItem.Text = Strings.MainForm.resourceeditor;
@@ -1243,6 +1247,11 @@ public partial class FrmMain : Form
         PacketSender.SendOpenEditor(GameObjectType.Npc);
     }
 
+    private void petEditorToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        PacketSender.SendOpenEditor(GameObjectType.Pet);
+    }
+
     private void spellEditorToolStripMenuItem_Click(object sender, EventArgs e)
     {
         PacketSender.SendOpenEditor(GameObjectType.Spell);
@@ -1637,6 +1646,16 @@ public partial class FrmMain : Form
                     }
 
                     break;
+                case GameObjectType.Pet:
+                    if (mPetEditor == null || mPetEditor.Visible == false)
+                    {
+                        mPetEditor = new FrmPet();
+                        mPetEditor.FormClosed += PetEditor_FormClosed;
+                        mPetEditor.InitEditor();
+                        mPetEditor.Show();
+                    }
+
+                    break;
                 case GameObjectType.Resource:
                     if (mResourceEditor == null || mResourceEditor.Visible == false)
                     {
@@ -1750,6 +1769,12 @@ public partial class FrmMain : Form
 
             Globals.CurrentEditor = (int)type;
         }
+    }
+
+    private void PetEditor_FormClosed(object sender, FormClosedEventArgs e)
+    {
+        Globals.CurrentEditor = -1;
+        mPetEditor = null;
     }
 
     private void frmMain_FormClosing(object sender, FormClosingEventArgs e)

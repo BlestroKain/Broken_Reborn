@@ -9,6 +9,7 @@ using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Animations;
 using Intersect.Framework.Core.GameObjects.Events;
 using Intersect.Framework.Core.GameObjects.Items;
+using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.GameObjects;
 using Intersect.Localization;
 using Intersect.Utilities;
@@ -138,6 +139,10 @@ public partial class FrmItem : EditorForm
         cmbTeachSpell.Items.Clear();
         cmbTeachSpell.Items.Add(Strings.General.None);
         cmbTeachSpell.Items.AddRange(SpellDescriptor.Names);
+
+        cmbPet.Items.Clear();
+        cmbPet.Items.Add(Strings.General.None);
+        cmbPet.Items.AddRange(PetDescriptor.Names);
 
         var events = EventDescriptor.Names;
         var eventElements = new List<ComboBox>() { cmbEvent, cmbEventTriggers };
@@ -322,6 +327,12 @@ public partial class FrmItem : EditorForm
         grpRequirements.Text = Strings.ItemEditor.requirementsgroup;
         lblCannotUse.Text = Strings.ItemEditor.cannotuse;
         btnEditRequirements.Text = Strings.ItemEditor.requirements;
+        grpPet.Text = Strings.ItemEditor.petpanel;
+        lblPetDescriptor.Text = Strings.ItemEditor.petdescriptor;
+        chkSummonOnEquip.Text = Strings.ItemEditor.summononequip;
+        chkDespawnOnUnequip.Text = Strings.ItemEditor.despawnonunequip;
+        chkBindOnEquip.Text = Strings.ItemEditor.bindonequip;
+        lblPetNameOverride.Text = Strings.ItemEditor.petnameoverride;
 
         //Searching/Sorting
         btnAlphabetical.ToolTipText = Strings.ItemEditor.sortalphabetically;
@@ -552,6 +563,8 @@ public partial class FrmItem : EditorForm
         grpEquipment.Visible = false;
         grpEvent.Visible = false;
         grpBags.Visible = false;
+        grpPet.Visible = false;
+        UpdatePetControlsEnabled(false);
         chkStackable.Enabled = true;
         grpEnchanting.Visible = false;
         var selectedType = (ItemType)cmbType.SelectedIndex;
@@ -596,6 +609,14 @@ public partial class FrmItem : EditorForm
         else if (cmbType.SelectedIndex == (int)ItemType.Equipment)
         {
             grpEquipment.Visible = true;
+            grpPet.Visible = true;
+            mEditorItem.Pet ??= new PetItemData();
+            cmbPet.SelectedIndex = PetDescriptor.ListIndex(mEditorItem.Pet.PetDescriptorId) + 1;
+            chkSummonOnEquip.Checked = mEditorItem.Pet.SummonOnEquip;
+            chkDespawnOnUnequip.Checked = mEditorItem.Pet.DespawnOnUnequip;
+            chkBindOnEquip.Checked = mEditorItem.Pet.BindOnEquip;
+            txtPetNameOverride.Text = mEditorItem.Pet.PetNameOverride ?? string.Empty;
+            UpdatePetControlsEnabled(mEditorItem.Pet.PetDescriptorId != Guid.Empty);
             if (mEditorItem.EquipmentSlot < -1 || mEditorItem.EquipmentSlot >= cmbEquipmentSlot.Items.Count)
             {
                 mEditorItem.EquipmentSlot = 0;
@@ -745,6 +766,34 @@ public partial class FrmItem : EditorForm
     private void cmbConsume_SelectedIndexChanged(object sender, EventArgs e)
     {
         mEditorItem.Consumable.Type = (ConsumableType)cmbConsume.SelectedIndex;
+    }
+
+    private void cmbPet_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (mEditorItem == null)
+        {
+            return;
+        }
+
+        var petData = EnsurePetData();
+        var selectedIndex = cmbPet.SelectedIndex - 1;
+        if (selectedIndex < 0)
+        {
+            petData.PetDescriptorId = Guid.Empty;
+            chkSummonOnEquip.Checked = false;
+            chkDespawnOnUnequip.Checked = false;
+            chkBindOnEquip.Checked = false;
+            txtPetNameOverride.Text = string.Empty;
+            UpdatePetControlsEnabled(false);
+            return;
+        }
+
+        petData.PetDescriptorId = PetDescriptor.IdFromList(selectedIndex);
+        UpdatePetControlsEnabled(true);
+        chkSummonOnEquip.Checked = petData.SummonOnEquip;
+        chkDespawnOnUnequip.Checked = petData.DespawnOnUnequip;
+        chkBindOnEquip.Checked = petData.BindOnEquip;
+        txtPetNameOverride.Text = petData.PetNameOverride ?? string.Empty;
     }
 
     private void cmbPaperdoll_SelectedIndexChanged(object sender, EventArgs e)
@@ -1166,6 +1215,60 @@ public partial class FrmItem : EditorForm
     private void chkQuickCast_CheckedChanged(object sender, EventArgs e)
     {
         mEditorItem.QuickCast = chkQuickCast.Checked;
+    }
+
+    private void chkSummonOnEquip_CheckedChanged(object sender, EventArgs e)
+    {
+        if (mEditorItem == null)
+        {
+            return;
+        }
+
+        EnsurePetData().SummonOnEquip = chkSummonOnEquip.Checked;
+    }
+
+    private void chkDespawnOnUnequip_CheckedChanged(object sender, EventArgs e)
+    {
+        if (mEditorItem == null)
+        {
+            return;
+        }
+
+        EnsurePetData().DespawnOnUnequip = chkDespawnOnUnequip.Checked;
+    }
+
+    private void chkBindOnEquip_CheckedChanged(object sender, EventArgs e)
+    {
+        if (mEditorItem == null)
+        {
+            return;
+        }
+
+        EnsurePetData().BindOnEquip = chkBindOnEquip.Checked;
+    }
+
+    private void txtPetNameOverride_TextChanged(object sender, EventArgs e)
+    {
+        if (mEditorItem == null)
+        {
+            return;
+        }
+
+        var value = string.IsNullOrWhiteSpace(txtPetNameOverride.Text) ? null : txtPetNameOverride.Text;
+        EnsurePetData().PetNameOverride = value;
+    }
+
+    private PetItemData EnsurePetData()
+    {
+        return mEditorItem.Pet ??= new PetItemData();
+    }
+
+    private void UpdatePetControlsEnabled(bool enabled)
+    {
+        chkSummonOnEquip.Enabled = enabled;
+        chkDespawnOnUnequip.Enabled = enabled;
+        chkBindOnEquip.Enabled = enabled;
+        txtPetNameOverride.Enabled = enabled;
     }
 
     private void chkSingleUse_CheckedChanged(object sender, EventArgs e)

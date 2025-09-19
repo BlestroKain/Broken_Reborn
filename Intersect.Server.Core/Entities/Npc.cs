@@ -177,7 +177,18 @@ public partial class Npc : Entity
         {
             base.Die(generateLoot, killer);
 
-            if (killer is Player player)
+            // Si el killer es una Pet, obtener el dueño (Player)
+            Player player = null;
+            if (killer is Player p)
+            {
+                player = p;
+            }
+            else if (killer is Pet pet && pet.Owner is Player petOwner)
+            {
+                player = petOwner;
+            }
+
+            if (player != null)
             {
                 var npcId = Descriptor.Id;
                 var changed = false;
@@ -266,7 +277,6 @@ public partial class Npc : Entity
                 }
             }
 
-
             AggroCenterMap = null;
             AggroCenterX = 0;
             AggroCenterY = 0;
@@ -283,7 +293,7 @@ public partial class Npc : Entity
 
     protected override bool ShouldDropItem(Entity killer, ItemDescriptor itemDescriptor, Item item, float dropRateModifier, out Guid lootOwner)
     {
-        lootOwner = (killer as Player)?.Id ?? Id;
+        lootOwner = ResolveLootOwnerId(killer, Id);
         return base.ShouldDropItem(killer, itemDescriptor, item, dropRateModifier, out _);
     }
 

@@ -1413,27 +1413,18 @@ public partial class Player : Entity
             return;
         }
 
-        if (petData.DespawnOnUnequip)
+        var currentPet = CurrentPet;
+        if (currentPet != null)
         {
-            var currentPet = CurrentPet;
-            if (currentPet != null)
-            {
-                DespawnPet(currentPet);
-            }
-
-            ActivePet = null;
-            ActivePetId = null;
-            PacketSender.SendOpenPetHub(this, close: true);
-
-            return;
+            DespawnPet(currentPet, killIfDespawnable: petData.DespawnOnUnequip);
         }
 
-        ActivePetMode = PetBehavior.Stay;
+        ActivePet = null;
+        ActivePetId = null;
 
-        var existingPet = CurrentPet;
-        if (existingPet != null && !existingPet.IsDisposed)
+        if (petData.DespawnOnUnequip)
         {
-            existingPet.SetBehavior(PetBehavior.Stay);
+            PacketSender.SendOpenPetHub(this, close: true);
         }
     }
 

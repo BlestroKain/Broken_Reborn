@@ -43,21 +43,6 @@ namespace Intersect.Client.Networking;
 
 internal sealed partial class PacketHandler
 {
-    private const string PetEntityTypeName = "Pet";
-
-    private static readonly bool PetEntityTypeDefined;
-
-    private static readonly EntityType PetEntityType;
-
-    static PacketHandler()
-    {
-        if (Enum.TryParse(PetEntityTypeName, ignoreCase: false, out EntityType petEntityType))
-        {
-            PetEntityTypeDefined = true;
-            PetEntityType = petEntityType;
-        }
-    }
-
     private sealed partial class VirtualPacketSender : IPacketSender
     {
         public IApplicationContext ApplicationContext { get; }
@@ -101,8 +86,7 @@ internal sealed partial class PacketHandler
         return type == EntityType.GlobalEntity ||
                type == EntityType.Player ||
                type == EntityType.Resource ||
-               type == EntityType.Projectile ||
-               (PetEntityTypeDefined && type == PetEntityType);
+               type == EntityType.Projectile;
     }
 
     public PacketHandler(IClientContext context, PacketHandlerRegistry packetHandlerRegistry)
@@ -423,19 +407,22 @@ internal sealed partial class PacketHandler
         if (Globals.TryGetEntity(EntityType.Pet, packet.EntityId, out var entity))
         {
             entity.Load(packet);
-            return;
+        }
+        else
+        {
+            var pet = new Pet(packet.EntityId, packet);
+            if (!Globals.Entities.TryAdd(pet.Id, pet))
+            {
+                ApplicationContext.CurrentContext.Logger.LogError(
+                    "Failed to register new {EntityType} {EntityId} ({EntityName})",
+                    EntityType.Pet,
+                    packet.EntityId,
+                    packet.Name
+                );
+            }
         }
 
-        var pet = new Pet(packet.EntityId, packet);
-        if (!Globals.Entities.TryAdd(pet.Id, pet))
-        {
-            ApplicationContext.CurrentContext.Logger.LogError(
-                "Failed to register new {EntityType} {EntityId} ({EntityName})",
-                EntityType.Pet,
-                packet.EntityId,
-                packet.Name
-            );
-        }
+        Globals.PetHub.Process(packet);
     }
 
     //PetEntityUpdatePacket
@@ -458,8 +445,56 @@ internal sealed partial class PacketHandler
                 continue;
             }
 
-            pet.ApplyMetadata(update.OwnerId, update.DescriptorId, update.State, update.Despawnable);
+            pet.ApplyMetadata(
+                update.OwnerId,
+                update.DescriptorId,
+                update.State,
+                update.Despawnable,
+                update.Behavior
+            );
         }
+    }
+
+    public void HandlePacket(IPacketSender packetSender, PetStateUpdatePacket packet)
+    {
+        Globals.PetHub.Process(packet);
+
+        if (packet == null)
+        {
+            return;
+        }
+
+        if (!Globals.TryGetEntity(EntityType.Pet, packet.PetId, out var entity))
+        {
+            return;
+        }
+
+        if (entity is not Pet pet)
+        {
+            return;
+        }
+
+        pet.ApplyMetadata(pet.OwnerId, pet.DescriptorId, packet.State, pet.Despawnable, packet.Behavior);
+    }
+
+    public void HandlePacket(IPacketSender packetSender, OpenPetHubPacket packet)
+    {
+        if (packet == null)
+        {
+            return;
+        }
+
+        Interface.Interface.EnqueueInGame(gameInterface =>
+        {
+            if (packet.Close)
+            {
+                gameInterface.HidePetHub();
+            }
+            else
+            {
+                gameInterface.ShowPetHub();
+            }
+        });
     }
 
     //ResourceEntityPacket
@@ -598,28 +633,38 @@ internal sealed partial class PacketHandler
         var type = packet.Type;
         var mapId = packet.MapId;
         Entity en;
-        if (type != EntityType.Event)
+        if (type == EntityType.Pet)
         {
-            if (!Globals.Entities.ContainsKey(id))
+            if (!Globals.TryGetEntity(EntityType.Pet, id, out var entity))
             {
                 return;
             }
 
-            en = Globals.Entities[id];
+            en = entity;
+        }
+        else if (IsGlobalEntityType(type))
+        {
+            if (!Globals.Entities.TryGetValue(id, out var entity))
+            {
+                return;
+            }
+
+            en = entity;
         }
         else
         {
-            if (MapInstance.Get(mapId) == null)
+            var mapInstance = MapInstance.Get(mapId);
+            if (mapInstance == null)
             {
                 return;
             }
 
-            if (!MapInstance.Get(mapId).LocalEntities.ContainsKey(id))
+            if (!mapInstance.LocalEntities.TryGetValue(id, out var entity))
             {
                 return;
             }
 
-            en = MapInstance.Get(mapId).LocalEntities[id];
+            en = entity;
         }
 
         if (en == Globals.Me)
@@ -667,6 +712,11 @@ internal sealed partial class PacketHandler
             if (Globals.Entities?.ContainsKey(id) ?? false)
             {
                 Globals.EntitiesToDispose?.Add(id);
+            }
+
+            if (type == EntityType.Pet)
+            {
+                Globals.PetHub.HandlePetLeft(id);
             }
         }
         else
@@ -772,14 +822,23 @@ internal sealed partial class PacketHandler
         var type = packet.Type;
         var mapId = packet.MapId;
         Entity en;
-        if (IsGlobalEntityType(type))
+        if (type == EntityType.Pet)
         {
-            if (!Globals.Entities.ContainsKey(id))
+            if (!Globals.TryGetEntity(EntityType.Pet, id, out var entity))
             {
                 return;
             }
 
-            en = Globals.Entities[id];
+            en = entity;
+        }
+        else if (IsGlobalEntityType(type))
+        {
+            if (!Globals.Entities.TryGetValue(id, out var entity))
+            {
+                return;
+            }
+
+            en = entity;
         }
         else
         {
@@ -789,17 +848,12 @@ internal sealed partial class PacketHandler
                 return;
             }
 
-            if (!gameMap.LocalEntities.ContainsKey(id))
+            if (!gameMap.LocalEntities.TryGetValue(id, out var entity))
             {
                 return;
             }
 
-            en = gameMap.LocalEntities[id];
-        }
-
-        if (en == null)
-        {
-            return;
+            en = entity;
         }
 
         var entityMap = MapInstance.Get(en.MapId);
@@ -1030,15 +1084,24 @@ internal sealed partial class PacketHandler
         var id = packet.Id;
         var type = packet.Type;
         var mapId = packet.MapId;
-        Entity en = null;
-        if (IsGlobalEntityType(type))
+        Entity en;
+        if (type == EntityType.Pet)
         {
-            if (!Globals.Entities.ContainsKey(id))
+            if (!Globals.TryGetEntity(EntityType.Pet, id, out var entity))
             {
                 return;
             }
 
-            en = Globals.Entities[id];
+            en = entity;
+        }
+        else if (IsGlobalEntityType(type))
+        {
+            if (!Globals.Entities.TryGetValue(id, out var entity))
+            {
+                return;
+            }
+
+            en = entity;
         }
         else
         {
@@ -1048,17 +1111,12 @@ internal sealed partial class PacketHandler
                 return;
             }
 
-            if (!entityMap.LocalEntities.ContainsKey(id))
+            if (!entityMap.LocalEntities.TryGetValue(id, out var entity))
             {
                 return;
             }
 
-            en = entityMap.LocalEntities[id];
-        }
-
-        if (en == null)
-        {
-            return;
+            en = entity;
         }
 
         en.Vital = packet.Vitals;
@@ -1116,15 +1174,24 @@ internal sealed partial class PacketHandler
         var id = packet.Id;
         var type = packet.Type;
         var mapId = packet.MapId;
-        Entity en = null;
-        if (IsGlobalEntityType(type))
+        Entity en;
+        if (type == EntityType.Pet)
         {
-            if (!Globals.Entities.ContainsKey(id))
+            if (!Globals.TryGetEntity(EntityType.Pet, id, out var entity))
             {
                 return;
             }
 
-            en = Globals.Entities[id];
+            en = entity;
+        }
+        else if (IsGlobalEntityType(type))
+        {
+            if (!Globals.Entities.TryGetValue(id, out var entity))
+            {
+                return;
+            }
+
+            en = entity;
         }
         else
         {
@@ -1134,17 +1201,12 @@ internal sealed partial class PacketHandler
                 return;
             }
 
-            if (!entityMap.LocalEntities.ContainsKey(id))
+            if (!entityMap.LocalEntities.TryGetValue(id, out var entity))
             {
                 return;
             }
 
-            en = entityMap.LocalEntities[id];
-        }
-
-        if (en == null)
-        {
-            return;
+            en = entity;
         }
 
         en.Stat = packet.Stats;
@@ -1156,15 +1218,24 @@ internal sealed partial class PacketHandler
         var id = packet.Id;
         var type = packet.Type;
         var mapId = packet.MapId;
-        Entity en = null;
-        if (IsGlobalEntityType(type))
+        Entity en;
+        if (type == EntityType.Pet)
         {
-            if (!Globals.Entities.ContainsKey(id))
+            if (!Globals.TryGetEntity(EntityType.Pet, id, out var entity))
             {
                 return;
             }
 
-            en = Globals.Entities[id];
+            en = entity;
+        }
+        else if (IsGlobalEntityType(type))
+        {
+            if (!Globals.Entities.TryGetValue(id, out var entity))
+            {
+                return;
+            }
+
+            en = entity;
         }
         else
         {
@@ -1174,17 +1245,12 @@ internal sealed partial class PacketHandler
                 return;
             }
 
-            if (!entityMap.LocalEntities.ContainsKey(id))
+            if (!entityMap.LocalEntities.TryGetValue(id, out var entity))
             {
                 return;
             }
 
-            en = entityMap.LocalEntities[id];
-        }
-
-        if (en == null)
-        {
-            return;
+            en = entity;
         }
 
         en.DirectionFacing = (Direction)packet.Direction;
@@ -1198,15 +1264,24 @@ internal sealed partial class PacketHandler
         var mapId = packet.MapId;
         var attackTimer = packet.AttackTimer;
 
-        Entity en = null;
-        if (IsGlobalEntityType(type))
+        Entity en;
+        if (type == EntityType.Pet)
         {
-            if (!Globals.Entities.ContainsKey(id))
+            if (!Globals.TryGetEntity(EntityType.Pet, id, out var entity))
             {
                 return;
             }
 
-            en = Globals.Entities[id];
+            en = entity;
+        }
+        else if (IsGlobalEntityType(type))
+        {
+            if (!Globals.Entities.TryGetValue(id, out var entity))
+            {
+                return;
+            }
+
+            en = entity;
         }
         else
         {
@@ -1216,17 +1291,12 @@ internal sealed partial class PacketHandler
                 return;
             }
 
-            if (!entityMap.LocalEntities.ContainsKey(id))
+            if (!entityMap.LocalEntities.TryGetValue(id, out var entity))
             {
                 return;
             }
 
-            en = entityMap.LocalEntities[id];
-        }
-
-        if (en == null)
-        {
-            return;
+            en = entity;
         }
 
         var isSelf = en == Globals.Me;
@@ -1249,15 +1319,24 @@ internal sealed partial class PacketHandler
         var type = packet.Type;
         var mapId = packet.MapId;
 
-        Entity? en = null;
-        if (IsGlobalEntityType(type))
+        Entity en;
+        if (type == EntityType.Pet)
         {
-            if (!Globals.Entities.ContainsKey(id))
+            if (!Globals.TryGetEntity(EntityType.Pet, id, out var entity))
             {
                 return;
             }
 
-            en = Globals.Entities[id];
+            en = entity;
+        }
+        else if (IsGlobalEntityType(type))
+        {
+            if (!Globals.Entities.TryGetValue(id, out var entity))
+            {
+                return;
+            }
+
+            en = entity;
         }
         else
         {
@@ -1267,17 +1346,12 @@ internal sealed partial class PacketHandler
                 return;
             }
 
-            if (!entityMap.LocalEntities.ContainsKey(id))
+            if (!entityMap.LocalEntities.TryGetValue(id, out var entity))
             {
                 return;
             }
 
-            en = entityMap.LocalEntities[id];
-        }
-
-        if (en == null)
-        {
-            return;
+            en = entity;
         }
 
         en.ClearAnimations();
@@ -2098,15 +2172,24 @@ internal sealed partial class PacketHandler
         var id = packet.EntityId;
         var type = packet.Type;
         var mapId = packet.MapId;
-        IEntity en = null;
-        if (IsGlobalEntityType(type))
+        IEntity en;
+        if (type == EntityType.Pet)
         {
-            if (!Globals.Entities.ContainsKey(id))
+            if (!Globals.TryGetEntity(EntityType.Pet, id, out var entity))
             {
                 return;
             }
 
-            en = Globals.Entities[id];
+            en = entity;
+        }
+        else if (IsGlobalEntityType(type))
+        {
+            if (!Globals.Entities.TryGetValue(id, out var entity))
+            {
+                return;
+            }
+
+            en = entity;
         }
         else
         {
@@ -2116,17 +2199,12 @@ internal sealed partial class PacketHandler
                 return;
             }
 
-            if (!entityMap.LocalEntities.ContainsKey(id))
-                return;
+            if (!entityMap.LocalEntities.TryGetValue(id, out var entity))
             {
+                return;
             }
 
-            en = entityMap.LocalEntities[id];
-        }
-
-        if (en == null)
-        {
-            return;
+            en = entity;
         }
 
         en.AddChatBubble(packet.Text);

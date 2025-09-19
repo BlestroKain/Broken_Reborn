@@ -13,5 +13,12 @@
     "FactionNeutralName": "Neutral",
     "FactionSerolfName": "Serolf",
     "FactionNidrajName": "Nidraj"
+  },
+  "Pets": {
+    "WidgetTitle": "Pet Modes",
+    "BehaviorFollow": "Follow",
+    "BehaviorStay": "Stay",
+    "BehaviorDefend": "Defend",
+    "BehaviorPassive": "Passive"
   }
 }

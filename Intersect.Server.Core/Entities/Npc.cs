@@ -283,7 +283,7 @@ public partial class Npc : Entity
 
     protected override bool ShouldDropItem(Entity killer, ItemDescriptor itemDescriptor, Item item, float dropRateModifier, out Guid lootOwner)
     {
-        lootOwner = (killer as Player)?.Id ?? Id;
+        lootOwner = ResolveLootOwnerId(killer, Id);
         return base.ShouldDropItem(killer, itemDescriptor, item, dropRateModifier, out _);
     }
 

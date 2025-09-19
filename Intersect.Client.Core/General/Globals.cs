@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Intersect.Client.Core.Pets;
 using Intersect.Client.Entities;
 using Intersect.Client.Entities.Events;
 using Intersect.Client.Framework.Database;
@@ -43,6 +44,8 @@ public static partial class Globals
     internal static readonly List<IClientLifecycleHelper> ClientLifecycleHelpers = [];
 
     public static event Action<Pet>? PetMetadataChanged;
+
+    public static PetHub PetHub { get; } = new();
 
     private static GameStates mGameState = GameStates.Intro;
 

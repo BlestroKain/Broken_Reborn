@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -44,7 +45,14 @@ public class Item : IItem
         Bag = bag;
         Properties = properties ?? new ItemProperties();
 
-        if (!ItemDescriptor.TryGet(itemId, out var descriptor) || properties != null)
+        ItemDescriptor.TryGet(itemId, out var descriptor);
+
+        if (ShouldGeneratePetInstanceId(descriptor))
+        {
+            PetInstanceId = Guid.NewGuid();
+        }
+
+        if (descriptor == null || properties != null)
         {
             return;
         }
@@ -67,6 +75,11 @@ public class Item : IItem
     {
         Properties = new ItemProperties(item.Properties);
         DropChance = item.DropChance;
+
+        if (!ShouldGeneratePetInstanceId(Descriptor))
+        {
+            PetInstanceId = item.PetInstanceId;
+        }
     }
 
     // TODO: THIS SHOULD NOT BE A NULLABLE. This needs to be fixed.
@@ -79,6 +92,8 @@ public class Item : IItem
     [NotMapped] public string ItemName => ItemDescriptor.GetName(ItemId);
 
     public int Quantity { get; set; }
+
+    public Guid? PetInstanceId { get; set; }
 
     [NotMapped] public ItemProperties Properties { get; set; }
 
@@ -93,11 +108,54 @@ public class Item : IItem
 
     [JsonIgnore, NotMapped] public ItemDescriptor Descriptor => ItemDescriptor.Get(ItemId);
 
+    [JsonIgnore, NotMapped]
+    public Guid? BoundPlayerId
+    {
+        get => Properties?.BoundPlayerId;
+        set
+        {
+            if (Properties != null)
+            {
+                Properties.BoundPlayerId = value;
+            }
+        }
+    }
+
+    [JsonIgnore, NotMapped]
+    public bool IsBound => BoundPlayerId.HasValue && BoundPlayerId.Value != Guid.Empty;
+
+    public bool IsBoundTo(Guid playerId)
+    {
+        return IsBound && BoundPlayerId.Value == playerId;
+    }
+
     public static Item None => new();
 
     public Item Clone()
     {
         return new Item(this);
+    }
+
+    public Guid? EnsurePetInstanceId()
+    {
+        if (PetInstanceId.HasValue && PetInstanceId.Value != Guid.Empty)
+        {
+            return PetInstanceId;
+        }
+
+        if (!ShouldGeneratePetInstanceId(Descriptor))
+        {
+            PetInstanceId = null;
+            return null;
+        }
+
+        PetInstanceId = Guid.NewGuid();
+        return PetInstanceId;
+    }
+
+    private static bool ShouldGeneratePetInstanceId(ItemDescriptor? descriptor)
+    {
+        return descriptor?.Pet?.PetDescriptorId is Guid petDescriptorId && petDescriptorId != Guid.Empty;
     }
 
     public string Data()
@@ -380,6 +438,7 @@ public class Item : IItem
         BagId = item.BagId;
         Bag = item.Bag;
         Properties = new ItemProperties(item.Properties);
+        PetInstanceId = item.PetInstanceId;
     }
 
     /// <summary>

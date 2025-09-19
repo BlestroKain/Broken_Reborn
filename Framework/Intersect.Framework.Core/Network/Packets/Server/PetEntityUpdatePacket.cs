@@ -1,5 +1,6 @@
 using System;
 using Intersect.Enums;
+using Intersect.Shared.Pets;
 using MessagePack;
 
 namespace Intersect.Network.Packets.Server;
@@ -42,4 +43,7 @@ public sealed class PetEntityUpdate
 
     [Key(4)]
     public bool Despawnable { get; set; }
+
+    [Key(5)]
+    public PetBehavior Behavior { get; set; }
 }

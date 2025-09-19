@@ -1336,12 +1336,9 @@ public partial class MapInstance : IMapInstance
                 }
             }
 
-            if (entity is Pet pet)
+            if (entity is Pet pet && pet.MetadataDirty)
             {
-                if (vitalsChanged || pet.MetadataDirty)
-                {
-                    petMetadataUpdates.Add(pet);
-                }
+                petMetadataUpdates.Add(pet);
             }
         }
 

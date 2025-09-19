@@ -29,6 +29,7 @@ using Intersect.Network.Packets.Server;
 using Intersect.Server.Core;
 using Intersect.Server.Services;
 using Microsoft.Extensions.Logging;
+using Intersect.Shared.Pets;
 using ChatMsgPacket = Intersect.Network.Packets.Client.ChatMsgPacket;
 using LoginPacket = Intersect.Network.Packets.Client.LoginPacket;
 using PartyInvitePacket = Intersect.Network.Packets.Client.PartyInvitePacket;
@@ -3258,6 +3259,33 @@ internal sealed partial class PacketHandler
                 player.Target = entity;
             }
         }
+    }
+
+    public void HandlePacket(Client client, PetBehaviorChangePacket packet)
+    {
+        if (client?.Entity is not Player player || packet == null)
+        {
+            return;
+        }
+
+        var pet = player.FindPet(packet.PetId);
+        if (pet == null || pet.IsDisposed || pet.OwnerId != player.Id)
+        {
+            return;
+        }
+
+        if (pet.Behavior == packet.Behavior)
+        {
+            return;
+        }
+
+        if (!player.TryBeginPetBehaviorChange())
+        {
+            return;
+        }
+
+        pet.SetBehavior(packet.Behavior);
+        player.ActivePetMode = packet.Behavior;
     }
 
     //SetAlignmentRequestPacket

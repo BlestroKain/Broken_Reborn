@@ -3965,6 +3965,18 @@ Tick timer saved in server config.json.";
 
         public static LocalizedString consumeablepanel = @"Consumable";
 
+        public static LocalizedString petpanel = @"Pet";
+
+        public static LocalizedString petdescriptor = @"Pet:";
+
+        public static LocalizedString summononequip = @"Summon on Equip?";
+
+        public static LocalizedString despawnonunequip = @"Despawn on Unequip?";
+
+        public static LocalizedString bindonequip = @"Bind on Equip?";
+
+        public static LocalizedString petnameoverride = @"Pet Name Override:";
+
         public static LocalizedString consumeamount = @"Amount:";
 
         public static LocalizedString cooldown = @"Cooldown (ms):";

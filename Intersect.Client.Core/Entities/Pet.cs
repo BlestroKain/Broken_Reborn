@@ -16,7 +16,7 @@ public sealed class Pet : Entity
     private Guid _descriptorId;
 
     public Pet(Guid id, EntityPacket? packet)
-        : base(id, packet, EntityType.GlobalEntity)
+        : base(id, packet, EntityType.Pet)
     {
         mRenderPriority = 2;
     }
@@ -113,5 +113,18 @@ public sealed class Pet : Entity
         DescriptorId = Guid.Empty;
         State = PetState.Idle;
         Despawnable = false;
+    }
+
+    /// <inheritdoc />
+    public override void Load(EntityPacket? packet)
+    {
+        base.Load(packet);
+
+        if (packet is not PetEntityPacket petPacket)
+        {
+            return;
+        }
+
+        ApplyMetadata(petPacket.OwnerId, petPacket.DescriptorId, petPacket.State, petPacket.Despawnable);
     }
 }

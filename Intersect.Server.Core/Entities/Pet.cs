@@ -1,8 +1,11 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 using Intersect.Enums;
 using Intersect.Framework.Core;
 using Intersect.Framework.Core.GameObjects.Pets;
+using Intersect.Framework.Reflection;
 using Intersect.GameObjects;
+using Intersect.Network.Packets.Server;
 using Intersect.Server.Database.PlayerData.Players;
 using Intersect.Server.Entities.Pathfinding;
 using Intersect.Server.Framework.Items;
@@ -11,9 +14,6 @@ using Intersect.Server.Networking;
 namespace Intersect.Server.Entities;
 
 public sealed class Pet : Entity
-// Add the missing using directive for the namespace where 'EntityItemSource' is defined.
-// If you are unsure of the namespace, you may need to locate the definition of 'EntityItemSource' in your project or dependencies.
-// If 'EntityItemSource' is not defined in your project, you will need to define it or add the appropriate reference.
 {
     private const int FollowDistance = 3;
     private const long PathUpdateInterval = 100;
@@ -134,7 +134,28 @@ public sealed class Pet : Entity
         }
     }
 
-    public override EntityType GetEntityType() => EntityType.GlobalEntity;
+    public override EntityType GetEntityType() => EntityType.Pet;
+
+    public override EntityPacket EntityPacket(EntityPacket packet = null, Player forPlayer = null)
+    {
+        packet ??= new PetEntityPacket();
+
+        packet = base.EntityPacket(packet, forPlayer);
+
+        if (packet is not PetEntityPacket petPacket)
+        {
+            throw new InvalidOperationException(
+                $"Invalid packet type '{packet.GetType().GetName(qualified: true)}', expected '{typeof(PetEntityPacket).GetName(qualified: true)}'"
+            );
+        }
+
+        petPacket.OwnerId = OwnerId;
+        petPacket.DescriptorId = Descriptor.Id;
+        petPacket.State = State;
+        petPacket.Despawnable = Despawnable;
+
+        return petPacket;
+    }
 
     public override void Update(long timeMs)
     {

@@ -1294,6 +1294,7 @@ public partial class Player : Entity
     }
 
     private bool TryGetOrCreatePlayerPet(
+        Item? sourceItem,
         PetItemData? petData,
         [NotNullWhen(true)] out PlayerPet? playerPet,
         [NotNullWhen(true)] out PetDescriptor? descriptor
@@ -1313,16 +1314,38 @@ public partial class Player : Entity
             return false;
         }
 
-        playerPet = Pets.FirstOrDefault(pet => pet.PetDescriptorId == descriptor.Id);
+        var petInstanceId = sourceItem?.EnsurePetInstanceId();
+        if (!petInstanceId.HasValue || petInstanceId == Guid.Empty)
+        {
+            return false;
+        }
+
+        playerPet = Pets.FirstOrDefault(pet => pet.PetInstanceId == petInstanceId);
+        if (playerPet == null)
+        {
+            playerPet = Pets.FirstOrDefault(pet => pet.PetInstanceId == Guid.Empty && pet.PetDescriptorId == descriptor.Id)
+                ?? Pets.FirstOrDefault(pet => pet.PetDescriptorId == descriptor.Id && pet.PetInstanceId == default);
+        }
+
         if (playerPet == null)
         {
             playerPet = new PlayerPet
             {
                 PlayerId = Id,
                 PetDescriptorId = descriptor.Id,
+                PetInstanceId = petInstanceId.Value,
             };
 
             Pets.Add(playerPet);
+        }
+        else
+        {
+            playerPet.PetDescriptorId = descriptor.Id;
+
+            if (playerPet.PetInstanceId == Guid.Empty)
+            {
+                playerPet.PetInstanceId = petInstanceId.Value;
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(petData.PetNameOverride))
@@ -1366,7 +1389,7 @@ public partial class Player : Entity
         return true;
     }
 
-    private void HandlePetUnequipped(PetItemData? petData)
+    private void HandlePetUnequipped(PetItemData? petData, Guid? petInstanceId)
     {
         if (petData?.PetDescriptorId == Guid.Empty)
         {
@@ -1374,7 +1397,16 @@ public partial class Player : Entity
         }
 
         var activePet = ActivePet;
-        if (activePet == null || activePet.PetDescriptorId != petData.PetDescriptorId)
+        if (activePet == null)
+        {
+            return;
+        }
+
+        var matchesInstance = petInstanceId.HasValue && petInstanceId.Value != Guid.Empty
+            ? activePet.PetInstanceId == petInstanceId.Value
+            : activePet.PetDescriptorId == petData.PetDescriptorId;
+
+        if (!matchesInstance)
         {
             return;
         }
@@ -6621,7 +6653,9 @@ public partial class Player : Entity
         EnqueueStartCommonEvent(itemDescriptor.GetEventTrigger(ItemEventTrigger.OnEquip));
         ProcessEquipmentUpdated(true);
 
-        if (!TryGetOrCreatePlayerPet(itemDescriptor.Pet, out var playerPet, out _))
+        var inventorySlot = Items.ElementAtOrDefault(slot);
+
+        if (!TryGetOrCreatePlayerPet(inventorySlot, itemDescriptor.Pet, out var playerPet, out _))
         {
             return;
         }
@@ -6631,7 +6665,6 @@ public partial class Player : Entity
 
         if (itemDescriptor.Pet.BindOnEquip)
         {
-            var inventorySlot = Items.ElementAtOrDefault(slot);
             if (inventorySlot != null && inventorySlot.BoundPlayerId != Id)
             {
                 inventorySlot.BoundPlayerId = Id;
@@ -6669,6 +6702,7 @@ public partial class Player : Entity
     {
         var updated = false;
         PetItemData? unequippedPetData = null;
+        Guid? unequippedPetInstanceId = null;
 
         foreach (var kvp in Equipment)
         {
@@ -6681,7 +6715,9 @@ public partial class Player : Entity
                 var inventoryIndex = itemsInSlot[i];
                 if (inventoryIndex >= 0 && inventoryIndex < Items.Count && Items[inventoryIndex].ItemId == itemId)
                 {
-                    unequippedPetData = Items[inventoryIndex].Descriptor?.Pet;
+                    var slotItem = Items[inventoryIndex];
+                    unequippedPetData = slotItem.Descriptor?.Pet;
+                    unequippedPetInstanceId = slotItem.PetInstanceId;
                     itemsInSlot.RemoveAt(i); // Quitamos solo este ítem
                     updated = true;
                     break; // Salimos del bucle porque ya encontramos el ítem
@@ -6696,7 +6732,7 @@ public partial class Player : Entity
 
         if (updated)
         {
-            HandlePetUnequipped(unequippedPetData);
+            HandlePetUnequipped(unequippedPetData, unequippedPetInstanceId);
             ProcessEquipmentUpdated(sendUpdate);
         }
     }
@@ -6707,7 +6743,7 @@ public partial class Player : Entity
             return;
         }
 
-        List<PetItemData?> unequippedPetDatas = new();
+        List<(PetItemData PetData, Guid? PetInstanceId)> unequippedPetDatas = new();
         if (TryGetEquippedItem(equipmentSlot, out var items))
         {
             foreach (var item in items)
@@ -6717,16 +6753,16 @@ public partial class Player : Entity
                 var petData = item.Descriptor?.Pet;
                 if (petData != null && petData.PetDescriptorId != Guid.Empty)
                 {
-                    unequippedPetDatas.Add(petData);
+                    unequippedPetDatas.Add((petData, item.PetInstanceId));
                 }
             }
         }
 
         Equipment.Remove(equipmentSlot);
 
-        foreach (var petData in unequippedPetDatas)
+        foreach (var (petData, petInstanceId) in unequippedPetDatas)
         {
-            HandlePetUnequipped(petData);
+            HandlePetUnequipped(petData, petInstanceId);
         }
 
         ProcessEquipmentUpdated(sendUpdate);

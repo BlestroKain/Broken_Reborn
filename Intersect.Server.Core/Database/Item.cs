@@ -45,7 +45,14 @@ public class Item : IItem
         Bag = bag;
         Properties = properties ?? new ItemProperties();
 
-        if (!ItemDescriptor.TryGet(itemId, out var descriptor) || properties != null)
+        ItemDescriptor.TryGet(itemId, out var descriptor);
+
+        if (ShouldGeneratePetInstanceId(descriptor))
+        {
+            PetInstanceId = Guid.NewGuid();
+        }
+
+        if (descriptor == null || properties != null)
         {
             return;
         }
@@ -68,6 +75,11 @@ public class Item : IItem
     {
         Properties = new ItemProperties(item.Properties);
         DropChance = item.DropChance;
+
+        if (!ShouldGeneratePetInstanceId(Descriptor))
+        {
+            PetInstanceId = item.PetInstanceId;
+        }
     }
 
     // TODO: THIS SHOULD NOT BE A NULLABLE. This needs to be fixed.
@@ -80,6 +92,8 @@ public class Item : IItem
     [NotMapped] public string ItemName => ItemDescriptor.GetName(ItemId);
 
     public int Quantity { get; set; }
+
+    public Guid? PetInstanceId { get; set; }
 
     [NotMapped] public ItemProperties Properties { get; set; }
 
@@ -120,6 +134,28 @@ public class Item : IItem
     public Item Clone()
     {
         return new Item(this);
+    }
+
+    public Guid? EnsurePetInstanceId()
+    {
+        if (PetInstanceId.HasValue && PetInstanceId.Value != Guid.Empty)
+        {
+            return PetInstanceId;
+        }
+
+        if (!ShouldGeneratePetInstanceId(Descriptor))
+        {
+            PetInstanceId = null;
+            return null;
+        }
+
+        PetInstanceId = Guid.NewGuid();
+        return PetInstanceId;
+    }
+
+    private static bool ShouldGeneratePetInstanceId(ItemDescriptor? descriptor)
+    {
+        return descriptor?.Pet?.PetDescriptorId is Guid petDescriptorId && petDescriptorId != Guid.Empty;
     }
 
     public string Data()
@@ -402,6 +438,7 @@ public class Item : IItem
         BagId = item.BagId;
         Bag = item.Bag;
         Properties = new ItemProperties(item.Properties);
+        PetInstanceId = item.PetInstanceId;
     }
 
     /// <summary>

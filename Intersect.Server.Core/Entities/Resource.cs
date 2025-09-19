@@ -1,3 +1,4 @@
+using System;
 using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Resources;
@@ -197,14 +198,14 @@ public partial class Resource : Entity
                     if (MapController.TryGetInstanceFromMap(mapId, MapInstanceId, out var mapInstance))
                     {
                         var quantity = item.Quantity;
-                      
+
                         mapInstance.SpawnItem(
                             itemSource,
                             selectedTile.GetX(),
                             selectedTile.GetY(),
                             item,
                             quantity,
-                            killer.Id
+                            ResolveLootOwnerId(killer, killer?.Id ?? Guid.Empty)
                         );
                     }
                 }

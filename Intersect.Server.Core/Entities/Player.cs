@@ -3932,7 +3932,7 @@ public partial class Player : Entity
 
     protected override bool ShouldDropItem(Entity killer, ItemDescriptor itemDescriptor, Item item, float dropRateModifier, out Guid lootOwner)
     {
-        lootOwner = (killer as Player)?.Id ?? Id;
+        lootOwner = ResolveLootOwnerId(killer, Id);
 
         if (itemDescriptor.DropChanceOnDeath == 0)
         {

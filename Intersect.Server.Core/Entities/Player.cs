@@ -81,6 +81,8 @@ public partial class Player : Entity
 
     [JsonIgnore][NotMapped] public Pet? CurrentPet { get; private set; }
 
+    [JsonIgnore][NotMapped] public PetBehaviorMode ActivePetMode { get; set; } = PetBehaviorMode.Defend;
+
     #endregion
 
     private Entity? _pendingPetAttacker;

@@ -458,7 +458,13 @@ internal sealed partial class PacketHandler
                 continue;
             }
 
-            pet.ApplyMetadata(update.OwnerId, update.DescriptorId, update.State, update.Despawnable);
+            pet.ApplyMetadata(
+                update.OwnerId,
+                update.DescriptorId,
+                update.State,
+                update.Despawnable,
+                update.Behavior
+            );
         }
     }
 

@@ -1015,16 +1015,17 @@ public static partial class PacketSender
         var updates = new List<PetEntityUpdate>(pets.Count);
         foreach (var pet in pets)
         {
-            updates.Add(
-                new PetEntityUpdate
-                {
-                    EntityId = pet.Id,
-                    OwnerId = pet.OwnerId,
-                    DescriptorId = pet.Descriptor?.Id ?? Guid.Empty,
-                    State = pet.State,
-                    Despawnable = pet.Despawnable,
-                }
-            );
+                    updates.Add(
+                        new PetEntityUpdate
+                        {
+                            EntityId = pet.Id,
+                            OwnerId = pet.OwnerId,
+                            DescriptorId = pet.Descriptor?.Id ?? Guid.Empty,
+                            State = pet.State,
+                            Despawnable = pet.Despawnable,
+                            Behavior = pet.Behavior,
+                        }
+                    );
         }
 
         SendDataToProximityOnMapInstance(map.Id, mapInstanceId, new PetEntityUpdatePacket(map.Id, updates.ToArray()));

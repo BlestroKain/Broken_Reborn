@@ -11,6 +11,7 @@ using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Framework.Core.GameObjects.Maps.MapList;
 using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
+using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.Framework.Core.GameObjects.Resources;
 using Intersect.Framework.Core.GameObjects.Variables;
 using Intersect.Framework.Core.Security;
@@ -909,6 +910,10 @@ internal sealed partial class NetworkedPacketHandler
                     obj = NPCDescriptor.Get(id);
 
                     break;
+                case GameObjectType.Pet:
+                    obj = PetDescriptor.Get(id);
+
+                    break;
 
                 case GameObjectType.Projectile:
                     obj = ProjectileDescriptor.Get(id);
@@ -1059,6 +1064,10 @@ internal sealed partial class NetworkedPacketHandler
                     break;
                 case GameObjectType.Npc:
                     obj = NPCDescriptor.Get(id);
+
+                    break;
+                case GameObjectType.Pet:
+                    obj = PetDescriptor.Get(id);
 
                     break;
 

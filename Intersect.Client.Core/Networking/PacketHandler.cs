@@ -423,19 +423,22 @@ internal sealed partial class PacketHandler
         if (Globals.TryGetEntity(EntityType.Pet, packet.EntityId, out var entity))
         {
             entity.Load(packet);
-            return;
+        }
+        else
+        {
+            var pet = new Pet(packet.EntityId, packet);
+            if (!Globals.Entities.TryAdd(pet.Id, pet))
+            {
+                ApplicationContext.CurrentContext.Logger.LogError(
+                    "Failed to register new {EntityType} {EntityId} ({EntityName})",
+                    EntityType.Pet,
+                    packet.EntityId,
+                    packet.Name
+                );
+            }
         }
 
-        var pet = new Pet(packet.EntityId, packet);
-        if (!Globals.Entities.TryAdd(pet.Id, pet))
-        {
-            ApplicationContext.CurrentContext.Logger.LogError(
-                "Failed to register new {EntityType} {EntityId} ({EntityName})",
-                EntityType.Pet,
-                packet.EntityId,
-                packet.Name
-            );
-        }
+        Globals.PetHub.Process(packet);
     }
 
     //PetEntityUpdatePacket
@@ -470,6 +473,8 @@ internal sealed partial class PacketHandler
 
     public void HandlePacket(IPacketSender packetSender, PetStateUpdatePacket packet)
     {
+        Globals.PetHub.Process(packet);
+
         if (packet == null)
         {
             return;
@@ -693,6 +698,11 @@ internal sealed partial class PacketHandler
             if (Globals.Entities?.ContainsKey(id) ?? false)
             {
                 Globals.EntitiesToDispose?.Add(id);
+            }
+
+            if (type == EntityType.Pet)
+            {
+                Globals.PetHub.HandlePetLeft(id);
             }
         }
         else

@@ -26,6 +26,7 @@ using Microsoft.Extensions.Logging;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Client.Interface.Game.Spells;
 using Intersect.Client.Interface.Game.Market;
+using Intersect.Client.Interface.Game.Pets;
 using Intersect.Network.Packets.Server;
 
 namespace Intersect.Client.Interface.Game;
@@ -112,6 +113,8 @@ public partial class GameInterface : MutableInterface
 
     public PlayerStatusWindow PlayerStatusWindow;
 
+    private PetBehaviorWidget? _petBehaviorWidget;
+
 
     private SettingsWindow GetOrCreateSettingsWindow()
     {
@@ -182,6 +185,8 @@ public partial class GameInterface : MutableInterface
 
         mQuestOfferWindow = new QuestOfferWindow(GameCanvas);
         mMapItemWindow = new MapItemWindow(GameCanvas);
+
+        _petBehaviorWidget ??= new PetBehaviorWidget(GameCanvas);
 
     }
     public void OpenEnchantWindow()

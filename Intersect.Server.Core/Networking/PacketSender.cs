@@ -1031,6 +1031,29 @@ public static partial class PacketSender
         SendDataToProximityOnMapInstance(map.Id, mapInstanceId, new PetEntityUpdatePacket(map.Id, updates.ToArray()));
     }
 
+    public static void SendPetStateUpdate(Pet pet)
+    {
+        if (pet == null)
+        {
+            return;
+        }
+
+        var packet = new PetStateUpdatePacket(pet.Id, pet.State, pet.Behavior);
+
+        var owner = pet.Owner;
+        if (owner != null && !owner.IsDisposed)
+        {
+            owner.SendPacket(packet, TransmissionMode.Any);
+        }
+
+        if (pet.MapId == Guid.Empty || pet.MapInstanceId == Guid.Empty)
+        {
+            return;
+        }
+
+        SendDataToProximityOnMapInstance(pet.MapId, pet.MapInstanceId, packet, owner, TransmissionMode.Any);
+    }
+
     //EntityStatsPacket
     public static void SendEntityStats(Entity en)
     {

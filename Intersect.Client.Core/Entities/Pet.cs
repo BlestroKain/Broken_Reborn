@@ -4,6 +4,7 @@ using Intersect.Enums;
 using Intersect.Framework.Core;
 using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.Network.Packets.Server;
+using Intersect.Shared.Pets;
 
 namespace Intersect.Client.Entities;
 
@@ -36,6 +37,11 @@ public sealed class Pet : Entity
     ///     Gets the current state reported by the server for the pet.
     /// </summary>
     public PetState State { get; private set; } = PetState.Idle;
+
+    /// <summary>
+    ///     Gets the behaviour currently reported by the server for the pet.
+    /// </summary>
+    public PetBehavior Behavior { get; private set; } = PetBehavior.Follow;
 
     /// <summary>
     ///     Gets the descriptor identifier used to spawn this pet.
@@ -96,19 +102,22 @@ public sealed class Pet : Entity
     /// <param name="descriptorId">Identifier of the descriptor that spawned the pet.</param>
     /// <param name="state">Current state reported by the server.</param>
     /// <param name="despawnable">Indicates whether the pet can despawn automatically.</param>
-    public void ApplyMetadata(Guid ownerId, Guid descriptorId, PetState state, bool despawnable)
+    /// <param name="behavior">Behaviour reported by the server.</param>
+    public void ApplyMetadata(Guid ownerId, Guid descriptorId, PetState state, bool despawnable, PetBehavior behavior)
     {
         var ownerChanged = OwnerId != ownerId;
         var descriptorChanged = DescriptorId != descriptorId;
         var stateChanged = State != state;
         var despawnableChanged = Despawnable != despawnable;
+        var behaviorChanged = Behavior != behavior;
 
         OwnerId = ownerId;
         DescriptorId = descriptorId;
         State = state;
         Despawnable = despawnable;
+        Behavior = behavior;
 
-        if (ownerChanged || descriptorChanged || stateChanged || despawnableChanged)
+        if (ownerChanged || descriptorChanged || stateChanged || despawnableChanged || behaviorChanged)
         {
             Globals.NotifyPetMetadataApplied(this);
         }
@@ -124,6 +133,7 @@ public sealed class Pet : Entity
         DescriptorId = Guid.Empty;
         State = PetState.Idle;
         Despawnable = false;
+        Behavior = PetBehavior.Follow;
     }
 
     /// <inheritdoc />
@@ -136,6 +146,12 @@ public sealed class Pet : Entity
             return;
         }
 
-        ApplyMetadata(petPacket.OwnerId, petPacket.DescriptorId, petPacket.State, petPacket.Despawnable);
+        ApplyMetadata(
+            petPacket.OwnerId,
+            petPacket.DescriptorId,
+            petPacket.State,
+            petPacket.Despawnable,
+            petPacket.Behavior
+        );
     }
 }

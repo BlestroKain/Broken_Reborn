@@ -19,6 +19,7 @@ using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Framework.Core.GameObjects.Maps.MapList;
 using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
+using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.Framework.Core.GameObjects.Resources;
 using Intersect.Framework.Core.GameObjects.Variables;
 using Intersect.Framework.Core.GameObjects;
@@ -729,6 +730,10 @@ public static partial class DbInterface
                 NPCDescriptor.Lookup.Clear();
 
                 break;
+            case GameObjectType.Pet:
+                PetDescriptor.Lookup.Clear();
+
+                break;
             case GameObjectType.Projectile:
                 ProjectileDescriptor.Lookup.Clear();
 
@@ -826,7 +831,7 @@ public static partial class DbInterface
                         }
 
                         break;
-                   
+
                     case GameObjectType.Npc:
                         foreach (var npc in context.Npcs)
                         {
@@ -834,6 +839,15 @@ public static partial class DbInterface
                         }
 
                         break;
+
+                    case GameObjectType.Pet:
+                        foreach (var pet in context.Pets)
+                        {
+                            PetDescriptor.Lookup.Set(pet.Id, pet);
+                        }
+
+                        break;
+
                     case GameObjectType.Projectile:
                         foreach (var proj in context.Projectiles)
                         {
@@ -1130,6 +1144,10 @@ public static partial class DbInterface
                 dbObj = new NPCDescriptor(predefinedid);
 
                 break;
+            case GameObjectType.Pet:
+                dbObj = new PetDescriptor(predefinedid);
+
+                break;
             case GameObjectType.Projectile:
                 dbObj = new ProjectileDescriptor(predefinedid);
 
@@ -1235,6 +1253,12 @@ public static partial class DbInterface
                     case GameObjectType.Npc:
                         context.Npcs.Add((NPCDescriptor)dbObj);
                         NPCDescriptor.Lookup.Set(dbObj.Id, dbObj);
+
+                        break;
+
+                    case GameObjectType.Pet:
+                        context.Pets.Add((PetDescriptor)dbObj);
+                        PetDescriptor.Lookup.Set(dbObj.Id, dbObj);
 
                         break;
 
@@ -1374,6 +1398,11 @@ public static partial class DbInterface
                         break;
                     case GameObjectType.Npc:
                         context.Npcs.Remove((NPCDescriptor)gameObject);
+
+                        break;
+
+                    case GameObjectType.Pet:
+                        context.Pets.Remove((PetDescriptor)gameObject);
 
                         break;
                     case GameObjectType.Projectile:
@@ -1553,6 +1582,11 @@ public static partial class DbInterface
                             npcDescriptor.SyncBestiaryJson();
                             context.Npcs.Update(npcDescriptor);
                         }
+
+                        break;
+
+                    case GameObjectType.Pet:
+                        context.Pets.Update((PetDescriptor)gameObject);
 
                         break;
                     case GameObjectType.Projectile:

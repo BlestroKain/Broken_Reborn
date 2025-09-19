@@ -3260,6 +3260,33 @@ internal sealed partial class PacketHandler
         }
     }
 
+    public void HandlePacket(Client client, PetBehaviorChangePacket packet)
+    {
+        if (client?.Entity is not Player player || packet == null)
+        {
+            return;
+        }
+
+        var pet = player.FindPet(packet.PetId);
+        if (pet == null || pet.IsDisposed || pet.OwnerId != player.Id)
+        {
+            return;
+        }
+
+        if (pet.Behavior == packet.Behavior)
+        {
+            return;
+        }
+
+        if (!player.TryBeginPetBehaviorChange())
+        {
+            return;
+        }
+
+        pet.SetBehavior(packet.Behavior);
+        player.ActivePetMode = packet.Behavior;
+    }
+
     //SetAlignmentRequestPacket
     public void HandlePacket(Client client, SetAlignmentRequestPacket packet)
     {

@@ -184,6 +184,9 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.Property<Guid>("ParentBagId")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("PetInstanceId")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("INTEGER");
 
@@ -214,6 +217,9 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.Property<string>("ItemPropertiesJson")
                         .HasColumnType("TEXT")
                         .HasColumnName("ItemProperties");
+
+                    b.Property<Guid?>("PetInstanceId")
+                        .HasColumnType("TEXT");
 
                     b.Property<Guid>("PlayerId")
                         .HasColumnType("TEXT");
@@ -360,6 +366,9 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                         .HasColumnType("TEXT")
                         .HasColumnName("ItemProperties");
 
+                    b.Property<Guid?>("PetInstanceId")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("INTEGER");
 
@@ -446,6 +455,9 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                         .HasColumnType("TEXT")
                         .HasColumnName("ItemProperties");
 
+                    b.Property<Guid?>("PetInstanceId")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("PlayerId")
                         .HasColumnType("TEXT");
 
@@ -531,6 +543,41 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.HasIndex("SenderId");
 
                     b.ToTable("Player_MailBox");
+                });
+
+            modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.PlayerPet", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CustomName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("Experience")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("PetDescriptorId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("PetInstanceId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("TimeCreated")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerId", "PetInstanceId")
+                        .IsUnique();
+
+                    b.ToTable("Player_Pets");
                 });
 
             modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.PlayerSpell", b =>
@@ -696,6 +743,9 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT")
                         .HasColumnOrder(0);
+
+                    b.Property<Guid?>("ActivePetId")
+                        .HasColumnType("TEXT");
 
                     b.Property<Guid>("ClassId")
                         .HasColumnType("TEXT");
@@ -869,6 +919,8 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ActivePetId");
 
                     b.HasIndex("GuildId");
 
@@ -1119,6 +1171,17 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.Navigation("SenderPlayer");
                 });
 
+            modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.PlayerPet", b =>
+                {
+                    b.HasOne("Intersect.Server.Entities.Player", "Player")
+                        .WithMany("Pets")
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Player");
+                });
+
             modelBuilder.Entity("Intersect.Server.Database.PlayerData.Players.PlayerSpell", b =>
                 {
                     b.HasOne("Intersect.Server.Entities.Player", "Player")
@@ -1165,6 +1228,11 @@ namespace Intersect.Server.Migrations.Sqlite.Player
 
             modelBuilder.Entity("Intersect.Server.Entities.Player", b =>
                 {
+                    b.HasOne("Intersect.Server.Database.PlayerData.Players.PlayerPet", "ActivePet")
+                        .WithMany()
+                        .HasForeignKey("ActivePetId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Intersect.Server.Database.PlayerData.Players.Guild", "Guild")
                         .WithMany()
                         .HasForeignKey("GuildId")
@@ -1185,6 +1253,8 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("ActivePet");
 
                     b.Navigation("Guild");
 
@@ -1246,6 +1316,8 @@ namespace Intersect.Server.Migrations.Sqlite.Player
                     b.Navigation("MailBoxs");
 
                     b.Navigation("MarketListings");
+
+                    b.Navigation("Pets");
 
                     b.Navigation("Quests");
 

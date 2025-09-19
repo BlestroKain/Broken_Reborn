@@ -382,12 +382,23 @@ public partial class IntersectRenderer : Base, ICacheToTexture
     {
         m_RealRT = mRenderTarget;
         m_Stack.Push(mRenderTarget); // save current RT
-        if (!m_RT.ContainsKey(control))
+
+        if (!m_RT.TryGetValue(control, out var renderTarget))
         {
             var keys = m_RT.Keys.Select(key => key.ParentQualifiedName);
-            ApplicationContext.Context.Value?.Logger.LogError($"{control.ParentQualifiedName} not found in the list of render targets: {string.Join(", ", keys)}");
+            ApplicationContext.Context.Value?.Logger.LogError(
+                $"{control.ParentQualifiedName} not found in the list of render targets: {string.Join(", ", keys)}"
+            );
+
+            var width = Math.Max(1, control.Width);
+            var height = Math.Max(1, control.Height);
+
+            renderTarget = mRenderer.CreateRenderTexture(width, height);
+            renderTarget.Clear(Color.Transparent);
+            m_RT[control] = renderTarget;
         }
-        mRenderTarget = m_RT[control]; // make cache current RT
+
+        mRenderTarget = renderTarget; // make cache current RT
         mRenderTarget.Begin();
         mRenderTarget.Clear(Color.Transparent);
     }

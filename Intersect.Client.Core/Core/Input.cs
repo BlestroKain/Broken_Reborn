@@ -354,6 +354,22 @@ public static partial class Input
                             _ = Interface.Interface.GameUi.GameMenu?.ToggleGuildWindow();
                             break;
 
+                        case Control.PetModeFollow:
+                            _ = Globals.PetHub.SetBehavior(PetState.Follow);
+                            break;
+
+                        case Control.PetModeStay:
+                            _ = Globals.PetHub.SetBehavior(PetState.Stay);
+                            break;
+
+                        case Control.PetModeDefend:
+                            _ = Globals.PetHub.SetBehavior(PetState.Defend);
+                            break;
+
+                        case Control.PetModePassive:
+                            _ = Globals.PetHub.SetBehavior(PetState.Passive);
+                            break;
+
                         case Control.TargetParty1:
                             Globals.Me?.TargetPartyMember(0);
                             break;

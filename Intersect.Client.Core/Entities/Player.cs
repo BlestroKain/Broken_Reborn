@@ -40,6 +40,8 @@ namespace Intersect.Client.Entities;
 
 public partial class Player : Entity, IPlayer
 {
+    protected override bool SupportsHideEntity => true;
+
     public delegate void InventoryUpdatedEventHandler(Player player, int slotIndex);
 
     private Guid _class;
@@ -1931,7 +1933,7 @@ public partial class Player : Entity, IPlayer
                     }
                 }
 
-                if (en.Value.Type is EntityType.GlobalEntity or EntityType.Player)
+                if (en.Value.Type is EntityType.GlobalEntity or EntityType.Player or EntityType.Pet)
                 {
                     // Already in our list?
                     if (mlastTargetList.TryGetValue(en.Value, out var value))
@@ -2057,7 +2059,7 @@ public partial class Player : Entity, IPlayer
                 TargetBox?.SetEntity(targetEntity, EntityType.Event);
                 break;
             default:
-                TargetBox?.SetEntity(targetEntity, EntityType.GlobalEntity);
+                TargetBox?.SetEntity(targetEntity, targetEntity.Type);
                 break;
         }
 

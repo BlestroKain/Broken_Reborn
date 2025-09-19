@@ -135,6 +135,8 @@ public partial class ItemDescriptor : DatabaseObject<ItemDescriptor>, IFolderabl
 
     public ConsumableData Consumable { get; set; }
 
+    public PetItemData? Pet { get; set; } = new();
+
     public int EquipmentSlot { get; set; }
 
     public bool TwoHanded { get; set; }
@@ -489,6 +491,8 @@ public partial class ItemDescriptor : DatabaseObject<ItemDescriptor>, IFolderabl
                 EquipmentProperties.DescriptorId = default;
             }
         }
+
+        Pet ??= new PetItemData();
     }
 
     private void Initialize()
@@ -503,6 +507,7 @@ public partial class ItemDescriptor : DatabaseObject<ItemDescriptor>, IFolderabl
         Consumable = new ConsumableData();
         Effects = [];
         Color = new Color(255, 255, 255, 255);
+        Pet ??= new PetItemData();
         if (ItemType != ItemType.Equipment)
         {
             SetId = Guid.Empty;

@@ -4,6 +4,7 @@ using Intersect.Client.General;
 using Intersect.Client.Localization;
 using Intersect.Core;
 using Intersect.Framework.Core.GameObjects.Items;
+using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.GameObjects;
 using Intersect.GameObjects.Ranges;
 using Intersect.Utilities;
@@ -166,6 +167,8 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
     {
         AddDivider();
         var rows = AddRowContainer();
+
+        AppendPetInfo(rows);
 
         if (_itemDescriptor.Subtype == "Rune")
         {
@@ -833,6 +836,50 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
             }
         }
         rows.SizeToChildren(true, true);
+    }
+
+    private void AppendPetInfo(RowContainerComponent rows)
+    {
+        if (_itemDescriptor?.Pet is not { } petData)
+        {
+            return;
+        }
+
+        if (petData.PetDescriptorId == Guid.Empty
+            && string.IsNullOrWhiteSpace(petData.PetNameOverride)
+            && !petData.SummonOnEquip
+            && !petData.DespawnOnUnequip
+            && !petData.BindOnEquip)
+        {
+            return;
+        }
+
+        var petDescriptor = PetDescriptor.Get(petData.PetDescriptorId);
+        var displayName = !string.IsNullOrWhiteSpace(petData.PetNameOverride)
+            ? petData.PetNameOverride
+            : petDescriptor?.Name ?? Strings.General.None;
+
+        rows.AddKeyValueRow(Strings.ItemDescription.PetSummons, displayName);
+
+        if (petData.SummonOnEquip)
+        {
+            rows.AddKeyValueRow(Strings.ItemDescription.PetSummonOnEquip, Strings.ItemDescription.Enabled);
+        }
+
+        if (petData.DespawnOnUnequip)
+        {
+            rows.AddKeyValueRow(Strings.ItemDescription.PetDespawnOnUnequip, Strings.ItemDescription.Enabled);
+        }
+
+        if (petData.BindOnEquip)
+        {
+            rows.AddKeyValueRow(Strings.ItemDescription.PetBindOnEquip, Strings.ItemDescription.Enabled);
+        }
+
+        if (!string.IsNullOrWhiteSpace(petData.PetNameOverride))
+        {
+            rows.AddKeyValueRow(Strings.ItemDescription.PetNameOverride, petData.PetNameOverride);
+        }
     }
     protected void SetupConsumableInfo()
     {

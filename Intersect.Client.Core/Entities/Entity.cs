@@ -110,6 +110,8 @@ public partial class Entity : IEntity
 
     public bool IsHidden { get; set; } = false;
 
+    protected virtual bool SupportsHideEntity => false;
+
     public bool HideName { get; set; }
 
     //Core Values
@@ -415,7 +417,7 @@ public partial class Entity : IEntity
         DirectionFacing = (Direction)packet.Dir;
         Passable = packet.Passable;
         HideName = packet.HideName;
-        IsHidden = packet.HideEntity;
+        IsHidden = SupportsHideEntity && packet.HideEntity;
         NameColor = packet.NameColor;
         HeaderLabel = new Label(packet.HeaderLabel.Label, packet.HeaderLabel.Color);
         FooterLabel = new Label(packet.FooterLabel.Label, packet.FooterLabel.Color);
@@ -1743,7 +1745,7 @@ public partial class Entity : IEntity
 
         var name = Name;
         if ((this is Player && Options.Instance.Player.ShowLevelByName) ||
-            (Type == EntityType.GlobalEntity && Options.Instance.Npc.ShowLevelByName))
+            ((Type == EntityType.GlobalEntity || Type == EntityType.Pet) && Options.Instance.Npc.ShowLevelByName))
         {
             name = Strings.GameWindow.EntityNameAndLevel.ToString(Name, Level);
         }
@@ -2586,6 +2588,64 @@ public partial class Entity : IEntity
                                     // Return the entity key as this should block the player.  Only exception is if the MapZone this entity is on is passable.
                                     if (Maps.MapInstance.TryGet(player.MapId, out var playerMapInstance) &&
                                         Options.Instance.Passability.IsPassable(playerMapInstance.ZoneType))
+                                    {
+                                        continue;
+                                    }
+
+                                    break;
+                                case Pet pet when !pet.Passable:
+                                    if (projectileTrigger)
+                                    {
+                                        break;
+                                    }
+
+                                    var ignorePetBlocking = false;
+
+                                    if (pet.OwnerId == Id)
+                                    {
+                                        ignorePetBlocking = true;
+                                    }
+                                    else
+                                    {
+                                        switch (this)
+                                        {
+                                            case Player movingPlayer:
+                                                if (movingPlayer.Id == pet.OwnerId)
+                                                {
+                                                    ignorePetBlocking = true;
+                                                    break;
+                                                }
+
+                                                var petOwner = pet.Owner;
+                                                if (petOwner != null && movingPlayer.IsInMyParty(petOwner))
+                                                {
+                                                    ignorePetBlocking = true;
+                                                }
+
+                                                break;
+
+                                            case Pet movingPet:
+                                                if (movingPet.OwnerId == pet.OwnerId)
+                                                {
+                                                    ignorePetBlocking = true;
+                                                    break;
+                                                }
+
+                                                var movingPetOwner = movingPet.Owner;
+                                                var blockingPetOwner = pet.Owner;
+
+                                                if (movingPetOwner != null &&
+                                                    blockingPetOwner != null &&
+                                                    movingPetOwner.IsInMyParty(blockingPetOwner))
+                                                {
+                                                    ignorePetBlocking = true;
+                                                }
+
+                                                break;
+                                        }
+                                    }
+
+                                    if (ignorePetBlocking)
                                     {
                                         continue;
                                     }

@@ -7,6 +7,7 @@ using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Framework.Core.GameObjects.NPCs;
+using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.Framework.Core.GameObjects.Resources;
 using Intersect.GameObjects;
 using Intersect.Network.Packets.Server;
@@ -52,6 +53,14 @@ public partial class MapController : MapDescriptor
         foreach (var map in allMapControllers)
         {
             map?.DespawnNpcAcrossInstances(npc);
+        }
+    }
+    public static void DespawnInstancesOf(PetDescriptor pet)
+    {
+        var allMapControllers = Lookup.Values.OfType<MapController>().ToArray();
+        foreach (var map in allMapControllers)
+        {
+            map?.DespawnPetAcrossInstances(pet);
         }
     }
 
@@ -371,7 +380,56 @@ public partial class MapController : MapDescriptor
             }
         }
     }
+    public void DespawnPetAcrossInstances(PetDescriptor petDescriptor)
+    {
+        foreach (var entity in GetEntitiesOnAllInstances())
+        {
+            if (entity is not Pet pet || pet.Descriptor != petDescriptor)
+            {
+                continue;
+            }
 
+            if (pet.IsDisposed)
+            {
+                continue;
+            }
+
+            ApplicationContext.Context.Value?.Logger.LogDebug(
+                "Despawning pet {PetId} ({Descriptor}) on map {Map} across instances",
+                pet.Id,
+                pet.Descriptor?.Name,
+                Id
+            );
+
+            lock (pet.EntityLock)
+            {
+                pet.Despawn(false);
+            }
+        }
+    }
+
+    public void DespawnAllPetsAcrossInstances(bool killIfDespawnable = false)
+    {
+        foreach (var entity in GetEntitiesOnAllInstances())
+        {
+            if (entity is not Pet pet || pet.IsDisposed)
+            {
+                continue;
+            }
+
+            ApplicationContext.Context.Value?.Logger.LogDebug(
+                "Despawning pet {PetId} ({Descriptor}) on map {Map} across instances",
+                pet.Id,
+                pet.Descriptor?.Name,
+                Id
+            );
+
+            lock (pet.EntityLock)
+            {
+                pet.Despawn(killIfDespawnable);
+            }
+        }
+    }
     /// <summary>
     /// Despawns resources of a given <see cref="ResourceDescriptor"/> from all instances of this controller.
     /// </summary>

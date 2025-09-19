@@ -1,6 +1,7 @@
 using System;
 using Intersect.Client.General;
 using Intersect.Enums;
+using Intersect.Framework.Core;
 using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.Network.Packets.Server;
 

@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 using MessagePack;
 
 namespace Intersect.Network.Packets.Server;

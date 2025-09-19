@@ -1,3 +1,4 @@
+
 using System;
 using Intersect.Enums;
 using MessagePack;
@@ -19,6 +20,7 @@ public sealed class PetEntityPacket : EntityPacket
     public Guid DescriptorId { get; set; }
 
     [Key(26)]
+
     public PetState State { get; set; }
 
     [Key(27)]

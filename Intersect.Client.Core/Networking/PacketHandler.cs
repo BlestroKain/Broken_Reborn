@@ -417,6 +417,27 @@ internal sealed partial class PacketHandler
         }
     }
 
+    //PetEntityPacket
+    public void HandlePacket(IPacketSender packetSender, PetEntityPacket packet)
+    {
+        if (Globals.TryGetEntity(EntityType.Pet, packet.EntityId, out var entity))
+        {
+            entity.Load(packet);
+            return;
+        }
+
+        var pet = new Pet(packet.EntityId, packet);
+        if (!Globals.Entities.TryAdd(pet.Id, pet))
+        {
+            ApplicationContext.CurrentContext.Logger.LogError(
+                "Failed to register new {EntityType} {EntityId} ({EntityName})",
+                EntityType.Pet,
+                packet.EntityId,
+                packet.Name
+            );
+        }
+    }
+
     //ResourceEntityPacket
     public void HandlePacket(IPacketSender packetSender, ResourceEntityPacket packet)
     {

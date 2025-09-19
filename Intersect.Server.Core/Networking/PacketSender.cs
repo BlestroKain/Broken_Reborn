@@ -1054,6 +1054,16 @@ public static partial class PacketSender
         SendDataToProximityOnMapInstance(pet.MapId, pet.MapInstanceId, packet, owner, TransmissionMode.Any);
     }
 
+    public static void SendOpenPetHub(Player player, bool close = false)
+    {
+        if (player == null)
+        {
+            return;
+        }
+
+        player.SendPacket(new OpenPetHubPacket(close), TransmissionMode.Any);
+    }
+
     //EntityStatsPacket
     public static void SendEntityStats(Entity en)
     {

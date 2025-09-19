@@ -1,3 +1,4 @@
+using System;
 using Intersect.Enums;
 using MessagePack;
 
@@ -20,7 +21,7 @@ public partial class ItemProperties
         EnchantmentLevel = other.EnchantmentLevel;
         Array.Copy(other.StatModifiers, StatModifiers, Enum.GetValues<Stat>().Length);
         Array.Copy(other.VitalModifiers, VitalModifiers, Enum.GetValues<Vital>().Length);
-      
+        BoundPlayerId = other.BoundPlayerId;
     }
 
     [Key(0)]
@@ -34,4 +35,7 @@ public partial class ItemProperties
     public int[] VitalModifiers { get; set; } = new int[Enum.GetValues<Vital>().Length];
     [Key(4)]
     public int MageSink { get;  set; }
+
+    [Key(5)]
+    public Guid? BoundPlayerId { get; set; }
 }

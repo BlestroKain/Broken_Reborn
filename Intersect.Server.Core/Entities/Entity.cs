@@ -610,6 +610,11 @@ public abstract partial class Entity : IEntity
                     entityType = EntityType.Player;
                     blockingEntity = mapEntity;
                     return false;
+                case Pet pet when !pet.Passable:
+                    blockerType = MovementBlockerType.Entity;
+                    entityType = EntityType.Pet;
+                    blockingEntity = mapEntity;
+                    return false;
                 case Resource resource when !resource.IsPassable():
                     blockerType = MovementBlockerType.Entity;
                     entityType = EntityType.Resource;
@@ -1596,6 +1601,10 @@ public abstract partial class Entity : IEntity
         return;
     }
 
+    internal virtual void RegisterIncomingAttack(Entity attacker, Vital vital)
+    {
+    }
+
     public virtual int[] GetStatValues()
     {
         var stats = new int[Enum.GetValues<Stat>().Length];
@@ -2198,6 +2207,7 @@ public abstract partial class Entity : IEntity
                     PacketSender.SendActionMsg(enemy, Strings.Combat.Critical, CustomColors.Combat.Critical);
                 }
 
+                enemy.RegisterIncomingAttack(this, Vital.Health);
                 enemy.SubVital(Vital.Health, baseDamage);
                 switch (damageType)
                 {
@@ -2269,6 +2279,7 @@ public abstract partial class Entity : IEntity
             if (secondaryDamage > 0 && enemy.HasVital(Vital.Mana) && !invulnerable)
             {
                 //If we took damage lets reset our combat timer
+                enemy.RegisterIncomingAttack(this, Vital.Mana);
                 enemy.SubVital(Vital.Mana, secondaryDamage);
                 PacketSender.SendActionMsg(
                     enemy, Strings.Combat.RemoveSymbol + secondaryDamage, CustomColors.Combat.RemoveMana

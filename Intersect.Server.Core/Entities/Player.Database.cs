@@ -200,6 +200,8 @@ public partial class Player
         entityEntry.Collection(p => p.Quests).Load();
         entityEntry.Collection(p => p.Spells).Load();
         entityEntry.Collection(p => p.Variables).Load();
+        entityEntry.Collection(p => p.Pets).Load();
+        entityEntry.Reference(p => p.ActivePet).Load();
         entityEntry.Collection(p => p.BestiaryUnlocks).Load();
 
         if (loadBags)
@@ -543,7 +545,9 @@ public partial class Player
                 .Include(p => p.Quests)
                 .Include(p => p.Spells)
                 .Include(p => p.Variables)
-             .Include(p => p.MailBoxs)
+                .Include(p => p.Pets)
+                .Include(p => p.ActivePet)
+                .Include(p => p.MailBoxs)
                .ThenInclude(m => m.SenderPlayer)
                 .AsSplitQuery()
         ) ??
@@ -563,7 +567,9 @@ public partial class Player
                 .Include(p => p.Quests)
                 .Include(p => p.Spells)
                 .Include(p => p.Variables)
-             .Include(p => p.MailBoxs)
+                .Include(p => p.Pets)
+                .Include(p => p.ActivePet)
+                .Include(p => p.MailBoxs)
                .ThenInclude(m => m.SenderPlayer)
                 .AsSplitQuery()
         ) ??
@@ -589,7 +595,9 @@ public partial class Player
                 .Include(p => p.Variables)
                 .Include(p => p.Items)
                 .Include(p => p.Spells)
-             .Include(p => p.MailBoxs)
+                .Include(p => p.Pets)
+                .Include(p => p.ActivePet)
+                .Include(p => p.MailBoxs)
                .ThenInclude(m => m.SenderPlayer)
                 .AsSplitQuery()
                 .FirstOrDefault()
@@ -606,7 +614,9 @@ public partial class Player
                 .Include(p => p.Variables)
                 .Include(p => p.Items)
                 .Include(p => p.Spells)
-             .Include(p => p.MailBoxs)
+                .Include(p => p.Pets)
+                .Include(p => p.ActivePet)
+                .Include(p => p.MailBoxs)
                .ThenInclude(m => m.SenderPlayer)
                 .AsSplitQuery()
                 .FirstOrDefault()

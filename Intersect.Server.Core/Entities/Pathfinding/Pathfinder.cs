@@ -194,7 +194,7 @@ partial class Pathfinder
                                                 {
                                                     mapGrid[mx + en.X, my + en.Y].BlockType = en.GetEntityType() switch
                                                     {
-                                                        EntityType.GlobalEntity => PathNodeBlockType.Npc,
+                                                        EntityType.GlobalEntity or EntityType.Pet => PathNodeBlockType.Npc,
                                                         EntityType.Player => PathNodeBlockType.Player,
                                                         EntityType.Resource => PathNodeBlockType.Entity,
                                                         EntityType.Projectile => PathNodeBlockType.Entity,

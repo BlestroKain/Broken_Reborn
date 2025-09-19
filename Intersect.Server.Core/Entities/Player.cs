@@ -1314,6 +1314,8 @@ public partial class Player : Entity
             return false;
         }
 
+        var descriptorId = descriptor.Id;
+
         var petInstanceId = sourceItem?.EnsurePetInstanceId();
         if (!petInstanceId.HasValue || petInstanceId == Guid.Empty)
         {
@@ -1323,8 +1325,8 @@ public partial class Player : Entity
         playerPet = Pets.FirstOrDefault(pet => pet.PetInstanceId == petInstanceId);
         if (playerPet == null)
         {
-            playerPet = Pets.FirstOrDefault(pet => pet.PetInstanceId == Guid.Empty && pet.PetDescriptorId == descriptor.Id)
-                ?? Pets.FirstOrDefault(pet => pet.PetDescriptorId == descriptor.Id && pet.PetInstanceId == default);
+            playerPet = Pets.FirstOrDefault(pet => pet.PetInstanceId == Guid.Empty && pet.PetDescriptorId == descriptorId)
+                ?? Pets.FirstOrDefault(pet => pet.PetDescriptorId == descriptorId && pet.PetInstanceId == default);
         }
 
         if (playerPet == null)

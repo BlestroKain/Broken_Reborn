@@ -63,7 +63,7 @@ public enum EventCommandType
     ReleasePlayer,
 
     SpawnNpc,
-
+   
     //Special Effects
     PlayAnimation,
 
@@ -149,4 +149,5 @@ public enum EventCommandType
     OpenMarketSell = 208,
     GiveGuildExperience = 209,
     GiveFactionHonor = 210,
+    SpawnPet=211,
 }

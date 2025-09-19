@@ -363,6 +363,12 @@
     <Compile Update="Forms\Editors\Events\Event Commands\EventCommand_SpawnNpc.Designer.cs">
       <DependentUpon>EventCommand_SpawnNpc.cs</DependentUpon>
     </Compile>
+    <Compile Update="Forms\Editors\Events\Event Commands\EventCommand_SpawnPet.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Forms\Editors\Events\Event Commands\EventCommand_SpawnPet.Designer.cs">
+      <DependentUpon>EventCommand_SpawnPet.cs</DependentUpon>
+    </Compile>
     <Compile Update="Forms\Editors\Events\Event Commands\EventCommand_StartCommonEvent.cs">
       <SubType>UserControl</SubType>
     </Compile>

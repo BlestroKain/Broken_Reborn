@@ -23,6 +23,7 @@ public partial class EquipmentOptions
     new("Accessory"),   // Accesorio extra (ej: colgante especial)
     new("Ring", 2),     // Dos anillos
     new("Karma", 5),    // Cinco karmas/trofeos
+    new("Pet"),         // Mascota
 ];
 
 

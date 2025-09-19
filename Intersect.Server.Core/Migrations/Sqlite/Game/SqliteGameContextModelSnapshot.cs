@@ -600,6 +600,120 @@ namespace Intersect.Server.Migrations.Sqlite.Game
                     b.ToTable("Npcs");
                 });
 
+            modelBuilder.Entity("Intersect.Framework.Core.GameObjects.Pets.PetDescriptor", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AttackAnimationId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("AttackAnimation");
+
+                    b.Property<int>("AttackSpeedModifier")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("AttackSpeedValue")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("CanEvolve")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CritChance")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<double>("CritMultiplier")
+                        .HasColumnType("REAL");
+
+                    b.Property<int>("Damage")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("DamageType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("DeathAnimationId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("DeathAnimation");
+
+                    b.Property<string>("EquipmentScalingJson")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("EquipmentScaling");
+
+                    b.Property<int>("EvolutionLevel")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("EvolutionTargetId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("EvolutionTarget");
+
+                    b.Property<long>("Experience")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ExperienceRate")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Folder")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("IdleAnimationId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("IdleAnimation");
+
+                    b.Property<string>("ImmunitiesJson")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("Immunities");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("LevelingMode")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MaxLevel")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("MaxVitalJson")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("MaxVital");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("TEXT")
+                        .HasColumnOrder(0);
+
+                    b.Property<int>("Scaling")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ScalingStat")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SpellsJson")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("Spells");
+
+                    b.Property<string>("Sprite")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("StatPointsPerLevel")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("StatsJson")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("Stats");
+
+                    b.Property<double>("Tenacity")
+                        .HasColumnType("REAL");
+
+                    b.Property<long>("TimeCreated")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("VitalRegenJson")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("VitalRegen");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Pets");
+                });
+
             modelBuilder.Entity("Intersect.Framework.Core.GameObjects.PlayerClass.ClassDescriptor", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1673,7 +1787,37 @@ namespace Intersect.Server.Migrations.Sqlite.Game
                                 .HasForeignKey("ItemDescriptorId");
                         });
 
+                    b.OwnsOne("Intersect.Framework.Core.GameObjects.Items.PetItemData", "Pet", b1 =>
+                        {
+                            b1.Property<Guid>("ItemDescriptorId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<bool>("BindOnEquip")
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<bool>("DespawnOnUnequip")
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<Guid>("PetDescriptorId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<string>("PetNameOverride")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<bool>("SummonOnEquip")
+                                .HasColumnType("INTEGER");
+
+                            b1.HasKey("ItemDescriptorId");
+
+                            b1.ToTable("Items");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ItemDescriptorId");
+                        });
+
                     b.Navigation("Consumable");
+
+                    b.Navigation("Pet");
                 });
 
             modelBuilder.Entity("Intersect.GameObjects.SpellDescriptor", b =>

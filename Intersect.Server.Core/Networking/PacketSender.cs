@@ -14,6 +14,7 @@ using Intersect.Framework.Core.GameObjects.Mapping.Tilesets;
 using Intersect.Framework.Core.GameObjects.Maps.MapList;
 using Intersect.Framework.Core.GameObjects.NPCs;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
+using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.Framework.Core.GameObjects.Resources;
 using Intersect.Framework.Core.GameObjects.Variables;
 using Intersect.Framework.Core.Network.Packets.Security;
@@ -1004,6 +1005,98 @@ public static partial class PacketSender
         SendDataToProximityOnMapInstance(map.Id, mapInstanceId, new MapEntityStatusPacket(map.Id, data.ToArray()));
     }
 
+    public static void SendPetEntityUpdate(MapController map, IReadOnlyCollection<Pet> pets, Guid mapInstanceId)
+    {
+        if (pets == null || pets.Count == 0)
+        {
+            return;
+        }
+
+        var updates = new List<PetEntityUpdate>(pets.Count);
+        foreach (var pet in pets)
+        {
+            updates.Add(
+                new PetEntityUpdate
+                {
+                    EntityId = pet.Id,
+                    OwnerId = pet.OwnerId,
+                    DescriptorId = pet.Descriptor?.Id ?? Guid.Empty,
+                    Despawnable = pet.Despawnable,
+                    Behavior = pet.Behavior,
+                }
+            );
+        }
+
+        SendDataToProximityOnMapInstance(map.Id, mapInstanceId, new PetEntityUpdatePacket(map.Id, updates.ToArray()));
+    }
+
+    public static void SendPetStateUpdate(Pet pet)
+    {
+        if (pet == null)
+        {
+            return;
+        }
+
+        var packet = new PetStateUpdatePacket(pet.Id, pet.Behavior);
+
+        var owner = pet.Owner;
+        if (owner != null && !owner.IsDisposed)
+        {
+            owner.SendPacket(packet, TransmissionMode.Any);
+        }
+
+        // Los cambios en el estado de la mascota se propagan al resto de jugadores
+        // cuando la instancia del mapa procesa las entidades sucias en el siguiente tick.
+        // Aquí solo necesitamos notificar inmediatamente al propietario.
+    }
+
+    public static void SendPetProgress(Pet pet)
+    {
+        if (pet == null)
+        {
+            return;
+        }
+
+        var owner = pet.Owner ?? Player.FindOnline(pet.OwnerId);
+        if (owner == null || owner.IsDisposed)
+        {
+            return;
+        }
+
+        var allocations = pet.StatPointAllocations ?? Array.Empty<int>();
+
+        owner.SendPacket(
+            new PetProgressPacket(
+                pet.Id,
+                pet.Experience,
+                pet.ExperienceToNextLevel,
+                pet.StatPoints,
+                allocations.ToArray()
+            ),
+            TransmissionMode.Any
+        );
+    }
+
+    public static void SendPetHubState(Player player)
+    {
+        if (player == null)
+        {
+            return;
+        }
+
+        player.SendPacket(new PetHubStatePacket(player.IsPetSpawnedViaHub), TransmissionMode.Any);
+    }
+
+    public static void SendOpenPetHub(Player player, bool close = false)
+    {
+        if (player == null)
+        {
+            return;
+        }
+
+        player.SendPacket(new OpenPetHubPacket(close), TransmissionMode.Any);
+    }
+
     //EntityStatsPacket
     public static void SendEntityStats(Entity en)
     {
@@ -1866,6 +1959,13 @@ public static partial class PacketSender
                 break;
             case GameObjectType.Npc:
                 foreach (var obj in NPCDescriptor.Lookup)
+                {
+                    SendGameObject(client, obj.Value, false, false, packetList);
+                }
+
+                break;
+            case GameObjectType.Pet:
+                foreach (var obj in PetDescriptor.Lookup)
                 {
                     SendGameObject(client, obj.Value, false, false, packetList);
                 }

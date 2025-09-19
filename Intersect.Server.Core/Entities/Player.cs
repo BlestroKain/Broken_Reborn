@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -14,6 +15,7 @@ using Intersect.Framework.Core.GameObjects.Crafting;
 using Intersect.Framework.Core.GameObjects.Events;
 using Intersect.Framework.Core.GameObjects.Events.Commands;
 using Intersect.Framework.Core.GameObjects.Items;
+using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Config;
 using Intersect.Framework.Core.GameObjects.Maps.Attributes;
@@ -74,6 +76,35 @@ public partial class Player : Entity
     [JsonIgnore][NotMapped] public List<Npc> SpawnedNpcs = new List<Npc>();
 
     #endregion
+
+    #region Pets
+
+    [JsonIgnore][NotMapped] public List<Pet> SpawnedPets { get; } = new();
+
+    [JsonIgnore][NotMapped] public Pet? CurrentPet { get; private set; }
+
+    [JsonIgnore][NotMapped] public PetState ActivePetMode { get; set; } = PetState.Defend;
+
+    [JsonIgnore][NotMapped] private bool _isPetSpawnedViaHub;
+
+    [JsonIgnore][NotMapped] public bool IsPetSpawnedViaHub => _isPetSpawnedViaHub;
+
+    private const int PetBehaviorChangeCooldownDuration = 500;
+    private const int PetInvokeCooldownDuration = 1000;
+
+    [JsonIgnore][NotMapped]
+    private long _nextPetBehaviorChangeTime;
+
+    [JsonIgnore][NotMapped]
+    private long _nextPetInvokeTime;
+
+    #endregion
+
+    private Entity? _pendingPetAttacker;
+    private long _pendingPetAttackerTimestamp;
+
+    [JsonIgnore, NotMapped]
+    private readonly object _spawnedPetsLock = new();
 
     [JsonIgnore, NotMapped]
     public long[] MaxVitals => GetMaxVitals();
@@ -257,6 +288,15 @@ public partial class Player : Entity
 
     //Bestiary
     public virtual List<BestiaryUnlockInstance> BestiaryUnlocks { get; set; } = [];
+
+    //Pets
+    public virtual List<PlayerPet> Pets { get; set; } = [];
+
+    public Guid? ActivePetId { get; set; }
+
+    [JsonIgnore]
+    [ForeignKey(nameof(ActivePetId))]
+    public PlayerPet? ActivePet { get; set; }
 
     [JsonIgnore, NotMapped]
     public bool IsValidPlayer => !IsDisposed && Client?.Entity == this;
@@ -546,6 +586,8 @@ public partial class Player : Entity
             return;
         }
 
+        ClearPets(killDespawnable: true);
+
         Guild?.NotifyPlayerDisposed(this);
 
         base.Dispose();
@@ -632,6 +674,8 @@ public partial class Player : Entity
         }
 
         SpawnedNpcs.Clear();
+
+        ClearPets(killDespawnable: true);
 
         lock (mEventLock)
         {
@@ -795,6 +839,8 @@ public partial class Player : Entity
             Monitor.TryEnter(EntityLock, ref lockObtained);
             if (lockObtained)
             {
+                UpdatePetState(timeMs);
+
                 if (Client == null) //Client logged out
                 {
                     if (CombatTimer < Timing.Global.Milliseconds)
@@ -1084,6 +1130,628 @@ public partial class Player : Entity
         }
     }
 
+    private void SetPetHubSpawnFlag(bool requested, bool notifyClient = true)
+    {
+        if (_isPetSpawnedViaHub == requested)
+        {
+            return;
+        }
+
+        _isPetSpawnedViaHub = requested;
+
+        if (notifyClient)
+        {
+            PacketSender.SendPetHubState(this);
+        }
+    }
+
+    public bool SetPetHubSpawnRequested(bool requested, bool openPetHub = false, bool closePetHub = false)
+    {
+        lock (EntityLock)
+        {
+            if (requested)
+            {
+                SetPetHubSpawnFlag(true);
+
+                var descriptor = ActivePet?.Descriptor;
+                if (descriptor == null)
+                {
+                    if (openPetHub)
+                    {
+                        PacketSender.SendOpenPetHub(this);
+                    }
+
+                    return false;
+                }
+
+                return TrySpawnActivePet(descriptor, openPetHub);
+            }
+
+            SetPetHubSpawnFlag(false);
+            return DismissActivePet(closePetHub);
+        }
+    }
+
+    private void UpdatePetState(long timeMs)
+    {
+        _ = timeMs;
+
+        CleanupSpawnedPetsList();
+
+        var activePet = ActivePet;
+        var descriptor = activePet?.Descriptor;
+        var currentPet = CurrentPet;
+
+        if (!IsPetSpawnedViaHub)
+        {
+            if (currentPet != null)
+            {
+                DespawnPet(currentPet, false);
+            }
+
+            return;
+        }
+
+        if (currentPet != null && currentPet.IsDisposed)
+        {
+            DespawnPet(currentPet);
+            currentPet = null;
+        }
+
+        if (descriptor == null)
+        {
+            if (currentPet != null)
+            {
+                DespawnPet(currentPet, false);
+            }
+
+            return;
+        }
+
+        if (currentPet != null && currentPet.Descriptor.Id != descriptor.Id)
+        {
+            DespawnPet(currentPet);
+            currentPet = null;
+        }
+
+        if (currentPet == null)
+        {
+            if (!MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var instance))
+            {
+                return;
+            }
+
+            var playerPet = ActivePet;
+            if (playerPet != null)
+            {
+                EnsurePlayerPetArraySizes(playerPet);
+            }
+
+            var newPet = instance.SpawnPetForPlayer(this, descriptor, playerPet);
+            if (newPet == null)
+            {
+                return;
+            }
+
+            CurrentPet = newPet;
+
+            lock (_spawnedPetsLock)
+            {
+                SpawnedPets.Add(newPet);
+            }
+
+            return;
+        }
+
+        lock (_spawnedPetsLock)
+        {
+            if (!SpawnedPets.Contains(currentPet))
+            {
+                SpawnedPets.Add(currentPet);
+            }
+        }
+    }
+
+    private void DespawnPet(Pet? pet, bool killIfDespawnable = true)
+    {
+        if (pet == null)
+        {
+            return;
+        }
+
+        PersistPetProgress(pet);
+
+        var wasCurrent = ReferenceEquals(CurrentPet, pet);
+
+        // Intento de despawn tolerante (si ya está disposed no hace nada).
+        try
+        {
+            if (!pet.IsDisposed)
+            {
+                pet.Despawn(killIfDespawnable);
+            }
+        }
+        catch
+        {
+            // opcional: loggear si tienes logger
+            // Logger.Warn(ex, "DespawnPet failed");
+        }
+
+        // Quitar de la colección local de mascotas invocadas
+        lock (_spawnedPetsLock)
+        {
+            // Intento por referencia; si no, limpieza por Id/estado
+            if (!SpawnedPets.Remove(pet))
+            {
+                _ = SpawnedPets.RemoveAll(p => p == null || p.IsDisposed || p.Id == pet.Id);
+            }
+        }
+
+        if (wasCurrent)
+        {
+            // Limpiar la selección actual y el estado del hub
+            CurrentPet = null;
+
+        }
+    }
+
+    internal void PersistPetProgress(Pet pet)
+    {
+        PlayerPet? playerPet = null;
+
+        if (pet.PetInstanceId != Guid.Empty)
+        {
+            playerPet = Pets.FirstOrDefault(p => p.PetInstanceId == pet.PetInstanceId);
+        }
+
+        var descriptorId = pet.Descriptor?.Id ?? Guid.Empty;
+        if (playerPet == null && descriptorId != Guid.Empty)
+        {
+            playerPet = Pets.FirstOrDefault(p => p.PetDescriptorId == descriptorId);
+        }
+
+        if (playerPet == null)
+        {
+            return;
+        }
+
+        EnsurePlayerPetArraySizes(playerPet);
+
+        playerPet.Level = Math.Clamp(pet.Level, 1, pet.MaxLevel);
+        playerPet.Experience = Math.Max(0, pet.Experience);
+        playerPet.StatPoints = Math.Max(0, pet.StatPoints);
+
+        var statCount = Enum.GetValues<Stat>().Length;
+        for (var index = 0; index < statCount; index++)
+        {
+            playerPet.BaseStats[index] = pet.BaseStats[index];
+            playerPet.StatPointAllocations[index] = pet.StatPointAllocations[index];
+        }
+
+        var vitalCount = Enum.GetValues<Vital>().Length;
+        for (var index = 0; index < vitalCount; index++)
+        {
+            var vital = (Vital)index;
+            playerPet.MaxVitals[index] = pet.GetMaxVital(vital);
+            playerPet.Vitals[index] = pet.GetVital(vital);
+        }
+
+        if (playerPet.PetInstanceId == Guid.Empty && pet.PetInstanceId != Guid.Empty)
+        {
+            playerPet.PetInstanceId = pet.PetInstanceId;
+        }
+    }
+
+    internal void UpdatePetItemReferences(PlayerPet playerPet, Guid previousDescriptorId)
+    {
+        if (playerPet == null)
+        {
+            return;
+        }
+
+        var newDescriptorId = playerPet.PetDescriptorId;
+        var petInstanceId = playerPet.PetInstanceId;
+
+        foreach (var slot in Items)
+        {
+            if (slot == null || slot.ItemId == Guid.Empty)
+            {
+                continue;
+            }
+
+            var descriptor = slot.Descriptor;
+            var petData = descriptor?.Pet;
+            if (descriptor == null || petData == null)
+            {
+                continue;
+            }
+
+            var referencesPreviousDescriptor =
+                previousDescriptorId != Guid.Empty && petData.PetDescriptorId == previousDescriptorId;
+
+            var referencesCurrentInstance =
+                petInstanceId != Guid.Empty
+                && slot.PetInstanceId.HasValue
+                && slot.PetInstanceId.Value == petInstanceId;
+
+            if (!referencesPreviousDescriptor && !referencesCurrentInstance)
+            {
+                continue;
+            }
+
+            if (petInstanceId != Guid.Empty)
+            {
+                slot.PetInstanceId = petInstanceId;
+            }
+
+            if (referencesPreviousDescriptor && newDescriptorId != Guid.Empty)
+            {
+                // Ensure future lookups rely on the updated descriptor by binding the slot to the evolved pet instance.
+                // The descriptor itself is shared, so we avoid mutating it directly.
+                if (!slot.PetInstanceId.HasValue || slot.PetInstanceId.Value == Guid.Empty)
+                {
+                    slot.PetInstanceId = petInstanceId;
+                }
+            }
+        }
+    }
+
+
+    internal Pet? FindPet(Guid petId)
+    {
+        if (petId == Guid.Empty)
+        {
+            return CurrentPet;
+        }
+
+        foreach (var pet in GetActivePetsSnapshot())
+        {
+            if (pet.Id == petId)
+            {
+                return pet;
+            }
+        }
+
+        return null;
+    }
+
+    internal bool IsActivePetEquipped()
+    {
+        var playerPet = ActivePet;
+        if (playerPet == null)
+        {
+            return false;
+        }
+
+        foreach (var equippedItem in EquippedItems)
+        {
+            var descriptor = equippedItem?.Descriptor;
+            var petData = descriptor?.Pet;
+            if (descriptor == null || petData == null)
+            {
+                continue;
+            }
+
+            if (equippedItem?.PetInstanceId is { } petInstanceId && petInstanceId != Guid.Empty)
+            {
+                if (petInstanceId == playerPet.PetInstanceId)
+                {
+                    return true;
+                }
+
+                continue;
+            }
+
+            if (petData.PetDescriptorId == playerPet.PetDescriptorId)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    internal bool TryBeginPetBehaviorChange()
+    {
+        var now = Timing.Global.Milliseconds;
+        if (now < _nextPetBehaviorChangeTime)
+        {
+            return false;
+        }
+
+        _nextPetBehaviorChangeTime = now + PetBehaviorChangeCooldownDuration;
+        return true;
+    }
+
+    public bool InvokePet(bool ignoreCooldown = false, bool openPetHub = false)
+    {
+        var now = Timing.Global.Milliseconds;
+        if (!ignoreCooldown && now < _nextPetInvokeTime)
+        {
+            return false;
+        }
+
+        var playerPet = ActivePet;
+        var descriptor = playerPet?.Descriptor;
+        if (playerPet == null || descriptor == null)
+        {
+            return false;
+        }
+
+        if (!TrySummonPet(playerPet, descriptor, openPetHub))
+        {
+            return false;
+        }
+
+        _nextPetInvokeTime = now + PetInvokeCooldownDuration;
+        return true;
+    }
+
+    public bool DismissActivePet(bool closePetHub = false)
+    {
+        // 1) Disable the hub flag so UpdatePetState does not respawn the pet automatically.
+        SetPetHubSpawnFlag(false);
+
+        var despawned = false;
+
+        // 2) Despawn any pets tracked locally.
+        var snapshot = GetActivePetsSnapshot();
+        foreach (var pet in snapshot)
+        {
+            if (pet == null)
+            {
+                continue;
+            }
+
+            try
+            {
+                PersistPetProgress(pet);
+                if (!pet.IsDisposed)
+                {
+                    // Force the despawn even if the pet is flagged as non-despawnable.
+                    pet.Despawn(killIfDespawnable: true);
+                }
+
+                despawned = true;
+            }
+            catch
+            {
+                // Even if we fail we consider that a despawn attempt happened.
+                despawned = true;
+            }
+        }
+
+        // 3) Clear local collections and references.
+        lock (_spawnedPetsLock)
+        {
+            SpawnedPets.Clear();
+        }
+
+        CurrentPet = null;
+
+        // 4) Ask the map instance to clear any remaining pets owned by this player.
+        if (MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var instance) && instance != null)
+        {
+            instance.DespawnActivePetOf(this, killIfDespawnable: true);
+        }
+
+        // 5) Optionally close the pet hub if requested.
+        if (closePetHub)
+        {
+            PacketSender.SendOpenPetHub(this, close: true);
+        }
+
+        return despawned;
+    }
+
+    internal Pet[] GetActivePetsSnapshot()
+    {
+        var pets = new List<Pet>();
+
+        lock (_spawnedPetsLock)
+        {
+            foreach (var pet in SpawnedPets)
+            {
+                if (pet != null && !pet.IsDisposed)
+                {
+                    pets.Add(pet);
+                }
+            }
+        }
+
+        var currentPet = CurrentPet;
+        if (currentPet != null && !currentPet.IsDisposed && !pets.Contains(currentPet))
+        {
+            pets.Add(currentPet);
+        }
+
+        return pets.ToArray();
+    }
+
+    private void CleanupSpawnedPetsList()
+    {
+        lock (_spawnedPetsLock)
+        {
+            // Replace the usage of RemoveWhere with a manual iteration and removal
+            for (int i = SpawnedPets.Count - 1; i >= 0; i--)
+            {
+                var pet = SpawnedPets[i];
+                if (pet == null || pet.IsDisposed)
+                {
+                    SpawnedPets.RemoveAt(i);
+                }
+            }
+        }
+    }
+
+    private static void EnsurePlayerPetArraySizes(PlayerPet playerPet)
+    {
+        var statCount = Enum.GetValues<Stat>().Length;
+        var vitalCount = Enum.GetValues<Vital>().Length;
+
+        var baseStats = playerPet.BaseStats ?? Array.Empty<int>();
+        if (baseStats.Length != statCount)
+        {
+            var resized = new int[statCount];
+            Array.Copy(baseStats, resized, Math.Min(baseStats.Length, statCount));
+            playerPet.BaseStats = resized;
+        }
+        else
+        {
+            playerPet.BaseStats = baseStats;
+        }
+
+        var allocations = playerPet.StatPointAllocations ?? Array.Empty<int>();
+        if (allocations.Length != statCount)
+        {
+            var resized = new int[statCount];
+            Array.Copy(allocations, resized, Math.Min(allocations.Length, statCount));
+            playerPet.StatPointAllocations = resized;
+        }
+        else
+        {
+            playerPet.StatPointAllocations = allocations;
+        }
+
+        var maxVitals = playerPet.MaxVitals ?? Array.Empty<long>();
+        if (maxVitals.Length != vitalCount)
+        {
+            var resized = new long[vitalCount];
+            Array.Copy(maxVitals, resized, Math.Min(maxVitals.Length, vitalCount));
+            playerPet.MaxVitals = resized;
+        }
+        else
+        {
+            playerPet.MaxVitals = maxVitals;
+        }
+
+        var vitals = playerPet.Vitals ?? Array.Empty<long>();
+        if (vitals.Length != vitalCount)
+        {
+            var resized = new long[vitalCount];
+            Array.Copy(vitals, resized, Math.Min(vitals.Length, vitalCount));
+            playerPet.Vitals = resized;
+        }
+        else
+        {
+            playerPet.Vitals = vitals;
+        }
+    }
+
+    private bool TrySummonPet(PlayerPet playerPet, PetDescriptor descriptor, bool openPetHub)
+    {
+        if (playerPet == null || descriptor == null)
+        {
+            return false;
+        }
+
+        return SetPetHubSpawnRequested(true, openPetHub);
+    }
+
+    private bool TrySpawnActivePet(PetDescriptor descriptor, bool openPetHub)
+    {
+        if (descriptor == null)
+        {
+            return false;
+        }
+
+        CleanupSpawnedPetsList();
+
+        var currentPet = CurrentPet;
+        if (currentPet != null)
+        {
+            DespawnPet(currentPet, killIfDespawnable: true);
+        }
+
+        if (!MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var instance) || instance == null)
+        {
+            return false;
+        }
+
+        instance.DespawnActivePetOf(this, killIfDespawnable: true);
+
+        var playerPet = ActivePet;
+        if (playerPet != null && playerPet.PetDescriptorId != descriptor.Id)
+        {
+            var activePet = playerPet;
+            playerPet = Pets.FirstOrDefault(
+                p => activePet != null && activePet.PetInstanceId != Guid.Empty && p.PetInstanceId == activePet.PetInstanceId
+            );
+        }
+
+        playerPet ??= Pets.FirstOrDefault(pet => pet.PetDescriptorId == descriptor.Id);
+
+        if (playerPet != null)
+        {
+            EnsurePlayerPetArraySizes(playerPet);
+        }
+
+        var newPet = instance.SpawnPetForPlayer(this, descriptor, playerPet);
+        if (newPet == null)
+        {
+            return false;
+        }
+
+        CurrentPet = newPet;
+
+        lock (_spawnedPetsLock)
+        {
+            if (!SpawnedPets.Contains(newPet))
+            {
+                SpawnedPets.Add(newPet);
+            }
+        }
+
+        newPet.SetBehavior(ActivePetMode);
+
+        if (openPetHub)
+        {
+            PacketSender.SendOpenPetHub(this);
+        }
+
+        return true;
+    }
+    private void ClearPets(bool killDespawnable)
+    {
+        var pets = GetActivePetsSnapshot();
+        foreach (var pet in pets)
+        {
+            DespawnPet(pet, killDespawnable);
+        }
+
+        lock (_spawnedPetsLock)
+        {
+            SpawnedPets.Clear();
+        }
+
+        CurrentPet = null;
+        SetPetHubSpawnFlag(false, notifyClient: false);
+    }
+
+    private Entity? ConsumePendingPetAttacker()
+    {
+        var attacker = _pendingPetAttacker;
+        if (attacker != null)
+        {
+            var expired = Timing.Global.Milliseconds - _pendingPetAttackerTimestamp > Options.Instance.Combat.CombatTime;
+            if (attacker.IsDisposed || attacker.IsDead || expired || IsAllyOf(attacker))
+            {
+                attacker = null;
+            }
+        }
+
+        _pendingPetAttacker = null;
+        return attacker;
+    }
+
+    private void NotifyPetsOfOwnerDamage(Entity? attacker)
+    {
+        foreach (var pet in GetActivePetsSnapshot())
+        {
+            pet.NotifyOwnerDamaged(attacker);
+        }
+    }
+
     /// <summary>
     ///     Updates the player's spell cooldown for the specified <paramref name="spellDescriptor"/>.
     ///     <para> This method is called when a spell is casted by a player. </para>
@@ -1239,6 +1907,7 @@ public partial class Player : Entity
     {
         CastTime = 0;
         CastTarget = null;
+        ClearPets(killDespawnable: true);
 
         //Flag death to the client
         PlayDeathAnimation();
@@ -1541,7 +2210,16 @@ public partial class Player : Entity
             DonateGuildExperience(guildExp);
         }
 
-        // Agregar la experiencia restante al jugador  
+        if (playerExp > 0)
+        {
+            var pet = CurrentPet;
+            if (pet is { IsDisposed: false })
+            {
+                pet.GiveExperience(playerExp);
+            }
+        }
+
+        // Agregar la experiencia restante al jugador
         Exp += (int)playerExp;
 
         if (Exp < 0)
@@ -1620,6 +2298,11 @@ public partial class Player : Entity
     //Combat
     public override void KilledEntity(Entity entity)
     {
+        if (entity == null || entity.IsDisposed)
+        {
+            return;
+        }
+
         switch (entity)
         {
             case Npc npc:
@@ -1628,38 +2311,56 @@ public partial class Player : Entity
                     var playerEvent = descriptor.OnDeathEvent;
                     var partyEvent = descriptor.OnDeathPartyEvent;
 
-                    // If in party, split the exp.
+                    // Si la kill fue hecha por la pet, este método debe ser invocado por el dueño (owner.KilledEntity(npc)).
+                    // Npc.Die ya atribuye drops/bestiario al dueño si el killer es Pet; asegúrate de también
+                    // llamar aquí para XP/misiones si el killer fue una Pet.
+
                     if (Party != null && Party.Count > 0)
                     {
-                        var partyMembersInXpRange = Party.Where(partyMember => partyMember.InRangeOf(this, Options.Instance.Party.SharedXpRange)).ToArray();
-                        float bonusExp = Options.Instance.Party.BonusExperiencePercentPerMember / 100;
-                        var multiplier = 1.0f + (partyMembersInXpRange.Length * bonusExp);
-                        var partyExperience = (int)(descriptor.Experience * multiplier) / partyMembersInXpRange.Length;
-                        foreach (var partyMember in partyMembersInXpRange)
+                        // Miembros en rango de XP
+                        var membersInRange = Party.Where(p => p.InRangeOf(this, Options.Instance.Party.SharedXpRange)).ToArray();
+
+                        // Bonus por miembro en rango
+                        float bonusExp = Options.Instance.Party.BonusExperiencePercentPerMember / 100f;
+                        var multiplier = 1.0f + (membersInRange.Length * bonusExp);
+
+                        // XP total escalada por nivel del NPC y repartida
+                        var totalXp = ExpModifiedByLevel(descriptor.Level, descriptor.Experience);
+                        var partyExperience = (int)(totalXp * multiplier) / Math.Max(1, membersInRange.Length);
+
+                        foreach (var member in membersInRange)
                         {
-                            partyMember.GiveExperience(
-                                ExpModifiedByLevel(descriptor.Level, partyExperience, partyMember.Level)
+                            member.GiveExperience(
+                                ExpModifiedByLevel(descriptor.Level, partyExperience, member.Level)
                             );
-                            partyMember.UpdateQuestKillTasks(entity);
+                            member.UpdateQuestKillTasks(entity);
                         }
 
+                        // Evento de muerte para el grupo (evitar duplicar si ya correrá el del player)
                         if (partyEvent != null)
                         {
-                            foreach (var partyMember in Party)
+                            foreach (var member in Party)
                             {
-                                if ((Options.Instance.Party.NpcDeathCommonEventStartRange <= 0 || partyMember.InRangeOf(this, Options.Instance.Party.NpcDeathCommonEventStartRange)) && !(partyMember == this && playerEvent != null))
+                                var inRangeForEvent = Options.Instance.Party.NpcDeathCommonEventStartRange <= 0
+                                                      || member.InRangeOf(this, Options.Instance.Party.NpcDeathCommonEventStartRange);
+
+                                var skipSelfIfPlayerEventAlsoRuns = member == this && playerEvent != null;
+
+                                if (inRangeForEvent && !skipSelfIfPlayerEventAlsoRuns)
                                 {
-                                    partyMember.EnqueueStartCommonEvent(partyEvent);
+                                    member.EnqueueStartCommonEvent(partyEvent);
                                 }
                             }
                         }
                     }
                     else
                     {
+                        // XP individual
                         GiveExperience(ExpModifiedByLevel(descriptor.Level, descriptor.Experience));
                         UpdateQuestKillTasks(entity);
                     }
 
+                    // Evento individual (para el dueño si la kill vino de la Pet)
                     if (playerEvent != null)
                     {
                         EnqueueStartCommonEvent(playerEvent);
@@ -1680,6 +2381,7 @@ public partial class Player : Entity
                 }
         }
     }
+
 
     public void HandlePlayerKill(Player victim)
     {
@@ -1800,6 +2502,27 @@ public partial class Player : Entity
         base.TryAttack(target, projectile, parentSpell, parentItem, projectileDir);
     }
 
+    internal override void RegisterIncomingAttack(Entity attacker, Vital vital)
+    {
+        if (vital != Vital.Health)
+        {
+            return;
+        }
+
+        if (attacker == null || attacker.IsDisposed || ReferenceEquals(attacker, this))
+        {
+            return;
+        }
+
+        if (IsAllyOf(attacker))
+        {
+            return;
+        }
+
+        _pendingPetAttacker = attacker;
+        _pendingPetAttackerTimestamp = Timing.Global.Milliseconds;
+    }
+
     protected override void ReactToDamage(Vital vital)
     {
         if (IsDead || IsDisposed)
@@ -1813,6 +2536,12 @@ public partial class Player : Entity
             foreach (var trigger in CachedEquipmentOnDamageTriggers)
             {
                 EnqueueStartCommonEvent(trigger);
+            }
+
+            var attacker = ConsumePendingPetAttacker();
+            if (attacker != null)
+            {
+                NotifyPetsOfOwnerDamage(attacker);
             }
         }
 
@@ -2073,6 +2802,8 @@ public partial class Player : Entity
                 }
             );
         }
+
+        NotifyPetsOfOwnerDamage(attacker);
     }
 
     public override int CalculateAttackTime()
@@ -2624,6 +3355,7 @@ public partial class Player : Entity
         if (oldMap != null && oldMap.TryGetInstance(PreviousMapInstanceId, out var oldMapInstance))
         {
             PacketSender.SendMapInstanceChangedPacket(this, oldMap, PreviousMapInstanceId);
+            oldMapInstance.DespawnActivePetOf(this, killIfDespawnable: false);
             oldMapInstance.ClearEntityTargetsOf(this); // Remove targets of this entity
             RemoveFromInstanceController(PreviousMapInstanceId);
         }
@@ -3487,6 +4219,12 @@ public partial class Player : Entity
             return false;
         }
 
+        if (itemInSlot.IsBound)
+        {
+            PacketSender.SendChatMsg(this, Strings.Items.Bound, ChatMessageType.Inventory, CustomColors.Items.Bound);
+            return false;
+        }
+
         if (!itemDescriptor.CanDrop)
         {
             PacketSender.SendChatMsg(this, Strings.Items.Bound, ChatMessageType.Inventory, CustomColors.Items.Bound);
@@ -3538,7 +4276,7 @@ public partial class Player : Entity
 
     protected override bool ShouldDropItem(Entity killer, ItemDescriptor itemDescriptor, Item item, float dropRateModifier, out Guid lootOwner)
     {
-        lootOwner = (killer as Player)?.Id ?? Id;
+        lootOwner = ResolveLootOwnerId(killer, Id);
 
         if (itemDescriptor.DropChanceOnDeath == 0)
         {
@@ -5181,7 +5919,7 @@ public partial class Player : Entity
                 }
 
                 //Check if the item is bound.. if so don't allow trade
-                if (!itemBase.CanTrade)
+                if (!itemBase.CanTrade || Items[slot].IsBound)
                 {
                     PacketSender.SendChatMsg(this, Strings.Trading.Bound, ChatMessageType.Trading, CustomColors.Items.Bound);
 
@@ -6173,6 +6911,15 @@ public partial class Player : Entity
         return false;
     }
 
+    private static bool IsPetEquipmentSlot(int equipmentSlot)
+    {
+        var slots = Options.Instance.Equipment.EquipmentSlots;
+
+        return equipmentSlot >= 0
+            && equipmentSlot < slots.Count
+            && string.Equals(slots[equipmentSlot].Name, "Pet", StringComparison.OrdinalIgnoreCase);
+    }
+
     //Equipment
     public void EquipItem(ItemDescriptor itemDescriptor, int slot = -1, bool updateCooldown = false)
     {
@@ -6198,6 +6945,8 @@ public partial class Player : Entity
         {
             return; // No se encontró el ítem en inventario
         }
+
+        var isPetSlot = IsPetEquipmentSlot(itemDescriptor.EquipmentSlot);
 
         // ✅ Validación adicional: Armas 2 manos vs escudos
         if (itemDescriptor.EquipmentSlot == Options.Instance.Equipment.WeaponSlot)
@@ -6226,6 +6975,7 @@ public partial class Player : Entity
 
         EnqueueStartCommonEvent(itemDescriptor.GetEventTrigger(ItemEventTrigger.OnEquip));
         ProcessEquipmentUpdated(true);
+
     }
     private void AddEquipmentSlot(int equipmentSlot, int inventorySlot)
     {
@@ -6251,7 +7001,6 @@ public partial class Player : Entity
     public void UnequipItem(Guid itemId, bool sendUpdate = true)
     {
         var updated = false;
-
         foreach (var kvp in Equipment)
         {
             var slotIndex = kvp.Key;
@@ -6296,6 +7045,7 @@ public partial class Player : Entity
         }
 
         Equipment.Remove(equipmentSlot);
+
         ProcessEquipmentUpdated(sendUpdate);
     }
 

@@ -7,6 +7,7 @@ using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Framework.Core.GameObjects.NPCs;
+using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.Framework.Core.GameObjects.Resources;
 using Intersect.GameObjects;
 using Intersect.Network.Packets.Server;
@@ -52,6 +53,14 @@ public partial class MapController : MapDescriptor
         foreach (var map in allMapControllers)
         {
             map?.DespawnNpcAcrossInstances(npc);
+        }
+    }
+    public static void DespawnInstancesOf(PetDescriptor pet)
+    {
+        var allMapControllers = Lookup.Values.OfType<MapController>().ToArray();
+        foreach (var map in allMapControllers)
+        {
+            map?.DespawnPetAcrossInstances(pet);
         }
     }
 
@@ -369,6 +378,37 @@ public partial class MapController : MapDescriptor
                     npc.Die(false);
                 }
             }
+        }
+    }
+    public void DespawnPetAcrossInstances(PetDescriptor petDescriptor)
+    {
+        foreach (var entity in GetEntitiesOnAllInstances())
+        {
+            if (entity is not Pet pet || pet.IsDisposed) continue;
+            if (pet.Descriptor != petDescriptor) continue;
+
+            ApplicationContext.Context.Value?.Logger.LogDebug(
+                "Despawning pet {PetId} ({Descriptor}) on map {Map} across instances",
+                pet.Id, pet.Descriptor?.Name, Id
+            );
+
+            ForceRemovePetFromItsInstance(pet);
+        }
+    }
+    public void DespawnAllPetsAcrossInstances(bool killIfDespawnable = false)
+    {
+        foreach (var entity in GetEntitiesOnAllInstances())
+        {
+            if (entity is not Pet pet || pet.IsDisposed) continue;
+
+            ApplicationContext.Context.Value?.Logger.LogDebug(
+                "Despawning pet {PetId} ({Descriptor}) on map {Map} across instances",
+                pet.Id, pet.Descriptor?.Name, Id
+            );
+
+            // Si querés honrar killIfDespawnable, podés ajustar Despawn(true/false) adentro del helper,
+            // o crear una sobrecarga del helper que lo pase.
+            ForceRemovePetFromItsInstance(pet);
         }
     }
 
@@ -765,6 +805,43 @@ public partial class MapController : MapDescriptor
         }
 
         return locations;
+    }
+    private void ForceRemovePetFromItsInstance(Pet pet)
+    {
+        if (pet == null || pet.IsDisposed) return;
+
+        var mapId = pet.MapId;
+        var instanceId = pet.MapInstanceId;
+        if (mapId == Guid.Empty || instanceId == Guid.Empty) return;
+
+        if (!TryGetInstanceFromMap(mapId, instanceId, out var instance) || instance == null) return;
+
+        // Bloqueo de la instancia para operar consistente con su Update loop
+        lock (instance.GetLock())
+        {
+            try
+            {
+                // 1) Avisar YA a los clientes que se va (antes de remover)
+                PacketSender.SendEntityLeave(pet);
+
+                // 2) Despawnear tolerante (si ya murió/disposed no rompe)
+                lock (pet.EntityLock)
+                {
+                    if (!pet.IsDisposed)
+                    {
+                        pet.Despawn(false); // o true si querés “killIfDespawnable”
+                    }
+                }
+
+                // 3) Sacarla de estructuras de la instancia
+                instance.RemoveEntity(pet);
+                _ = instance.PetInstances?.TryRemove(pet.Id, out _);
+            }
+            catch
+            {
+                // opcional: log
+            }
+        }
     }
 
     /// <summary>

@@ -1,15 +1,18 @@
 using Intersect;
 using Intersect.Enums;
+using Intersect.Client.Entities;
 using Intersect.Client.General;
 using Intersect.Client.Localization;
 using Intersect.Core;
 using Intersect.Framework.Core.GameObjects.Items;
+using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.GameObjects;
 using Intersect.GameObjects.Ranges;
 using Intersect.Utilities;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using System.Globalization;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen.Input;
 using Intersect.Client.Interface.Game.DescriptionWindows.Components;
@@ -166,6 +169,8 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
     {
         AddDivider();
         var rows = AddRowContainer();
+
+        AppendPetInfo(rows);
 
         if (_itemDescriptor.Subtype == "Rune")
         {
@@ -658,6 +663,8 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
         AddDivider();
         var rows = AddRowContainer();
 
+        AppendPetInfo(rows);
+
         // ====== Weapon Info ======
         if (_itemDescriptor.EquipmentSlot == Options.Instance.Equipment.WeaponSlot)
         {
@@ -833,6 +840,110 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
             }
         }
         rows.SizeToChildren(true, true);
+    }
+
+    private void AppendPetInfo(RowContainerComponent rows)
+    {
+        if (_itemDescriptor?.Pet is not { } petData)
+        {
+            return;
+        }
+
+        var petDescriptor = petData.Descriptor;
+
+        if (petDescriptor == null
+            && string.IsNullOrWhiteSpace(petData.PetNameOverride)
+            && !petData.SummonOnEquip
+            && !petData.DespawnOnUnequip
+            && !petData.BindOnEquip)
+        {
+            return;
+        }
+
+        var displayName = !string.IsNullOrWhiteSpace(petData.PetNameOverride)
+            ? petData.PetNameOverride
+            : petDescriptor?.Name ?? Strings.General.None;
+
+        rows.AddKeyValueRow(Strings.ItemDescription.PetSummons, displayName);
+
+        if (petDescriptor != null)
+        {
+            rows.AddKeyValueRow(Strings.ItemDescription.PetLevel, petDescriptor.Level.ToString());
+            rows.AddKeyValueRow(Strings.ItemDescription.PetExperience, petDescriptor.Experience.ToString());
+
+            if (Globals.PetHub.ActivePet is Pet activePet
+                && activePet.IsOwnedByLocalPlayer
+                && activePet.Descriptor?.Id == petDescriptor.Id)
+            {
+                rows.AddKeyValueRow(Strings.ItemDescription.PetCurrentLevel, activePet.Level.ToString());
+
+                var experienceText = activePet.Experience.ToString("N0", CultureInfo.CurrentCulture);
+                rows.AddKeyValueRow(Strings.ItemDescription.PetCurrentExperience, experienceText);
+
+                var experienceToNext = activePet.ExperienceToNextLevel;
+                var experienceToNextText = experienceToNext >= 0
+                    ? activePet.ExperienceToNextLevel.ToString("N0", CultureInfo.CurrentCulture)
+                    : Strings.ItemDescription.PetMaxLevel.ToString();
+                rows.AddKeyValueRow(Strings.ItemDescription.PetExperienceToNext, experienceToNextText);
+            }
+
+            var vitalCount = Enum.GetValues<Vital>().Length;
+            for (var index = 0; index < vitalCount; index++)
+            {
+                var maxVital = index < petDescriptor.MaxVitals.Length ? petDescriptor.MaxVitals[index] : 0;
+                var regen = index < petDescriptor.VitalRegen.Length ? petDescriptor.VitalRegen[index] : 0;
+
+                if (maxVital == 0 && regen == 0)
+                {
+                    continue;
+                }
+
+                var vitalLabel = Strings.ItemDescription.Vitals.TryGetValue(index, out var vitalName)
+                    ? vitalName.ToString()
+                    : $"{((Vital)index).ToString()}:";
+                rows.AddKeyValueRow(vitalLabel, maxVital.ToString());
+
+                if (regen != 0)
+                {
+                    var regenLabel = Strings.ItemDescription.VitalsRegen.TryGetValue(index, out var regenName)
+                        ? regenName.ToString()
+                        : $"{((Vital)index).ToString()} Regen:";
+                    rows.AddKeyValueRow(regenLabel, regen.ToString());
+                }
+            }
+
+            var statCount = Enum.GetValues<Stat>().Length;
+            for (var index = 0; index < statCount && index < petDescriptor.Stats.Length; index++)
+            {
+                var statValue = petDescriptor.Stats[index];
+
+                var statLabel = Strings.ItemDescription.Stats.TryGetValue(index, out var statName)
+                    ? $"{statName.ToString()}:"
+                    : $"{((Stat)index).ToString()}:";
+
+                rows.AddKeyValueRow(statLabel, statValue.ToString());
+            }
+        }
+
+        if (petData.SummonOnEquip)
+        {
+            rows.AddKeyValueRow(Strings.ItemDescription.PetSummonOnEquip, Strings.ItemDescription.Enabled);
+        }
+
+        if (petData.DespawnOnUnequip)
+        {
+            rows.AddKeyValueRow(Strings.ItemDescription.PetDespawnOnUnequip, Strings.ItemDescription.Enabled);
+        }
+
+        if (petData.BindOnEquip)
+        {
+            rows.AddKeyValueRow(Strings.ItemDescription.PetBindOnEquip, Strings.ItemDescription.Enabled);
+        }
+
+        if (!string.IsNullOrWhiteSpace(petData.PetNameOverride))
+        {
+            rows.AddKeyValueRow(Strings.ItemDescription.PetNameOverride, petData.PetNameOverride);
+        }
     }
     protected void SetupConsumableInfo()
     {

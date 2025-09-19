@@ -1,4 +1,6 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
+using Intersect.Client.Core.Pets;
 using Intersect.Client.Entities;
 using Intersect.Client.Entities.Events;
 using Intersect.Client.Framework.Database;
@@ -10,6 +12,7 @@ using Intersect.Client.Framework.Sys;
 using Intersect.Client.Items;
 using Intersect.Client.Maps;
 using Intersect.Client.Plugins.Interfaces;
+using Intersect.Client.Interface;
 using Intersect.Core;
 using Intersect.Enums;
 using Intersect.Config;
@@ -39,6 +42,12 @@ public static partial class Globals
     //Crucial game variables
 
     internal static readonly List<IClientLifecycleHelper> ClientLifecycleHelpers = [];
+
+    public static event Action<Pet>? PetMetadataChanged;
+
+    public static event Action<Pet>? PetProgressChanged;
+
+    public static PetHub PetHub { get; } = new();
 
     private static GameStates mGameState = GameStates.Intro;
 
@@ -191,6 +200,48 @@ public static partial class Globals
         {
             clientLifecycleHelper.EmitLifecycleChangedState(GameState);
         }
+    }
+
+    public static void NotifyPetMetadataApplied(Pet pet)
+    {
+        if (pet == null)
+        {
+            return;
+        }
+
+        PetMetadataChanged?.Invoke(pet);
+        RefreshEntityWidgets(pet);
+    }
+
+    public static void NotifyPetProgressApplied(Pet pet)
+    {
+        if (pet == null)
+        {
+            return;
+        }
+
+        PetProgressChanged?.Invoke(pet);
+        RefreshEntityWidgets(pet);
+    }
+
+    private static void RefreshEntityWidgets(Entity entity)
+    {
+        if (entity == null)
+        {
+            return;
+        }
+
+        Interface.Interface.EnqueueInGame(
+            gameInterface =>
+            {
+                var targetBox = Me?.TargetBox;
+                if (targetBox?.MyEntity == entity)
+                {
+                    targetBox.SetEntity(entity, entity.Type);
+                    targetBox.ShouldUpdateStatuses = true;
+                }
+            }
+        );
     }
 
     internal static void OnGameUpdate(TimeSpan deltaTime)

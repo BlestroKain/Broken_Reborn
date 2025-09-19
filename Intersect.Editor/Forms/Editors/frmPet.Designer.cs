@@ -1,439 +1,383 @@
+using System;
+using System.Drawing;
+using System.Windows.Forms;
 using DarkUI.Controls;
 
 namespace Intersect.Editor.Forms.Editors
 {
     partial class FrmPet
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
+        private System.ComponentModel.IContainer components;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
+            if (disposing && components != null)
             {
                 components.Dispose();
             }
+
             base.Dispose(disposing);
         }
 
-        #region Windows Form Designer generated code
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            var resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmPet));
             toolStrip = new DarkToolStrip();
-            toolStripItemNew = new System.Windows.Forms.ToolStripButton();
-            toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            toolStripItemDelete = new System.Windows.Forms.ToolStripButton();
-            toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            btnAlphabetical = new System.Windows.Forms.ToolStripButton();
-            toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
-            toolStripItemCopy = new System.Windows.Forms.ToolStripButton();
-            toolStripItemPaste = new System.Windows.Forms.ToolStripButton();
-            toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            toolStripItemUndo = new System.Windows.Forms.ToolStripButton();
+            toolStripItemNew = new ToolStripButton();
+            toolStripSeparator1 = new ToolStripSeparator();
+            toolStripItemDelete = new ToolStripButton();
+            toolStripSeparator2 = new ToolStripSeparator();
+            btnAlphabetical = new ToolStripButton();
+            toolStripSeparator4 = new ToolStripSeparator();
+            toolStripItemCopy = new ToolStripButton();
+            toolStripItemPaste = new ToolStripButton();
+            toolStripSeparator3 = new ToolStripSeparator();
+            toolStripItemUndo = new ToolStripButton();
             grpPets = new DarkGroupBox();
             btnClearSearch = new DarkButton();
             txtSearch = new DarkTextBox();
             lstGameObjects = new Intersect.Editor.Forms.Controls.GameObjectList();
-            pnlContainer = new System.Windows.Forms.Panel();
-            grpImmunities = new DarkGroupBox();
-            flpImmunities = new System.Windows.Forms.FlowLayoutPanel();
-            lblTenacity = new System.Windows.Forms.Label();
-            nudTenacity = new DarkNumericUpDown();
-            grpSpells = new DarkGroupBox();
-            cmbSpell = new DarkComboBox();
-            btnRemoveSpell = new DarkButton();
-            btnAddSpell = new DarkButton();
-            lstSpells = new System.Windows.Forms.ListBox();
-            grpCombat = new DarkGroupBox();
-            nudAttackSpeedValue = new DarkNumericUpDown();
-            lblAttackSpeedValue = new System.Windows.Forms.Label();
-            cmbAttackSpeedModifier = new DarkComboBox();
-            lblAttackSpeedModifier = new System.Windows.Forms.Label();
-            lblCritMultiplier = new System.Windows.Forms.Label();
-            nudCritMultiplier = new DarkNumericUpDown();
-            lblCritChance = new System.Windows.Forms.Label();
-            nudCritChance = new DarkNumericUpDown();
-            lblDamage = new System.Windows.Forms.Label();
-            nudDamage = new DarkNumericUpDown();
-            lblScaling = new System.Windows.Forms.Label();
-            nudScaling = new DarkNumericUpDown();
-            lblScalingStat = new System.Windows.Forms.Label();
-            cmbScalingStat = new DarkComboBox();
-            lblDamageType = new System.Windows.Forms.Label();
-            cmbDamageType = new DarkComboBox();
-            lblAttackAnimation = new System.Windows.Forms.Label();
-            cmbAttackAnimation = new DarkComboBox();
-            lblDeathAnimation = new System.Windows.Forms.Label();
+            pnlContainer = new Panel();
+            grpAnimation = new DarkGroupBox();
+            lblDeathAnimation = new Label();
             cmbDeathAnimation = new DarkComboBox();
-            lblIdleAnimation = new System.Windows.Forms.Label();
-            cmbIdleAnimation = new DarkComboBox();
-            grpVitals = new DarkGroupBox();
-            flpVitals = new System.Windows.Forms.FlowLayoutPanel();
-            flpVitalRegen = new System.Windows.Forms.FlowLayoutPanel();
-            lblVitals = new System.Windows.Forms.Label();
-            lblVitalRegen = new System.Windows.Forms.Label();
+            grpImmunities = new DarkGroupBox();
+            lblTenacity = new Label();
+            nudTenacity = new DarkNumericUpDown();
+            chkTaunt = new DarkCheckBox();
+            chkSleep = new DarkCheckBox();
+            chkTransform = new DarkCheckBox();
+            chkBlind = new DarkCheckBox();
+            chkSnare = new DarkCheckBox();
+            chkStun = new DarkCheckBox();
+            chkSilence = new DarkCheckBox();
+            chkKnockback = new DarkCheckBox();
+            grpCombat = new DarkGroupBox();
+            lblAttackSpeedValue = new Label();
+            nudAttackSpeedValue = new DarkNumericUpDown();
+            lblAttackSpeedModifier = new Label();
+            cmbAttackSpeedModifier = new DarkComboBox();
+            lblCritMultiplier = new Label();
+            nudCritMultiplier = new DarkNumericUpDown();
+            lblCritChance = new Label();
+            nudCritChance = new DarkNumericUpDown();
+            lblDamage = new Label();
+            nudDamage = new DarkNumericUpDown();
+            lblScaling = new Label();
+            nudScaling = new DarkNumericUpDown();
+            lblScalingStat = new Label();
+            cmbScalingStat = new DarkComboBox();
+            lblDamageType = new Label();
+            cmbDamageType = new DarkComboBox();
+            lblAttackAnimation = new Label();
+            cmbAttackAnimation = new DarkComboBox();
+            grpRegen = new DarkGroupBox();
+            lblManaRegen = new Label();
+            nudMpRegen = new DarkNumericUpDown();
+            lblHpRegen = new Label();
+            nudHpRegen = new DarkNumericUpDown();
             grpStats = new DarkGroupBox();
-            flpStats = new System.Windows.Forms.FlowLayoutPanel();
+            label1 = new Label();
+            nudAgi = new DarkNumericUpDown();
+            lblSpd = new Label();
+            nudSpd = new DarkNumericUpDown();
+            lblMR = new Label();
+            nudMR = new DarkNumericUpDown();
+            lblDef = new Label();
+            nudDef = new DarkNumericUpDown();
+            lblMag = new Label();
+            nudMag = new DarkNumericUpDown();
+            lblStr = new Label();
+            nudStr = new DarkNumericUpDown();
+            lblMana = new Label();
+            nudMana = new DarkNumericUpDown();
+            lblHP = new Label();
+            nudHp = new DarkNumericUpDown();
             grpGeneral = new DarkGroupBox();
-            lblExperience = new System.Windows.Forms.Label();
-            nudExperience = new DarkNumericUpDown();
-            lblLevel = new System.Windows.Forms.Label();
+            lblExp = new Label();
+            nudExp = new DarkNumericUpDown();
+            lblLevel = new Label();
             nudLevel = new DarkNumericUpDown();
-            lblIdleSprite = new System.Windows.Forms.Label();
+            lblPic = new Label();
             cmbSprite = new DarkComboBox();
+            picPet = new PictureBox();
             btnAddFolder = new DarkButton();
-            lblFolder = new System.Windows.Forms.Label();
+            lblFolder = new Label();
             cmbFolder = new DarkComboBox();
-            lblName = new System.Windows.Forms.Label();
+            lblName = new Label();
             txtName = new DarkTextBox();
+            grpSpells = new DarkGroupBox();
+            btnRemove = new DarkButton();
+            btnAdd = new DarkButton();
+            cmbSpell = new DarkComboBox();
+            lstSpells = new ListBox();
             btnSave = new DarkButton();
             btnCancel = new DarkButton();
             toolStrip.SuspendLayout();
             grpPets.SuspendLayout();
             pnlContainer.SuspendLayout();
+            grpAnimation.SuspendLayout();
             grpImmunities.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)nudTenacity).BeginInit();
-            grpSpells.SuspendLayout();
             grpCombat.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)nudAttackSpeedValue).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudCritMultiplier).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudCritChance).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudDamage).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudScaling).BeginInit();
-            grpVitals.SuspendLayout();
+            grpRegen.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)nudMpRegen).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudHpRegen).BeginInit();
             grpStats.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)nudAgi).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudSpd).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudMR).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudDef).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudMag).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudStr).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudMana).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudHp).BeginInit();
             grpGeneral.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)nudExperience).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudExp).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudLevel).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)picPet).BeginInit();
+            grpSpells.SuspendLayout();
             SuspendLayout();
-            // 
+
             // toolStrip
-            // 
             toolStrip.AutoSize = false;
-            toolStrip.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
-            toolStrip.ForeColor = System.Drawing.Color.FromArgb(220, 220, 220);
-            toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripItemNew, toolStripSeparator1, toolStripItemDelete, toolStripSeparator2, btnAlphabetical, toolStripSeparator4, toolStripItemCopy, toolStripItemPaste, toolStripSeparator3, toolStripItemUndo });
-            toolStrip.Location = new System.Drawing.Point(0, 0);
+            toolStrip.BackColor = Color.FromArgb(45, 45, 48);
+            toolStrip.Items.AddRange(new ToolStripItem[]
+            {
+                toolStripItemNew,
+                toolStripSeparator1,
+                toolStripItemDelete,
+                toolStripSeparator2,
+                btnAlphabetical,
+                toolStripSeparator4,
+                toolStripItemCopy,
+                toolStripItemPaste,
+                toolStripSeparator3,
+                toolStripItemUndo
+            });
+            toolStrip.Location = new Point(0, 0);
             toolStrip.Name = "toolStrip";
-            toolStrip.Padding = new System.Windows.Forms.Padding(6, 0, 1, 0);
-            toolStrip.Size = new System.Drawing.Size(1244, 29);
+            toolStrip.Padding = new Padding(6, 0, 1, 0);
+            toolStrip.Size = new Size(1000, 30);
             toolStrip.TabIndex = 0;
-            toolStrip.Text = "toolStrip1";
-            // 
+
             // toolStripItemNew
-            // 
-            toolStripItemNew.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            toolStripItemNew.ForeColor = System.Drawing.Color.FromArgb(220, 220, 220);
-            toolStripItemNew.Image = (System.Drawing.Image)resources.GetObject("toolStripItemNew.Image");
-            toolStripItemNew.ImageTransparentColor = System.Drawing.Color.Magenta;
+            toolStripItemNew.DisplayStyle = ToolStripItemDisplayStyle.Image;
             toolStripItemNew.Name = "toolStripItemNew";
-            toolStripItemNew.Size = new System.Drawing.Size(23, 26);
+            toolStripItemNew.Size = new Size(24, 27);
             toolStripItemNew.Text = "New";
             toolStripItemNew.Click += toolStripItemNew_Click;
-            // 
-            // toolStripSeparator1
-            // 
-            toolStripSeparator1.ForeColor = System.Drawing.Color.FromArgb(220, 220, 220);
-            toolStripSeparator1.Margin = new System.Windows.Forms.Padding(0, 0, 2, 0);
-            toolStripSeparator1.Name = "toolStripSeparator1";
-            toolStripSeparator1.Size = new System.Drawing.Size(6, 29);
-            // 
+
             // toolStripItemDelete
-            // 
-            toolStripItemDelete.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            toolStripItemDelete.Enabled = false;
-            toolStripItemDelete.ForeColor = System.Drawing.Color.FromArgb(220, 220, 220);
-            toolStripItemDelete.Image = (System.Drawing.Image)resources.GetObject("toolStripItemDelete.Image");
-            toolStripItemDelete.ImageTransparentColor = System.Drawing.Color.Magenta;
+            toolStripItemDelete.DisplayStyle = ToolStripItemDisplayStyle.Image;
             toolStripItemDelete.Name = "toolStripItemDelete";
-            toolStripItemDelete.Size = new System.Drawing.Size(23, 26);
+            toolStripItemDelete.Size = new Size(24, 27);
             toolStripItemDelete.Text = "Delete";
             toolStripItemDelete.Click += toolStripItemDelete_Click;
-            // 
-            // toolStripSeparator2
-            // 
-            toolStripSeparator2.ForeColor = System.Drawing.Color.FromArgb(220, 220, 220);
-            toolStripSeparator2.Margin = new System.Windows.Forms.Padding(0, 0, 2, 0);
-            toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new System.Drawing.Size(6, 29);
-            // 
+
             // btnAlphabetical
-            // 
-            btnAlphabetical.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            btnAlphabetical.ForeColor = System.Drawing.Color.FromArgb(220, 220, 220);
-            btnAlphabetical.Image = (System.Drawing.Image)resources.GetObject("btnAlphabetical.Image");
-            btnAlphabetical.ImageTransparentColor = System.Drawing.Color.Magenta;
+            btnAlphabetical.DisplayStyle = ToolStripItemDisplayStyle.Image;
             btnAlphabetical.Name = "btnAlphabetical";
-            btnAlphabetical.Size = new System.Drawing.Size(23, 26);
-            btnAlphabetical.Text = "Order Alphabetically";
+            btnAlphabetical.Size = new Size(24, 27);
+            btnAlphabetical.Text = "Sort";
             btnAlphabetical.Click += btnAlphabetical_Click;
-            // 
-            // toolStripSeparator4
-            // 
-            toolStripSeparator4.ForeColor = System.Drawing.Color.FromArgb(220, 220, 220);
-            toolStripSeparator4.Margin = new System.Windows.Forms.Padding(0, 0, 2, 0);
-            toolStripSeparator4.Name = "toolStripSeparator4";
-            toolStripSeparator4.Size = new System.Drawing.Size(6, 29);
-            // 
+
             // toolStripItemCopy
-            // 
-            toolStripItemCopy.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            toolStripItemCopy.Enabled = false;
-            toolStripItemCopy.ForeColor = System.Drawing.Color.FromArgb(220, 220, 220);
-            toolStripItemCopy.Image = (System.Drawing.Image)resources.GetObject("toolStripItemCopy.Image");
-            toolStripItemCopy.ImageTransparentColor = System.Drawing.Color.Magenta;
+            toolStripItemCopy.DisplayStyle = ToolStripItemDisplayStyle.Image;
             toolStripItemCopy.Name = "toolStripItemCopy";
-            toolStripItemCopy.Size = new System.Drawing.Size(23, 26);
+            toolStripItemCopy.Size = new Size(24, 27);
             toolStripItemCopy.Text = "Copy";
             toolStripItemCopy.Click += toolStripItemCopy_Click;
-            // 
+
             // toolStripItemPaste
-            // 
-            toolStripItemPaste.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            toolStripItemPaste.Enabled = false;
-            toolStripItemPaste.ForeColor = System.Drawing.Color.FromArgb(220, 220, 220);
-            toolStripItemPaste.Image = (System.Drawing.Image)resources.GetObject("toolStripItemPaste.Image");
-            toolStripItemPaste.ImageTransparentColor = System.Drawing.Color.Magenta;
+            toolStripItemPaste.DisplayStyle = ToolStripItemDisplayStyle.Image;
             toolStripItemPaste.Name = "toolStripItemPaste";
-            toolStripItemPaste.Size = new System.Drawing.Size(23, 26);
+            toolStripItemPaste.Size = new Size(24, 27);
             toolStripItemPaste.Text = "Paste";
             toolStripItemPaste.Click += toolStripItemPaste_Click;
-            // 
-            // toolStripSeparator3
-            // 
-            toolStripSeparator3.ForeColor = System.Drawing.Color.FromArgb(220, 220, 220);
-            toolStripSeparator3.Margin = new System.Windows.Forms.Padding(0, 0, 2, 0);
-            toolStripSeparator3.Name = "toolStripSeparator3";
-            toolStripSeparator3.Size = new System.Drawing.Size(6, 29);
-            // 
+
             // toolStripItemUndo
-            // 
-            toolStripItemUndo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            toolStripItemUndo.Enabled = false;
-            toolStripItemUndo.ForeColor = System.Drawing.Color.FromArgb(220, 220, 220);
-            toolStripItemUndo.Image = (System.Drawing.Image)resources.GetObject("toolStripItemUndo.Image");
-            toolStripItemUndo.ImageTransparentColor = System.Drawing.Color.Magenta;
+            toolStripItemUndo.DisplayStyle = ToolStripItemDisplayStyle.Image;
             toolStripItemUndo.Name = "toolStripItemUndo";
-            toolStripItemUndo.Size = new System.Drawing.Size(23, 26);
+            toolStripItemUndo.Size = new Size(24, 27);
             toolStripItemUndo.Text = "Undo";
             toolStripItemUndo.Click += toolStripItemUndo_Click;
-            // 
+
             // grpPets
-            // 
-            grpPets.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-            grpPets.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
-            grpPets.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+            grpPets.BackColor = Color.FromArgb(45, 45, 48);
+            grpPets.BorderColor = Color.FromArgb(90, 90, 90);
             grpPets.Controls.Add(btnClearSearch);
             grpPets.Controls.Add(txtSearch);
             grpPets.Controls.Add(lstGameObjects);
-            grpPets.ForeColor = System.Drawing.Color.Gainsboro;
-            grpPets.Location = new System.Drawing.Point(12, 44);
-            grpPets.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            grpPets.ForeColor = Color.Gainsboro;
+            grpPets.Location = new Point(12, 42);
             grpPets.Name = "grpPets";
-            grpPets.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            grpPets.Size = new System.Drawing.Size(300, 653);
+            grpPets.Size = new Size(260, 640);
             grpPets.TabIndex = 1;
             grpPets.TabStop = false;
             grpPets.Text = "Pets";
-            // 
+
             // btnClearSearch
-            // 
-            btnClearSearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            btnClearSearch.Location = new System.Drawing.Point(236, 22);
-            btnClearSearch.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            btnClearSearch.Location = new Point(216, 20);
             btnClearSearch.Name = "btnClearSearch";
-            btnClearSearch.Padding = new System.Windows.Forms.Padding(6);
-            btnClearSearch.Size = new System.Drawing.Size(60, 27);
+            btnClearSearch.Padding = new Padding(6);
+            btnClearSearch.Size = new Size(32, 26);
             btnClearSearch.TabIndex = 2;
             btnClearSearch.Text = "X";
             btnClearSearch.Click += btnClearSearch_Click;
-            // 
+
             // txtSearch
-            // 
-            txtSearch.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            txtSearch.Location = new System.Drawing.Point(9, 24);
-            txtSearch.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            txtSearch.Location = new Point(8, 21);
             txtSearch.Name = "txtSearch";
-            txtSearch.Size = new System.Drawing.Size(219, 23);
+            txtSearch.Size = new Size(202, 22);
             txtSearch.TabIndex = 1;
+            txtSearch.Text = "Search...";
             txtSearch.TextChanged += txtSearch_TextChanged;
             txtSearch.Enter += txtSearch_Enter;
             txtSearch.Leave += txtSearch_Leave;
-            // 
+
             // lstGameObjects
-            // 
-            lstGameObjects.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            lstGameObjects.Location = new System.Drawing.Point(9, 58);
-            lstGameObjects.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            lstGameObjects.BackColor = Color.FromArgb(60, 63, 65);
+            lstGameObjects.BorderStyle = BorderStyle.None;
+            lstGameObjects.ForeColor = Color.Gainsboro;
+            lstGameObjects.Location = new Point(8, 55);
             lstGameObjects.Name = "lstGameObjects";
-            lstGameObjects.Size = new System.Drawing.Size(279, 582);
+            lstGameObjects.Size = new Size(240, 570);
             lstGameObjects.TabIndex = 0;
-            // 
+
             // pnlContainer
-            // 
-            pnlContainer.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            pnlContainer.AutoScroll = true;
+            pnlContainer.Controls.Add(grpAnimation);
             pnlContainer.Controls.Add(grpImmunities);
-            pnlContainer.Controls.Add(grpSpells);
             pnlContainer.Controls.Add(grpCombat);
-            pnlContainer.Controls.Add(grpVitals);
+            pnlContainer.Controls.Add(grpRegen);
             pnlContainer.Controls.Add(grpStats);
             pnlContainer.Controls.Add(grpGeneral);
-            pnlContainer.Location = new System.Drawing.Point(320, 44);
-            pnlContainer.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            pnlContainer.Controls.Add(grpSpells);
+            pnlContainer.Location = new Point(280, 42);
             pnlContainer.Name = "pnlContainer";
-            pnlContainer.Size = new System.Drawing.Size(912, 592);
+            pnlContainer.Size = new Size(700, 620);
             pnlContainer.TabIndex = 2;
-            // 
+
+            // grpAnimation
+            grpAnimation.BackColor = Color.FromArgb(45, 45, 48);
+            grpAnimation.BorderColor = Color.FromArgb(90, 90, 90);
+            grpAnimation.Controls.Add(lblDeathAnimation);
+            grpAnimation.Controls.Add(cmbDeathAnimation);
+            grpAnimation.ForeColor = Color.Gainsboro;
+            grpAnimation.Location = new Point(8, 520);
+            grpAnimation.Name = "grpAnimation";
+            grpAnimation.Size = new Size(320, 80);
+            grpAnimation.TabIndex = 5;
+            grpAnimation.TabStop = false;
+            grpAnimation.Text = "Animations";
+
+            lblDeathAnimation.AutoSize = true;
+            lblDeathAnimation.Location = new Point(12, 28);
+            lblDeathAnimation.Name = "lblDeathAnimation";
+            lblDeathAnimation.Size = new Size(96, 16);
+            lblDeathAnimation.Text = "Death Animation";
+
+            cmbDeathAnimation.Location = new Point(15, 47);
+            cmbDeathAnimation.Name = "cmbDeathAnimation";
+            cmbDeathAnimation.Size = new Size(280, 24);
+            cmbDeathAnimation.TabIndex = 1;
+            cmbDeathAnimation.SelectedIndexChanged += cmbDeathAnimation_SelectedIndexChanged;
+
             // grpImmunities
-            // 
-            grpImmunities.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
-            grpImmunities.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
-            grpImmunities.Controls.Add(flpImmunities);
+            grpImmunities.BackColor = Color.FromArgb(45, 45, 48);
+            grpImmunities.BorderColor = Color.FromArgb(90, 90, 90);
             grpImmunities.Controls.Add(lblTenacity);
             grpImmunities.Controls.Add(nudTenacity);
-            grpImmunities.ForeColor = System.Drawing.Color.Gainsboro;
-            grpImmunities.Location = new System.Drawing.Point(458, 302);
-            grpImmunities.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            grpImmunities.Controls.Add(chkTaunt);
+            grpImmunities.Controls.Add(chkSleep);
+            grpImmunities.Controls.Add(chkTransform);
+            grpImmunities.Controls.Add(chkBlind);
+            grpImmunities.Controls.Add(chkSnare);
+            grpImmunities.Controls.Add(chkStun);
+            grpImmunities.Controls.Add(chkSilence);
+            grpImmunities.Controls.Add(chkKnockback);
+            grpImmunities.ForeColor = Color.Gainsboro;
+            grpImmunities.Location = new Point(340, 360);
             grpImmunities.Name = "grpImmunities";
-            grpImmunities.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            grpImmunities.Size = new System.Drawing.Size(440, 179);
-            grpImmunities.TabIndex = 5;
+            grpImmunities.Size = new Size(340, 240);
+            grpImmunities.TabIndex = 4;
             grpImmunities.TabStop = false;
             grpImmunities.Text = "Immunities";
-            // 
-            // flpImmunities
-            // 
-            flpImmunities.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            flpImmunities.AutoScroll = true;
-            flpImmunities.Location = new System.Drawing.Point(10, 22);
-            flpImmunities.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            flpImmunities.Name = "flpImmunities";
-            flpImmunities.Size = new System.Drawing.Size(422, 108);
-            flpImmunities.TabIndex = 1;
-            // 
-            // lblTenacity
-            // 
-            lblTenacity.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+
             lblTenacity.AutoSize = true;
-            lblTenacity.Location = new System.Drawing.Point(7, 139);
-            lblTenacity.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            lblTenacity.Location = new Point(15, 32);
             lblTenacity.Name = "lblTenacity";
-            lblTenacity.Size = new System.Drawing.Size(59, 15);
-            lblTenacity.TabIndex = 2;
+            lblTenacity.Size = new Size(61, 16);
             lblTenacity.Text = "Tenacity";
-            // 
-            // nudTenacity
-            // 
-            nudTenacity.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            nudTenacity.DecimalPlaces = 2;
-            nudTenacity.Location = new System.Drawing.Point(10, 157);
-            nudTenacity.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            nudTenacity.Maximum = new decimal(new int[] { 100, 0, 0, 0 });
+
+            nudTenacity.Location = new Point(18, 52);
+            nudTenacity.Maximum = 100;
             nudTenacity.Name = "nudTenacity";
-            nudTenacity.Size = new System.Drawing.Size(154, 23);
+            nudTenacity.Size = new Size(90, 22);
             nudTenacity.TabIndex = 0;
             nudTenacity.ValueChanged += nudTenacity_ValueChanged;
-            // 
-            // grpSpells
-            // 
-            grpSpells.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
-            grpSpells.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
-            grpSpells.Controls.Add(cmbSpell);
-            grpSpells.Controls.Add(btnRemoveSpell);
-            grpSpells.Controls.Add(btnAddSpell);
-            grpSpells.Controls.Add(lstSpells);
-            grpSpells.ForeColor = System.Drawing.Color.Gainsboro;
-            grpSpells.Location = new System.Drawing.Point(458, 16);
-            grpSpells.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            grpSpells.Name = "grpSpells";
-            grpSpells.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            grpSpells.Size = new System.Drawing.Size(440, 272);
-            grpSpells.TabIndex = 4;
-            grpSpells.TabStop = false;
-            grpSpells.Text = "Spells";
-            // 
-            // cmbSpell
-            // 
-            cmbSpell.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            cmbSpell.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            cmbSpell.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            cmbSpell.FormattingEnabled = true;
-            cmbSpell.Location = new System.Drawing.Point(10, 209);
-            cmbSpell.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            cmbSpell.Name = "cmbSpell";
-            cmbSpell.Size = new System.Drawing.Size(420, 24);
-            cmbSpell.TabIndex = 3;
-            cmbSpell.SelectedIndexChanged += cmbSpell_SelectedIndexChanged;
-            // 
-            // btnRemoveSpell
-            // 
-            btnRemoveSpell.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            btnRemoveSpell.Location = new System.Drawing.Point(340, 237);
-            btnRemoveSpell.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            btnRemoveSpell.Name = "btnRemoveSpell";
-            btnRemoveSpell.Padding = new System.Windows.Forms.Padding(6);
-            btnRemoveSpell.Size = new System.Drawing.Size(90, 27);
-            btnRemoveSpell.TabIndex = 2;
-            btnRemoveSpell.Text = "Remove";
-            btnRemoveSpell.Click += btnRemoveSpell_Click;
-            // 
-            // btnAddSpell
-            // 
-            btnAddSpell.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            btnAddSpell.Location = new System.Drawing.Point(10, 237);
-            btnAddSpell.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            btnAddSpell.Name = "btnAddSpell";
-            btnAddSpell.Padding = new System.Windows.Forms.Padding(6);
-            btnAddSpell.Size = new System.Drawing.Size(90, 27);
-            btnAddSpell.TabIndex = 1;
-            btnAddSpell.Text = "Add";
-            btnAddSpell.Click += btnAddSpell_Click;
-            // 
-            // lstSpells
-            // 
-            lstSpells.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            lstSpells.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            lstSpells.FormattingEnabled = true;
-            lstSpells.ItemHeight = 15;
-            lstSpells.Location = new System.Drawing.Point(10, 22);
-            lstSpells.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            lstSpells.Name = "lstSpells";
-            lstSpells.Size = new System.Drawing.Size(420, 182);
-            lstSpells.TabIndex = 0;
-            lstSpells.SelectedIndexChanged += lstSpells_SelectedIndexChanged;
-            // 
+
+            chkKnockback.Location = new Point(18, 88);
+            chkKnockback.Name = "chkKnockback";
+            chkKnockback.Size = new Size(120, 20);
+            chkKnockback.Text = "Knockback";
+            chkKnockback.CheckedChanged += chkKnockback_CheckedChanged;
+
+            chkSilence.Location = new Point(180, 88);
+            chkSilence.Name = "chkSilence";
+            chkSilence.Size = new Size(120, 20);
+            chkSilence.Text = "Silence";
+            chkSilence.CheckedChanged += chkSilence_CheckedChanged;
+
+            chkStun.Location = new Point(18, 116);
+            chkStun.Name = "chkStun";
+            chkStun.Size = new Size(120, 20);
+            chkStun.Text = "Stun";
+            chkStun.CheckedChanged += chkStun_CheckedChanged;
+
+            chkSnare.Location = new Point(180, 116);
+            chkSnare.Name = "chkSnare";
+            chkSnare.Size = new Size(120, 20);
+            chkSnare.Text = "Snare";
+            chkSnare.CheckedChanged += chkSnare_CheckedChanged;
+
+            chkBlind.Location = new Point(18, 144);
+            chkBlind.Name = "chkBlind";
+            chkBlind.Size = new Size(120, 20);
+            chkBlind.Text = "Blind";
+            chkBlind.CheckedChanged += chkBlind_CheckedChanged;
+
+            chkTransform.Location = new Point(180, 144);
+            chkTransform.Name = "chkTransform";
+            chkTransform.Size = new Size(120, 20);
+            chkTransform.Text = "Transform";
+            chkTransform.CheckedChanged += chkTransform_CheckedChanged;
+
+            chkSleep.Location = new Point(18, 172);
+            chkSleep.Name = "chkSleep";
+            chkSleep.Size = new Size(120, 20);
+            chkSleep.Text = "Sleep";
+            chkSleep.CheckedChanged += chkSleep_CheckedChanged;
+
+            chkTaunt.Location = new Point(180, 172);
+            chkTaunt.Name = "chkTaunt";
+            chkTaunt.Size = new Size(120, 20);
+            chkTaunt.Text = "Taunt";
+            chkTaunt.CheckedChanged += chkTaunt_CheckedChanged;
+
             // grpCombat
-            // 
-            grpCombat.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
-            grpCombat.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
-            grpCombat.Controls.Add(nudAttackSpeedValue);
+            grpCombat.BackColor = Color.FromArgb(45, 45, 48);
+            grpCombat.BorderColor = Color.FromArgb(90, 90, 90);
             grpCombat.Controls.Add(lblAttackSpeedValue);
-            grpCombat.Controls.Add(cmbAttackSpeedModifier);
+            grpCombat.Controls.Add(nudAttackSpeedValue);
             grpCombat.Controls.Add(lblAttackSpeedModifier);
+            grpCombat.Controls.Add(cmbAttackSpeedModifier);
             grpCombat.Controls.Add(lblCritMultiplier);
             grpCombat.Controls.Add(nudCritMultiplier);
             grpCombat.Controls.Add(lblCritChance);
@@ -448,540 +392,494 @@ namespace Intersect.Editor.Forms.Editors
             grpCombat.Controls.Add(cmbDamageType);
             grpCombat.Controls.Add(lblAttackAnimation);
             grpCombat.Controls.Add(cmbAttackAnimation);
-            grpCombat.Controls.Add(lblDeathAnimation);
-            grpCombat.Controls.Add(cmbDeathAnimation);
-            grpCombat.Controls.Add(lblIdleAnimation);
-            grpCombat.Controls.Add(cmbIdleAnimation);
-            grpCombat.ForeColor = System.Drawing.Color.Gainsboro;
-            grpCombat.Location = new System.Drawing.Point(10, 330);
-            grpCombat.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            grpCombat.ForeColor = Color.Gainsboro;
+            grpCombat.Location = new Point(340, 8);
             grpCombat.Name = "grpCombat";
-            grpCombat.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            grpCombat.Size = new System.Drawing.Size(440, 260);
+            grpCombat.Size = new Size(340, 340);
             grpCombat.TabIndex = 3;
             grpCombat.TabStop = false;
             grpCombat.Text = "Combat";
-            // 
-            // nudAttackSpeedValue
-            // 
-            nudAttackSpeedValue.Location = new System.Drawing.Point(221, 234);
-            nudAttackSpeedValue.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            nudAttackSpeedValue.Maximum = new decimal(new int[] { 100000, 0, 0, 0 });
-            nudAttackSpeedValue.Name = "nudAttackSpeedValue";
-            nudAttackSpeedValue.Size = new System.Drawing.Size(203, 23);
-            nudAttackSpeedValue.TabIndex = 21;
-            nudAttackSpeedValue.ValueChanged += nudAttackSpeedValue_ValueChanged;
-            // 
-            // lblAttackSpeedValue
-            // 
-            lblAttackSpeedValue.AutoSize = true;
-            lblAttackSpeedValue.Location = new System.Drawing.Point(218, 216);
-            lblAttackSpeedValue.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            lblAttackSpeedValue.Name = "lblAttackSpeedValue";
-            lblAttackSpeedValue.Size = new System.Drawing.Size(36, 15);
-            lblAttackSpeedValue.TabIndex = 20;
-            lblAttackSpeedValue.Text = "Value";
-            // 
-            // cmbAttackSpeedModifier
-            // 
-            cmbAttackSpeedModifier.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            cmbAttackSpeedModifier.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            cmbAttackSpeedModifier.FormattingEnabled = true;
-            cmbAttackSpeedModifier.Location = new System.Drawing.Point(10, 234);
-            cmbAttackSpeedModifier.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            cmbAttackSpeedModifier.Name = "cmbAttackSpeedModifier";
-            cmbAttackSpeedModifier.Size = new System.Drawing.Size(203, 24);
-            cmbAttackSpeedModifier.TabIndex = 19;
-            cmbAttackSpeedModifier.SelectedIndexChanged += cmbAttackSpeedModifier_SelectedIndexChanged;
-            // 
-            // lblAttackSpeedModifier
-            // 
-            lblAttackSpeedModifier.AutoSize = true;
-            lblAttackSpeedModifier.Location = new System.Drawing.Point(7, 216);
-            lblAttackSpeedModifier.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            lblAttackSpeedModifier.Name = "lblAttackSpeedModifier";
-            lblAttackSpeedModifier.Size = new System.Drawing.Size(57, 15);
-            lblAttackSpeedModifier.TabIndex = 18;
-            lblAttackSpeedModifier.Text = "Modifier";
-            // 
-            // lblCritMultiplier
-            // 
-            lblCritMultiplier.AutoSize = true;
-            lblCritMultiplier.Location = new System.Drawing.Point(218, 165);
-            lblCritMultiplier.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            lblCritMultiplier.Name = "lblCritMultiplier";
-            lblCritMultiplier.Size = new System.Drawing.Size(83, 15);
-            lblCritMultiplier.TabIndex = 17;
-            lblCritMultiplier.Text = "Crit Multiplier";
-            // 
-            // nudCritMultiplier
-            // 
-            nudCritMultiplier.DecimalPlaces = 2;
-            nudCritMultiplier.Location = new System.Drawing.Point(221, 183);
-            nudCritMultiplier.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            nudCritMultiplier.Maximum = new decimal(new int[] { 100, 0, 0, 0 });
-            nudCritMultiplier.Minimum = new decimal(new int[] { 1, 0, 0, 65536 });
-            nudCritMultiplier.Name = "nudCritMultiplier";
-            nudCritMultiplier.Size = new System.Drawing.Size(203, 23);
-            nudCritMultiplier.TabIndex = 16;
-            nudCritMultiplier.Value = new decimal(new int[] { 15, 0, 0, 65536 });
-            nudCritMultiplier.ValueChanged += nudCritMultiplier_ValueChanged;
-            // 
-            // lblCritChance
-            // 
-            lblCritChance.AutoSize = true;
-            lblCritChance.Location = new System.Drawing.Point(7, 165);
-            lblCritChance.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            lblCritChance.Name = "lblCritChance";
-            lblCritChance.Size = new System.Drawing.Size(68, 15);
-            lblCritChance.TabIndex = 15;
-            lblCritChance.Text = "Crit Chance";
-            // 
-            // nudCritChance
-            // 
-            nudCritChance.Location = new System.Drawing.Point(10, 183);
-            nudCritChance.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            nudCritChance.Maximum = new decimal(new int[] { 100, 0, 0, 0 });
-            nudCritChance.Name = "nudCritChance";
-            nudCritChance.Size = new System.Drawing.Size(203, 23);
-            nudCritChance.TabIndex = 14;
-            nudCritChance.ValueChanged += nudCritChance_ValueChanged;
-            // 
-            // lblDamage
-            // 
+
             lblDamage.AutoSize = true;
-            lblDamage.Location = new System.Drawing.Point(218, 118);
-            lblDamage.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            lblDamage.Location = new Point(15, 28);
             lblDamage.Name = "lblDamage";
-            lblDamage.Size = new System.Drawing.Size(51, 15);
-            lblDamage.TabIndex = 13;
-            lblDamage.Text = "Damage";
-            // 
-            // nudDamage
-            // 
-            nudDamage.Location = new System.Drawing.Point(221, 136);
-            nudDamage.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            nudDamage.Maximum = new decimal(new int[] { 100000, 0, 0, 0 });
+            lblDamage.Size = new Size(89, 16);
+            lblDamage.Text = "Base Damage";
+
+            nudDamage.Location = new Point(18, 48);
+            nudDamage.Maximum = 10000;
             nudDamage.Name = "nudDamage";
-            nudDamage.Size = new System.Drawing.Size(203, 23);
-            nudDamage.TabIndex = 12;
+            nudDamage.Size = new Size(140, 22);
+            nudDamage.TabIndex = 0;
             nudDamage.ValueChanged += nudDamage_ValueChanged;
-            // 
-            // lblScaling
-            // 
+
+            lblCritChance.AutoSize = true;
+            lblCritChance.Location = new Point(180, 28);
+            lblCritChance.Name = "lblCritChance";
+            lblCritChance.Size = new Size(93, 16);
+            lblCritChance.Text = "Crit Chance %";
+
+            nudCritChance.Location = new Point(183, 48);
+            nudCritChance.Maximum = 100;
+            nudCritChance.Name = "nudCritChance";
+            nudCritChance.Size = new Size(140, 22);
+            nudCritChance.TabIndex = 1;
+            nudCritChance.ValueChanged += nudCritChance_ValueChanged;
+
+            lblCritMultiplier.AutoSize = true;
+            lblCritMultiplier.Location = new Point(15, 80);
+            lblCritMultiplier.Name = "lblCritMultiplier";
+            lblCritMultiplier.Size = new Size(86, 16);
+            lblCritMultiplier.Text = "Crit Mult";
+
+            nudCritMultiplier.DecimalPlaces = 2;
+            nudCritMultiplier.Increment = 0.1M;
+            nudCritMultiplier.Location = new Point(18, 100);
+            nudCritMultiplier.Name = "nudCritMultiplier";
+            nudCritMultiplier.Size = new Size(140, 22);
+            nudCritMultiplier.TabIndex = 2;
+            nudCritMultiplier.ValueChanged += nudCritMultiplier_ValueChanged;
+
             lblScaling.AutoSize = true;
-            lblScaling.Location = new System.Drawing.Point(7, 118);
-            lblScaling.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            lblScaling.Location = new Point(180, 80);
             lblScaling.Name = "lblScaling";
-            lblScaling.Size = new System.Drawing.Size(45, 15);
-            lblScaling.TabIndex = 11;
-            lblScaling.Text = "Scaling";
-            // 
-            // nudScaling
-            // 
-            nudScaling.Location = new System.Drawing.Point(10, 136);
-            nudScaling.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            nudScaling.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
-            nudScaling.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            lblScaling.Size = new Size(92, 16);
+            lblScaling.Text = "Scaling Amt";
+
+            nudScaling.Location = new Point(183, 100);
+            nudScaling.Maximum = 1000;
             nudScaling.Name = "nudScaling";
-            nudScaling.Size = new System.Drawing.Size(203, 23);
-            nudScaling.TabIndex = 10;
-            nudScaling.Value = new decimal(new int[] { 100, 0, 0, 0 });
+            nudScaling.Size = new Size(140, 22);
+            nudScaling.TabIndex = 3;
             nudScaling.ValueChanged += nudScaling_ValueChanged;
-            // 
-            // lblScalingStat
-            // 
+
             lblScalingStat.AutoSize = true;
-            lblScalingStat.Location = new System.Drawing.Point(218, 70);
-            lblScalingStat.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            lblScalingStat.Location = new Point(15, 134);
             lblScalingStat.Name = "lblScalingStat";
-            lblScalingStat.Size = new System.Drawing.Size(70, 15);
-            lblScalingStat.TabIndex = 9;
+            lblScalingStat.Size = new Size(76, 16);
             lblScalingStat.Text = "Scaling Stat";
-            // 
-            // cmbScalingStat
-            // 
-            cmbScalingStat.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            cmbScalingStat.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            cmbScalingStat.FormattingEnabled = true;
-            cmbScalingStat.Location = new System.Drawing.Point(221, 88);
-            cmbScalingStat.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+
+            cmbScalingStat.Location = new Point(18, 154);
             cmbScalingStat.Name = "cmbScalingStat";
-            cmbScalingStat.Size = new System.Drawing.Size(203, 24);
-            cmbScalingStat.TabIndex = 8;
+            cmbScalingStat.Size = new Size(140, 24);
+            cmbScalingStat.TabIndex = 4;
             cmbScalingStat.SelectedIndexChanged += cmbScalingStat_SelectedIndexChanged;
-            // 
-            // lblDamageType
-            // 
+
             lblDamageType.AutoSize = true;
-            lblDamageType.Location = new System.Drawing.Point(7, 70);
-            lblDamageType.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            lblDamageType.Location = new Point(180, 134);
             lblDamageType.Name = "lblDamageType";
-            lblDamageType.Size = new System.Drawing.Size(74, 15);
-            lblDamageType.TabIndex = 7;
+            lblDamageType.Size = new Size(88, 16);
             lblDamageType.Text = "Damage Type";
-            // 
-            // cmbDamageType
-            // 
-            cmbDamageType.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            cmbDamageType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            cmbDamageType.FormattingEnabled = true;
-            cmbDamageType.Location = new System.Drawing.Point(10, 88);
-            cmbDamageType.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+
+            cmbDamageType.Location = new Point(183, 154);
             cmbDamageType.Name = "cmbDamageType";
-            cmbDamageType.Size = new System.Drawing.Size(203, 24);
-            cmbDamageType.TabIndex = 6;
+            cmbDamageType.Size = new Size(140, 24);
+            cmbDamageType.TabIndex = 5;
             cmbDamageType.SelectedIndexChanged += cmbDamageType_SelectedIndexChanged;
-            // 
-            // lblAttackAnimation
-            // 
+
             lblAttackAnimation.AutoSize = true;
-            lblAttackAnimation.Location = new System.Drawing.Point(7, 22);
-            lblAttackAnimation.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            lblAttackAnimation.Location = new Point(15, 190);
             lblAttackAnimation.Name = "lblAttackAnimation";
-            lblAttackAnimation.Size = new System.Drawing.Size(99, 15);
-            lblAttackAnimation.TabIndex = 0;
+            lblAttackAnimation.Size = new Size(104, 16);
             lblAttackAnimation.Text = "Attack Animation";
-            // 
-            // cmbAttackAnimation
-            // 
-            cmbAttackAnimation.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            cmbAttackAnimation.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            cmbAttackAnimation.FormattingEnabled = true;
-            cmbAttackAnimation.Location = new System.Drawing.Point(10, 40);
-            cmbAttackAnimation.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+
+            cmbAttackAnimation.Location = new Point(18, 210);
             cmbAttackAnimation.Name = "cmbAttackAnimation";
-            cmbAttackAnimation.Size = new System.Drawing.Size(203, 24);
-            cmbAttackAnimation.TabIndex = 1;
+            cmbAttackAnimation.Size = new Size(305, 24);
+            cmbAttackAnimation.TabIndex = 6;
             cmbAttackAnimation.SelectedIndexChanged += cmbAttackAnimation_SelectedIndexChanged;
-            // 
-            // lblDeathAnimation
-            // 
-            lblDeathAnimation.AutoSize = true;
-            lblDeathAnimation.Location = new System.Drawing.Point(218, 22);
-            lblDeathAnimation.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            lblDeathAnimation.Name = "lblDeathAnimation";
-            lblDeathAnimation.Size = new System.Drawing.Size(95, 15);
-            lblDeathAnimation.TabIndex = 2;
-            lblDeathAnimation.Text = "Death Animation";
-            // 
-            // cmbDeathAnimation
-            // 
-            cmbDeathAnimation.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            cmbDeathAnimation.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            cmbDeathAnimation.FormattingEnabled = true;
-            cmbDeathAnimation.Location = new System.Drawing.Point(221, 40);
-            cmbDeathAnimation.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            cmbDeathAnimation.Name = "cmbDeathAnimation";
-            cmbDeathAnimation.Size = new System.Drawing.Size(203, 24);
-            cmbDeathAnimation.TabIndex = 3;
-            cmbDeathAnimation.SelectedIndexChanged += cmbDeathAnimation_SelectedIndexChanged;
-            // 
-            // lblIdleAnimation
-            // 
-            lblIdleAnimation.AutoSize = true;
-            lblIdleAnimation.Location = new System.Drawing.Point(7, 118);
-            lblIdleAnimation.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            lblIdleAnimation.Name = "lblIdleAnimation";
-            lblIdleAnimation.Size = new System.Drawing.Size(81, 15);
-            lblIdleAnimation.TabIndex = 4;
-            lblIdleAnimation.Text = "Idle Animation";
-            // 
-            // cmbIdleAnimation
-            // 
-            cmbIdleAnimation.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            cmbIdleAnimation.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            cmbIdleAnimation.FormattingEnabled = true;
-            cmbIdleAnimation.Location = new System.Drawing.Point(10, 136);
-            cmbIdleAnimation.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            cmbIdleAnimation.Name = "cmbIdleAnimation";
-            cmbIdleAnimation.Size = new System.Drawing.Size(203, 24);
-            cmbIdleAnimation.TabIndex = 5;
-            cmbIdleAnimation.SelectedIndexChanged += cmbIdleAnimation_SelectedIndexChanged;
-            // 
-            // grpVitals
-            // 
-            grpVitals.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
-            grpVitals.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
-            grpVitals.Controls.Add(flpVitals);
-            grpVitals.Controls.Add(flpVitalRegen);
-            grpVitals.Controls.Add(lblVitals);
-            grpVitals.Controls.Add(lblVitalRegen);
-            grpVitals.ForeColor = System.Drawing.Color.Gainsboro;
-            grpVitals.Location = new System.Drawing.Point(10, 214);
-            grpVitals.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            grpVitals.Name = "grpVitals";
-            grpVitals.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            grpVitals.Size = new System.Drawing.Size(440, 148);
-            grpVitals.TabIndex = 2;
-            grpVitals.TabStop = false;
-            grpVitals.Text = "Vitals";
-            // 
-            // flpVitals
-            // 
-            flpVitals.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            flpVitals.AutoScroll = true;
-            flpVitals.Location = new System.Drawing.Point(10, 40);
-            flpVitals.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            flpVitals.Name = "flpVitals";
-            flpVitals.Size = new System.Drawing.Size(420, 46);
-            flpVitals.TabIndex = 0;
-            // 
-            // flpVitalRegen
-            // 
-            flpVitalRegen.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            flpVitalRegen.AutoScroll = true;
-            flpVitalRegen.Location = new System.Drawing.Point(10, 106);
-            flpVitalRegen.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            flpVitalRegen.Name = "flpVitalRegen";
-            flpVitalRegen.Size = new System.Drawing.Size(420, 33);
-            flpVitalRegen.TabIndex = 1;
-            // 
-            // lblVitals
-            // 
-            lblVitals.AutoSize = true;
-            lblVitals.Location = new System.Drawing.Point(7, 22);
-            lblVitals.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            lblVitals.Name = "lblVitals";
-            lblVitals.Size = new System.Drawing.Size(36, 15);
-            lblVitals.TabIndex = 2;
-            lblVitals.Text = "Max";
-            // 
-            // lblVitalRegen
-            // 
-            lblVitalRegen.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            lblVitalRegen.AutoSize = true;
-            lblVitalRegen.Location = new System.Drawing.Point(7, 88);
-            lblVitalRegen.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            lblVitalRegen.Name = "lblVitalRegen";
-            lblVitalRegen.Size = new System.Drawing.Size(66, 15);
-            lblVitalRegen.TabIndex = 3;
-            lblVitalRegen.Text = "Regeneration";
-            // 
+
+            lblAttackSpeedModifier.AutoSize = true;
+            lblAttackSpeedModifier.Location = new Point(15, 246);
+            lblAttackSpeedModifier.Name = "lblAttackSpeedModifier";
+            lblAttackSpeedModifier.Size = new Size(121, 16);
+            lblAttackSpeedModifier.Text = "Attack Speed Mod";
+
+            cmbAttackSpeedModifier.Location = new Point(18, 266);
+            cmbAttackSpeedModifier.Name = "cmbAttackSpeedModifier";
+            cmbAttackSpeedModifier.Size = new Size(140, 24);
+            cmbAttackSpeedModifier.TabIndex = 7;
+            cmbAttackSpeedModifier.SelectedIndexChanged += cmbAttackSpeedModifier_SelectedIndexChanged;
+
+            lblAttackSpeedValue.AutoSize = true;
+            lblAttackSpeedValue.Location = new Point(180, 246);
+            lblAttackSpeedValue.Name = "lblAttackSpeedValue";
+            lblAttackSpeedValue.Size = new Size(121, 16);
+            lblAttackSpeedValue.Text = "Attack Speed Value";
+
+            nudAttackSpeedValue.Location = new Point(183, 266);
+            nudAttackSpeedValue.Maximum = 100000;
+            nudAttackSpeedValue.Name = "nudAttackSpeedValue";
+            nudAttackSpeedValue.Size = new Size(140, 22);
+            nudAttackSpeedValue.TabIndex = 8;
+            nudAttackSpeedValue.ValueChanged += nudAttackSpeedValue_ValueChanged;
+
+            // grpRegen
+            grpRegen.BackColor = Color.FromArgb(45, 45, 48);
+            grpRegen.BorderColor = Color.FromArgb(90, 90, 90);
+            grpRegen.Controls.Add(lblManaRegen);
+            grpRegen.Controls.Add(nudMpRegen);
+            grpRegen.Controls.Add(lblHpRegen);
+            grpRegen.Controls.Add(nudHpRegen);
+            grpRegen.ForeColor = Color.Gainsboro;
+            grpRegen.Location = new Point(8, 360);
+            grpRegen.Name = "grpRegen";
+            grpRegen.Size = new Size(320, 120);
+            grpRegen.TabIndex = 2;
+            grpRegen.TabStop = false;
+            grpRegen.Text = "Regen";
+
+            lblHpRegen.AutoSize = true;
+            lblHpRegen.Location = new Point(15, 30);
+            lblHpRegen.Name = "lblHpRegen";
+            lblHpRegen.Size = new Size(64, 16);
+            lblHpRegen.Text = "HP Regen";
+
+            nudHpRegen.Location = new Point(18, 50);
+            nudHpRegen.Maximum = 1000;
+            nudHpRegen.Name = "nudHpRegen";
+            nudHpRegen.Size = new Size(120, 22);
+            nudHpRegen.TabIndex = 0;
+            nudHpRegen.ValueChanged += nudHpRegen_ValueChanged;
+
+            lblManaRegen.AutoSize = true;
+            lblManaRegen.Location = new Point(170, 30);
+            lblManaRegen.Name = "lblManaRegen";
+            lblManaRegen.Size = new Size(79, 16);
+            lblManaRegen.Text = "Mana Regen";
+
+            nudMpRegen.Location = new Point(173, 50);
+            nudMpRegen.Maximum = 1000;
+            nudMpRegen.Name = "nudMpRegen";
+            nudMpRegen.Size = new Size(120, 22);
+            nudMpRegen.TabIndex = 1;
+            nudMpRegen.ValueChanged += nudMpRegen_ValueChanged;
+
             // grpStats
-            // 
-            grpStats.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
-            grpStats.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
-            grpStats.Controls.Add(flpStats);
-            grpStats.ForeColor = System.Drawing.Color.Gainsboro;
-            grpStats.Location = new System.Drawing.Point(10, 148);
-            grpStats.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            grpStats.BackColor = Color.FromArgb(45, 45, 48);
+            grpStats.BorderColor = Color.FromArgb(90, 90, 90);
+            grpStats.Controls.Add(label1);
+            grpStats.Controls.Add(nudAgi);
+            grpStats.Controls.Add(lblSpd);
+            grpStats.Controls.Add(nudSpd);
+            grpStats.Controls.Add(lblMR);
+            grpStats.Controls.Add(nudMR);
+            grpStats.Controls.Add(lblDef);
+            grpStats.Controls.Add(nudDef);
+            grpStats.Controls.Add(lblMag);
+            grpStats.Controls.Add(nudMag);
+            grpStats.Controls.Add(lblStr);
+            grpStats.Controls.Add(nudStr);
+            grpStats.Controls.Add(lblMana);
+            grpStats.Controls.Add(nudMana);
+            grpStats.Controls.Add(lblHP);
+            grpStats.Controls.Add(nudHp);
+            grpStats.ForeColor = Color.Gainsboro;
+            grpStats.Location = new Point(8, 160);
             grpStats.Name = "grpStats";
-            grpStats.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            grpStats.Size = new System.Drawing.Size(440, 60);
+            grpStats.Size = new Size(320, 190);
             grpStats.TabIndex = 1;
             grpStats.TabStop = false;
             grpStats.Text = "Stats";
-            // 
-            // flpStats
-            // 
-            flpStats.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            flpStats.AutoScroll = true;
-            flpStats.Location = new System.Drawing.Point(10, 22);
-            flpStats.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            flpStats.Name = "flpStats";
-            flpStats.Size = new System.Drawing.Size(420, 28);
-            flpStats.TabIndex = 0;
-            // 
+
+            lblHP.AutoSize = true;
+            lblHP.Location = new Point(15, 30);
+            lblHP.Name = "lblHP";
+            lblHP.Size = new Size(30, 16);
+            lblHP.Text = "HP";
+
+            nudHp.Location = new Point(18, 50);
+            nudHp.Maximum = 1000000;
+            nudHp.Name = "nudHp";
+            nudHp.Size = new Size(120, 22);
+            nudHp.TabIndex = 0;
+            nudHp.ValueChanged += nudHp_ValueChanged;
+
+            lblMana.AutoSize = true;
+            lblMana.Location = new Point(170, 30);
+            lblMana.Name = "lblMana";
+            lblMana.Size = new Size(40, 16);
+            lblMana.Text = "Mana";
+
+            nudMana.Location = new Point(173, 50);
+            nudMana.Maximum = 1000000;
+            nudMana.Name = "nudMana";
+            nudMana.Size = new Size(120, 22);
+            nudMana.TabIndex = 1;
+            nudMana.ValueChanged += nudMana_ValueChanged;
+
+            lblStr.AutoSize = true;
+            lblStr.Location = new Point(15, 82);
+            lblStr.Name = "lblStr";
+            lblStr.Size = new Size(46, 16);
+            lblStr.Text = "Strength";
+
+            nudStr.Location = new Point(18, 102);
+            nudStr.Maximum = 1000;
+            nudStr.Name = "nudStr";
+            nudStr.Size = new Size(120, 22);
+            nudStr.TabIndex = 2;
+            nudStr.ValueChanged += nudStr_ValueChanged;
+
+            lblMag.AutoSize = true;
+            lblMag.Location = new Point(170, 82);
+            lblMag.Name = "lblMag";
+            lblMag.Size = new Size(41, 16);
+            lblMag.Text = "Magic";
+
+            nudMag.Location = new Point(173, 102);
+            nudMag.Maximum = 1000;
+            nudMag.Name = "nudMag";
+            nudMag.Size = new Size(120, 22);
+            nudMag.TabIndex = 3;
+            nudMag.ValueChanged += nudMag_ValueChanged;
+
+            lblDef.AutoSize = true;
+            lblDef.Location = new Point(15, 134);
+            lblDef.Name = "lblDef";
+            lblDef.Size = new Size(55, 16);
+            lblDef.Text = "Defense";
+
+            nudDef.Location = new Point(18, 154);
+            nudDef.Maximum = 1000;
+            nudDef.Name = "nudDef";
+            nudDef.Size = new Size(120, 22);
+            nudDef.TabIndex = 4;
+            nudDef.ValueChanged += nudDef_ValueChanged;
+
+            lblMR.AutoSize = true;
+            lblMR.Location = new Point(170, 134);
+            lblMR.Name = "lblMR";
+            lblMR.Size = new Size(85, 16);
+            lblMR.Text = "Magic Resist";
+
+            nudMR.Location = new Point(173, 154);
+            nudMR.Maximum = 1000;
+            nudMR.Name = "nudMR";
+            nudMR.Size = new Size(120, 22);
+            nudMR.TabIndex = 5;
+            nudMR.ValueChanged += nudMR_ValueChanged;
+
+            lblSpd.AutoSize = true;
+            lblSpd.Location = new Point(15, 186);
+            lblSpd.Name = "lblSpd";
+            lblSpd.Size = new Size(74, 16);
+            lblSpd.Text = "Move Speed";
+
+            nudSpd.Location = new Point(18, 206);
+            nudSpd.Maximum = 1000;
+            nudSpd.Name = "nudSpd";
+            nudSpd.Size = new Size(120, 22);
+            nudSpd.TabIndex = 6;
+            nudSpd.ValueChanged += nudSpd_ValueChanged;
+
+            label1.AutoSize = true;
+            label1.Location = new Point(170, 186);
+            label1.Name = "label1";
+            label1.Size = new Size(42, 16);
+            label1.Text = "Agility";
+
+            nudAgi.Location = new Point(173, 206);
+            nudAgi.Maximum = 1000;
+            nudAgi.Name = "nudAgi";
+            nudAgi.Size = new Size(120, 22);
+            nudAgi.TabIndex = 7;
+            nudAgi.ValueChanged += nudAgi_ValueChanged;
+
             // grpGeneral
-            // 
-            grpGeneral.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
-            grpGeneral.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
-            grpGeneral.Controls.Add(lblExperience);
-            grpGeneral.Controls.Add(nudExperience);
+            grpGeneral.BackColor = Color.FromArgb(45, 45, 48);
+            grpGeneral.BorderColor = Color.FromArgb(90, 90, 90);
+            grpGeneral.Controls.Add(lblExp);
+            grpGeneral.Controls.Add(nudExp);
             grpGeneral.Controls.Add(lblLevel);
             grpGeneral.Controls.Add(nudLevel);
-            grpGeneral.Controls.Add(lblIdleSprite);
+            grpGeneral.Controls.Add(lblPic);
             grpGeneral.Controls.Add(cmbSprite);
+            grpGeneral.Controls.Add(picPet);
             grpGeneral.Controls.Add(btnAddFolder);
             grpGeneral.Controls.Add(lblFolder);
             grpGeneral.Controls.Add(cmbFolder);
             grpGeneral.Controls.Add(lblName);
             grpGeneral.Controls.Add(txtName);
-            grpGeneral.ForeColor = System.Drawing.Color.Gainsboro;
-            grpGeneral.Location = new System.Drawing.Point(10, 16);
-            grpGeneral.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            grpGeneral.ForeColor = Color.Gainsboro;
+            grpGeneral.Location = new Point(8, 8);
             grpGeneral.Name = "grpGeneral";
-            grpGeneral.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            grpGeneral.Size = new System.Drawing.Size(440, 126);
+            grpGeneral.Size = new Size(320, 140);
             grpGeneral.TabIndex = 0;
             grpGeneral.TabStop = false;
             grpGeneral.Text = "General";
-            // 
-            // lblExperience
-            // 
-            lblExperience.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            lblExperience.AutoSize = true;
-            lblExperience.Location = new System.Drawing.Point(216, 79);
-            lblExperience.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            lblExperience.Name = "lblExperience";
-            lblExperience.Size = new System.Drawing.Size(63, 15);
-            lblExperience.TabIndex = 10;
-            lblExperience.Text = "Experience";
-            // 
-            // nudExperience
-            // 
-            nudExperience.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            nudExperience.Location = new System.Drawing.Point(219, 97);
-            nudExperience.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            nudExperience.Maximum = new decimal(new int[] { 100000000, 0, 0, 0 });
-            nudExperience.Name = "nudExperience";
-            nudExperience.Size = new System.Drawing.Size(203, 23);
-            nudExperience.TabIndex = 9;
-            nudExperience.ValueChanged += nudExperience_ValueChanged;
-            // 
-            // lblLevel
-            // 
-            lblLevel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            lblLevel.AutoSize = true;
-            lblLevel.Location = new System.Drawing.Point(216, 31);
-            lblLevel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            lblLevel.Name = "lblLevel";
-            lblLevel.Size = new System.Drawing.Size(36, 15);
-            lblLevel.TabIndex = 6;
-            lblLevel.Text = "Level";
-            // 
-            // nudLevel
-            // 
-            nudLevel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            nudLevel.Location = new System.Drawing.Point(219, 49);
-            nudLevel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            nudLevel.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
-            nudLevel.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
-            nudLevel.Name = "nudLevel";
-            nudLevel.Size = new System.Drawing.Size(203, 23);
-            nudLevel.TabIndex = 5;
-            nudLevel.Value = new decimal(new int[] { 1, 0, 0, 0 });
-            nudLevel.ValueChanged += nudLevel_ValueChanged;
-            // 
-            // lblIdleSprite
-            // 
-            lblIdleSprite.AutoSize = true;
-            lblIdleSprite.Location = new System.Drawing.Point(7, 79);
-            lblIdleSprite.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            lblIdleSprite.Name = "lblIdleSprite";
-            lblIdleSprite.Size = new System.Drawing.Size(38, 15);
-            lblIdleSprite.TabIndex = 4;
-            lblIdleSprite.Text = "Sprite";
-            // 
-            // cmbSprite
-            // 
-            cmbSprite.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            cmbSprite.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            cmbSprite.FormattingEnabled = true;
-            cmbSprite.Location = new System.Drawing.Point(10, 97);
-            cmbSprite.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            cmbSprite.Name = "cmbSprite";
-            cmbSprite.Size = new System.Drawing.Size(203, 24);
-            cmbSprite.TabIndex = 3;
-            cmbSprite.SelectedIndexChanged += cmbSprite_SelectedIndexChanged;
-            // 
-            // btnAddFolder
-            // 
-            btnAddFolder.Location = new System.Drawing.Point(373, 23);
-            btnAddFolder.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+
+            lblName.AutoSize = true;
+            lblName.Location = new Point(15, 28);
+            lblName.Name = "lblName";
+            lblName.Size = new Size(44, 16);
+            lblName.Text = "Name";
+
+            txtName.Location = new Point(68, 26);
+            txtName.Name = "txtName";
+            txtName.Size = new Size(180, 22);
+            txtName.TabIndex = 0;
+            txtName.TextChanged += txtName_TextChanged;
+
+            lblFolder.AutoSize = true;
+            lblFolder.Location = new Point(15, 60);
+            lblFolder.Name = "lblFolder";
+            lblFolder.Size = new Size(47, 16);
+            lblFolder.Text = "Folder";
+
+            cmbFolder.Location = new Point(68, 58);
+            cmbFolder.Name = "cmbFolder";
+            cmbFolder.Size = new Size(150, 24);
+            cmbFolder.TabIndex = 1;
+            cmbFolder.SelectedIndexChanged += cmbFolder_SelectedIndexChanged;
+
+            btnAddFolder.Location = new Point(224, 57);
             btnAddFolder.Name = "btnAddFolder";
-            btnAddFolder.Padding = new System.Windows.Forms.Padding(6);
-            btnAddFolder.Size = new System.Drawing.Size(49, 27);
+            btnAddFolder.Padding = new Padding(4);
+            btnAddFolder.Size = new Size(30, 26);
             btnAddFolder.TabIndex = 2;
             btnAddFolder.Text = "+";
             btnAddFolder.Click += btnAddFolder_Click;
-            // 
-            // lblFolder
-            // 
-            lblFolder.AutoSize = true;
-            lblFolder.Location = new System.Drawing.Point(216, 9);
-            lblFolder.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            lblFolder.Name = "lblFolder";
-            lblFolder.Size = new System.Drawing.Size(41, 15);
-            lblFolder.TabIndex = 7;
-            lblFolder.Text = "Folder";
-            // 
-            // cmbFolder
-            // 
-            cmbFolder.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            cmbFolder.FormattingEnabled = true;
-            cmbFolder.Location = new System.Drawing.Point(219, 27);
-            cmbFolder.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            cmbFolder.Name = "cmbFolder";
-            cmbFolder.Size = new System.Drawing.Size(146, 24);
-            cmbFolder.TabIndex = 1;
-            cmbFolder.SelectedIndexChanged += cmbFolder_SelectedIndexChanged;
-            // 
-            // lblName
-            // 
-            lblName.AutoSize = true;
-            lblName.Location = new System.Drawing.Point(7, 9);
-            lblName.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            lblName.Name = "lblName";
-            lblName.Size = new System.Drawing.Size(39, 15);
-            lblName.TabIndex = 0;
-            lblName.Text = "Name";
-            // 
-            // txtName
-            // 
-            txtName.Location = new System.Drawing.Point(10, 27);
-            txtName.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            txtName.Name = "txtName";
-            txtName.Size = new System.Drawing.Size(203, 23);
-            txtName.TabIndex = 0;
-            txtName.TextChanged += txtName_TextChanged;
-            // 
+
+            lblPic.AutoSize = true;
+            lblPic.Location = new Point(15, 92);
+            lblPic.Name = "lblPic";
+            lblPic.Size = new Size(41, 16);
+            lblPic.Text = "Sprite";
+
+            cmbSprite.Location = new Point(68, 90);
+            cmbSprite.Name = "cmbSprite";
+            cmbSprite.Size = new Size(180, 24);
+            cmbSprite.TabIndex = 3;
+            cmbSprite.SelectedIndexChanged += cmbSprite_SelectedIndexChanged;
+
+            picPet.BackColor = Color.Black;
+            picPet.Location = new Point(260, 22);
+            picPet.Name = "picPet";
+            picPet.Size = new Size(48, 48);
+            picPet.TabStop = false;
+
+            lblLevel.AutoSize = true;
+            lblLevel.Location = new Point(15, 124);
+            lblLevel.Name = "lblLevel";
+            lblLevel.Size = new Size(39, 16);
+            lblLevel.Text = "Level";
+
+            nudLevel.Location = new Point(68, 122);
+            nudLevel.Minimum = 1;
+            nudLevel.Name = "nudLevel";
+            nudLevel.Size = new Size(80, 22);
+            nudLevel.TabIndex = 4;
+            nudLevel.Value = 1;
+            nudLevel.ValueChanged += nudLevel_ValueChanged;
+
+            lblExp.AutoSize = true;
+            lblExp.Location = new Point(160, 124);
+            lblExp.Name = "lblExp";
+            lblExp.Size = new Size(60, 16);
+            lblExp.Text = "Experience";
+
+            nudExp.Location = new Point(226, 122);
+            nudExp.Maximum = 1410065407;
+            nudExp.Name = "nudExp";
+            nudExp.Size = new Size(82, 22);
+            nudExp.TabIndex = 5;
+            nudExp.ValueChanged += nudExp_ValueChanged;
+
+            // grpSpells
+            grpSpells.BackColor = Color.FromArgb(45, 45, 48);
+            grpSpells.BorderColor = Color.FromArgb(90, 90, 90);
+            grpSpells.Controls.Add(btnRemove);
+            grpSpells.Controls.Add(btnAdd);
+            grpSpells.Controls.Add(cmbSpell);
+            grpSpells.Controls.Add(lstSpells);
+            grpSpells.ForeColor = Color.Gainsboro;
+            grpSpells.Location = new Point(8, 600);
+            grpSpells.Name = "grpSpells";
+            grpSpells.Size = new Size(672, 140);
+            grpSpells.TabIndex = 6;
+            grpSpells.TabStop = false;
+            grpSpells.Text = "Spells";
+
+            lstSpells.BackColor = Color.FromArgb(60, 63, 65);
+            lstSpells.ForeColor = Color.Gainsboro;
+            lstSpells.ItemHeight = 16;
+            lstSpells.Location = new Point(15, 28);
+            lstSpells.Name = "lstSpells";
+            lstSpells.Size = new Size(300, 84);
+            lstSpells.TabIndex = 0;
+            lstSpells.SelectedIndexChanged += lstSpells_SelectedIndexChanged;
+
+            cmbSpell.Location = new Point(330, 28);
+            cmbSpell.Name = "cmbSpell";
+            cmbSpell.Size = new Size(200, 24);
+            cmbSpell.TabIndex = 1;
+            cmbSpell.SelectedIndexChanged += cmbSpell_SelectedIndexChanged;
+
+            btnAdd.Location = new Point(540, 28);
+            btnAdd.Name = "btnAdd";
+            btnAdd.Padding = new Padding(4);
+            btnAdd.Size = new Size(100, 26);
+            btnAdd.TabIndex = 2;
+            btnAdd.Text = "Add";
+            btnAdd.Click += btnAdd_Click;
+
+            btnRemove.Location = new Point(540, 64);
+            btnRemove.Name = "btnRemove";
+            btnRemove.Padding = new Padding(4);
+            btnRemove.Size = new Size(100, 26);
+            btnRemove.TabIndex = 3;
+            btnRemove.Text = "Remove";
+            btnRemove.Click += btnRemove_Click;
+
             // btnSave
-            // 
-            btnSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            btnSave.Location = new System.Drawing.Point(1062, 642);
-            btnSave.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            btnSave.Location = new Point(300, 670);
             btnSave.Name = "btnSave";
-            btnSave.Padding = new System.Windows.Forms.Padding(6);
-            btnSave.Size = new System.Drawing.Size(88, 27);
+            btnSave.Padding = new Padding(6);
+            btnSave.Size = new Size(200, 32);
             btnSave.TabIndex = 3;
             btnSave.Text = "Save";
             btnSave.Click += btnSave_Click;
-            // 
+
             // btnCancel
-            // 
-            btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            btnCancel.Location = new System.Drawing.Point(964, 642);
-            btnCancel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            btnCancel.Location = new Point(520, 670);
             btnCancel.Name = "btnCancel";
-            btnCancel.Padding = new System.Windows.Forms.Padding(6);
-            btnCancel.Size = new System.Drawing.Size(88, 27);
+            btnCancel.Padding = new Padding(6);
+            btnCancel.Size = new Size(200, 32);
             btnCancel.TabIndex = 4;
             btnCancel.Text = "Cancel";
             btnCancel.Click += btnCancel_Click;
-            // 
+
             // FrmPet
-            // 
-            AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(1244, 709);
+            AutoScaleDimensions = new SizeF(8F, 16F);
+            AutoScaleMode = AutoScaleMode.Font;
+            BackColor = Color.FromArgb(45, 45, 48);
+            ClientSize = new Size(1000, 720);
             Controls.Add(btnCancel);
             Controls.Add(btnSave);
             Controls.Add(pnlContainer);
             Controls.Add(grpPets);
             Controls.Add(toolStrip);
-            KeyPreview = true;
-            Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            MaximizeBox = false;
             Name = "FrmPet";
-            StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "Pet Editor";
-            Load += frmPet_Load;
+            KeyPreview = true;
             FormClosed += frmPet_FormClosed;
+            Load += frmPet_Load;
             KeyDown += form_KeyDown;
+
             toolStrip.ResumeLayout(false);
             toolStrip.PerformLayout();
             grpPets.ResumeLayout(false);
             grpPets.PerformLayout();
             pnlContainer.ResumeLayout(false);
+            grpAnimation.ResumeLayout(false);
+            grpAnimation.PerformLayout();
             grpImmunities.ResumeLayout(false);
             grpImmunities.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)nudTenacity).EndInit();
-            grpSpells.ResumeLayout(false);
             grpCombat.ResumeLayout(false);
             grpCombat.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)nudAttackSpeedValue).EndInit();
@@ -989,86 +887,119 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)nudCritChance).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudDamage).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudScaling).EndInit();
-            grpVitals.ResumeLayout(false);
-            grpVitals.PerformLayout();
+            grpRegen.ResumeLayout(false);
+            grpRegen.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)nudMpRegen).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudHpRegen).EndInit();
             grpStats.ResumeLayout(false);
+            grpStats.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)nudAgi).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudSpd).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudMR).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudDef).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudMag).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudStr).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudMana).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudHp).EndInit();
             grpGeneral.ResumeLayout(false);
             grpGeneral.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)nudExperience).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudExp).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudLevel).EndInit();
+            ((System.ComponentModel.ISupportInitialize)picPet).EndInit();
+            grpSpells.ResumeLayout(false);
             ResumeLayout(false);
         }
 
-        #endregion
-
         private DarkToolStrip toolStrip;
-        private System.Windows.Forms.ToolStripButton toolStripItemNew;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.ToolStripButton toolStripItemDelete;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-        private System.Windows.Forms.ToolStripButton btnAlphabetical;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
-        private System.Windows.Forms.ToolStripButton toolStripItemCopy;
-        private System.Windows.Forms.ToolStripButton toolStripItemPaste;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
-        private System.Windows.Forms.ToolStripButton toolStripItemUndo;
+        private ToolStripButton toolStripItemNew;
+        private ToolStripSeparator toolStripSeparator1;
+        private ToolStripButton toolStripItemDelete;
+        private ToolStripSeparator toolStripSeparator2;
+        private ToolStripButton btnAlphabetical;
+        private ToolStripSeparator toolStripSeparator4;
+        public ToolStripButton toolStripItemCopy;
+        public ToolStripButton toolStripItemPaste;
+        private ToolStripSeparator toolStripSeparator3;
+        public ToolStripButton toolStripItemUndo;
         private DarkGroupBox grpPets;
         private DarkButton btnClearSearch;
         private DarkTextBox txtSearch;
         private Intersect.Editor.Forms.Controls.GameObjectList lstGameObjects;
-        private System.Windows.Forms.Panel pnlContainer;
-        private DarkGroupBox grpGeneral;
-        private DarkGroupBox grpStats;
-        private System.Windows.Forms.FlowLayoutPanel flpStats;
-        private DarkGroupBox grpVitals;
-        private System.Windows.Forms.FlowLayoutPanel flpVitals;
-        private System.Windows.Forms.FlowLayoutPanel flpVitalRegen;
-        private System.Windows.Forms.Label lblVitals;
-        private System.Windows.Forms.Label lblVitalRegen;
-        private DarkGroupBox grpCombat;
-        private System.Windows.Forms.Label lblAttackAnimation;
-        private DarkComboBox cmbAttackAnimation;
-        private System.Windows.Forms.Label lblDeathAnimation;
+        private Panel pnlContainer;
+        private DarkGroupBox grpAnimation;
+        private Label lblDeathAnimation;
         private DarkComboBox cmbDeathAnimation;
-        private System.Windows.Forms.Label lblIdleAnimation;
-        private DarkComboBox cmbIdleAnimation;
-        private System.Windows.Forms.Label lblDamageType;
-        private DarkComboBox cmbDamageType;
-        private System.Windows.Forms.Label lblScalingStat;
-        private DarkComboBox cmbScalingStat;
-        private System.Windows.Forms.Label lblScaling;
-        private DarkNumericUpDown nudScaling;
-        private System.Windows.Forms.Label lblDamage;
-        private DarkNumericUpDown nudDamage;
-        private System.Windows.Forms.Label lblCritChance;
-        private DarkNumericUpDown nudCritChance;
-        private System.Windows.Forms.Label lblCritMultiplier;
-        private DarkNumericUpDown nudCritMultiplier;
-        private System.Windows.Forms.Label lblAttackSpeedModifier;
-        private DarkComboBox cmbAttackSpeedModifier;
-        private System.Windows.Forms.Label lblAttackSpeedValue;
-        private DarkNumericUpDown nudAttackSpeedValue;
-        private DarkGroupBox grpSpells;
-        private DarkComboBox cmbSpell;
-        private DarkButton btnRemoveSpell;
-        private DarkButton btnAddSpell;
-        private System.Windows.Forms.ListBox lstSpells;
         private DarkGroupBox grpImmunities;
-        private System.Windows.Forms.FlowLayoutPanel flpImmunities;
-        private System.Windows.Forms.Label lblTenacity;
+        private Label lblTenacity;
         private DarkNumericUpDown nudTenacity;
+        private DarkCheckBox chkTaunt;
+        private DarkCheckBox chkSleep;
+        private DarkCheckBox chkTransform;
+        private DarkCheckBox chkBlind;
+        private DarkCheckBox chkSnare;
+        private DarkCheckBox chkStun;
+        private DarkCheckBox chkSilence;
+        private DarkCheckBox chkKnockback;
+        private DarkGroupBox grpCombat;
+        private Label lblAttackSpeedValue;
+        private DarkNumericUpDown nudAttackSpeedValue;
+        private Label lblAttackSpeedModifier;
+        private DarkComboBox cmbAttackSpeedModifier;
+        private Label lblCritMultiplier;
+        private DarkNumericUpDown nudCritMultiplier;
+        private Label lblCritChance;
+        private DarkNumericUpDown nudCritChance;
+        private Label lblDamage;
+        private DarkNumericUpDown nudDamage;
+        private Label lblScaling;
+        private DarkNumericUpDown nudScaling;
+        private Label lblScalingStat;
+        private DarkComboBox cmbScalingStat;
+        private Label lblDamageType;
+        private DarkComboBox cmbDamageType;
+        private Label lblAttackAnimation;
+        private DarkComboBox cmbAttackAnimation;
+        private DarkGroupBox grpRegen;
+        private Label lblManaRegen;
+        private DarkNumericUpDown nudMpRegen;
+        private Label lblHpRegen;
+        private DarkNumericUpDown nudHpRegen;
+        private DarkGroupBox grpStats;
+        private Label label1;
+        private DarkNumericUpDown nudAgi;
+        private Label lblSpd;
+        private DarkNumericUpDown nudSpd;
+        private Label lblMR;
+        private DarkNumericUpDown nudMR;
+        private Label lblDef;
+        private DarkNumericUpDown nudDef;
+        private Label lblMag;
+        private DarkNumericUpDown nudMag;
+        private Label lblStr;
+        private DarkNumericUpDown nudStr;
+        private Label lblMana;
+        private DarkNumericUpDown nudMana;
+        private Label lblHP;
+        private DarkNumericUpDown nudHp;
+        private DarkGroupBox grpGeneral;
+        private Label lblExp;
+        private DarkNumericUpDown nudExp;
+        private Label lblLevel;
+        private DarkNumericUpDown nudLevel;
+        private Label lblPic;
+        private DarkComboBox cmbSprite;
+        private PictureBox picPet;
+        private DarkButton btnAddFolder;
+        private Label lblFolder;
+        private DarkComboBox cmbFolder;
+        private Label lblName;
+        private DarkTextBox txtName;
+        private DarkGroupBox grpSpells;
+        private DarkButton btnRemove;
+        private DarkButton btnAdd;
+        private DarkComboBox cmbSpell;
+        private ListBox lstSpells;
         private DarkButton btnSave;
         private DarkButton btnCancel;
-        private System.Windows.Forms.Label lblName;
-        private DarkTextBox txtName;
-        private System.Windows.Forms.Label lblFolder;
-        private DarkComboBox cmbFolder;
-        private DarkButton btnAddFolder;
-        private System.Windows.Forms.Label lblIdleSprite;
-        private DarkComboBox cmbSprite;
-        private System.Windows.Forms.Label lblLevel;
-        private DarkNumericUpDown nudLevel;
-        private System.Windows.Forms.Label lblExperience;
-        private DarkNumericUpDown nudExperience;
     }
 }

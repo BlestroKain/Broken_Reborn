@@ -52,14 +52,246 @@ public partial class FrmPet : EditorForm
             toolStripItemDelete_Click
         );
 
-        InitStatControls();
-        InitVitalControls();
-        InitImmunityControls();
+        InitControlMappings();
 
         lstSpells.DataSource = _spellNames;
         pnlContainer.Hide();
         UpdateToolStripItems();
         UpdateEditorButtons(false);
+    }
+
+    private void InitControlMappings()
+    {
+        _statControls.Clear();
+        _vitalControls.Clear();
+        _vitalRegenControls.Clear();
+        _immunityCheckboxes.Clear();
+
+        if (nudStr != null)
+        {
+            _statControls[Stat.Attack] = nudStr;
+        }
+
+        if (nudMag != null)
+        {
+            _statControls[Stat.Intelligence] = nudMag;
+        }
+
+        if (nudDef != null)
+        {
+            _statControls[Stat.Defense] = nudDef;
+        }
+
+        if (nudMR != null)
+        {
+            _statControls[Stat.Vitality] = nudMR;
+        }
+
+        if (nudSpd != null)
+        {
+            _statControls[Stat.Speed] = nudSpd;
+        }
+
+        if (nudAgi != null)
+        {
+            _statControls[Stat.Agility] = nudAgi;
+        }
+
+        foreach (var (stat, control) in _statControls)
+        {
+            control.Minimum = 0;
+            control.Maximum = Options.Instance.Player.MaxStat;
+            var statKey = stat;
+            var statControl = control;
+            statControl.ValueChanged += (_, _) => UpdateStat(statKey, statControl);
+        }
+
+        if (nudHp != null)
+        {
+            _vitalControls[Vital.Health] = nudHp;
+        }
+
+        if (nudMana != null)
+        {
+            _vitalControls[Vital.Mana] = nudMana;
+        }
+
+        foreach (var (vital, control) in _vitalControls)
+        {
+            control.Minimum = 0;
+            control.Maximum = int.MaxValue;
+            var vitalKey = vital;
+            var vitalControl = control;
+            vitalControl.ValueChanged += (_, _) => UpdateVital(vitalKey, vitalControl);
+        }
+
+        if (nudHpRegen != null)
+        {
+            _vitalRegenControls[Vital.Health] = nudHpRegen;
+        }
+
+        if (nudMpRegen != null)
+        {
+            _vitalRegenControls[Vital.Mana] = nudMpRegen;
+        }
+
+        foreach (var (vital, control) in _vitalRegenControls)
+        {
+            control.Minimum = 0;
+            control.Maximum = int.MaxValue;
+            var vitalKey = vital;
+            var vitalControl = control;
+            vitalControl.ValueChanged += (_, _) => UpdateVitalRegen(vitalKey, vitalControl);
+        }
+
+        if (chkKnockback != null)
+        {
+            _immunityCheckboxes[SpellEffect.Knockback] = chkKnockback;
+        }
+
+        if (chkSilence != null)
+        {
+            _immunityCheckboxes[SpellEffect.Silence] = chkSilence;
+        }
+
+        if (chkStun != null)
+        {
+            _immunityCheckboxes[SpellEffect.Stun] = chkStun;
+        }
+
+        if (chkSnare != null)
+        {
+            _immunityCheckboxes[SpellEffect.Snare] = chkSnare;
+        }
+
+        if (chkBlind != null)
+        {
+            _immunityCheckboxes[SpellEffect.Blind] = chkBlind;
+        }
+
+        if (chkTransform != null)
+        {
+            _immunityCheckboxes[SpellEffect.Transform] = chkTransform;
+        }
+
+        if (chkSleep != null)
+        {
+            _immunityCheckboxes[SpellEffect.Sleep] = chkSleep;
+        }
+
+        if (chkTaunt != null)
+        {
+            _immunityCheckboxes[SpellEffect.Taunt] = chkTaunt;
+        }
+
+        foreach (var (effect, checkbox) in _immunityCheckboxes)
+        {
+            var effectKey = effect;
+            var effectCheckbox = checkbox;
+            effectCheckbox.CheckedChanged += (_, _) => UpdateImmunity(effectKey, effectCheckbox.Checked);
+        }
+
+        if (nudTenacity != null)
+        {
+            nudTenacity.Minimum = 0;
+            nudTenacity.Maximum = 100;
+            nudTenacity.DecimalPlaces = 2;
+            nudTenacity.ValueChanged += (_, _) => UpdateTenacity();
+        }
+
+        if (nudExp != null)
+        {
+            nudExp.Minimum = 0;
+            nudExp.Maximum = 1410065407;
+            nudExp.ValueChanged += (_, _) => UpdateExperience();
+        }
+
+        if (nudLevel != null)
+        {
+            nudLevel.Minimum = 1;
+            nudLevel.Maximum = int.MaxValue;
+            nudLevel.ValueChanged += (_, _) => UpdateLevel();
+        }
+    }
+
+    private void UpdateStat(Stat stat, DarkNumericUpDown control)
+    {
+        if (_editorItem == null)
+        {
+            return;
+        }
+
+        _editorItem.Stats[(int)stat] = (int)control.Value;
+    }
+
+    private void UpdateVital(Vital vital, DarkNumericUpDown control)
+    {
+        if (_editorItem == null)
+        {
+            return;
+        }
+
+        _editorItem.MaxVitals[(int)vital] = (long)control.Value;
+    }
+
+    private void UpdateVitalRegen(Vital vital, DarkNumericUpDown control)
+    {
+        if (_editorItem == null)
+        {
+            return;
+        }
+
+        _editorItem.VitalRegen[(int)vital] = (long)control.Value;
+    }
+
+    private void UpdateImmunity(SpellEffect effect, bool isChecked)
+    {
+        if (_editorItem == null)
+        {
+            return;
+        }
+
+        if (isChecked)
+        {
+            if (!_editorItem.Immunities.Contains(effect))
+            {
+                _editorItem.Immunities.Add(effect);
+            }
+        }
+        else
+        {
+            _editorItem.Immunities.Remove(effect);
+        }
+    }
+
+    private void UpdateTenacity()
+    {
+        if (_editorItem == null)
+        {
+            return;
+        }
+
+        _editorItem.Tenacity = (double)nudTenacity.Value;
+    }
+
+    private void UpdateExperience()
+    {
+        if (_editorItem == null)
+        {
+            return;
+        }
+
+        _editorItem.Experience = (long)nudExp.Value;
+    }
+
+    private void UpdateLevel()
+    {
+        if (_editorItem == null)
+        {
+            return;
+        }
+
+        _editorItem.Level = (int)nudLevel.Value;
     }
 
     private void frmPet_Load(object sender, EventArgs e)
@@ -77,10 +309,6 @@ public partial class FrmPet : EditorForm
         cmbDeathAnimation.Items.Clear();
         cmbDeathAnimation.Items.Add(Strings.General.None);
         cmbDeathAnimation.Items.AddRange(AnimationDescriptor.Names);
-
-        cmbIdleAnimation.Items.Clear();
-        cmbIdleAnimation.Items.Add(Strings.General.None);
-        cmbIdleAnimation.Items.AddRange(AnimationDescriptor.Names);
 
         cmbSpell.Items.Clear();
         cmbSpell.Items.AddRange(SpellDescriptor.Names);
@@ -145,17 +373,14 @@ public partial class FrmPet : EditorForm
         lblName.Text = Strings.Pets.name;
         lblFolder.Text = Strings.Pets.folderlabel;
         btnAddFolder.Text = Strings.Pets.addfolder;
-        lblIdleSprite.Text = Strings.Pets.sprite;
+        lblPic.Text = Strings.Pets.sprite;
         lblLevel.Text = Strings.Pets.level;
-        lblExperience.Text = Strings.Pets.experience;
+        lblExp.Text = Strings.Pets.experience;
         grpStats.Text = Strings.Pets.stats;
-        grpVitals.Text = Strings.Pets.vitals;
-        lblVitals.Text = Strings.Pets.maxvitals;
-        lblVitalRegen.Text = Strings.Pets.vitalregen;
+        grpRegen.Text = Strings.Pets.vitalregen;
         grpCombat.Text = Strings.Pets.combat;
         lblAttackAnimation.Text = Strings.Pets.attackanimation;
         lblDeathAnimation.Text = Strings.Pets.deathanimation;
-        lblIdleAnimation.Text = Strings.Pets.idleanimation;
         lblDamageType.Text = Strings.Pets.damagetype;
         lblScalingStat.Text = Strings.Pets.scalingstat;
         lblScaling.Text = Strings.Pets.scalingamount;
@@ -164,189 +389,13 @@ public partial class FrmPet : EditorForm
         lblCritMultiplier.Text = Strings.Pets.critmultiplier;
         lblAttackSpeedModifier.Text = Strings.Pets.attackspeedmodifier;
         lblAttackSpeedValue.Text = Strings.Pets.attackspeedvalue;
-        grpSpells.Text = Strings.Pets.spells;
-        btnAddSpell.Text = Strings.Pets.addspell;
-        btnRemoveSpell.Text = Strings.Pets.removespell;
         grpImmunities.Text = Strings.Pets.immunities;
         lblTenacity.Text = Strings.Pets.tenacity;
+        grpSpells.Text = Strings.Pets.spells;
+        btnAdd.Text = Strings.Pets.addspell;
+        btnRemove.Text = Strings.Pets.removespell;
         btnSave.Text = Strings.Pets.save;
         btnCancel.Text = Strings.Pets.cancel;
-    }
-
-    private void InitStatControls()
-    {
-        flpStats.Controls.Clear();
-        _statControls.Clear();
-
-        foreach (var stat in Enum.GetValues<Stat>())
-        {
-            var panel = new Panel
-            {
-                Width = 120,
-                Height = 50,
-                Margin = new Padding(4)
-            };
-
-            var label = new Label
-            {
-                Text = Globals.GetStatName((int)stat),
-                AutoSize = true,
-                Location = new System.Drawing.Point(0, 0)
-            };
-
-            var numeric = new DarkNumericUpDown
-            {
-                Minimum = 0,
-                Maximum = Options.Instance.Player.MaxStat,
-                Location = new System.Drawing.Point(0, 20),
-                Width = 100
-            };
-
-            numeric.ValueChanged += (_, _) =>
-            {
-                if (_editorItem == null)
-                {
-                    return;
-                }
-
-                _editorItem.Stats[(int)stat] = (int)numeric.Value;
-            };
-
-            panel.Controls.Add(label);
-            panel.Controls.Add(numeric);
-            flpStats.Controls.Add(panel);
-            _statControls.Add(stat, numeric);
-        }
-    }
-
-    private void InitVitalControls()
-    {
-        flpVitals.Controls.Clear();
-        flpVitalRegen.Controls.Clear();
-        _vitalControls.Clear();
-        _vitalRegenControls.Clear();
-
-        foreach (var vital in Enum.GetValues<Vital>())
-        {
-            var maxPanel = new Panel
-            {
-                Width = 200,
-                Height = 45,
-                Margin = new Padding(4)
-            };
-
-            var maxLabel = new Label
-            {
-                Text = vital.ToString(),
-                AutoSize = true,
-                Location = new System.Drawing.Point(0, 0)
-            };
-
-            var maxNumeric = new DarkNumericUpDown
-            {
-                Minimum = 0,
-                Maximum = int.MaxValue,
-                Location = new System.Drawing.Point(0, 18),
-                Width = 180
-            };
-
-            maxNumeric.ValueChanged += (_, _) =>
-            {
-                if (_editorItem == null)
-                {
-                    return;
-                }
-
-                _editorItem.MaxVitals[(int)vital] = (long)maxNumeric.Value;
-            };
-
-            maxPanel.Controls.Add(maxLabel);
-            maxPanel.Controls.Add(maxNumeric);
-            flpVitals.Controls.Add(maxPanel);
-            _vitalControls.Add(vital, maxNumeric);
-
-            var regenPanel = new Panel
-            {
-                Width = 200,
-                Height = 45,
-                Margin = new Padding(4)
-            };
-
-            var regenLabel = new Label
-            {
-                Text = vital + " Regen",
-                AutoSize = true,
-                Location = new System.Drawing.Point(0, 0)
-            };
-
-            var regenNumeric = new DarkNumericUpDown
-            {
-                Minimum = 0,
-                Maximum = int.MaxValue,
-                Location = new System.Drawing.Point(0, 18),
-                Width = 180
-            };
-
-            regenNumeric.ValueChanged += (_, _) =>
-            {
-                if (_editorItem == null)
-                {
-                    return;
-                }
-
-                _editorItem.VitalRegen[(int)vital] = (long)regenNumeric.Value;
-            };
-
-            regenPanel.Controls.Add(regenLabel);
-            regenPanel.Controls.Add(regenNumeric);
-            flpVitalRegen.Controls.Add(regenPanel);
-            _vitalRegenControls.Add(vital, regenNumeric);
-        }
-    }
-
-    private void InitImmunityControls()
-    {
-        flpImmunities.Controls.Clear();
-        _immunityCheckboxes.Clear();
-
-        foreach (var effect in Enum.GetValues<SpellEffect>())
-        {
-            if (effect == SpellEffect.None)
-            {
-                continue;
-            }
-
-            var checkbox = new DarkCheckBox
-            {
-                Text = Strings.NpcEditor.Immunities.ContainsKey(effect)
-                    ? Strings.NpcEditor.Immunities[effect]
-                    : effect.ToString(),
-                AutoSize = true
-            };
-
-            checkbox.CheckedChanged += (_, _) =>
-            {
-                if (_editorItem == null)
-                {
-                    return;
-                }
-
-                if (checkbox.Checked)
-                {
-                    if (!_editorItem.Immunities.Contains(effect))
-                    {
-                        _editorItem.Immunities.Add(effect);
-                    }
-                }
-                else
-                {
-                    _editorItem.Immunities.Remove(effect);
-                }
-            };
-
-            flpImmunities.Controls.Add(checkbox);
-            _immunityCheckboxes.Add(effect, checkbox);
-        }
     }
 
     private void AssignEditorItem(Guid id)
@@ -429,10 +478,9 @@ public partial class FrmPet : EditorForm
                 cmbSprite.SelectedIndex = 0;
             }
             nudLevel.Value = Math.Max(nudLevel.Minimum, Math.Min(nudLevel.Maximum, _editorItem.Level));
-            nudExperience.Value = Math.Max(nudExperience.Minimum, Math.Min(nudExperience.Maximum, _editorItem.Experience));
+            nudExp.Value = Math.Max(nudExp.Minimum, Math.Min(nudExp.Maximum, _editorItem.Experience));
             SetComboIndex(cmbAttackAnimation, AnimationDescriptor.ListIndex(_editorItem.AttackAnimationId) + 1, 0);
             SetComboIndex(cmbDeathAnimation, AnimationDescriptor.ListIndex(_editorItem.DeathAnimationId) + 1, 0);
-            SetComboIndex(cmbIdleAnimation, AnimationDescriptor.ListIndex(_editorItem.IdleAnimationId) + 1, 0);
             SetComboIndex(cmbDamageType, _editorItem.DamageType);
             SetComboIndex(cmbScalingStat, _editorItem.ScalingStat);
             nudScaling.Value = Math.Max(nudScaling.Minimum, Math.Min(nudScaling.Maximum, _editorItem.Scaling));
@@ -520,25 +568,29 @@ public partial class FrmPet : EditorForm
         _editorItem.Sprite = TextUtils.SanitizeNone(cmbSprite.Text);
     }
 
-    private void nudLevel_ValueChanged(object sender, EventArgs e)
-    {
-        if (_editorItem == null)
-        {
-            return;
-        }
+    private void nudHp_ValueChanged(object sender, EventArgs e) => UpdateVital(Vital.Health, nudHp);
 
-        _editorItem.Level = (int)nudLevel.Value;
-    }
+    private void nudMana_ValueChanged(object sender, EventArgs e) => UpdateVital(Vital.Mana, nudMana);
 
-    private void nudExperience_ValueChanged(object sender, EventArgs e)
-    {
-        if (_editorItem == null)
-        {
-            return;
-        }
+    private void nudHpRegen_ValueChanged(object sender, EventArgs e) => UpdateVitalRegen(Vital.Health, nudHpRegen);
 
-        _editorItem.Experience = (long)nudExperience.Value;
-    }
+    private void nudMpRegen_ValueChanged(object sender, EventArgs e) => UpdateVitalRegen(Vital.Mana, nudMpRegen);
+
+    private void nudStr_ValueChanged(object sender, EventArgs e) => UpdateStat(Stat.Attack, nudStr);
+
+    private void nudMag_ValueChanged(object sender, EventArgs e) => UpdateStat(Stat.Intelligence, nudMag);
+
+    private void nudDef_ValueChanged(object sender, EventArgs e) => UpdateStat(Stat.Defense, nudDef);
+
+    private void nudMR_ValueChanged(object sender, EventArgs e) => UpdateStat(Stat.Vitality, nudMR);
+
+    private void nudSpd_ValueChanged(object sender, EventArgs e) => UpdateStat(Stat.Speed, nudSpd);
+
+    private void nudAgi_ValueChanged(object sender, EventArgs e) => UpdateStat(Stat.Agility, nudAgi);
+
+    private void nudLevel_ValueChanged(object sender, EventArgs e) => UpdateLevel();
+
+    private void nudExp_ValueChanged(object sender, EventArgs e) => UpdateExperience();
 
     private void cmbAttackAnimation_SelectedIndexChanged(object sender, EventArgs e)
     {
@@ -558,16 +610,6 @@ public partial class FrmPet : EditorForm
         }
 
         _editorItem.DeathAnimation = AnimationDescriptor.Get(AnimationDescriptor.IdFromList(cmbDeathAnimation.SelectedIndex - 1));
-    }
-
-    private void cmbIdleAnimation_SelectedIndexChanged(object sender, EventArgs e)
-    {
-        if (_editorItem == null)
-        {
-            return;
-        }
-
-        _editorItem.IdleAnimation = AnimationDescriptor.Get(AnimationDescriptor.IdFromList(cmbIdleAnimation.SelectedIndex - 1));
     }
 
     private void cmbDamageType_SelectedIndexChanged(object sender, EventArgs e)
@@ -650,15 +692,23 @@ public partial class FrmPet : EditorForm
         _editorItem.AttackSpeedValue = (int)nudAttackSpeedValue.Value;
     }
 
-    private void nudTenacity_ValueChanged(object sender, EventArgs e)
-    {
-        if (_editorItem == null)
-        {
-            return;
-        }
+    private void nudTenacity_ValueChanged(object sender, EventArgs e) => UpdateTenacity();
 
-        _editorItem.Tenacity = (double)nudTenacity.Value;
-    }
+    private void chkKnockback_CheckedChanged(object sender, EventArgs e) => UpdateImmunity(SpellEffect.Knockback, chkKnockback.Checked);
+
+    private void chkSilence_CheckedChanged(object sender, EventArgs e) => UpdateImmunity(SpellEffect.Silence, chkSilence.Checked);
+
+    private void chkStun_CheckedChanged(object sender, EventArgs e) => UpdateImmunity(SpellEffect.Stun, chkStun.Checked);
+
+    private void chkSnare_CheckedChanged(object sender, EventArgs e) => UpdateImmunity(SpellEffect.Snare, chkSnare.Checked);
+
+    private void chkBlind_CheckedChanged(object sender, EventArgs e) => UpdateImmunity(SpellEffect.Blind, chkBlind.Checked);
+
+    private void chkTransform_CheckedChanged(object sender, EventArgs e) => UpdateImmunity(SpellEffect.Transform, chkTransform.Checked);
+
+    private void chkSleep_CheckedChanged(object sender, EventArgs e) => UpdateImmunity(SpellEffect.Sleep, chkSleep.Checked);
+
+    private void chkTaunt_CheckedChanged(object sender, EventArgs e) => UpdateImmunity(SpellEffect.Taunt, chkTaunt.Checked);
 
     private void cmbSpell_SelectedIndexChanged(object sender, EventArgs e)
     {
@@ -694,7 +744,7 @@ public partial class FrmPet : EditorForm
         cmbSpell.SelectedIndex = SpellDescriptor.ListIndex(_editorItem.Spells[lstSpells.SelectedIndex]);
     }
 
-    private void btnAddSpell_Click(object sender, EventArgs e)
+    private void btnAdd_Click(object sender, EventArgs e)
     {
         if (_editorItem == null)
         {
@@ -711,7 +761,7 @@ public partial class FrmPet : EditorForm
         _spellNames.Add(spellId != Guid.Empty ? SpellDescriptor.GetName(spellId) : Strings.General.None);
     }
 
-    private void btnRemoveSpell_Click(object sender, EventArgs e)
+    private void btnRemove_Click(object sender, EventArgs e)
     {
         if (_editorItem == null)
         {

@@ -25,6 +25,8 @@ public sealed class Pet : Entity
     private long _lastTargetSeenTime;
     private long _nextPathUpdate;
 
+    private bool _metadataDirty;
+
     private Guid _ownerMapId;
     private Guid _ownerMapInstanceId;
 
@@ -50,7 +52,22 @@ public sealed class Pet : Entity
         private set => _ownerCache = value;
     }
 
-    public PetState State { get; private set; } = PetState.Idle;
+    private PetState _state = PetState.Idle;
+
+    public PetState State
+    {
+        get => _state;
+        private set
+        {
+            if (_state == value)
+            {
+                return;
+            }
+
+            _state = value;
+            MarkMetadataDirty();
+        }
+    }
 
     public Pet(
         PetDescriptor descriptor,
@@ -153,6 +170,8 @@ public sealed class Pet : Entity
         petPacket.DescriptorId = Descriptor.Id;
         petPacket.State = State;
         petPacket.Despawnable = Despawnable;
+
+        ResetMetadataDirty();
 
         return petPacket;
     }
@@ -708,6 +727,19 @@ public sealed class Pet : Entity
         ClearCombatTarget();
         State = PetState.Follow;
     }
+
+    private void MarkMetadataDirty()
+    {
+        _metadataDirty = true;
+    }
+
+    internal bool MetadataDirty => _metadataDirty;
+
+    internal void ResetMetadataDirty()
+    {
+        _metadataDirty = false;
+    }
+
     protected override EntityItemSource? AsItemSource()
     {
         // Since the Pet class does not seem to represent an item source, we return null.

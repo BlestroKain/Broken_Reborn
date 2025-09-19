@@ -365,6 +365,22 @@ namespace Intersect.Server.Migrations.MySql.Game
                     b.Property<bool>("Stackable")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<bool>("Pet_BindOnEquip")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("Pet_DespawnOnUnequip")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid>("Pet_PetDescriptorId")
+                        .HasColumnType("char(36)")
+                        .UseCollation("ascii_general_ci");
+
+                    b.Property<string>("Pet_PetNameOverride")
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("Pet_SummonOnEquip")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<string>("StatsJson")
                         .HasColumnType("longtext")
                         .HasColumnName("StatsGiven");
@@ -1559,7 +1575,44 @@ namespace Intersect.Server.Migrations.MySql.Game
                                 .HasForeignKey("ItemDescriptorId");
                         });
 
+                    b.OwnsOne("Intersect.Framework.Core.GameObjects.Items.PetItemData", "Pet", b1 =>
+                        {
+                            b1.Property<Guid>("ItemDescriptorId")
+                                .HasColumnType("char(36)")
+                                .UseCollation("ascii_general_ci");
+
+                            b1.Property<bool>("BindOnEquip")
+                                .HasColumnType("tinyint(1)")
+                                .HasColumnName("Pet_BindOnEquip");
+
+                            b1.Property<bool>("DespawnOnUnequip")
+                                .HasColumnType("tinyint(1)")
+                                .HasColumnName("Pet_DespawnOnUnequip");
+
+                            b1.Property<Guid>("PetDescriptorId")
+                                .HasColumnType("char(36)")
+                                .HasColumnName("Pet_PetDescriptorId")
+                                .UseCollation("ascii_general_ci");
+
+                            b1.Property<string>("PetNameOverride")
+                                .HasColumnType("longtext")
+                                .HasColumnName("Pet_PetNameOverride");
+
+                            b1.Property<bool>("SummonOnEquip")
+                                .HasColumnType("tinyint(1)")
+                                .HasColumnName("Pet_SummonOnEquip");
+
+                            b1.HasKey("ItemDescriptorId");
+
+                            b1.ToTable("Items");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ItemDescriptorId");
+                        });
+
                     b.Navigation("Consumable");
+
+                    b.Navigation("Pet");
                 });
 
             modelBuilder.Entity("Intersect.GameObjects.SpellDescriptor", b =>

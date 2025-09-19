@@ -2084,6 +2084,9 @@ If you are sure you want to hand over your guild enter '\c{{#ff8080}}{02}\c{{}}'
         public static LocalizedString Dropped = @"Dropped";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Enabled = @"Enabled";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString GuildBanked = @"Guild Banked";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -2097,6 +2100,21 @@ If you are sure you want to hand over your guild enter '\c{{#ff8080}}{02}\c{{}}'
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString RegularAndPercentage = @"{00} + {01}%";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetSummons = @"Summons Pet:";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetSummonOnEquip = @"Summons on Equip";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetDespawnOnUnequip = @"Despawns on Unequip";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetBindOnEquip = @"Binds on Equip";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetNameOverride = @"Pet Name Override:";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString ScalingPercentage = @"Scaling Percentage:";

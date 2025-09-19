@@ -122,6 +122,14 @@ namespace Intersect.Editor.Forms.Editors
             lblVital = new Label();
             cmbConsume = new DarkComboBox();
             lblInterval = new Label();
+            grpPet = new DarkGroupBox();
+            txtPetNameOverride = new DarkTextBox();
+            lblPetNameOverride = new Label();
+            chkBindOnEquip = new DarkCheckBox();
+            chkDespawnOnUnequip = new DarkCheckBox();
+            chkSummonOnEquip = new DarkCheckBox();
+            cmbPet = new DarkComboBox();
+            lblPetDescriptor = new Label();
             grpEvent = new DarkGroupBox();
             chkSingleUseEvent = new DarkCheckBox();
             cmbEvent = new DarkComboBox();
@@ -280,6 +288,7 @@ namespace Intersect.Editor.Forms.Editors
             ((ISupportInitialize)nudPrice).BeginInit();
             ((ISupportInitialize)picItem).BeginInit();
             grpConsumable.SuspendLayout();
+            grpPet.SuspendLayout();
             ((ISupportInitialize)nudIntervalPercentage).BeginInit();
             ((ISupportInitialize)nudInterval).BeginInit();
             grpEvent.SuspendLayout();
@@ -468,6 +477,7 @@ namespace Intersect.Editor.Forms.Editors
             grpGeneral.Controls.Add(lblName);
             grpGeneral.Controls.Add(txtName);
             grpGeneral.Controls.Add(grpConsumable);
+            grpGeneral.Controls.Add(grpPet);
             grpGeneral.Controls.Add(grpEvent);
             grpGeneral.Controls.Add(grpBags);
             grpGeneral.Controls.Add(grpSpell);
@@ -1556,9 +1566,117 @@ namespace Intersect.Editor.Forms.Editors
             lblInterval.Size = new Size(49, 15);
             lblInterval.TabIndex = 9;
             lblInterval.Text = "Interval:";
-            // 
+            //
+            // grpPet
+            //
+            grpPet.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
+            grpPet.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+            grpPet.Controls.Add(txtPetNameOverride);
+            grpPet.Controls.Add(lblPetNameOverride);
+            grpPet.Controls.Add(chkBindOnEquip);
+            grpPet.Controls.Add(chkDespawnOnUnequip);
+            grpPet.Controls.Add(chkSummonOnEquip);
+            grpPet.Controls.Add(cmbPet);
+            grpPet.Controls.Add(lblPetDescriptor);
+            grpPet.ForeColor = System.Drawing.Color.Gainsboro;
+            grpPet.Location = new System.Drawing.Point(321, 463);
+            grpPet.Margin = new Padding(4, 3, 4, 3);
+            grpPet.Name = "grpPet";
+            grpPet.Padding = new Padding(4, 3, 4, 3);
+            grpPet.Size = new Size(253, 173);
+            grpPet.TabIndex = 13;
+            grpPet.TabStop = false;
+            grpPet.Text = "Pet";
+            grpPet.Visible = false;
+            //
+            // txtPetNameOverride
+            //
+            txtPetNameOverride.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            txtPetNameOverride.BorderStyle = BorderStyle.FixedSingle;
+            txtPetNameOverride.ForeColor = System.Drawing.Color.FromArgb(220, 220, 220);
+            txtPetNameOverride.Location = new System.Drawing.Point(11, 141);
+            txtPetNameOverride.Margin = new Padding(4, 3, 4, 3);
+            txtPetNameOverride.Name = "txtPetNameOverride";
+            txtPetNameOverride.Size = new Size(221, 23);
+            txtPetNameOverride.TabIndex = 6;
+            txtPetNameOverride.TextChanged += txtPetNameOverride_TextChanged;
+            //
+            // lblPetNameOverride
+            //
+            lblPetNameOverride.AutoSize = true;
+            lblPetNameOverride.Location = new System.Drawing.Point(8, 123);
+            lblPetNameOverride.Margin = new Padding(4, 0, 4, 0);
+            lblPetNameOverride.Name = "lblPetNameOverride";
+            lblPetNameOverride.Size = new Size(109, 15);
+            lblPetNameOverride.TabIndex = 5;
+            lblPetNameOverride.Text = "Pet Name Override:";
+            //
+            // chkBindOnEquip
+            //
+            chkBindOnEquip.AutoSize = true;
+            chkBindOnEquip.Location = new System.Drawing.Point(11, 99);
+            chkBindOnEquip.Margin = new Padding(4, 3, 4, 3);
+            chkBindOnEquip.Name = "chkBindOnEquip";
+            chkBindOnEquip.Size = new Size(110, 19);
+            chkBindOnEquip.TabIndex = 4;
+            chkBindOnEquip.Text = "Bind on Equip?";
+            chkBindOnEquip.CheckedChanged += chkBindOnEquip_CheckedChanged;
+            //
+            // chkDespawnOnUnequip
+            //
+            chkDespawnOnUnequip.AutoSize = true;
+            chkDespawnOnUnequip.Location = new System.Drawing.Point(11, 76);
+            chkDespawnOnUnequip.Margin = new Padding(4, 3, 4, 3);
+            chkDespawnOnUnequip.Name = "chkDespawnOnUnequip";
+            chkDespawnOnUnequip.Size = new Size(153, 19);
+            chkDespawnOnUnequip.TabIndex = 3;
+            chkDespawnOnUnequip.Text = "Despawn on Unequip?";
+            chkDespawnOnUnequip.CheckedChanged += chkDespawnOnUnequip_CheckedChanged;
+            //
+            // chkSummonOnEquip
+            //
+            chkSummonOnEquip.AutoSize = true;
+            chkSummonOnEquip.Location = new System.Drawing.Point(11, 53);
+            chkSummonOnEquip.Margin = new Padding(4, 3, 4, 3);
+            chkSummonOnEquip.Name = "chkSummonOnEquip";
+            chkSummonOnEquip.Size = new Size(132, 19);
+            chkSummonOnEquip.TabIndex = 2;
+            chkSummonOnEquip.Text = "Summon on Equip?";
+            chkSummonOnEquip.CheckedChanged += chkSummonOnEquip_CheckedChanged;
+            //
+            // cmbPet
+            //
+            cmbPet.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            cmbPet.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+            cmbPet.BorderStyle = ButtonBorderStyle.Solid;
+            cmbPet.ButtonColor = System.Drawing.Color.FromArgb(43, 43, 43);
+            cmbPet.DrawDropdownHoverOutline = false;
+            cmbPet.DrawFocusRectangle = false;
+            cmbPet.DrawMode = DrawMode.OwnerDrawFixed;
+            cmbPet.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbPet.FlatStyle = FlatStyle.Flat;
+            cmbPet.ForeColor = System.Drawing.Color.Gainsboro;
+            cmbPet.FormattingEnabled = true;
+            cmbPet.Location = new System.Drawing.Point(62, 19);
+            cmbPet.Margin = new Padding(4, 3, 4, 3);
+            cmbPet.Name = "cmbPet";
+            cmbPet.Size = new Size(170, 24);
+            cmbPet.TabIndex = 1;
+            cmbPet.TextPadding = new Padding(2);
+            cmbPet.SelectedIndexChanged += cmbPet_SelectedIndexChanged;
+            //
+            // lblPetDescriptor
+            //
+            lblPetDescriptor.AutoSize = true;
+            lblPetDescriptor.Location = new System.Drawing.Point(8, 22);
+            lblPetDescriptor.Margin = new Padding(4, 0, 4, 0);
+            lblPetDescriptor.Name = "lblPetDescriptor";
+            lblPetDescriptor.Size = new Size(27, 15);
+            lblPetDescriptor.TabIndex = 0;
+            lblPetDescriptor.Text = "Pet:";
+            //
             // grpEvent
-            // 
+            //
             grpEvent.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
             grpEvent.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
             grpEvent.Controls.Add(chkSingleUseEvent);
@@ -3416,6 +3534,8 @@ namespace Intersect.Editor.Forms.Editors
             ((ISupportInitialize)picItem).EndInit();
             grpConsumable.ResumeLayout(false);
             grpConsumable.PerformLayout();
+            grpPet.ResumeLayout(false);
+            grpPet.PerformLayout();
             ((ISupportInitialize)nudIntervalPercentage).EndInit();
             ((ISupportInitialize)nudInterval).EndInit();
             grpEvent.ResumeLayout(false);
@@ -3531,6 +3651,14 @@ namespace Intersect.Editor.Forms.Editors
         private DarkComboBox cmbSubType;
         private DarkGroupBox grpEquipment;
         private DarkGroupBox grpConsumable;
+        private DarkGroupBox grpPet;
+        private DarkComboBox cmbPet;
+        private DarkCheckBox chkSummonOnEquip;
+        private DarkCheckBox chkDespawnOnUnequip;
+        private DarkCheckBox chkBindOnEquip;
+        private DarkTextBox txtPetNameOverride;
+        private Label lblPetDescriptor;
+        private Label lblPetNameOverride;
         private DarkComboBox cmbConsume;
         private DarkGroupBox grpSpell;
         private DarkButton btnCancel;

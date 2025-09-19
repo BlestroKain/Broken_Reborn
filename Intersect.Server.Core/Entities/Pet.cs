@@ -1,8 +1,12 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 using Intersect.Enums;
 using Intersect.Framework.Core;
 using Intersect.Framework.Core.GameObjects.Pets;
+using Intersect.Framework.Reflection;
 using Intersect.GameObjects;
+using Intersect.Network.Packets.Server;
+using Intersect.Shared.Pets;
 using Intersect.Server.Database.PlayerData.Players;
 using Intersect.Server.Entities.Pathfinding;
 using Intersect.Server.Framework.Items;
@@ -11,9 +15,6 @@ using Intersect.Server.Networking;
 namespace Intersect.Server.Entities;
 
 public sealed class Pet : Entity
-// Add the missing using directive for the namespace where 'EntityItemSource' is defined.
-// If you are unsure of the namespace, you may need to locate the definition of 'EntityItemSource' in your project or dependencies.
-// If 'EntityItemSource' is not defined in your project, you will need to define it or add the appropriate reference.
 {
     private const int FollowDistance = 3;
     private const long PathUpdateInterval = 100;
@@ -21,9 +22,19 @@ public sealed class Pet : Entity
 
     private readonly Pathfinder _pathfinder;
 
+    private bool _canAssistOwner;
+
+    private bool _canDefendOwner;
+
+    private bool _canEngageTarget;
+
+    private bool _canFollowOwner;
+
     private long _combatTimeout;
     private long _lastTargetSeenTime;
     private long _nextPathUpdate;
+
+    private bool _metadataDirty;
 
     private Guid _ownerMapId;
     private Guid _ownerMapInstanceId;
@@ -50,7 +61,53 @@ public sealed class Pet : Entity
         private set => _ownerCache = value;
     }
 
-    public PetState State { get; private set; } = PetState.Idle;
+    private PetState _state = PetState.Idle;
+
+    private PetBehavior _behavior = PetBehavior.Passive;
+
+    public PetBehavior Behavior
+    {
+        get => _behavior;
+        private set
+        {
+            if (_behavior == value)
+            {
+                return;
+            }
+
+            var previousState = State;
+            _behavior = value;
+
+            ApplyBehaviorSettings(value);
+            MarkMetadataDirty();
+
+            if (State == previousState)
+            {
+                BroadcastState();
+            }
+        }
+    }
+
+    public void SetBehavior(PetBehavior behavior)
+    {
+        Behavior = behavior;
+    }
+
+    public PetState State
+    {
+        get => _state;
+        private set
+        {
+            if (_state == value)
+            {
+                return;
+            }
+
+            _state = value;
+            MarkMetadataDirty();
+            BroadcastState();
+        }
+    }
 
     public Pet(
         PetDescriptor descriptor,
@@ -127,6 +184,8 @@ public sealed class Pet : Entity
 
         _pathfinder = new Pathfinder(this);
 
+        Behavior = PetBehavior.Follow;
+
         if (register && MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var instance))
         {
             instance.AddEntity(this);
@@ -134,7 +193,31 @@ public sealed class Pet : Entity
         }
     }
 
-    public override EntityType GetEntityType() => EntityType.GlobalEntity;
+    public override EntityType GetEntityType() => EntityType.Pet;
+
+    public override EntityPacket EntityPacket(EntityPacket packet = null, Player forPlayer = null)
+    {
+        packet ??= new PetEntityPacket();
+
+        packet = base.EntityPacket(packet, forPlayer);
+
+        if (packet is not PetEntityPacket petPacket)
+        {
+            throw new InvalidOperationException(
+                $"Invalid packet type '{packet.GetType().GetName(qualified: true)}', expected '{typeof(PetEntityPacket).GetName(qualified: true)}'"
+            );
+        }
+
+        petPacket.OwnerId = OwnerId;
+        petPacket.DescriptorId = Descriptor.Id;
+        petPacket.State = State;
+        petPacket.Behavior = Behavior;
+        petPacket.Despawnable = Despawnable;
+
+        ResetMetadataDirty();
+
+        return petPacket;
+    }
 
     public override void Update(long timeMs)
     {
@@ -293,6 +376,16 @@ public sealed class Pet : Entity
             return;
         }
 
+        if (!_canDefendOwner || !_canEngageTarget)
+        {
+            return;
+        }
+
+        if (IsRestrained())
+        {
+            return;
+        }
+
         var aggressor = attacker;
         if (aggressor == null || !IsValidAggressor(aggressor, owner))
         {
@@ -346,12 +439,27 @@ public sealed class Pet : Entity
 
     private void UpdateTarget(Player owner, long timeMs)
     {
+        if (!_canEngageTarget)
+        {
+            if (Target != null)
+            {
+                ClearCombatTarget();
+            }
+
+            return;
+        }
+
         if (!IsValidCombatTarget(Target))
         {
             ClearCombatTarget();
         }
 
         if (Target != null)
+        {
+            return;
+        }
+
+        if (!_canAssistOwner)
         {
             return;
         }
@@ -377,19 +485,24 @@ public sealed class Pet : Entity
 
     private void UpdateState(Player owner)
     {
-        if (Target != null)
+        if (_canEngageTarget && Target != null)
         {
             State = PetState.Attack;
             return;
         }
 
-        if (GetDistanceTo(owner) > FollowDistance)
+        if (_canFollowOwner && GetDistanceTo(owner) > FollowDistance)
         {
             State = PetState.Follow;
             return;
         }
 
         State = PetState.Idle;
+    }
+
+    private bool IsRestrained()
+    {
+        return HasStatusEffect(SpellEffect.Stun) || HasStatusEffect(SpellEffect.Sleep);
     }
 
     private bool IsValidAggressor(Entity? attacker, Player owner)
@@ -458,6 +571,11 @@ public sealed class Pet : Entity
 
     private bool TryAssignTarget(Entity target, long timeMs)
     {
+        if (!_canEngageTarget)
+        {
+            return false;
+        }
+
         if (!IsValidCombatTarget(target))
         {
             return false;
@@ -504,21 +622,21 @@ public sealed class Pet : Entity
         if (!IsValidCombatTarget(target))
         {
             ClearCombatTarget();
-            State = PetState.Follow;
+            State = _canFollowOwner ? PetState.Follow : PetState.Idle;
             return;
         }
 
         if (target.MapInstanceId != MapInstanceId)
         {
             ClearCombatTarget();
-            State = PetState.Follow;
+            State = _canFollowOwner ? PetState.Follow : PetState.Idle;
             return;
         }
 
         if (timeMs >= _combatTimeout)
         {
             ClearCombatTarget();
-            State = PetState.Follow;
+            State = _canFollowOwner ? PetState.Follow : PetState.Idle;
             return;
         }
 
@@ -530,7 +648,7 @@ public sealed class Pet : Entity
                 if (timeMs - _lastTargetSeenTime >= TargetLostGracePeriod)
                 {
                     ClearCombatTarget();
-                    State = PetState.Follow;
+                    State = _canFollowOwner ? PetState.Follow : PetState.Idle;
                 }
 
                 return;
@@ -544,7 +662,7 @@ public sealed class Pet : Entity
             else if (timeMs - _lastTargetSeenTime >= TargetLostGracePeriod)
             {
                 ClearCombatTarget();
-                State = PetState.Follow;
+                State = _canFollowOwner ? PetState.Follow : PetState.Idle;
             }
 
             return;
@@ -568,6 +686,13 @@ public sealed class Pet : Entity
 
     private void HandleFollowState(Player owner, long timeMs)
     {
+        if (!_canFollowOwner)
+        {
+            State = PetState.Idle;
+            _pathfinder.SetTarget(null);
+            return;
+        }
+
         if (GetDistanceTo(owner) <= 1)
         {
             State = PetState.Idle;
@@ -576,6 +701,27 @@ public sealed class Pet : Entity
         }
 
         UpdatePathfinder(owner.MapId, owner.X, owner.Y, owner.Z, timeMs, out _);
+    }
+
+    private void ApplyBehaviorSettings(PetBehavior behavior)
+    {
+        lock (EntityLock)
+        {
+            _canFollowOwner = behavior is PetBehavior.Follow or PetBehavior.Defend;
+            _canAssistOwner = behavior == PetBehavior.Follow;
+            _canDefendOwner = behavior is PetBehavior.Follow or PetBehavior.Stay or PetBehavior.Defend;
+            _canEngageTarget = behavior != PetBehavior.Passive;
+
+            if (!_canEngageTarget)
+            {
+                ClearCombatTarget();
+                State = PetState.Idle;
+            }
+            else if (!_canFollowOwner && State == PetState.Follow)
+            {
+                State = PetState.Idle;
+            }
+        }
     }
 
     private bool UpdatePathfinder(Guid mapId, int targetX, int targetY, int targetZ, long timeMs, out bool madeProgress)
@@ -685,8 +831,26 @@ public sealed class Pet : Entity
 
         PacketSender.SendEntityDataToProximity(this);
         ClearCombatTarget();
-        State = PetState.Follow;
+        State = _canFollowOwner ? PetState.Follow : PetState.Idle;
     }
+
+    private void MarkMetadataDirty()
+    {
+        _metadataDirty = true;
+    }
+
+    private void BroadcastState()
+    {
+        PacketSender.SendPetStateUpdate(this);
+    }
+
+    internal bool MetadataDirty => _metadataDirty;
+
+    internal void ResetMetadataDirty()
+    {
+        _metadataDirty = false;
+    }
+
     protected override EntityItemSource? AsItemSource()
     {
         // Since the Pet class does not seem to represent an item source, we return null.

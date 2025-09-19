@@ -309,6 +309,7 @@ public partial class EntityBox
 
                 break;
             case EntityType.GlobalEntity:
+            case EntityType.Pet:
                 EventDesc.Hide();
                 ExpBackground.Hide();
                 ExpBar.Hide();

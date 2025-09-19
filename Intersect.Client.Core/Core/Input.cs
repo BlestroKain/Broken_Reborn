@@ -15,6 +15,7 @@ using Intersect.Client.Networking;
 using Intersect.Configuration;
 using Intersect.Enums;
 using Intersect.Framework.Core;
+using Intersect.Shared.Pets;
 
 namespace Intersect.Client.Core;
 
@@ -352,6 +353,22 @@ public static partial class Input
 
                         case Control.OpenGuild:
                             _ = Interface.Interface.GameUi.GameMenu?.ToggleGuildWindow();
+                            break;
+
+                        case Control.PetModeFollow:
+                            _ = Globals.PetHub.SetBehavior(PetBehavior.Follow);
+                            break;
+
+                        case Control.PetModeStay:
+                            _ = Globals.PetHub.SetBehavior(PetBehavior.Stay);
+                            break;
+
+                        case Control.PetModeDefend:
+                            _ = Globals.PetHub.SetBehavior(PetBehavior.Defend);
+                            break;
+
+                        case Control.PetModePassive:
+                            _ = Globals.PetHub.SetBehavior(PetBehavior.Passive);
                             break;
 
                         case Control.TargetParty1:

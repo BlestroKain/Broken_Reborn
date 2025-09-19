@@ -75,10 +75,16 @@ public sealed class Pet : Entity
                 return;
             }
 
+            var previousState = State;
             _behavior = value;
 
             ApplyBehaviorSettings(value);
             MarkMetadataDirty();
+
+            if (State == previousState)
+            {
+                BroadcastState();
+            }
         }
     }
 
@@ -99,6 +105,7 @@ public sealed class Pet : Entity
 
             _state = value;
             MarkMetadataDirty();
+            BroadcastState();
         }
     }
 
@@ -830,6 +837,11 @@ public sealed class Pet : Entity
     private void MarkMetadataDirty()
     {
         _metadataDirty = true;
+    }
+
+    private void BroadcastState()
+    {
+        PacketSender.SendPetStateUpdate(this);
     }
 
     internal bool MetadataDirty => _metadataDirty;

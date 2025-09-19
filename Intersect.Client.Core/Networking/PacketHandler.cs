@@ -468,6 +468,26 @@ internal sealed partial class PacketHandler
         }
     }
 
+    public void HandlePacket(IPacketSender packetSender, PetStateUpdatePacket packet)
+    {
+        if (packet == null)
+        {
+            return;
+        }
+
+        if (!Globals.TryGetEntity(EntityType.Pet, packet.PetId, out var entity))
+        {
+            return;
+        }
+
+        if (entity is not Pet pet)
+        {
+            return;
+        }
+
+        pet.ApplyMetadata(pet.OwnerId, pet.DescriptorId, packet.State, pet.Despawnable, packet.Behavior);
+    }
+
     //ResourceEntityPacket
     public void HandlePacket(IPacketSender packetSender, ResourceEntityPacket packet)
     {

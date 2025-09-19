@@ -84,6 +84,11 @@ public partial class Player : Entity
 
     [JsonIgnore][NotMapped] public PetBehavior ActivePetMode { get; set; } = PetBehavior.Defend;
 
+    private const int PetBehaviorChangeCooldownDuration = 500;
+
+    [JsonIgnore][NotMapped]
+    private long _nextPetBehaviorChangeTime;
+
     #endregion
 
     private Entity? _pendingPetAttacker;
@@ -1188,6 +1193,36 @@ public partial class Player : Entity
         {
             CurrentPet = null;
         }
+    }
+
+    internal Pet? FindPet(Guid petId)
+    {
+        if (petId == Guid.Empty)
+        {
+            return CurrentPet;
+        }
+
+        foreach (var pet in GetActivePetsSnapshot())
+        {
+            if (pet.Id == petId)
+            {
+                return pet;
+            }
+        }
+
+        return null;
+    }
+
+    internal bool TryBeginPetBehaviorChange()
+    {
+        var now = Timing.Global.Milliseconds;
+        if (now < _nextPetBehaviorChangeTime)
+        {
+            return false;
+        }
+
+        _nextPetBehaviorChangeTime = now + PetBehaviorChangeCooldownDuration;
+        return true;
     }
 
     private Pet[] GetActivePetsSnapshot()

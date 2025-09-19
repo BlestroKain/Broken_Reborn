@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Linq;
 using Intersect.Core;
 using Intersect.Enums;
 using Intersect.Framework.Core;
@@ -7,10 +8,12 @@ using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Framework.Core.GameObjects.Maps.Attributes;
 using Intersect.Framework.Core.GameObjects.NPCs;
+using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.Framework.Core.GameObjects.Resources;
 using Intersect.GameObjects;
 using Intersect.Network.Packets.Server;
 using Intersect.Server.Database;
+using Intersect.Server.Database.PlayerData.Players;
 using Intersect.Server.Entities.Events;
 using Intersect.Server.Networking;
 using Intersect.Utilities;
@@ -123,6 +126,9 @@ public partial class MapInstance : IMapInstance
 
     // NPCs
     public ConcurrentDictionary<NpcSpawn, MapNpcSpawn> NpcSpawnInstances = new ConcurrentDictionary<NpcSpawn, MapNpcSpawn>();
+
+    // Mascotas (Pets)
+    public ConcurrentDictionary<Guid, Pet> PetInstances = new ConcurrentDictionary<Guid, Pet>();
 
     // Items
     public ConcurrentDictionary<Guid, MapItemSpawn> ItemRespawns = new ConcurrentDictionary<Guid, MapItemSpawn>();
@@ -238,6 +244,7 @@ public partial class MapInstance : IMapInstance
         DespawnTraps();
         DespawnItems();
         DespawnGlobalEvents();
+        DespawnPets(); 
     }
 
     /// <summary>
@@ -328,6 +335,10 @@ public partial class MapInstance : IMapInstance
                 );
             }
         }
+        else if (entity is Pet pet)
+        {
+            PetInstances[pet.Id] = pet;
+        }
 
         mCachedEntities = mEntities.Values.ToArray();
     }
@@ -341,11 +352,104 @@ public partial class MapInstance : IMapInstance
     public void RemoveEntity(Entity en)
     {
         mEntities.TryRemove(en.Id, out var result);
-        if (mPlayers.ContainsKey(en.Id))
+
+        if (en is Player player)
         {
-            mPlayers.TryRemove(en.Id, out var pResult);
+            mPlayers.TryRemove(player.Id, out _);
         }
+        else if (en is Pet pet)
+        {
+            PetInstances.TryRemove(pet.Id, out _);
+        }
+
         mCachedEntities = mEntities.Values.ToArray();
+    }
+
+    public Pet? SpawnPetForPlayer(
+        Player owner,
+        PetDescriptor descriptor,
+        PlayerPet? persistedPet = null,
+        Guid? mapIdOverride = null,
+        Guid? mapInstanceIdOverride = null,
+        int? xOverride = null,
+        int? yOverride = null,
+        Direction? dirOverride = null
+    )
+    {
+        if (owner == null || owner.IsDisposed || descriptor == null)
+        {
+            return null;
+        }
+
+        var spawnMapId = mapIdOverride ?? owner.MapId;
+        var spawnInstanceId = mapInstanceIdOverride ?? owner.MapInstanceId;
+
+        if (spawnInstanceId != MapInstanceId)
+        {
+            return null;
+        }
+
+        foreach (var entity in mEntities.Values.ToArray())
+        {
+            if (entity is Pet existing && !existing.IsDisposed && existing.OwnerId == owner.Id
+                && existing.MapInstanceId == MapInstanceId)
+            {
+                lock (existing.EntityLock)
+                {
+                    existing.Despawn(true);
+                }
+
+                RemoveEntity(existing);
+            }
+        }
+
+        var pet = new Pet(
+            descriptor,
+            owner,
+            register: false,
+            mapIdOverride: spawnMapId,
+            mapInstanceIdOverride: spawnInstanceId,
+            xOverride: xOverride ?? owner.X,
+            yOverride: yOverride ?? owner.Y,
+            directionOverride: dirOverride ?? owner.Dir,
+            persistedPet: persistedPet
+        );
+
+        AddEntity(pet);
+        PetInstances[pet.Id] = pet;
+        PacketSender.SendEntityDataToProximity(pet);
+        PacketSender.SendPetProgress(pet);
+
+        return pet;
+    }
+
+    public void DespawnActivePetOf(Player owner, bool killIfDespawnable = true)
+    {
+        if (owner == null || owner.IsDisposed)
+        {
+            return;
+        }
+
+        foreach (var kv in PetInstances.ToArray())
+        {
+            var pet = kv.Value;
+            if (pet == null || pet.IsDisposed)
+            {
+                continue;
+            }
+
+            if (pet.OwnerId != owner.Id || pet.MapInstanceId != MapInstanceId)
+            {
+                continue;
+            }
+
+            lock (pet.EntityLock)
+            {
+                pet.Despawn(killIfDespawnable);
+            }
+
+            PetInstances.TryRemove(pet.Id, out _);
+        }
     }
 
     /// <summary>
@@ -382,6 +486,16 @@ public partial class MapInstance : IMapInstance
 
         AddEntity(player);
         player.LastMapEntered = mMapController.Id;
+
+        foreach (var pet in player.GetActivePetsSnapshot())
+        {
+            if (pet == null)
+            {
+                continue;
+            }
+
+            pet.SynchronizeWithOwner(player);
+        }
 
         // Send the entities/items of this current MapInstance to the player
         SendMapEntitiesTo(player);
@@ -616,21 +730,61 @@ public partial class MapInstance : IMapInstance
             }
         }
     }
+    /// <summary>
+    /// Despawns all pets, and removes them from our dictionary of Pet Instances.
+    /// </summary>
+    private void DespawnPets()
+    {
+        // Elimina todas las mascotas en el mapa
+        lock (GetLock())
+        {
+            foreach (var petInstance in PetInstances)
+            {
+                lock (petInstance.Value.EntityLock)
+                {
+                    petInstance.Value.Despawn(true);
+                }
+            }
 
+            PetInstances.Clear();
+
+            // Elimina cualquier otra mascota en este mapa (solo deberían quedar jugadores)
+            foreach (var entity in mEntities)
+            {
+                if (entity.Value is Pet pet)
+                {
+                    lock (pet.EntityLock)
+                    {
+                        pet.Despawn(true);
+                    }
+                }
+            }
+        }
+    }
     /// <summary>
     /// Clears the given entity of any targets that an NPC has on them. For AI purposes.
     /// </summary>
     /// <param name="en">The entitiy to clear targets of.</param>
     public void ClearEntityTargetsOf(Entity en)
     {
-        foreach (var entity in mEntities)
+        foreach (var kv in mEntities)
         {
-            if (entity.Value is Npc npc && npc.Target == en)
+            switch (kv.Value)
             {
-                npc.RemoveTarget();
+                case Npc npc when npc.Target == en:
+                    npc.RemoveTarget();
+                    break;
+                case Pet pet when pet.Target == en:
+                    // equivalente a ClearCombatTarget() de Pet
+                    pet.NotifyOwnerDamaged(null); // o expón un método ClearTarget() en Pet
+                    break;
             }
         }
     }
+
+
+
+
     #endregion
 
     #region Resources
@@ -1274,6 +1428,7 @@ public partial class MapInstance : IMapInstance
         // Keep a list of all entities with changed vitals and statusses.
         var vitalUpdates = new List<Entity>();
         var statusUpdates = new List<Entity>();
+        var petMetadataUpdates = new List<Pet>();
 
         foreach (var en in mEntities)
         {
@@ -1297,15 +1452,19 @@ public partial class MapInstance : IMapInstance
                 }
             }
 
-            en.Value.Update(timeMs);
+            var entity = en.Value;
+
+            entity.Update(timeMs);
+
+            var vitalsChanged = entity.VitalsUpdated;
 
             // Check to see if we need to send any entity vital and status updates for this entity.
-            if (en.Value.VitalsUpdated)
+            if (vitalsChanged)
             {
-                vitalUpdates.Add(en.Value);
+                vitalUpdates.Add(entity);
 
                 // Send a party update if we're a player with a party.
-                if (en.Value is Player player)
+                if (entity is Player player)
                 {
                     for (var i = 0; i < player.Party.Count; i++)
                     {
@@ -1313,22 +1472,27 @@ public partial class MapInstance : IMapInstance
                     }
                 }
 
-                en.Value.VitalsUpdated = false;
+                entity.VitalsUpdated = false;
             }
 
-            if (en.Value.StatusesUpdated)
+            if (entity.StatusesUpdated)
             {
-                statusUpdates.Add(en.Value);
+                statusUpdates.Add(entity);
 
-                en.Value.StatusesUpdated = false;
+                entity.StatusesUpdated = false;
             }
 
-            foreach (var status in en.Value.CachedStatuses)
+            foreach (var status in entity.CachedStatuses)
             {
                 if (status.Type == SpellEffect.Shield)
                 {
-                    statusUpdates.Add(en.Value);
+                    statusUpdates.Add(entity);
                 }
+            }
+
+            if (entity is Pet pet && pet.MetadataDirty)
+            {
+                petMetadataUpdates.Add(pet);
             }
         }
 
@@ -1340,6 +1504,16 @@ public partial class MapInstance : IMapInstance
         if (statusUpdates.Count > 0)
         {
             PacketSender.SendMapEntityStatusUpdate(mMapController, statusUpdates.ToArray(), MapInstanceId);
+        }
+
+        if (petMetadataUpdates.Count > 0)
+        {
+            PacketSender.SendPetEntityUpdate(mMapController, petMetadataUpdates, MapInstanceId);
+
+            foreach (var pet in petMetadataUpdates)
+            {
+                pet.ResetMetadataDirty();
+            }
         }
     }
 

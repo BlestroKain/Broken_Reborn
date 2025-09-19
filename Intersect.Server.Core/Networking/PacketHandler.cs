@@ -3260,6 +3260,93 @@ internal sealed partial class PacketHandler
         }
     }
 
+    public void HandlePacket(Client client, PetBehaviorChangePacket packet)
+    {
+        if (client?.Entity is not Player player || packet == null)
+        {
+            return;
+        }
+
+        var pet = player.FindPet(packet.PetId);
+        if (pet == null || pet.IsDisposed || pet.OwnerId != player.Id)
+        {
+            return;
+        }
+
+        if (pet.Behavior == packet.Behavior)
+        {
+            return;
+        }
+
+        if (!player.TryBeginPetBehaviorChange())
+        {
+            return;
+        }
+
+        pet.SetBehavior(packet.Behavior);
+        player.ActivePetMode = packet.Behavior;
+    }
+
+    public void HandlePacket(Client client, SpawnPetRequestPacket packet)
+    {
+        if (client?.Entity is not Player player || packet == null)
+        {
+            return;
+        }
+
+        if (!player.IsActivePetEquipped())
+        {
+            return;
+        }
+
+        _ = player.SetPetHubSpawnRequested(true, openPetHub: true);
+    }
+
+    public void HandlePacket(Client client, DespawnPetRequestPacket packet)
+    {
+        if (client?.Entity is not Player player || packet == null)
+        {
+            return;
+        }
+
+        if (!player.IsActivePetEquipped())
+        {
+            return;
+        }
+
+        _ = player.SetPetHubSpawnRequested(false, closePetHub: packet.ClosePetHub);
+    }
+
+    public void HandlePacket(Client client, InvokePetPacket packet)
+    {
+        if (client?.Entity is not Player player || packet == null)
+        {
+            return;
+        }
+
+        if (!player.IsActivePetEquipped())
+        {
+            return;
+        }
+
+        _ = player.SetPetHubSpawnRequested(true, openPetHub: true);
+    }
+
+    public void HandlePacket(Client client, DismissPetPacket packet)
+    {
+        if (client?.Entity is not Player player || packet == null)
+        {
+            return;
+        }
+
+        if (!player.IsActivePetEquipped())
+        {
+            return;
+        }
+
+        _ = player.SetPetHubSpawnRequested(false, closePetHub: packet.ClosePetHub);
+    }
+
     //SetAlignmentRequestPacket
     public void HandlePacket(Client client, SetAlignmentRequestPacket packet)
     {

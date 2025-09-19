@@ -11,6 +11,7 @@ using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.GameObjects.Variables;
 using Intersect.Framework.Core.GameObjects.NPCs;
+using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.GameObjects;
 using Intersect.Server.Core.MapInstancing;
 using Intersect.Server.Database;
@@ -922,6 +923,137 @@ public static partial class CommandProcessing
         }
     }
 
+    //Spawn Pet Command (accepts any entity as caller)
+    private static void ProcessCommand(
+        SpawnPetCommand command,
+        Entity caller,
+        Event eventInstance,
+        CommandInstance stackInfo,
+        Stack<CommandInstance> callStack
+    )
+    {
+        if (caller is not Player playerCaller)
+        {
+            return;
+        }
+
+        if (command.PetId == Guid.Empty)
+        {
+            return;
+        }
+
+        var descriptor = PetDescriptor.Get(command.PetId);
+        if (descriptor == null)
+        {
+            return;
+        }
+
+        var mapId = command.MapId;
+        var tileX = 0;
+        var tileY = 0;
+        var direction = Direction.Up;
+        var targetEntity = caller;
+
+        if (mapId != Guid.Empty)
+        {
+            tileX = command.X;
+            tileY = command.Y;
+            direction = command.Dir;
+        }
+        else
+        {
+            if (command.EntityId != Guid.Empty)
+            {
+                foreach (var evt in playerCaller.EventLookup)
+                {
+                    if (evt.Value.MapId != eventInstance.MapId)
+                    {
+                        continue;
+                    }
+
+                    if (evt.Value.Descriptor.Id == command.EntityId)
+                    {
+                        targetEntity = evt.Value.PageInstance;
+
+                        break;
+                    }
+                }
+            }
+
+            if (targetEntity != null)
+            {
+                var xDiff = command.X;
+                var yDiff = command.Y;
+                if (command.Dir == Direction.Down)
+                {
+                    var tmp = 0;
+                    switch (targetEntity.Dir)
+                    {
+                        case Direction.Down:
+                            yDiff *= -1;
+                            xDiff *= -1;
+
+                            break;
+                        case Direction.Left:
+                            tmp = yDiff;
+                            yDiff = xDiff;
+                            xDiff = (sbyte)tmp;
+
+                            break;
+                        case Direction.Right:
+                            tmp = yDiff;
+                            yDiff = xDiff;
+                            xDiff = (sbyte)-tmp;
+
+                            break;
+                    }
+
+                    direction = targetEntity.Dir;
+                }
+
+                mapId = targetEntity.MapId;
+                tileX = targetEntity.X + xDiff;
+                tileY = targetEntity.Y + yDiff;
+            }
+            else
+            {
+                return;
+            }
+        }
+
+        var tile = new TileHelper(mapId, tileX, tileY);
+        if (!tile.TryFix())
+        {
+            return;
+        }
+
+        var spawnMapId = tile.GetMapId();
+        var spawnX = tile.GetX();
+        var spawnY = tile.GetY();
+
+        if (!MapController.TryGetInstanceFromMap(spawnMapId, caller.MapInstanceId, out var instance))
+        {
+            return;
+        }
+
+        var pet = instance.SpawnPetForPlayer(
+            playerCaller,
+            descriptor,
+            mapIdOverride: spawnMapId,
+            mapInstanceIdOverride: instance.MapInstanceId,
+            xOverride: spawnX,
+            yOverride: spawnY,
+            dirOverride: direction
+        );
+
+        if (pet == null)
+        {
+            return;
+        }
+
+        playerCaller.SpawnedPets.Add(pet);
+    }
+
     //Spawn Npc Command (accepts any entity as caller)
     private static void ProcessCommand(
         SpawnNpcCommand command,
@@ -1037,6 +1169,15 @@ public static partial class CommandProcessing
         }
 
         player.SpawnedNpcs.Clear();
+
+        foreach (var pet in player.SpawnedPets.ToArray())
+        {
+            if (pet?.Despawnable == true)
+            {
+                pet.Despawn();
+                player.SpawnedPets.Remove(pet);
+            }
+        }
     }
 
     //Play Animation Command

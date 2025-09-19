@@ -20,6 +20,7 @@ public partial class PaperdollOptions
         "Boots",
         "Ring",
         "Trophy",
+        "Pet",
     ];
 
     public List<string> Left { get; set; } =
@@ -32,6 +33,7 @@ public partial class PaperdollOptions
         "Boots",
         "Ring",
         "Trophy",
+        "Pet",
     ];
 
     public List<string> Right { get; set; } =
@@ -44,6 +46,7 @@ public partial class PaperdollOptions
         "Boots",
         "Ring",
         "Trophy",
+        "Pet",
     ];
 
     public List<string> Up { get; set; } =
@@ -56,6 +59,7 @@ public partial class PaperdollOptions
         "Boots",
         "Ring",
         "Trophy",
+        "Pet",
     ];
 
     public PaperdollOptions()

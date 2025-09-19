@@ -98,10 +98,20 @@ public sealed class Pet : Entity
     /// <param name="despawnable">Indicates whether the pet can despawn automatically.</param>
     public void ApplyMetadata(Guid ownerId, Guid descriptorId, PetState state, bool despawnable)
     {
+        var ownerChanged = OwnerId != ownerId;
+        var descriptorChanged = DescriptorId != descriptorId;
+        var stateChanged = State != state;
+        var despawnableChanged = Despawnable != despawnable;
+
         OwnerId = ownerId;
         DescriptorId = descriptorId;
         State = state;
         Despawnable = despawnable;
+
+        if (ownerChanged || descriptorChanged || stateChanged || despawnableChanged)
+        {
+            Globals.NotifyPetMetadataApplied(this);
+        }
     }
 
     /// <inheritdoc />

@@ -1274,6 +1274,7 @@ public partial class MapInstance : IMapInstance
         // Keep a list of all entities with changed vitals and statusses.
         var vitalUpdates = new List<Entity>();
         var statusUpdates = new List<Entity>();
+        var petMetadataUpdates = new List<Pet>();
 
         foreach (var en in mEntities)
         {
@@ -1297,15 +1298,19 @@ public partial class MapInstance : IMapInstance
                 }
             }
 
-            en.Value.Update(timeMs);
+            var entity = en.Value;
+
+            entity.Update(timeMs);
+
+            var vitalsChanged = entity.VitalsUpdated;
 
             // Check to see if we need to send any entity vital and status updates for this entity.
-            if (en.Value.VitalsUpdated)
+            if (vitalsChanged)
             {
-                vitalUpdates.Add(en.Value);
+                vitalUpdates.Add(entity);
 
                 // Send a party update if we're a player with a party.
-                if (en.Value is Player player)
+                if (entity is Player player)
                 {
                     for (var i = 0; i < player.Party.Count; i++)
                     {
@@ -1313,21 +1318,29 @@ public partial class MapInstance : IMapInstance
                     }
                 }
 
-                en.Value.VitalsUpdated = false;
+                entity.VitalsUpdated = false;
             }
 
-            if (en.Value.StatusesUpdated)
+            if (entity.StatusesUpdated)
             {
-                statusUpdates.Add(en.Value);
+                statusUpdates.Add(entity);
 
-                en.Value.StatusesUpdated = false;
+                entity.StatusesUpdated = false;
             }
 
-            foreach (var status in en.Value.CachedStatuses)
+            foreach (var status in entity.CachedStatuses)
             {
                 if (status.Type == SpellEffect.Shield)
                 {
-                    statusUpdates.Add(en.Value);
+                    statusUpdates.Add(entity);
+                }
+            }
+
+            if (entity is Pet pet)
+            {
+                if (vitalsChanged || pet.MetadataDirty)
+                {
+                    petMetadataUpdates.Add(pet);
                 }
             }
         }
@@ -1340,6 +1353,16 @@ public partial class MapInstance : IMapInstance
         if (statusUpdates.Count > 0)
         {
             PacketSender.SendMapEntityStatusUpdate(mMapController, statusUpdates.ToArray(), MapInstanceId);
+        }
+
+        if (petMetadataUpdates.Count > 0)
+        {
+            PacketSender.SendPetEntityUpdate(mMapController, petMetadataUpdates, MapInstanceId);
+
+            foreach (var pet in petMetadataUpdates)
+            {
+                pet.ResetMetadataDirty();
+            }
         }
     }
 

@@ -1005,6 +1005,31 @@ public static partial class PacketSender
         SendDataToProximityOnMapInstance(map.Id, mapInstanceId, new MapEntityStatusPacket(map.Id, data.ToArray()));
     }
 
+    public static void SendPetEntityUpdate(MapController map, IReadOnlyCollection<Pet> pets, Guid mapInstanceId)
+    {
+        if (pets == null || pets.Count == 0)
+        {
+            return;
+        }
+
+        var updates = new List<PetEntityUpdate>(pets.Count);
+        foreach (var pet in pets)
+        {
+            updates.Add(
+                new PetEntityUpdate
+                {
+                    EntityId = pet.Id,
+                    OwnerId = pet.OwnerId,
+                    DescriptorId = pet.Descriptor?.Id ?? Guid.Empty,
+                    State = pet.State,
+                    Despawnable = pet.Despawnable,
+                }
+            );
+        }
+
+        SendDataToProximityOnMapInstance(map.Id, mapInstanceId, new PetEntityUpdatePacket(map.Id, updates.ToArray()));
+    }
+
     //EntityStatsPacket
     public static void SendEntityStats(Entity en)
     {

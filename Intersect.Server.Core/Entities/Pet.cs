@@ -314,6 +314,16 @@ public sealed class Pet : Entity
             return;
         }
 
+        if (owner.ActivePetMode != PetBehaviorMode.Defend)
+        {
+            return;
+        }
+
+        if (IsRestrained())
+        {
+            return;
+        }
+
         var aggressor = attacker;
         if (aggressor == null || !IsValidAggressor(aggressor, owner))
         {
@@ -411,6 +421,11 @@ public sealed class Pet : Entity
         }
 
         State = PetState.Idle;
+    }
+
+    private bool IsRestrained()
+    {
+        return HasStatusEffect(SpellEffect.Stun) || HasStatusEffect(SpellEffect.Sleep);
     }
 
     private bool IsValidAggressor(Entity? attacker, Player owner)

@@ -364,7 +364,17 @@ public partial class FrmPet : EditorForm
         lblLevel.Text = Strings.Pets.level;
         lblExp.Text = Strings.Pets.experience;
         grpStats.Text = Strings.Pets.stats;
+        lblHP.Text = Strings.NpcEditor.hp;
+        lblMana.Text = Strings.NpcEditor.mana;
+        lblStr.Text = Strings.NpcEditor.attack;
+        lblDef.Text = Strings.NpcEditor.defense;
+        lblMag.Text = Strings.NpcEditor.abilitypower;
+        lblMR.Text = Strings.NpcEditor.magicresist;
+        lblSpd.Text = Strings.NpcEditor.speed;
+        label1.Text = $"{Globals.GetStatName((int)Stat.Agility)}:";
         grpRegen.Text = Strings.Pets.vitalregen;
+        lblHpRegen.Text = Strings.NpcEditor.hpregen;
+        lblManaRegen.Text = Strings.NpcEditor.mpregen;
         grpCombat.Text = Strings.Pets.combat;
         lblAttackAnimation.Text = Strings.Pets.attackanimation;
         lblDeathAnimation.Text = Strings.Pets.deathanimation;
@@ -378,6 +388,13 @@ public partial class FrmPet : EditorForm
         lblAttackSpeedValue.Text = Strings.Pets.attackspeedvalue;
         grpImmunities.Text = Strings.Pets.immunities;
         lblTenacity.Text = Strings.Pets.tenacity;
+        foreach (var (effect, checkbox) in _immunityCheckboxes)
+        {
+            if (Strings.NpcEditor.Immunities.TryGetValue(effect, out var text))
+            {
+                checkbox.Text = text;
+            }
+        }
         grpSpells.Text = Strings.Pets.spells;
         btnAdd.Text = Strings.Pets.addspell;
         btnRemove.Text = Strings.Pets.removespell;

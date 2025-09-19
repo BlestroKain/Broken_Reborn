@@ -1091,6 +1091,7 @@ namespace Intersect.Editor.Forms.Editors
             toolStripItemNew.Name = "toolStripItemNew";
             toolStripItemNew.Size = new Size(23, 26);
             toolStripItemNew.Text = "New";
+            toolStripItemNew.Click += toolStripItemNew_Click;
             // 
             // toolStripSeparator1
             // 
@@ -1109,6 +1110,7 @@ namespace Intersect.Editor.Forms.Editors
             toolStripItemDelete.Name = "toolStripItemDelete";
             toolStripItemDelete.Size = new Size(23, 26);
             toolStripItemDelete.Text = "Delete";
+            toolStripItemDelete.Click += toolStripItemDelete_Click;
             // 
             // toolStripSeparator2
             // 
@@ -1126,6 +1128,7 @@ namespace Intersect.Editor.Forms.Editors
             btnAlphabetical.Name = "btnAlphabetical";
             btnAlphabetical.Size = new Size(23, 26);
             btnAlphabetical.Text = "Order Chronologically";
+            btnAlphabetical.Click += btnAlphabetical_Click;
             // 
             // toolStripSeparator4
             // 
@@ -1144,6 +1147,7 @@ namespace Intersect.Editor.Forms.Editors
             toolStripItemCopy.Name = "toolStripItemCopy";
             toolStripItemCopy.Size = new Size(23, 26);
             toolStripItemCopy.Text = "Copy";
+            toolStripItemCopy.Click += toolStripItemCopy_Click;
             // 
             // toolStripItemPaste
             // 
@@ -1155,6 +1159,7 @@ namespace Intersect.Editor.Forms.Editors
             toolStripItemPaste.Name = "toolStripItemPaste";
             toolStripItemPaste.Size = new Size(23, 26);
             toolStripItemPaste.Text = "Paste";
+            toolStripItemPaste.Click += toolStripItemPaste_Click;
             // 
             // toolStripSeparator3
             // 
@@ -1173,6 +1178,7 @@ namespace Intersect.Editor.Forms.Editors
             toolStripItemUndo.Name = "toolStripItemUndo";
             toolStripItemUndo.Size = new Size(23, 26);
             toolStripItemUndo.Text = "Undo";
+            toolStripItemUndo.Click += toolStripItemUndo_Click;
             // 
             // FrmPet
             // 

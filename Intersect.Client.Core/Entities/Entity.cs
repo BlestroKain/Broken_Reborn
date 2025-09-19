@@ -1743,7 +1743,7 @@ public partial class Entity : IEntity
 
         var name = Name;
         if ((this is Player && Options.Instance.Player.ShowLevelByName) ||
-            (Type == EntityType.GlobalEntity && Options.Instance.Npc.ShowLevelByName))
+            ((Type == EntityType.GlobalEntity || Type == EntityType.Pet) && Options.Instance.Npc.ShowLevelByName))
         {
             name = Strings.GameWindow.EntityNameAndLevel.ToString(Name, Level);
         }

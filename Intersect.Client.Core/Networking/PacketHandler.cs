@@ -477,6 +477,26 @@ internal sealed partial class PacketHandler
         pet.ApplyMetadata(pet.OwnerId, pet.DescriptorId, packet.State, pet.Despawnable, packet.Behavior);
     }
 
+    public void HandlePacket(IPacketSender packetSender, OpenPetHubPacket packet)
+    {
+        if (packet == null)
+        {
+            return;
+        }
+
+        Interface.Interface.EnqueueInGame(gameInterface =>
+        {
+            if (packet.Close)
+            {
+                gameInterface.HidePetHub();
+            }
+            else
+            {
+                gameInterface.ShowPetHub();
+            }
+        });
+    }
+
     //ResourceEntityPacket
     public void HandlePacket(IPacketSender packetSender, ResourceEntityPacket packet)
     {

@@ -14,6 +14,7 @@ using Intersect.Framework.Core.GameObjects.Crafting;
 using Intersect.Framework.Core.GameObjects.Events;
 using Intersect.Framework.Core.GameObjects.Events.Commands;
 using Intersect.Framework.Core.GameObjects.Items;
+using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Config;
 using Intersect.Framework.Core.GameObjects.Maps.Attributes;
@@ -85,9 +86,13 @@ public partial class Player : Entity
     [JsonIgnore][NotMapped] public PetBehavior ActivePetMode { get; set; } = PetBehavior.Defend;
 
     private const int PetBehaviorChangeCooldownDuration = 500;
+    private const int PetInvokeCooldownDuration = 1000;
 
     [JsonIgnore][NotMapped]
     private long _nextPetBehaviorChangeTime;
+
+    [JsonIgnore][NotMapped]
+    private long _nextPetInvokeTime;
 
     #endregion
 
@@ -1225,6 +1230,30 @@ public partial class Player : Entity
         return true;
     }
 
+    public bool InvokePet(bool ignoreCooldown = false, bool openPetHub = false)
+    {
+        var now = Timing.Global.Milliseconds;
+        if (!ignoreCooldown && now < _nextPetInvokeTime)
+        {
+            return false;
+        }
+
+        var playerPet = ActivePet;
+        var descriptor = playerPet?.Descriptor;
+        if (playerPet == null || descriptor == null)
+        {
+            return false;
+        }
+
+        if (!TrySummonPet(playerPet, descriptor, openPetHub))
+        {
+            return false;
+        }
+
+        _nextPetInvokeTime = now + PetInvokeCooldownDuration;
+        return true;
+    }
+
     private Pet[] GetActivePetsSnapshot()
     {
         var pets = new List<Pet>();
@@ -1261,6 +1290,116 @@ public partial class Player : Entity
                     SpawnedPets.RemoveAt(index);
                 }
             }
+        }
+    }
+
+    private bool TryGetOrCreatePlayerPet(
+        PetItemData? petData,
+        [NotNullWhen(true)] out PlayerPet? playerPet,
+        [NotNullWhen(true)] out PetDescriptor? descriptor
+    )
+    {
+        playerPet = null;
+        descriptor = null;
+
+        if (petData?.PetDescriptorId == Guid.Empty)
+        {
+            return false;
+        }
+
+        descriptor = petData.Descriptor;
+        if (descriptor == null)
+        {
+            return false;
+        }
+
+        playerPet = Pets.FirstOrDefault(pet => pet.PetDescriptorId == descriptor.Id);
+        if (playerPet == null)
+        {
+            playerPet = new PlayerPet
+            {
+                PlayerId = Id,
+                PetDescriptorId = descriptor.Id,
+            };
+
+            Pets.Add(playerPet);
+        }
+
+        if (!string.IsNullOrWhiteSpace(petData.PetNameOverride))
+        {
+            playerPet.CustomName = petData.PetNameOverride;
+        }
+
+        return true;
+    }
+
+    private bool TrySummonPet(PlayerPet playerPet, PetDescriptor descriptor, bool openPetHub)
+    {
+        if (playerPet == null || descriptor == null)
+        {
+            return false;
+        }
+
+        CleanupSpawnedPetsList();
+
+        var currentPet = CurrentPet;
+        if (currentPet != null)
+        {
+            DespawnPet(currentPet);
+        }
+
+        var newPet = new Pet(descriptor, this);
+        CurrentPet = newPet;
+
+        lock (_spawnedPetsLock)
+        {
+            SpawnedPets.Add(newPet);
+        }
+
+        newPet.SetBehavior(ActivePetMode);
+
+        if (openPetHub)
+        {
+            PacketSender.SendOpenPetHub(this);
+        }
+
+        return true;
+    }
+
+    private void HandlePetUnequipped(PetItemData? petData)
+    {
+        if (petData?.PetDescriptorId == Guid.Empty)
+        {
+            return;
+        }
+
+        var activePet = ActivePet;
+        if (activePet == null || activePet.PetDescriptorId != petData.PetDescriptorId)
+        {
+            return;
+        }
+
+        if (petData.DespawnOnUnequip)
+        {
+            var currentPet = CurrentPet;
+            if (currentPet != null)
+            {
+                DespawnPet(currentPet);
+            }
+
+            ActivePet = null;
+            ActivePetId = null;
+            PacketSender.SendOpenPetHub(this, close: true);
+
+            return;
+        }
+
+        ActivePetMode = PetBehavior.Stay;
+
+        var existingPet = CurrentPet;
+        if (existingPet != null && !existingPet.IsDisposed)
+        {
+            existingPet.SetBehavior(PetBehavior.Stay);
         }
     }
 
@@ -3736,6 +3875,12 @@ public partial class Player : Entity
             return false;
         }
 
+        if (itemInSlot.IsBound)
+        {
+            PacketSender.SendChatMsg(this, Strings.Items.Bound, ChatMessageType.Inventory, CustomColors.Items.Bound);
+            return false;
+        }
+
         if (!itemDescriptor.CanDrop)
         {
             PacketSender.SendChatMsg(this, Strings.Items.Bound, ChatMessageType.Inventory, CustomColors.Items.Bound);
@@ -5430,7 +5575,7 @@ public partial class Player : Entity
                 }
 
                 //Check if the item is bound.. if so don't allow trade
-                if (!itemBase.CanTrade)
+                if (!itemBase.CanTrade || Items[slot].IsBound)
                 {
                     PacketSender.SendChatMsg(this, Strings.Trading.Bound, ChatMessageType.Trading, CustomColors.Items.Bound);
 
@@ -6475,6 +6620,29 @@ public partial class Player : Entity
 
         EnqueueStartCommonEvent(itemDescriptor.GetEventTrigger(ItemEventTrigger.OnEquip));
         ProcessEquipmentUpdated(true);
+
+        if (!TryGetOrCreatePlayerPet(itemDescriptor.Pet, out var playerPet, out _))
+        {
+            return;
+        }
+
+        ActivePet = playerPet;
+        ActivePetId = playerPet.Id;
+
+        if (itemDescriptor.Pet.BindOnEquip)
+        {
+            var inventorySlot = Items.ElementAtOrDefault(slot);
+            if (inventorySlot != null && inventorySlot.BoundPlayerId != Id)
+            {
+                inventorySlot.BoundPlayerId = Id;
+                PacketSender.SendInventoryItemUpdate(this, slot);
+            }
+        }
+
+        if (itemDescriptor.Pet.SummonOnEquip)
+        {
+            _ = InvokePet(ignoreCooldown: true, openPetHub: true);
+        }
     }
     private void AddEquipmentSlot(int equipmentSlot, int inventorySlot)
     {
@@ -6500,6 +6668,7 @@ public partial class Player : Entity
     public void UnequipItem(Guid itemId, bool sendUpdate = true)
     {
         var updated = false;
+        PetItemData? unequippedPetData = null;
 
         foreach (var kvp in Equipment)
         {
@@ -6512,6 +6681,7 @@ public partial class Player : Entity
                 var inventoryIndex = itemsInSlot[i];
                 if (inventoryIndex >= 0 && inventoryIndex < Items.Count && Items[inventoryIndex].ItemId == itemId)
                 {
+                    unequippedPetData = Items[inventoryIndex].Descriptor?.Pet;
                     itemsInSlot.RemoveAt(i); // Quitamos solo este ítem
                     updated = true;
                     break; // Salimos del bucle porque ya encontramos el ítem
@@ -6526,6 +6696,7 @@ public partial class Player : Entity
 
         if (updated)
         {
+            HandlePetUnequipped(unequippedPetData);
             ProcessEquipmentUpdated(sendUpdate);
         }
     }
@@ -6536,15 +6707,28 @@ public partial class Player : Entity
             return;
         }
 
+        List<PetItemData?> unequippedPetDatas = new();
         if (TryGetEquippedItem(equipmentSlot, out var items))
         {
             foreach (var item in items)
             {
                 EnqueueStartCommonEvent(item.Descriptor?.GetEventTrigger(ItemEventTrigger.OnUnequip));
+
+                var petData = item.Descriptor?.Pet;
+                if (petData != null && petData.PetDescriptorId != Guid.Empty)
+                {
+                    unequippedPetDatas.Add(petData);
+                }
             }
         }
 
         Equipment.Remove(equipmentSlot);
+
+        foreach (var petData in unequippedPetDatas)
+        {
+            HandlePetUnequipped(petData);
+        }
+
         ProcessEquipmentUpdated(sendUpdate);
     }
 

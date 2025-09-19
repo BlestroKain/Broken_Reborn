@@ -187,7 +187,18 @@ public partial class GameInterface : MutableInterface
         mMapItemWindow = new MapItemWindow(GameCanvas);
 
         _petBehaviorWidget ??= new PetBehaviorWidget(GameCanvas);
+        _petBehaviorWidget.Hide();
 
+    }
+    public void ShowPetHub()
+    {
+        _petBehaviorWidget ??= new PetBehaviorWidget(GameCanvas);
+        _petBehaviorWidget.Show();
+    }
+
+    public void HidePetHub()
+    {
+        _petBehaviorWidget?.Hide();
     }
     public void OpenEnchantWindow()
     {

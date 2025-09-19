@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -92,6 +93,27 @@ public class Item : IItem
     }
 
     [JsonIgnore, NotMapped] public ItemDescriptor Descriptor => ItemDescriptor.Get(ItemId);
+
+    [JsonIgnore, NotMapped]
+    public Guid? BoundPlayerId
+    {
+        get => Properties?.BoundPlayerId;
+        set
+        {
+            if (Properties != null)
+            {
+                Properties.BoundPlayerId = value;
+            }
+        }
+    }
+
+    [JsonIgnore, NotMapped]
+    public bool IsBound => BoundPlayerId.HasValue && BoundPlayerId.Value != Guid.Empty;
+
+    public bool IsBoundTo(Guid playerId)
+    {
+        return IsBound && BoundPlayerId.Value == playerId;
+    }
 
     public static Item None => new();
 

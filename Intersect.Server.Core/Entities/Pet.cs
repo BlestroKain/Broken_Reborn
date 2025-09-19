@@ -1,5 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Intersect;
+using Intersect.Config;
 using Intersect.Enums;
 using Intersect.Framework.Core;
 using Intersect.Framework.Core.GameObjects.Pets;
@@ -19,6 +21,8 @@ public sealed class Pet : Entity
     private const int FollowDistance = 3;
     private const long PathUpdateInterval = 100;
     private const long TargetLostGracePeriod = 2000;
+    private int _followPathFailureCount;
+    private long _lastFollowFailureTime;
 
     private readonly Pathfinder _pathfinder;
 
@@ -686,21 +690,100 @@ public sealed class Pet : Entity
 
     private void HandleFollowState(Player owner, long timeMs)
     {
+        var petOptions = Options.Instance.Pets;
+
         if (!_canFollowOwner)
         {
             State = PetState.Idle;
             _pathfinder.SetTarget(null);
+            ResetFollowFailureCounters();
             return;
         }
 
-        if (GetDistanceTo(owner) <= 1)
+        ResetFollowFailureCountersIfExpired(petOptions, timeMs);
+
+        var distanceToOwner = GetDistanceTo(owner);
+        if (distanceToOwner <= 1)
         {
             State = PetState.Idle;
             _pathfinder.SetTarget(null);
+            ResetFollowFailureCounters();
             return;
         }
 
-        UpdatePathfinder(owner.MapId, owner.X, owner.Y, owner.Z, timeMs, out _);
+        if (petOptions.FollowLeashDistance > 0 && distanceToOwner >= petOptions.FollowLeashDistance)
+        {
+            SnapToOwner(owner);
+            return;
+        }
+
+        var hasPath = UpdatePathfinder(owner.MapId, owner.X, owner.Y, owner.Z, timeMs, out var madeProgress);
+        if (!hasPath)
+        {
+            RegisterFollowFailure(timeMs);
+
+            if (petOptions.FollowFailureTeleportThreshold > 0 &&
+                _followPathFailureCount >= petOptions.FollowFailureTeleportThreshold)
+            {
+                SnapToOwner(owner);
+            }
+
+            return;
+        }
+
+        if (madeProgress)
+        {
+            ResetFollowFailureCounters();
+        }
+    }
+
+    private void RegisterFollowFailure(long timeMs)
+    {
+        _followPathFailureCount++;
+        _lastFollowFailureTime = timeMs;
+    }
+
+    private void ResetFollowFailureCounters()
+    {
+        _followPathFailureCount = 0;
+        _lastFollowFailureTime = 0;
+    }
+
+    private void ResetFollowFailureCountersIfExpired(PetOptions petOptions, long timeMs)
+    {
+        if (_followPathFailureCount == 0)
+        {
+            return;
+        }
+
+        if (petOptions.FollowFailureResetMilliseconds <= 0)
+        {
+            return;
+        }
+
+        if (timeMs - _lastFollowFailureTime >= petOptions.FollowFailureResetMilliseconds)
+        {
+            ResetFollowFailureCounters();
+        }
+    }
+
+    private void SnapToOwner(Player owner)
+    {
+        lock (EntityLock)
+        {
+            MapId = owner.MapId;
+            MapInstanceId = owner.MapInstanceId;
+            _ownerMapId = owner.MapId;
+            _ownerMapInstanceId = owner.MapInstanceId;
+            X = owner.X;
+            Y = owner.Y;
+            Z = owner.Z;
+            Dir = owner.Dir;
+        }
+
+        _pathfinder.SetTarget(null);
+        PacketSender.SendEntityDataToProximity(this);
+        ResetFollowFailureCounters();
     }
 
     private void ApplyBehaviorSettings(PetBehavior behavior)

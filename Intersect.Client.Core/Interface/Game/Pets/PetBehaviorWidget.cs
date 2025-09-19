@@ -90,14 +90,14 @@ public sealed class PetBehaviorWidget : RadioButtonGroup
             foreach (var (behavior, option) in _options)
             {
                 option.IsDisabled = !hasPet;
-                option.RadioButton.IsChecked = hasPet && activeBehavior == behavior;
+                option.IsChecked = hasPet && activeBehavior == behavior;
             }
 
             if (!hasPet)
             {
                 foreach (var option in _options.Values)
                 {
-                    option.RadioButton.IsChecked = false;
+                    option.IsChecked = false;
                 }
             }
         }

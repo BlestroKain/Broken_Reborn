@@ -240,7 +240,7 @@ RaiseEvents:
             return false;
         }
 
-        Network.SendPacket(new PetBehaviorChangePacket(behavior, pet.Id));
+        Intersect.Client.Networking.Network.SendPacket(new PetBehaviorChangePacket(behavior, pet.Id));
         return true;
     }
 

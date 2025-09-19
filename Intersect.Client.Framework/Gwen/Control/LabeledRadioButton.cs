@@ -56,6 +56,12 @@ public partial class LabeledRadioButton : Base, ITextContainer
     // todo: would be nice to remove that
     internal RadioButton RadioButton => mRadioButton;
 
+    public bool IsChecked
+    {
+        get => mRadioButton.IsChecked;
+        set => mRadioButton.IsChecked = value;
+    }
+
     protected override void Layout(Skin.Base skin)
     {
         // ugly stuff because we don't have anchoring without docking (docking resizes children)

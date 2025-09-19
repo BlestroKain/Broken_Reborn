@@ -1046,12 +1046,9 @@ public static partial class PacketSender
             owner.SendPacket(packet, TransmissionMode.Any);
         }
 
-        if (pet.MapId == Guid.Empty || pet.MapInstanceId == Guid.Empty)
-        {
-            return;
-        }
-
-        SendDataToProximityOnMapInstance(pet.MapId, pet.MapInstanceId, packet, owner, TransmissionMode.Any);
+        // Los cambios en el estado de la mascota se propagan al resto de jugadores
+        // cuando la instancia del mapa procesa las entidades sucias en el siguiente tick.
+        // Aquí solo necesitamos notificar inmediatamente al propietario.
     }
 
     public static void SendOpenPetHub(Player player, bool close = false)

@@ -611,6 +611,11 @@ public abstract partial class Entity : IEntity
                     blockingEntity = mapEntity;
                     return false;
                 case Pet pet when !pet.Passable:
+                    if (CanPassPet(pet))
+                    {
+                        continue;
+                    }
+
                     blockerType = MovementBlockerType.Entity;
                     entityType = EntityType.Pet;
                     blockingEntity = mapEntity;
@@ -685,6 +690,46 @@ public abstract partial class Entity : IEntity
     }
 
     protected virtual bool CanPassPlayer(MapController targetMap) => false;
+
+    protected virtual bool CanPassPet(Pet pet)
+    {
+        if (pet.OwnerId == Id)
+        {
+            return true;
+        }
+
+        if (this is Player player)
+        {
+            if (player.Id == pet.OwnerId)
+            {
+                return true;
+            }
+
+            var petOwner = pet.Owner;
+            if (petOwner != null && player.InParty(petOwner))
+            {
+                return true;
+            }
+        }
+
+        if (this is Pet movingPet)
+        {
+            if (movingPet.OwnerId == pet.OwnerId)
+            {
+                return true;
+            }
+
+            var movingPetOwner = movingPet.Owner;
+            var blockingPetOwner = pet.Owner;
+
+            if (movingPetOwner != null && blockingPetOwner != null && movingPetOwner.InParty(blockingPetOwner))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     protected virtual bool IsBlockedByEvent(
         MapInstance mapInstance,

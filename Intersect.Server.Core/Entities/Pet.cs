@@ -843,7 +843,13 @@ public sealed class Pet : Entity
                 {
                     if (!blockingEntity.IsDisposed && CanAttack(blockingEntity, null))
                     {
-                        ChangeDir(direction);
+                        var face = DirectionToTarget(blockingEntity);
+
+                        if (!IsFacingTarget(blockingEntity))
+                        {
+                            ChangeDir(face);
+                        }
+
                         TryAttack(blockingEntity);
                         madeProgress = true;
                     }

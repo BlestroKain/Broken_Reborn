@@ -383,6 +383,16 @@ public partial class MapInstance : IMapInstance
         AddEntity(player);
         player.LastMapEntered = mMapController.Id;
 
+        foreach (var pet in player.GetActivePetsSnapshot())
+        {
+            if (pet == null)
+            {
+                continue;
+            }
+
+            pet.SynchronizeWithOwner(player);
+        }
+
         // Send the entities/items of this current MapInstance to the player
         SendMapEntitiesTo(player);
 

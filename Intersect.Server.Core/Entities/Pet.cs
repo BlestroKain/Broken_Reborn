@@ -394,6 +394,16 @@ public sealed class Pet : Entity
         PacketSender.SendEntityAttack(this, CalculateAttackTime());
     }
 
+    public override int CalculateAttackTime()
+    {
+        if (Descriptor.AttackSpeedModifier == 1)
+        {
+            return Descriptor.AttackSpeedValue;
+        }
+
+        return base.CalculateAttackTime();
+    }
+
     public void NotifyOwnerDamaged(Entity? attacker)
     {
         var owner = Owner;

@@ -126,16 +126,55 @@ internal partial class PriorityQueue<T> where T : IIndexedObject
     public void Update(T item)
     {
         var count = mInnerList.Count;
+        var index = item.Index;
 
-        // usually we only need to switch some elements, since estimation won't change that much.
-        while (item.Index - 1 >= 0 && OnCompare(item.Index - 1, item.Index) > 0)
+        if (index < 0 || index >= count)
         {
-            SwitchElements(item.Index - 1, item.Index);
+            return;
         }
 
-        while (item.Index + 1 < count && OnCompare(item.Index + 1, item.Index) < 0)
+        // Bubble up until the heap invariant is restored with the parent node.
+        while (index > 0)
         {
-            SwitchElements(item.Index + 1, item.Index);
+            var parentIndex = (index - 1) / 2;
+
+            if (OnCompare(index, parentIndex) < 0)
+            {
+                SwitchElements(index, parentIndex);
+                index = parentIndex;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        // Bubble down to ensure the children also respect the heap invariant.
+        while (true)
+        {
+            var leftChild = index * 2 + 1;
+            if (leftChild >= count)
+            {
+                break;
+            }
+
+            var rightChild = leftChild + 1;
+            var smallestChild = leftChild;
+
+            if (rightChild < count && OnCompare(rightChild, leftChild) < 0)
+            {
+                smallestChild = rightChild;
+            }
+
+            if (OnCompare(index, smallestChild) > 0)
+            {
+                SwitchElements(index, smallestChild);
+                index = smallestChild;
+            }
+            else
+            {
+                break;
+            }
         }
     }
 

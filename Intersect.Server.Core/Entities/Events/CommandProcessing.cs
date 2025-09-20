@@ -1036,20 +1036,21 @@ public static partial class CommandProcessing
             return;
         }
 
-        var pet = new Pet(
-            descriptor,
+        var pet = instance.SpawnPetForPlayer(
             playerCaller,
+            descriptor,
             despawnable: true,
-            register: false,
             mapIdOverride: spawnMapId,
             mapInstanceIdOverride: instance.MapInstanceId,
             xOverride: spawnX,
             yOverride: spawnY,
-            directionOverride: direction
+            dirOverride: direction
         );
 
-        instance.AddEntity(pet);
-        PacketSender.SendEntityDataToProximity(pet);
+        if (pet == null)
+        {
+            return;
+        }
 
         playerCaller.SpawnedPets.Add(pet);
     }

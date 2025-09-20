@@ -1160,7 +1160,17 @@ public partial class Player : Entity
 
         if (currentPet == null)
         {
-            var newPet = new Pet(descriptor, this);
+            if (!MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var instance))
+            {
+                return;
+            }
+
+            var newPet = instance.SpawnPetForPlayer(this, descriptor);
+            if (newPet == null)
+            {
+                return;
+            }
+
             CurrentPet = newPet;
 
             lock (_spawnedPetsLock)
@@ -1373,7 +1383,17 @@ public partial class Player : Entity
             DespawnPet(currentPet);
         }
 
-        var newPet = new Pet(descriptor, this);
+        if (!MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var instance))
+        {
+            return false;
+        }
+
+        var newPet = instance.SpawnPetForPlayer(this, descriptor);
+        if (newPet == null)
+        {
+            return false;
+        }
+
         CurrentPet = newPet;
 
         lock (_spawnedPetsLock)

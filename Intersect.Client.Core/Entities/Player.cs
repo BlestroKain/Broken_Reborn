@@ -40,6 +40,8 @@ namespace Intersect.Client.Entities;
 
 public partial class Player : Entity, IPlayer
 {
+    protected override bool SupportsHideEntity => true;
+
     public delegate void InventoryUpdatedEventHandler(Player player, int slotIndex);
 
     private Guid _class;

@@ -1,5 +1,5 @@
 using System;
-using Intersect.Shared.Pets;
+using Intersect.Enums;
 using MessagePack;
 
 namespace Intersect.Network.Packets.Client;
@@ -11,7 +11,7 @@ public sealed class PetBehaviorChangePacket : IntersectPacket
     {
     }
 
-    public PetBehaviorChangePacket(PetBehavior behavior, Guid petId = default)
+    public PetBehaviorChangePacket(PetState behavior, Guid petId = default)
     {
         PetId = petId;
         Behavior = behavior;
@@ -21,5 +21,5 @@ public sealed class PetBehaviorChangePacket : IntersectPacket
     public Guid PetId { get; set; }
 
     [Key(1)]
-    public PetBehavior Behavior { get; set; }
+    public PetState Behavior { get; set; }
 }

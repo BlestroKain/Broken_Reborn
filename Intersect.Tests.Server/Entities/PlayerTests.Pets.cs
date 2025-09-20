@@ -4,7 +4,6 @@ using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.Server.Entities;
-using Intersect.Shared.Pets;
 using NUnit.Framework;
 
 namespace Intersect.Tests.Server.Entities;
@@ -143,7 +142,7 @@ public partial class PlayerTests
         var inventorySlot = player.FindInventoryItemSlots(itemDescriptor.Id).Single();
         var slotIndex = player.FindInventoryItemSlotIndex(inventorySlot);
 
-        player.ActivePetMode = PetBehavior.Passive;
+        player.ActivePetMode = PetState.Passive;
 
         player.EquipItem(itemDescriptor, slotIndex, updateCooldown: false);
 
@@ -169,7 +168,7 @@ public partial class PlayerTests
                 Assert.That(player.ActivePetId, Is.Null);
                 Assert.That(player.CurrentPet, Is.Null);
                 Assert.That(player.SpawnedPets, Is.Empty);
-                Assert.That(player.ActivePetMode, Is.EqualTo(PetBehavior.Passive));
+                Assert.That(player.ActivePetMode, Is.EqualTo(PetState.Passive));
             }
         );
 
@@ -181,7 +180,7 @@ public partial class PlayerTests
                 Assert.That(player.ActivePet, Is.Not.Null);
                 Assert.That(player.ActivePet!.PetInstanceId, Is.EqualTo(petInstanceId));
                 Assert.That(player.CurrentPet, Is.Not.Null);
-                Assert.That(player.CurrentPet!.Behavior, Is.EqualTo(PetBehavior.Passive));
+                Assert.That(player.CurrentPet!.Behavior, Is.EqualTo(PetState.Passive));
                 Assert.That(player.SpawnedPets, Has.Count.EqualTo(1));
             }
         );

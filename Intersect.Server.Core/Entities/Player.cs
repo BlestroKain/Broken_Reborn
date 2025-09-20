@@ -47,7 +47,6 @@ using Stat = Intersect.Enums.Stat;
 using Intersect.Framework.Core.GameObjects.Guild;
 using System.Linq;
 using Intersect.Server.Services;
-using Intersect.Shared.Pets;
 
 namespace Intersect.Server.Entities;
 
@@ -83,7 +82,7 @@ public partial class Player : Entity
 
     [JsonIgnore][NotMapped] public Pet? CurrentPet { get; private set; }
 
-    [JsonIgnore][NotMapped] public PetBehavior ActivePetMode { get; set; } = PetBehavior.Defend;
+    [JsonIgnore][NotMapped] public PetState ActivePetMode { get; set; } = PetState.Defend;
 
     private const int PetBehaviorChangeCooldownDuration = 500;
     private const int PetInvokeCooldownDuration = 1000;

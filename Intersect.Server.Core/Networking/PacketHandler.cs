@@ -29,7 +29,6 @@ using Intersect.Network.Packets.Server;
 using Intersect.Server.Core;
 using Intersect.Server.Services;
 using Microsoft.Extensions.Logging;
-using Intersect.Shared.Pets;
 using ChatMsgPacket = Intersect.Network.Packets.Client.ChatMsgPacket;
 using LoginPacket = Intersect.Network.Packets.Client.LoginPacket;
 using PartyInvitePacket = Intersect.Network.Packets.Client.PartyInvitePacket;

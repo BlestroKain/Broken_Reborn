@@ -6,14 +6,14 @@ using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
 using Intersect.Client.Localization;
 using Intersect.Localization;
-using Intersect.Shared.Pets;
+using Intersect.Enums;
 using Intersect.Client.Core;
 
 namespace Intersect.Client.Interface.Game.Pets;
 
 public sealed class PetBehaviorWidget : RadioButtonGroup
 {
-    private readonly Dictionary<PetBehavior, LabeledRadioButton> _options = new();
+    private readonly Dictionary<PetState, LabeledRadioButton> _options = new();
     private bool _suppressSelectionChanged;
 
     public PetBehaviorWidget(Base parent) : base(parent)
@@ -35,10 +35,10 @@ public sealed class PetBehaviorWidget : RadioButtonGroup
         FontName = "Arial";
         FontSize = 14;
 
-        CreateOption(PetBehavior.Follow, Strings.Pets.BehaviorFollow, 0, 0);
-        CreateOption(PetBehavior.Stay, Strings.Pets.BehaviorStay, 0, 30);
-        CreateOption(PetBehavior.Defend, Strings.Pets.BehaviorDefend, 0, 60);
-        CreateOption(PetBehavior.Passive, Strings.Pets.BehaviorPassive, 0, 90);
+        CreateOption(PetState.Follow, Strings.Pets.BehaviorFollow, 0, 0);
+        CreateOption(PetState.Stay, Strings.Pets.BehaviorStay, 0, 30);
+        CreateOption(PetState.Defend, Strings.Pets.BehaviorDefend, 0, 60);
+        CreateOption(PetState.Passive, Strings.Pets.BehaviorPassive, 0, 90);
 
         LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
 
@@ -61,7 +61,7 @@ public sealed class PetBehaviorWidget : RadioButtonGroup
         base.Dispose(disposing);
     }
 
-    private void CreateOption(PetBehavior behavior, LocalizedString label, int x, int y)
+    private void CreateOption(PetState behavior, LocalizedString label, int x, int y)
     {
         var option = AddOption(label.ToString(), behavior.ToString());
         option.UserData = behavior;
@@ -88,7 +88,7 @@ public sealed class PetBehaviorWidget : RadioButtonGroup
             return;
         }
 
-        if (args.SelectedItem is not LabeledRadioButton option || option.UserData is not PetBehavior behavior)
+        if (args.SelectedItem is not LabeledRadioButton option || option.UserData is not PetState behavior)
         {
             return;
         }

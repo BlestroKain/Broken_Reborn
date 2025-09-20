@@ -445,13 +445,7 @@ internal sealed partial class PacketHandler
                 continue;
             }
 
-            pet.ApplyMetadata(
-                update.OwnerId,
-                update.DescriptorId,
-                update.State,
-                update.Despawnable,
-                update.Behavior
-            );
+            pet.ApplyMetadata(update.OwnerId, update.DescriptorId, update.Despawnable, update.Behavior);
         }
     }
 
@@ -474,7 +468,7 @@ internal sealed partial class PacketHandler
             return;
         }
 
-        pet.ApplyMetadata(pet.OwnerId, pet.DescriptorId, packet.State, pet.Despawnable, packet.Behavior);
+        pet.ApplyMetadata(pet.OwnerId, pet.DescriptorId, pet.Despawnable, packet.Behavior);
     }
 
     public void HandlePacket(IPacketSender packetSender, OpenPetHubPacket packet)

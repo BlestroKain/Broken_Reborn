@@ -2593,6 +2593,64 @@ public partial class Entity : IEntity
                                     }
 
                                     break;
+                                case Pet pet when !pet.Passable:
+                                    if (projectileTrigger)
+                                    {
+                                        break;
+                                    }
+
+                                    var ignorePetBlocking = false;
+
+                                    if (pet.OwnerId == Id)
+                                    {
+                                        ignorePetBlocking = true;
+                                    }
+                                    else
+                                    {
+                                        switch (this)
+                                        {
+                                            case Player movingPlayer:
+                                                if (movingPlayer.Id == pet.OwnerId)
+                                                {
+                                                    ignorePetBlocking = true;
+                                                    break;
+                                                }
+
+                                                var petOwner = pet.Owner;
+                                                if (petOwner != null && movingPlayer.IsInMyParty(petOwner))
+                                                {
+                                                    ignorePetBlocking = true;
+                                                }
+
+                                                break;
+
+                                            case Pet movingPet:
+                                                if (movingPet.OwnerId == pet.OwnerId)
+                                                {
+                                                    ignorePetBlocking = true;
+                                                    break;
+                                                }
+
+                                                var movingPetOwner = movingPet.Owner;
+                                                var blockingPetOwner = pet.Owner;
+
+                                                if (movingPetOwner != null &&
+                                                    blockingPetOwner != null &&
+                                                    movingPetOwner.IsInMyParty(blockingPetOwner))
+                                                {
+                                                    ignorePetBlocking = true;
+                                                }
+
+                                                break;
+                                        }
+                                    }
+
+                                    if (ignorePetBlocking)
+                                    {
+                                        continue;
+                                    }
+
+                                    break;
                             }
 
                             blockedBy = en.Value;

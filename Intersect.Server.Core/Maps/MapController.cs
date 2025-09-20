@@ -384,12 +384,49 @@ public partial class MapController : MapDescriptor
     {
         foreach (var entity in GetEntitiesOnAllInstances())
         {
-            if (entity is Pet pet && pet.Descriptor == petDescriptor)
+            if (entity is not Pet pet || pet.Descriptor != petDescriptor)
             {
-                lock (pet.EntityLock)
-                {
-                    pet.Despawn(false);
-                }
+                continue;
+            }
+
+            if (pet.IsDisposed)
+            {
+                continue;
+            }
+
+            ApplicationContext.Context.Value?.Logger.LogDebug(
+                "Despawning pet {PetId} ({Descriptor}) on map {Map} across instances",
+                pet.Id,
+                pet.Descriptor?.Name,
+                Id
+            );
+
+            lock (pet.EntityLock)
+            {
+                pet.Despawn(false);
+            }
+        }
+    }
+
+    public void DespawnAllPetsAcrossInstances(bool killIfDespawnable = false)
+    {
+        foreach (var entity in GetEntitiesOnAllInstances())
+        {
+            if (entity is not Pet pet || pet.IsDisposed)
+            {
+                continue;
+            }
+
+            ApplicationContext.Context.Value?.Logger.LogDebug(
+                "Despawning pet {PetId} ({Descriptor}) on map {Map} across instances",
+                pet.Id,
+                pet.Descriptor?.Name,
+                Id
+            );
+
+            lock (pet.EntityLock)
+            {
+                pet.Despawn(killIfDespawnable);
             }
         }
     }

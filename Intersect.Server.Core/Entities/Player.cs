@@ -1475,12 +1475,17 @@ public partial class Player : Entity
             despawnedAny = true;
         }
 
-        if (MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var instance) && instance != null)
+        var shouldClearActivePet = activeMatches
+            || (despawnedAny && activePet != null && activePet.PetDescriptorId == descriptorId);
+
+        if (shouldClearActivePet
+            && MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var instance)
+            && instance != null)
         {
             instance.DespawnActivePetOf(this, killIfDespawnable: true);
         }
 
-        if (activeMatches || (despawnedAny && activePet != null && activePet.PetDescriptorId == descriptorId))
+        if (shouldClearActivePet)
         {
             ActivePet = null;
             ActivePetId = null;

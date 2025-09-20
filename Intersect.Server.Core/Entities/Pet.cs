@@ -968,6 +968,14 @@ public sealed class Pet : Entity
         PacketSender.SendPetStateUpdate(this);
     }
 
+    public override void KilledEntity(Entity entity)
+    {
+        base.KilledEntity(entity);
+
+        var owner = Owner ?? Player.FindOnline(OwnerId);
+        owner?.KilledEntity(entity);
+    }
+
     internal bool MetadataDirty => _metadataDirty;
 
     internal void ResetMetadataDirty()

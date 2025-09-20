@@ -43,6 +43,8 @@ public sealed class Pet : Entity
     private Guid _ownerMapId;
     private Guid _ownerMapInstanceId;
 
+    private readonly double[] _vitalAccumulators;
+
     private Player? _ownerCache;
 
     public PetDescriptor Descriptor { get; }
@@ -152,6 +154,8 @@ public sealed class Pet : Entity
             Stat[index] = new Combat.Stat((Stat)index, this);
         }
 
+        _vitalAccumulators = new double[Enum.GetValues<Vital>().Length];
+
         for (var index = 0; index < Enum.GetValues<Vital>().Length; index++)
         {
             SetMaxVital(index, descriptor.MaxVitals[index]);
@@ -259,7 +263,7 @@ public sealed class Pet : Entity
 
     public override void ProcessRegen()
     {
-        foreach (Vital vital in Enum.GetValues(typeof(Vital)))
+        foreach (var vital in Enum.GetValues<Vital>())
         {
             if (!Enum.IsDefined(vital))
             {
@@ -267,29 +271,44 @@ public sealed class Pet : Entity
             }
 
             var index = (int)vital;
-            var current = GetVital(vital);
             var maximum = GetMaxVital(vital);
-            if (current >= maximum)
-            {
-                continue;
-            }
-
-            var regenRate = Descriptor.VitalRegen[index] / 100f;
+            var regenRate = Descriptor.VitalRegen[index] / 100.0;
             if (regenRate == 0)
             {
                 continue;
             }
 
-            var regenAmount = (long)Math.Max(1, maximum * Math.Abs(regenRate));
-            if (regenRate > 0)
+            if (regenRate > 0 && GetVital(vital) >= maximum)
+            {
+                continue;
+            }
+
+            _vitalAccumulators[index] += maximum * regenRate;
+
+            var regenAmount = (long)Math.Floor(_vitalAccumulators[index]);
+            if (regenAmount == 0)
+            {
+                continue;
+            }
+
+            _vitalAccumulators[index] -= regenAmount;
+
+            if (regenAmount > 0)
             {
                 AddVital(vital, regenAmount);
             }
             else
             {
-                SubVital(vital, regenAmount);
+                SubVital(vital, -regenAmount);
             }
         }
+    }
+
+    public override void Reset()
+    {
+        base.Reset();
+
+        Array.Clear(_vitalAccumulators, 0, _vitalAccumulators.Length);
     }
 
     public override bool CanAttack(Entity entity, SpellDescriptor spell)

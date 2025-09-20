@@ -56,6 +56,7 @@ public class ItemOptions
             "Accessory",
             "Ring",
             "Karma",
+            "Pet",
         }
     },
     { ItemType.Resource, new()

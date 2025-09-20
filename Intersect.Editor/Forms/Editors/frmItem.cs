@@ -564,6 +564,7 @@ public partial class FrmItem : EditorForm
         grpEvent.Visible = false;
         grpBags.Visible = false;
         grpPet.Visible = false;
+        UpdatePetControlsEnabled(false);
         chkStackable.Enabled = true;
         grpEnchanting.Visible = false;
         var selectedType = (ItemType)cmbType.SelectedIndex;
@@ -615,6 +616,7 @@ public partial class FrmItem : EditorForm
             chkDespawnOnUnequip.Checked = mEditorItem.Pet.DespawnOnUnequip;
             chkBindOnEquip.Checked = mEditorItem.Pet.BindOnEquip;
             txtPetNameOverride.Text = mEditorItem.Pet.PetNameOverride ?? string.Empty;
+            UpdatePetControlsEnabled(mEditorItem.Pet.PetDescriptorId != Guid.Empty);
             if (mEditorItem.EquipmentSlot < -1 || mEditorItem.EquipmentSlot >= cmbEquipmentSlot.Items.Count)
             {
                 mEditorItem.EquipmentSlot = 0;
@@ -775,7 +777,23 @@ public partial class FrmItem : EditorForm
 
         var petData = EnsurePetData();
         var selectedIndex = cmbPet.SelectedIndex - 1;
-        petData.PetDescriptorId = selectedIndex < 0 ? Guid.Empty : PetDescriptor.IdFromList(selectedIndex);
+        if (selectedIndex < 0)
+        {
+            petData.PetDescriptorId = Guid.Empty;
+            chkSummonOnEquip.Checked = false;
+            chkDespawnOnUnequip.Checked = false;
+            chkBindOnEquip.Checked = false;
+            txtPetNameOverride.Text = string.Empty;
+            UpdatePetControlsEnabled(false);
+            return;
+        }
+
+        petData.PetDescriptorId = PetDescriptor.IdFromList(selectedIndex);
+        UpdatePetControlsEnabled(true);
+        chkSummonOnEquip.Checked = petData.SummonOnEquip;
+        chkDespawnOnUnequip.Checked = petData.DespawnOnUnequip;
+        chkBindOnEquip.Checked = petData.BindOnEquip;
+        txtPetNameOverride.Text = petData.PetNameOverride ?? string.Empty;
     }
 
     private void cmbPaperdoll_SelectedIndexChanged(object sender, EventArgs e)
@@ -1243,6 +1261,14 @@ public partial class FrmItem : EditorForm
     private PetItemData EnsurePetData()
     {
         return mEditorItem.Pet ??= new PetItemData();
+    }
+
+    private void UpdatePetControlsEnabled(bool enabled)
+    {
+        chkSummonOnEquip.Enabled = enabled;
+        chkDespawnOnUnequip.Enabled = enabled;
+        chkBindOnEquip.Enabled = enabled;
+        txtPetNameOverride.Enabled = enabled;
     }
 
     private void chkSingleUse_CheckedChanged(object sender, EventArgs e)

@@ -561,26 +561,43 @@ internal sealed partial class PacketHandler
     //MapEntitiesPacket
     public void HandlePacket(IPacketSender packetSender, MapEntitiesPacket entitiesPacket)
     {
-        Dictionary<Guid, HashSet<Guid>> entitiesByMapId = [];
+        Dictionary<Guid, Dictionary<EntityType, HashSet<Guid>>> entitiesByMapAndType = [];
         foreach (var entityPacket in entitiesPacket.MapEntities)
         {
             HandlePacket(entityPacket);
 
-            if (!entitiesByMapId.TryGetValue(entityPacket.MapId, out var value))
+            if (!TryGetEntityType(entityPacket, out var entityType))
             {
-                value = [];
-                entitiesByMapId.Add(entityPacket.MapId, value);
+                continue;
             }
 
-            value.Add(entityPacket.EntityId);
+            if (!entitiesByMapAndType.TryGetValue(entityPacket.MapId, out var entitiesByType))
+            {
+                entitiesByType = [];
+                entitiesByMapAndType.Add(entityPacket.MapId, entitiesByType);
+            }
+
+            if (!entitiesByType.TryGetValue(entityType, out var entityIds))
+            {
+                entityIds = [];
+                entitiesByType.Add(entityType, entityIds);
+            }
+
+            entityIds.Add(entityPacket.EntityId);
         }
 
         // Remove any entities on the map that shouldn't be there anymore!
-        foreach (var (mapId, entitiesOnMap) in entitiesByMapId)
+        foreach (var (mapId, entitiesByType) in entitiesByMapAndType)
         {
             foreach (var (entityId, entity) in Globals.Entities)
             {
-                if (entity.MapId != mapId || entitiesOnMap.Contains(entityId))
+                if (entity.MapId != mapId)
+                {
+                    continue;
+                }
+
+                if (!entitiesByType.TryGetValue(entity.Type, out var entitiesOfType) ||
+                    entitiesOfType.Contains(entityId))
                 {
                     continue;
                 }
@@ -590,6 +607,36 @@ internal sealed partial class PacketHandler
                     Globals.EntitiesToDispose.Add(entityId);
                 }
             }
+        }
+    }
+
+    private static bool TryGetEntityType(EntityPacket entityPacket, out EntityType entityType)
+    {
+        switch (entityPacket)
+        {
+            case PlayerEntityPacket:
+                entityType = EntityType.Player;
+                return true;
+
+            case NpcEntityPacket:
+                entityType = EntityType.GlobalEntity;
+                return true;
+
+            case PetEntityPacket:
+                entityType = EntityType.Pet;
+                return true;
+
+            case ResourceEntityPacket:
+                entityType = EntityType.Resource;
+                return true;
+
+            case ProjectileEntityPacket:
+                entityType = EntityType.Projectile;
+                return true;
+
+            default:
+                entityType = default;
+                return false;
         }
     }
 

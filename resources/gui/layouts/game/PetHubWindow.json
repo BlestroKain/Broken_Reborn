@@ -1,0 +1,17 @@
+{
+  "Bounds": "0,0,280,180",
+  "Alignments": "Bottom,Left",
+  "AlignmentEdgeDistances": "16,0,0,16",
+  "Padding": "12,12,12,12",
+  "Children": {
+    "StatusLabel": {
+      "Bounds": "12,40,256,24",
+      "FontSize": 12,
+      "Alignments": "Top,Left"
+    },
+    "PetBehaviorWidget": {
+      "Bounds": "12,72,256,96",
+      "Alignments": "Top,Left"
+    }
+  }
+}

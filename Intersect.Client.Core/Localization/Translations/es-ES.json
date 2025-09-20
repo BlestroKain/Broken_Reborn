@@ -15,6 +15,9 @@
     "FactionNidrajName": "Nidraj"
   },
   "Pets": {
+    "HubTitle": "Centro de mascotas",
+    "StatusNoPet": "No tienes una mascota activa.",
+    "StatusWithPet": "Mascota activa: {0}",
     "WidgetTitle": "Modos de mascota",
     "BehaviorFollow": "Seguir",
     "BehaviorStay": "Quieto",

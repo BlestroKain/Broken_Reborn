@@ -1,0 +1,18 @@
+{
+  "Bounds": "0,0,256,120",
+  "Padding": "8,8,8,8",
+  "Children": {
+    "Follow": {
+      "Bounds": "0,0,240,24"
+    },
+    "Stay": {
+      "Bounds": "0,28,240,24"
+    },
+    "Defend": {
+      "Bounds": "0,56,240,24"
+    },
+    "Passive": {
+      "Bounds": "0,84,240,24"
+    }
+  }
+}

@@ -110,6 +110,8 @@ public partial class Entity : IEntity
 
     public bool IsHidden { get; set; } = false;
 
+    protected virtual bool SupportsHideEntity => false;
+
     public bool HideName { get; set; }
 
     //Core Values
@@ -415,7 +417,7 @@ public partial class Entity : IEntity
         DirectionFacing = (Direction)packet.Dir;
         Passable = packet.Passable;
         HideName = packet.HideName;
-        IsHidden = packet.HideEntity;
+        IsHidden = SupportsHideEntity && packet.HideEntity;
         NameColor = packet.NameColor;
         HeaderLabel = new Label(packet.HeaderLabel.Label, packet.HeaderLabel.Color);
         FooterLabel = new Label(packet.FooterLabel.Label, packet.FooterLabel.Color);

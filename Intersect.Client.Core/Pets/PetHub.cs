@@ -5,7 +5,6 @@ using Intersect.Client.Networking;
 using Intersect.Enums;
 using Intersect.Network.Packets.Client;
 using Intersect.Network.Packets.Server;
-using Intersect.Shared.Pets;
 
 namespace Intersect.Client.Core.Pets;
 
@@ -13,8 +12,8 @@ public sealed class PetHub
 {
     private readonly object _syncRoot = new();
     private Pet? _activePet;
-    private PetBehavior _behavior = PetBehavior.Follow;
-    private PetBehavior? _pendingBehavior;
+    private PetState _behavior = PetState.Follow;
+    private PetState? _pendingBehavior;
 
     public PetHub()
     {
@@ -36,7 +35,7 @@ public sealed class PetHub
         }
     }
 
-    public PetBehavior Behavior
+    public PetState Behavior
     {
         get
         {
@@ -70,7 +69,7 @@ public sealed class PetHub
                 return;
             }
 
-            (activeChanged, behaviorChanged) = UpdateState(null, PetBehavior.Follow, true);
+            (activeChanged, behaviorChanged) = UpdateState(null, PetState.Follow, true);
         }
 
         if (behaviorChanged)
@@ -100,7 +99,7 @@ public sealed class PetHub
             {
                 if (_activePet?.Id == packet.EntityId)
                 {
-                    (activeChanged, behaviorChanged) = UpdateState(null, PetBehavior.Follow, true);
+                    (activeChanged, behaviorChanged) = UpdateState(null, PetState.Follow, true);
                 }
 
                 goto RaiseEvents;
@@ -110,7 +109,7 @@ public sealed class PetHub
             {
                 if (_activePet?.Id == pet.Id)
                 {
-                    (activeChanged, behaviorChanged) = UpdateState(null, PetBehavior.Follow, true);
+                    (activeChanged, behaviorChanged) = UpdateState(null, PetState.Follow, true);
                 }
 
                 goto RaiseEvents;
@@ -147,7 +146,7 @@ RaiseEvents:
             {
                 if (_activePet?.Id == packet.PetId)
                 {
-                    (activeChanged, behaviorChanged) = UpdateState(null, PetBehavior.Follow, true);
+                    (activeChanged, behaviorChanged) = UpdateState(null, PetState.Follow, true);
                 }
 
                 goto RaiseEvents;
@@ -157,7 +156,7 @@ RaiseEvents:
             {
                 if (_activePet?.Id == pet.Id)
                 {
-                    (activeChanged, behaviorChanged) = UpdateState(null, PetBehavior.Follow, true);
+                    (activeChanged, behaviorChanged) = UpdateState(null, PetState.Follow, true);
                 }
 
                 goto RaiseEvents;
@@ -188,8 +187,8 @@ RaiseEvents:
             activeChanged = _activePet != null;
             _activePet = null;
             _pendingBehavior = null;
-            behaviorChanged = _behavior != PetBehavior.Follow;
-            _behavior = PetBehavior.Follow;
+            behaviorChanged = _behavior != PetState.Follow;
+            _behavior = PetState.Follow;
         }
 
         if (behaviorChanged)
@@ -203,7 +202,7 @@ RaiseEvents:
         }
     }
 
-    public bool SetBehavior(PetBehavior behavior)
+    public bool SetBehavior(PetState behavior)
     {
         Pet? pet;
         Guid? petToClear = null;
@@ -213,6 +212,11 @@ RaiseEvents:
         {
             pet = _activePet;
             if (pet == null)
+            {
+                return false;
+            }
+
+            if (!IsSelectableBehavior(behavior))
             {
                 return false;
             }
@@ -257,7 +261,7 @@ RaiseEvents:
             }
             else if (_activePet?.Id == pet.Id)
             {
-                (activeChanged, behaviorChanged) = UpdateState(null, PetBehavior.Follow, true);
+                (activeChanged, behaviorChanged) = UpdateState(null, PetState.Follow, true);
             }
         }
 
@@ -272,8 +276,16 @@ RaiseEvents:
         }
     }
 
-    private (bool activeChanged, bool behaviorChanged) UpdateState(Pet? pet, PetBehavior behavior, bool clearPending)
+    private static bool IsSelectableBehavior(PetState behavior) =>
+        behavior is PetState.Follow or PetState.Stay or PetState.Defend or PetState.Passive;
+
+    private (bool activeChanged, bool behaviorChanged) UpdateState(Pet? pet, PetState behavior, bool clearPending)
     {
+        if (!IsSelectableBehavior(behavior))
+        {
+            behavior = PetState.Follow;
+        }
+
         var activeChanged = false;
         var behaviorChanged = false;
 

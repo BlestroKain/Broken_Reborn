@@ -4,7 +4,6 @@ using Intersect.Enums;
 using Intersect.Framework.Core;
 using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.Network.Packets.Server;
-using Intersect.Shared.Pets;
 
 namespace Intersect.Client.Entities;
 
@@ -34,14 +33,9 @@ public sealed class Pet : Entity
     public bool Despawnable { get; private set; }
 
     /// <summary>
-    ///     Gets the current state reported by the server for the pet.
-    /// </summary>
-    public PetState State { get; private set; } = PetState.Idle;
-
-    /// <summary>
     ///     Gets the behaviour currently reported by the server for the pet.
     /// </summary>
-    public PetBehavior Behavior { get; private set; } = PetBehavior.Follow;
+    public PetState Behavior { get; private set; } = PetState.Follow;
 
     /// <summary>
     ///     Gets the descriptor identifier used to spawn this pet.
@@ -100,24 +94,26 @@ public sealed class Pet : Entity
     /// </summary>
     /// <param name="ownerId">Identifier of the player that owns the pet.</param>
     /// <param name="descriptorId">Identifier of the descriptor that spawned the pet.</param>
-    /// <param name="state">Current state reported by the server.</param>
     /// <param name="despawnable">Indicates whether the pet can despawn automatically.</param>
     /// <param name="behavior">Behaviour reported by the server.</param>
-    public void ApplyMetadata(Guid ownerId, Guid descriptorId, PetState state, bool despawnable, PetBehavior behavior)
+    public void ApplyMetadata(Guid ownerId, Guid descriptorId, bool despawnable, PetState behavior)
     {
+        if (behavior is not (PetState.Follow or PetState.Stay or PetState.Defend or PetState.Passive))
+        {
+            behavior = PetState.Follow;
+        }
+
         var ownerChanged = OwnerId != ownerId;
         var descriptorChanged = DescriptorId != descriptorId;
-        var stateChanged = State != state;
         var despawnableChanged = Despawnable != despawnable;
         var behaviorChanged = Behavior != behavior;
 
         OwnerId = ownerId;
         DescriptorId = descriptorId;
-        State = state;
         Despawnable = despawnable;
         Behavior = behavior;
 
-        if (ownerChanged || descriptorChanged || stateChanged || despawnableChanged || behaviorChanged)
+        if (ownerChanged || descriptorChanged || despawnableChanged || behaviorChanged)
         {
             Globals.NotifyPetMetadataApplied(this);
         }
@@ -131,9 +127,8 @@ public sealed class Pet : Entity
         _cachedDescriptor = null;
         OwnerId = Guid.Empty;
         DescriptorId = Guid.Empty;
-        State = PetState.Idle;
         Despawnable = false;
-        Behavior = PetBehavior.Follow;
+        Behavior = PetState.Follow;
     }
 
     /// <inheritdoc />
@@ -149,7 +144,6 @@ public sealed class Pet : Entity
         ApplyMetadata(
             petPacket.OwnerId,
             petPacket.DescriptorId,
-            petPacket.State,
             petPacket.Despawnable,
             petPacket.Behavior
         );

@@ -8,7 +8,6 @@ using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.Framework.Reflection;
 using Intersect.GameObjects;
 using Intersect.Network.Packets.Server;
-using Intersect.Shared.Pets;
 using Intersect.Server.Database.PlayerData.Players;
 using Intersect.Server.Entities.Pathfinding;
 using Intersect.Server.Framework.Items;
@@ -67,9 +66,9 @@ public sealed class Pet : Entity
 
     private PetState _state = PetState.Idle;
 
-    private PetBehavior _behavior = PetBehavior.Passive;
+    private PetState _behavior = PetState.Passive;
 
-    public PetBehavior Behavior
+    public PetState Behavior
     {
         get => _behavior;
         private set
@@ -92,8 +91,13 @@ public sealed class Pet : Entity
         }
     }
 
-    public void SetBehavior(PetBehavior behavior)
+    public void SetBehavior(PetState behavior)
     {
+        if (!IsSelectableBehavior(behavior))
+        {
+            return;
+        }
+
         Behavior = behavior;
     }
 
@@ -188,7 +192,7 @@ public sealed class Pet : Entity
 
         _pathfinder = new Pathfinder(this);
 
-        Behavior = PetBehavior.Follow;
+        Behavior = PetState.Follow;
 
         if (register && MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var instance))
         {
@@ -214,7 +218,6 @@ public sealed class Pet : Entity
 
         petPacket.OwnerId = OwnerId;
         petPacket.DescriptorId = Descriptor.Id;
-        petPacket.State = State;
         petPacket.Behavior = Behavior;
         petPacket.Despawnable = Despawnable;
 
@@ -786,14 +789,17 @@ public sealed class Pet : Entity
         ResetFollowFailureCounters();
     }
 
-    private void ApplyBehaviorSettings(PetBehavior behavior)
+    private static bool IsSelectableBehavior(PetState behavior) =>
+        behavior is PetState.Follow or PetState.Stay or PetState.Defend or PetState.Passive;
+
+    private void ApplyBehaviorSettings(PetState behavior)
     {
         lock (EntityLock)
         {
-            _canFollowOwner = behavior is PetBehavior.Follow or PetBehavior.Defend;
-            _canAssistOwner = behavior == PetBehavior.Follow;
-            _canDefendOwner = behavior is PetBehavior.Follow or PetBehavior.Stay or PetBehavior.Defend;
-            _canEngageTarget = behavior != PetBehavior.Passive;
+            _canFollowOwner = behavior is PetState.Follow or PetState.Defend;
+            _canAssistOwner = behavior == PetState.Follow;
+            _canDefendOwner = behavior is PetState.Follow or PetState.Stay or PetState.Defend;
+            _canEngageTarget = behavior != PetState.Passive;
 
             if (!_canEngageTarget)
             {

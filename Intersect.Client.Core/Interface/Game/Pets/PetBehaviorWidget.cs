@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Intersect.Client.General;
+using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
@@ -14,9 +15,10 @@ public sealed class PetBehaviorWidget : RadioButtonGroup
     private readonly Dictionary<PetBehavior, LabeledRadioButton> _options = new();
     private bool _suppressSelectionChanged;
 
-    public PetBehaviorWidget(Canvas parent) : base(parent)
+    public PetBehaviorWidget(Base parent) : base(parent)
     {
         Name = nameof(PetBehaviorWidget);
+
         Alignment = [Alignments.Bottom, Alignments.Left];
         AlignmentPadding = new Padding { Bottom = 4, Left = 4 };
         Padding = new Padding(4);
@@ -28,6 +30,8 @@ public sealed class PetBehaviorWidget : RadioButtonGroup
         CreateOption(PetBehavior.Stay, Strings.Pets.BehaviorStay);
         CreateOption(PetBehavior.Defend, Strings.Pets.BehaviorDefend);
         CreateOption(PetBehavior.Passive, Strings.Pets.BehaviorPassive);
+
+        LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
 
         SelectionChanged += OnSelectionChanged;
         Globals.PetHub.ActivePetChanged += OnPetHubStateChanged;

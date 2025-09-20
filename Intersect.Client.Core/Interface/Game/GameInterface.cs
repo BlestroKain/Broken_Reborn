@@ -113,7 +113,7 @@ public partial class GameInterface : MutableInterface
 
     public PlayerStatusWindow PlayerStatusWindow;
 
-    private PetBehaviorWidget? _petBehaviorWidget;
+    private PetHubWindow? _petHubWindow;
 
 
     private SettingsWindow GetOrCreateSettingsWindow()
@@ -186,19 +186,19 @@ public partial class GameInterface : MutableInterface
         mQuestOfferWindow = new QuestOfferWindow(GameCanvas);
         mMapItemWindow = new MapItemWindow(GameCanvas);
 
-        _petBehaviorWidget ??= new PetBehaviorWidget(GameCanvas);
-        _petBehaviorWidget.Hide();
+        _petHubWindow ??= new PetHubWindow(GameCanvas);
+        _petHubWindow.Hide();
 
     }
     public void ShowPetHub()
     {
-        _petBehaviorWidget ??= new PetBehaviorWidget(GameCanvas);
-        _petBehaviorWidget.Show();
+        _petHubWindow ??= new PetHubWindow(GameCanvas);
+        _petHubWindow.Show();
     }
 
     public void HidePetHub()
     {
-        _petBehaviorWidget?.Hide();
+        _petHubWindow?.Hide();
     }
     public void OpenEnchantWindow()
     {

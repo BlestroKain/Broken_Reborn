@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -1374,18 +1375,30 @@ public partial class Player : Entity
             return false;
         }
 
+        return TrySpawnActivePet(descriptor, openPetHub);
+    }
+
+    private bool TrySpawnActivePet(PetDescriptor descriptor, bool openPetHub)
+    {
+        if (descriptor == null)
+        {
+            return false;
+        }
+
         CleanupSpawnedPetsList();
 
         var currentPet = CurrentPet;
         if (currentPet != null)
         {
-            DespawnPet(currentPet);
+            DespawnPet(currentPet, killIfDespawnable: true);
         }
 
-        if (!MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var instance))
+        if (!MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var instance) || instance == null)
         {
             return false;
         }
+
+        instance.DespawnActivePetOf(this, killIfDespawnable: true);
 
         var newPet = instance.SpawnPetForPlayer(this, descriptor);
         if (newPet == null)
@@ -1397,7 +1410,10 @@ public partial class Player : Entity
 
         lock (_spawnedPetsLock)
         {
-            SpawnedPets.Add(newPet);
+            if (!SpawnedPets.Contains(newPet))
+            {
+                SpawnedPets.Add(newPet);
+            }
         }
 
         newPet.SetBehavior(ActivePetMode);
@@ -1432,10 +1448,17 @@ public partial class Player : Entity
             return;
         }
 
+        CleanupSpawnedPetsList();
+
         var currentPet = CurrentPet;
         if (currentPet != null)
         {
-            DespawnPet(currentPet, killIfDespawnable: petData.DespawnOnUnequip);
+            DespawnPet(currentPet, killIfDespawnable: true);
+        }
+
+        if (MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var instance) && instance != null)
+        {
+            instance.DespawnActivePetOf(this, killIfDespawnable: true);
         }
 
         ActivePet = null;
@@ -1445,6 +1468,8 @@ public partial class Player : Entity
         {
             PacketSender.SendOpenPetHub(this, close: true);
         }
+
+        CleanupSpawnedPetsList();
     }
 
     private void ClearPets(bool killDespawnable)
@@ -6611,6 +6636,15 @@ public partial class Player : Entity
         return false;
     }
 
+    private static bool IsPetEquipmentSlot(int equipmentSlot)
+    {
+        var slots = Options.Instance.Equipment.EquipmentSlots;
+
+        return equipmentSlot >= 0
+            && equipmentSlot < slots.Count
+            && string.Equals(slots[equipmentSlot].Name, "Pet", StringComparison.OrdinalIgnoreCase);
+    }
+
     //Equipment
     public void EquipItem(ItemDescriptor itemDescriptor, int slot = -1, bool updateCooldown = false)
     {
@@ -6636,6 +6670,8 @@ public partial class Player : Entity
         {
             return; // No se encontró el ítem en inventario
         }
+
+        var isPetSlot = IsPetEquipmentSlot(itemDescriptor.EquipmentSlot);
 
         // ✅ Validación adicional: Armas 2 manos vs escudos
         if (itemDescriptor.EquipmentSlot == Options.Instance.Equipment.WeaponSlot)
@@ -6667,7 +6703,7 @@ public partial class Player : Entity
 
         var inventorySlot = Items.ElementAtOrDefault(slot);
 
-        if (!TryGetOrCreatePlayerPet(inventorySlot, itemDescriptor.Pet, out var playerPet, out _))
+        if (!TryGetOrCreatePlayerPet(inventorySlot, itemDescriptor.Pet, out var playerPet, out var petDescriptor))
         {
             return;
         }
@@ -6684,7 +6720,11 @@ public partial class Player : Entity
             }
         }
 
-        if (itemDescriptor.Pet.SummonOnEquip)
+        if (isPetSlot && petDescriptor != null)
+        {
+            _ = TrySpawnActivePet(petDescriptor, openPetHub: itemDescriptor.Pet.SummonOnEquip);
+        }
+        else if (itemDescriptor.Pet.SummonOnEquip)
         {
             _ = InvokePet(ignoreCooldown: true, openPetHub: true);
         }

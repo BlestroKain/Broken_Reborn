@@ -124,6 +124,9 @@ public partial class MapInstance : IMapInstance
     // NPCs
     public ConcurrentDictionary<NpcSpawn, MapNpcSpawn> NpcSpawnInstances = new ConcurrentDictionary<NpcSpawn, MapNpcSpawn>();
 
+    // Mascotas (Pets)
+    public ConcurrentDictionary<Guid, Pet> PetInstances = new ConcurrentDictionary<Guid, Pet>();
+
     // Items
     public ConcurrentDictionary<Guid, MapItemSpawn> ItemRespawns = new ConcurrentDictionary<Guid, MapItemSpawn>();
     public ConcurrentDictionary<Guid, MapItem>[] TileItems { get; } = new ConcurrentDictionary<Guid, MapItem>[Options.Instance.Map.MapWidth * Options.Instance.Map.MapHeight];
@@ -238,6 +241,7 @@ public partial class MapInstance : IMapInstance
         DespawnTraps();
         DespawnItems();
         DespawnGlobalEvents();
+        DespawnPets(); 
     }
 
     /// <summary>
@@ -328,7 +332,7 @@ public partial class MapInstance : IMapInstance
                 );
             }
         }
-
+        if (entity is Pet pet) PetInstances[pet.Id] = pet;
         mCachedEntities = mEntities.Values.ToArray();
     }
 
@@ -345,6 +349,7 @@ public partial class MapInstance : IMapInstance
         {
             mPlayers.TryRemove(en.Id, out var pResult);
         }
+        if (en is Pet pet) PetInstances.TryRemove(pet.Id, out _);
         mCachedEntities = mEntities.Values.ToArray();
     }
 
@@ -382,6 +387,16 @@ public partial class MapInstance : IMapInstance
 
         AddEntity(player);
         player.LastMapEntered = mMapController.Id;
+
+        foreach (var pet in player.GetActivePetsSnapshot())
+        {
+            if (pet == null)
+            {
+                continue;
+            }
+
+            pet.SynchronizeWithOwner(player);
+        }
 
         // Send the entities/items of this current MapInstance to the player
         SendMapEntitiesTo(player);
@@ -616,21 +631,61 @@ public partial class MapInstance : IMapInstance
             }
         }
     }
+    /// <summary>
+    /// Despawns all pets, and removes them from our dictionary of Pet Instances.
+    /// </summary>
+    private void DespawnPets()
+    {
+        // Elimina todas las mascotas en el mapa
+        lock (GetLock())
+        {
+            foreach (var petInstance in PetInstances)
+            {
+                lock (petInstance.Value.EntityLock)
+                {
+                    petInstance.Value.Despawn(true);
+                }
+            }
 
+            PetInstances.Clear();
+
+            // Elimina cualquier otra mascota en este mapa (solo deberían quedar jugadores)
+            foreach (var entity in mEntities)
+            {
+                if (entity.Value is Pet pet)
+                {
+                    lock (pet.EntityLock)
+                    {
+                        pet.Despawn(true);
+                    }
+                }
+            }
+        }
+    }
     /// <summary>
     /// Clears the given entity of any targets that an NPC has on them. For AI purposes.
     /// </summary>
     /// <param name="en">The entitiy to clear targets of.</param>
     public void ClearEntityTargetsOf(Entity en)
     {
-        foreach (var entity in mEntities)
+        foreach (var kv in mEntities)
         {
-            if (entity.Value is Npc npc && npc.Target == en)
+            switch (kv.Value)
             {
-                npc.RemoveTarget();
+                case Npc npc when npc.Target == en:
+                    npc.RemoveTarget();
+                    break;
+                case Pet pet when pet.Target == en:
+                    // equivalente a ClearCombatTarget() de Pet
+                    pet.NotifyOwnerDamaged(null); // o expón un método ClearTarget() en Pet
+                    break;
             }
         }
     }
+
+
+
+
     #endregion
 
     #region Resources

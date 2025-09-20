@@ -7,6 +7,7 @@ using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Framework.Core.GameObjects.NPCs;
+using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.Framework.Core.GameObjects.Resources;
 using Intersect.GameObjects;
 using Intersect.Network.Packets.Server;
@@ -52,6 +53,14 @@ public partial class MapController : MapDescriptor
         foreach (var map in allMapControllers)
         {
             map?.DespawnNpcAcrossInstances(npc);
+        }
+    }
+    public static void DespawnInstancesOf(PetDescriptor pet)
+    {
+        var allMapControllers = Lookup.Values.OfType<MapController>().ToArray();
+        foreach (var map in allMapControllers)
+        {
+            map?.DespawnPetAcrossInstances(pet);
         }
     }
 
@@ -371,7 +380,19 @@ public partial class MapController : MapDescriptor
             }
         }
     }
-
+    public void DespawnPetAcrossInstances(PetDescriptor petDescriptor)
+    {
+        foreach (var entity in GetEntitiesOnAllInstances())
+        {
+            if (entity is Pet pet && pet.Descriptor == petDescriptor)
+            {
+                lock (pet.EntityLock)
+                {
+                    pet.Despawn(false);
+                }
+            }
+        }
+    }
     /// <summary>
     /// Despawns resources of a given <see cref="ResourceDescriptor"/> from all instances of this controller.
     /// </summary>

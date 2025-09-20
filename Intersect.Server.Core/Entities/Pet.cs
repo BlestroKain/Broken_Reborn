@@ -874,7 +874,7 @@ public sealed class Pet : Entity
         return canMove;
     }
 
-    private void SynchronizeWithOwner(Player owner)
+    internal void SynchronizeWithOwner(Player owner)
     {
         if (owner.MapId == _ownerMapId && owner.MapInstanceId == _ownerMapInstanceId)
         {

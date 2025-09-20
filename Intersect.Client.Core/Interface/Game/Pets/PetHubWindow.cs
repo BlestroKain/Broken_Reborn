@@ -1,3 +1,4 @@
+using Intersect.Client.Core;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
@@ -24,9 +25,17 @@ public sealed class PetHubWindow : Window
         _statusLabel = new Label(this, "StatusLabel")
         {
             Text = Strings.Pets.StatusNoPet.ToString(),
+            FontName = "Arial",
+            FontSize = 14,
         };
+        _statusLabel.SetPosition(16, 32);
+        _statusLabel.SetSize(200, 32);
 
         _behaviorWidget = new PetBehaviorWidget(this);
+        _behaviorWidget.Font = _statusLabel.Font;
+        _behaviorWidget.FontSize = 14;
+        _behaviorWidget.SetPosition(16, 72);
+        _behaviorWidget.SetSize(200, 48);
 
         Globals.PetHub.ActivePetChanged += OnPetHubStateChanged;
         Globals.PetHub.BehaviorChanged += OnPetHubStateChanged;

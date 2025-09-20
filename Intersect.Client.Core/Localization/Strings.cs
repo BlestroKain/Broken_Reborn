@@ -1294,6 +1294,16 @@ public static partial class Strings
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString BehaviorPassive = @"Passive";
+
+        // Faltantes agregados:
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString StatusWithPet = @"You have a pet summoned.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString StatusNoPet = @"No pet summoned.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString HubTitle = @"Pet Hub";
     }
 
     public partial struct Crafting

@@ -177,7 +177,18 @@ public partial class Npc : Entity
         {
             base.Die(generateLoot, killer);
 
-            if (killer is Player player)
+            // Si el killer es una Pet, obtener el dueño (Player)
+            Player player = null;
+            if (killer is Player p)
+            {
+                player = p;
+            }
+            else if (killer is Pet pet && pet.Owner is Player petOwner)
+            {
+                player = petOwner;
+            }
+
+            if (player != null)
             {
                 var npcId = Descriptor.Id;
                 var changed = false;
@@ -265,7 +276,6 @@ public partial class Npc : Entity
                     PacketSender.SendUnlockedBestiaryEntries(player);
                 }
             }
-
 
             AggroCenterMap = null;
             AggroCenterX = 0;

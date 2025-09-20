@@ -1254,7 +1254,7 @@ public partial class Player : Entity
         return true;
     }
 
-    private Pet[] GetActivePetsSnapshot()
+    internal Pet[] GetActivePetsSnapshot()
     {
         var pets = new List<Pet>();
 

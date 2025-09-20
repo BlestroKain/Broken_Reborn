@@ -1020,6 +1020,9 @@ internal sealed partial class NetworkedPacketHandler
                     case ResourceDescriptor resourceDescriptor:
                         MapController.DespawnInstancesOf(resourceDescriptor);
                         break;
+                    case PetDescriptor petDescriptor:
+                    MapController.DespawnInstancesOf(petDescriptor);
+                    break;
                 }
 
                 DbInterface.DeleteGameObject(obj);
@@ -1168,7 +1171,10 @@ internal sealed partial class NetworkedPacketHandler
                         case ResourceDescriptor resourceDescriptor:
                             MapController.DespawnInstancesOf(resourceDescriptor);
                             break;
-                    }
+                    case PetDescriptor petDescriptor:
+                        MapController.DespawnInstancesOf(petDescriptor);
+                        break;
+                }
 
                     obj.Load(packet.Data);
 

@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Linq;
 using Intersect.Core;
 using Intersect.Enums;
 using Intersect.Framework.Core;
@@ -385,6 +386,20 @@ public partial class MapInstance : IMapInstance
         if (spawnInstanceId != MapInstanceId)
         {
             return null;
+        }
+
+        foreach (var entity in mEntities.Values.ToArray())
+        {
+            if (entity is Pet existing && !existing.IsDisposed && existing.OwnerId == owner.Id
+                && existing.MapInstanceId == MapInstanceId)
+            {
+                lock (existing.EntityLock)
+                {
+                    existing.Despawn(true);
+                }
+
+                RemoveEntity(existing);
+            }
         }
 
         var pet = new Pet(

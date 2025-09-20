@@ -7,6 +7,7 @@ using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Framework.Core.GameObjects.Maps.Attributes;
 using Intersect.Framework.Core.GameObjects.NPCs;
+using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.Framework.Core.GameObjects.Resources;
 using Intersect.GameObjects;
 using Intersect.Network.Packets.Server;
@@ -332,7 +333,11 @@ public partial class MapInstance : IMapInstance
                 );
             }
         }
-        if (entity is Pet pet) PetInstances[pet.Id] = pet;
+        else if (entity is Pet pet)
+        {
+            PetInstances[pet.Id] = pet;
+        }
+
         mCachedEntities = mEntities.Values.ToArray();
     }
 
@@ -345,12 +350,89 @@ public partial class MapInstance : IMapInstance
     public void RemoveEntity(Entity en)
     {
         mEntities.TryRemove(en.Id, out var result);
-        if (mPlayers.ContainsKey(en.Id))
+
+        if (en is Player player)
         {
-            mPlayers.TryRemove(en.Id, out var pResult);
+            mPlayers.TryRemove(player.Id, out _);
         }
-        if (en is Pet pet) PetInstances.TryRemove(pet.Id, out _);
+        else if (en is Pet pet)
+        {
+            PetInstances.TryRemove(pet.Id, out _);
+        }
+
         mCachedEntities = mEntities.Values.ToArray();
+    }
+
+    public Pet? SpawnPetForPlayer(
+        Player owner,
+        PetDescriptor descriptor,
+        bool despawnable = false,
+        Guid? mapIdOverride = null,
+        Guid? mapInstanceIdOverride = null,
+        int? xOverride = null,
+        int? yOverride = null,
+        Direction? dirOverride = null
+    )
+    {
+        if (owner == null || owner.IsDisposed || descriptor == null)
+        {
+            return null;
+        }
+
+        var spawnMapId = mapIdOverride ?? owner.MapId;
+        var spawnInstanceId = mapInstanceIdOverride ?? owner.MapInstanceId;
+
+        if (spawnInstanceId != MapInstanceId)
+        {
+            return null;
+        }
+
+        var pet = new Pet(
+            descriptor,
+            owner,
+            despawnable: despawnable,
+            register: false,
+            mapIdOverride: spawnMapId,
+            mapInstanceIdOverride: spawnInstanceId,
+            xOverride: xOverride ?? owner.X,
+            yOverride: yOverride ?? owner.Y,
+            directionOverride: dirOverride ?? owner.Dir
+        );
+
+        AddEntity(pet);
+        PetInstances[pet.Id] = pet;
+        PacketSender.SendEntityDataToProximity(pet);
+
+        return pet;
+    }
+
+    public void DespawnActivePetOf(Player owner, bool killIfDespawnable = true)
+    {
+        if (owner == null || owner.IsDisposed)
+        {
+            return;
+        }
+
+        foreach (var kv in PetInstances.ToArray())
+        {
+            var pet = kv.Value;
+            if (pet == null || pet.IsDisposed)
+            {
+                continue;
+            }
+
+            if (pet.OwnerId != owner.Id || pet.MapInstanceId != MapInstanceId)
+            {
+                continue;
+            }
+
+            lock (pet.EntityLock)
+            {
+                pet.Despawn(killIfDespawnable);
+            }
+
+            PetInstances.TryRemove(pet.Id, out _);
+        }
     }
 
     /// <summary>

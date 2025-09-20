@@ -1433,27 +1433,46 @@ public partial class Player : Entity
             return;
         }
 
-        var activePet = ActivePet;
-        if (activePet == null)
+        var descriptorId = petData.PetDescriptorId;
+        var targetInstanceId = petInstanceId.GetValueOrDefault(Guid.Empty);
+
+        PlayerPet? matchedPlayerPet = null;
+        if (targetInstanceId != Guid.Empty)
         {
-            return;
+            matchedPlayerPet = Pets.FirstOrDefault(pet => pet.PetInstanceId == targetInstanceId);
         }
 
-        var matchesInstance = petInstanceId.HasValue && petInstanceId.Value != Guid.Empty
-            ? activePet.PetInstanceId == petInstanceId.Value
-            : activePet.PetDescriptorId == petData.PetDescriptorId;
+        matchedPlayerPet ??= Pets.FirstOrDefault(pet => pet.PetDescriptorId == descriptorId);
 
-        if (!matchesInstance)
+        var activePet = ActivePet;
+        var activeMatches = false;
+
+        if (activePet != null)
         {
-            return;
+            if (matchedPlayerPet != null)
+            {
+                activeMatches = activePet.Id == matchedPlayerPet.Id;
+            }
+            else
+            {
+                activeMatches = targetInstanceId != Guid.Empty
+                    ? activePet.PetInstanceId == targetInstanceId
+                    : activePet.PetDescriptorId == descriptorId;
+            }
         }
 
         CleanupSpawnedPetsList();
 
-        var currentPet = CurrentPet;
-        if (currentPet != null)
+        var despawnedAny = false;
+        foreach (var pet in GetActivePetsSnapshot())
         {
-            DespawnPet(currentPet, killIfDespawnable: true);
+            if (pet?.Descriptor == null || pet.Descriptor.Id != descriptorId)
+            {
+                continue;
+            }
+
+            DespawnPet(pet, killIfDespawnable: true);
+            despawnedAny = true;
         }
 
         if (MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var instance) && instance != null)
@@ -1461,8 +1480,11 @@ public partial class Player : Entity
             instance.DespawnActivePetOf(this, killIfDespawnable: true);
         }
 
-        ActivePet = null;
-        ActivePetId = null;
+        if (activeMatches || (despawnedAny && activePet != null && activePet.PetDescriptorId == descriptorId))
+        {
+            ActivePet = null;
+            ActivePetId = null;
+        }
 
         if (petData.DespawnOnUnequip)
         {

@@ -1276,6 +1276,7 @@ namespace Intersect.Editor.Forms.Editors
             cmbEvolve.TabIndex = 4;
             cmbEvolve.Text = null;
             cmbEvolve.TextPadding = new Padding(2);
+            cmbEvolve.SelectedIndexChanged += cmbEvolve_SelectedIndexChanged;
             // 
             // DarkLabel15
             // 
@@ -1298,6 +1299,7 @@ namespace Intersect.Editor.Forms.Editors
             nudEvolveLvl.Size = new Size(74, 23);
             nudEvolveLvl.TabIndex = 2;
             nudEvolveLvl.Value = new decimal(new int[] { 0, 0, 0, 0 });
+            nudEvolveLvl.ValueChanged += nudEvolveLvl_ValueChanged;
             // 
             // DarkLabel14
             // 
@@ -1319,6 +1321,7 @@ namespace Intersect.Editor.Forms.Editors
             chkEvolve.Size = new Size(104, 19);
             chkEvolve.TabIndex = 0;
             chkEvolve.Text = "Pet Can Evolve";
+            chkEvolve.CheckedChanged += chkEvolve_CheckedChanged;
             // 
             // nudMaxLevel
             // 
@@ -1330,6 +1333,7 @@ namespace Intersect.Editor.Forms.Editors
             nudMaxLevel.Size = new Size(187, 23);
             nudMaxLevel.TabIndex = 6;
             nudMaxLevel.Value = new decimal(new int[] { 100, 0, 0, 0 });
+            nudMaxLevel.ValueChanged += nudMaxLevel_ValueChanged;
             // 
             // DarkLabel12
             // 
@@ -1353,6 +1357,7 @@ namespace Intersect.Editor.Forms.Editors
             nudPetPnts.Size = new Size(52, 23);
             nudPetPnts.TabIndex = 4;
             nudPetPnts.Value = new decimal(new int[] { 10, 0, 0, 0 });
+            nudPetPnts.ValueChanged += nudPetPnts_ValueChanged;
             // 
             // DarkLabel13
             // 
@@ -1375,6 +1380,7 @@ namespace Intersect.Editor.Forms.Editors
             nudPetExp.Size = new Size(62, 23);
             nudPetExp.TabIndex = 1;
             nudPetExp.Value = new decimal(new int[] { 100, 0, 0, 0 });
+            nudPetExp.ValueChanged += nudPetExp_ValueChanged;
             // 
             // DarkLabel11
             // 
@@ -1396,6 +1402,7 @@ namespace Intersect.Editor.Forms.Editors
             optDoNotLevel.Size = new Size(119, 19);
             optDoNotLevel.TabIndex = 1;
             optDoNotLevel.Text = "Does Not LevelUp";
+            optDoNotLevel.CheckedChanged += optDoNotLevel_CheckedChanged;
             // 
             // optLevel
             // 
@@ -1406,6 +1413,7 @@ namespace Intersect.Editor.Forms.Editors
             optLevel.Size = new Size(128, 19);
             optLevel.TabIndex = 0;
             optLevel.Text = "Level by Experience";
+            optLevel.CheckedChanged += optLevel_CheckedChanged;
             // 
             // FrmPet
             // 

@@ -295,6 +295,14 @@ public partial class FrmPet : EditorForm
             cmbDamageType.SelectedIndex = 0;
         }
 
+        cmbEvolve.Items.Clear();
+        cmbEvolve.Items.Add(Strings.General.None);
+        cmbEvolve.Items.AddRange(PetDescriptor.Names);
+        if (cmbEvolve.Items.Count > 0)
+        {
+            cmbEvolve.SelectedIndex = 0;
+        }
+
         cmbAttackSpeedModifier.Items.Clear();
         foreach (var modifier in Strings.NpcEditor.attackspeedmodifiers)
         {
@@ -455,6 +463,25 @@ public partial class FrmPet : EditorForm
             SetComboIndex(cmbAttackSpeedModifier, _editorItem.AttackSpeedModifier);
             nudAttackSpeedValue.Value = Math.Max(nudAttackSpeedValue.Minimum, Math.Min(nudAttackSpeedValue.Maximum, _editorItem.AttackSpeedValue));
             nudTenacity.Value = (decimal)_editorItem.Tenacity;
+            optLevel.Checked = _editorItem.LevelingMode == PetLevelingMode.Experience;
+            optDoNotLevel.Checked = _editorItem.LevelingMode == PetLevelingMode.Disabled;
+            pnlPetlevel.Visible = _editorItem.LevelingMode == PetLevelingMode.Experience;
+            nudPetExp.Value = Math.Max(nudPetExp.Minimum, Math.Min(nudPetExp.Maximum, _editorItem.ExperienceRate));
+            nudPetPnts.Value = Math.Max(nudPetPnts.Minimum, Math.Min(nudPetPnts.Maximum, _editorItem.StatPointsPerLevel));
+            nudMaxLevel.Value = Math.Max(nudMaxLevel.Minimum, Math.Min(nudMaxLevel.Maximum, _editorItem.MaxLevel));
+            chkEvolve.Checked = _editorItem.CanEvolve;
+            nudEvolveLvl.Value = Math.Max(nudEvolveLvl.Minimum, Math.Min(nudEvolveLvl.Maximum, _editorItem.EvolutionLevel));
+            cmbEvolve.Enabled = _editorItem.CanEvolve;
+            nudEvolveLvl.Enabled = _editorItem.CanEvolve;
+            var evolveIndex = PetDescriptor.ListIndex(_editorItem.EvolutionTargetId);
+            if (evolveIndex >= 0 && evolveIndex + 1 < cmbEvolve.Items.Count)
+            {
+                cmbEvolve.SelectedIndex = evolveIndex + 1;
+            }
+            else if (cmbEvolve.Items.Count > 0)
+            {
+                cmbEvolve.SelectedIndex = 0;
+            }
 
             foreach (var (stat, control) in _statControls)
             {
@@ -654,6 +681,97 @@ public partial class FrmPet : EditorForm
     }
 
     private void nudTenacity_ValueChanged(object sender, EventArgs e) => UpdateTenacity();
+
+    private void optLevel_CheckedChanged(object sender, EventArgs e)
+    {
+        if (_editorItem == null || !optLevel.Checked)
+        {
+            return;
+        }
+
+        _editorItem.LevelingMode = PetLevelingMode.Experience;
+        pnlPetlevel.Visible = true;
+    }
+
+    private void optDoNotLevel_CheckedChanged(object sender, EventArgs e)
+    {
+        if (_editorItem == null || !optDoNotLevel.Checked)
+        {
+            return;
+        }
+
+        _editorItem.LevelingMode = PetLevelingMode.Disabled;
+        pnlPetlevel.Visible = false;
+    }
+
+    private void nudPetExp_ValueChanged(object sender, EventArgs e)
+    {
+        if (_editorItem == null)
+        {
+            return;
+        }
+
+        _editorItem.ExperienceRate = (int)nudPetExp.Value;
+    }
+
+    private void nudPetPnts_ValueChanged(object sender, EventArgs e)
+    {
+        if (_editorItem == null)
+        {
+            return;
+        }
+
+        _editorItem.StatPointsPerLevel = (int)nudPetPnts.Value;
+    }
+
+    private void nudMaxLevel_ValueChanged(object sender, EventArgs e)
+    {
+        if (_editorItem == null)
+        {
+            return;
+        }
+
+        _editorItem.MaxLevel = (int)nudMaxLevel.Value;
+    }
+
+    private void chkEvolve_CheckedChanged(object sender, EventArgs e)
+    {
+        if (_editorItem == null)
+        {
+            return;
+        }
+
+        _editorItem.CanEvolve = chkEvolve.Checked;
+        cmbEvolve.Enabled = chkEvolve.Checked;
+        nudEvolveLvl.Enabled = chkEvolve.Checked;
+    }
+
+    private void nudEvolveLvl_ValueChanged(object sender, EventArgs e)
+    {
+        if (_editorItem == null)
+        {
+            return;
+        }
+
+        _editorItem.EvolutionLevel = (int)nudEvolveLvl.Value;
+    }
+
+    private void cmbEvolve_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (_editorItem == null)
+        {
+            return;
+        }
+
+        if (cmbEvolve.SelectedIndex <= 0)
+        {
+            _editorItem.EvolutionTargetId = Guid.Empty;
+            return;
+        }
+
+        var targetId = PetDescriptor.IdFromList(cmbEvolve.SelectedIndex - 1);
+        _editorItem.EvolutionTargetId = targetId;
+    }
 
     private void chkKnockback_CheckedChanged(object sender, EventArgs e) => UpdateImmunity(SpellEffect.Knockback, chkKnockback.Checked);
 

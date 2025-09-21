@@ -634,6 +634,9 @@ namespace Intersect.Server.Migrations.Sqlite.Game
                         .HasColumnType("TEXT")
                         .HasColumnName("DeathAnimation");
 
+                    b.Property<bool>("CanEvolve")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("EquipmentScalingJson")
                         .HasColumnType("TEXT")
                         .HasColumnName("EquipmentScaling");
@@ -650,6 +653,13 @@ namespace Intersect.Server.Migrations.Sqlite.Game
 
                     b.Property<int>("ExperienceRate")
                         .HasColumnType("INTEGER");
+
+                    b.Property<int>("EvolutionLevel")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("EvolutionTargetId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("EvolutionTarget");
 
                     b.Property<string>("Folder")
                         .HasColumnType("TEXT");
@@ -683,6 +693,9 @@ namespace Intersect.Server.Migrations.Sqlite.Game
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("ScalingStat")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("StatPointsPerLevel")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("SpellsJson")

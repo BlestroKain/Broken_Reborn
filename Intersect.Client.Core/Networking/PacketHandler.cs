@@ -1613,6 +1613,7 @@ internal sealed partial class PacketHandler
                 if (entity == Globals.Me && packet.InventorySlots != null)
                 {
                     entity.MyEquipment = packet.InventorySlots;
+                    Globals.PetHub.SyncEquippedPet(Globals.Me);
                 }
                 else if (packet.ItemIds != null)
                 {

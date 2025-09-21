@@ -119,7 +119,7 @@ public sealed class PetBehaviorWidget : RadioButtonGroup
 
         try
         {
-            var hasPet = Globals.PetHub.HasActivePet;
+            var hasPet = Globals.PetHub.ActivePet != null;
             var activeBehavior = Globals.PetHub.Behavior;
 
             foreach (var (behavior, option) in _options)

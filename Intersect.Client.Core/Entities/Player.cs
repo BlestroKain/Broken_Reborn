@@ -117,6 +117,11 @@ public partial class Player : Entity, IPlayer
 
             Inventory[slotIndex] = null;
             InventoryUpdated?.Invoke(this, slotIndex);
+            if (this == Globals.Me)
+            {
+                Globals.PetHub.SyncEquippedPet(this);
+            }
+
             return;
         }
 
@@ -138,6 +143,10 @@ public partial class Player : Entity, IPlayer
         }
 
         InventoryUpdated?.Invoke(this, slotIndex);
+        if (this == Globals.Me)
+        {
+            Globals.PetHub.SyncEquippedPet(this);
+        }
     }
 
     IReadOnlyDictionary<Guid, long> IPlayer.ItemCooldowns => ItemCooldowns;
@@ -424,6 +433,7 @@ public partial class Player : Entity, IPlayer
             if (this == Globals.Me && playerPacket.Equipment.InventorySlots != null)
             {
                 MyEquipment = playerPacket.Equipment.InventorySlots;
+                Globals.PetHub.SyncEquippedPet(this);
             }
             else if (playerPacket.Equipment.ItemIds != null)
             {

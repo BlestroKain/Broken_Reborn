@@ -661,6 +661,8 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
         AddDivider();
         var rows = AddRowContainer();
 
+        AppendPetInfo(rows);
+
         // ====== Weapon Info ======
         if (_itemDescriptor.EquipmentSlot == Options.Instance.Equipment.WeaponSlot)
         {
@@ -845,7 +847,9 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
             return;
         }
 
-        if (petData.PetDescriptorId == Guid.Empty
+        var petDescriptor = petData.Descriptor;
+
+        if (petDescriptor == null
             && string.IsNullOrWhiteSpace(petData.PetNameOverride)
             && !petData.SummonOnEquip
             && !petData.DespawnOnUnequip
@@ -854,12 +858,54 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
             return;
         }
 
-        var petDescriptor = PetDescriptor.Get(petData.PetDescriptorId);
         var displayName = !string.IsNullOrWhiteSpace(petData.PetNameOverride)
             ? petData.PetNameOverride
             : petDescriptor?.Name ?? Strings.General.None;
 
         rows.AddKeyValueRow(Strings.ItemDescription.PetSummons, displayName);
+
+        if (petDescriptor != null)
+        {
+            rows.AddKeyValueRow(Strings.ItemDescription.PetLevel, petDescriptor.Level.ToString());
+            rows.AddKeyValueRow(Strings.ItemDescription.PetExperience, petDescriptor.Experience.ToString());
+
+            var vitalCount = Enum.GetValues<Vital>().Length;
+            for (var index = 0; index < vitalCount; index++)
+            {
+                var maxVital = index < petDescriptor.MaxVitals.Length ? petDescriptor.MaxVitals[index] : 0;
+                var regen = index < petDescriptor.VitalRegen.Length ? petDescriptor.VitalRegen[index] : 0;
+
+                if (maxVital == 0 && regen == 0)
+                {
+                    continue;
+                }
+
+                var vitalLabel = Strings.ItemDescription.Vitals.TryGetValue(index, out var vitalName)
+                    ? vitalName.ToString()
+                    : $"{((Vital)index).ToString()}:";
+                rows.AddKeyValueRow(vitalLabel, maxVital.ToString());
+
+                if (regen != 0)
+                {
+                    var regenLabel = Strings.ItemDescription.VitalsRegen.TryGetValue(index, out var regenName)
+                        ? regenName.ToString()
+                        : $"{((Vital)index).ToString()} Regen:";
+                    rows.AddKeyValueRow(regenLabel, regen.ToString());
+                }
+            }
+
+            var statCount = Enum.GetValues<Stat>().Length;
+            for (var index = 0; index < statCount && index < petDescriptor.Stats.Length; index++)
+            {
+                var statValue = petDescriptor.Stats[index];
+
+                var statLabel = Strings.ItemDescription.Stats.TryGetValue(index, out var statName)
+                    ? $"{statName.ToString()}:"
+                    : $"{((Stat)index).ToString()}:";
+
+                rows.AddKeyValueRow(statLabel, statValue.ToString());
+            }
+        }
 
         if (petData.SummonOnEquip)
         {

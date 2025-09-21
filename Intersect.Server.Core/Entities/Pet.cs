@@ -64,6 +64,20 @@ public sealed class Pet : Entity
 
     public Guid EvolutionTargetId { get; private set; }
 
+    public int ExperienceRate { get; }
+
+    public int StatPointsPerLevel { get; }
+
+    public int MaxLevel { get; }
+
+    public PetLevelingMode LevelingMode { get; }
+
+    public bool CanEvolve { get; }
+
+    public int EvolutionLevel { get; }
+
+    public Guid EvolutionTargetId { get; }
+
     public Guid OwnerId { get; }
 
     public bool Despawnable { get; } = true;

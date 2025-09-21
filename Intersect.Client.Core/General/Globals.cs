@@ -45,6 +45,8 @@ public static partial class Globals
 
     public static event Action<Pet>? PetMetadataChanged;
 
+    public static event Action<Pet>? PetProgressChanged;
+
     public static PetHub PetHub { get; } = new();
 
     private static GameStates mGameState = GameStates.Intro;
@@ -208,6 +210,17 @@ public static partial class Globals
         }
 
         PetMetadataChanged?.Invoke(pet);
+        RefreshEntityWidgets(pet);
+    }
+
+    public static void NotifyPetProgressApplied(Pet pet)
+    {
+        if (pet == null)
+        {
+            return;
+        }
+
+        PetProgressChanged?.Invoke(pet);
         RefreshEntityWidgets(pet);
     }
 

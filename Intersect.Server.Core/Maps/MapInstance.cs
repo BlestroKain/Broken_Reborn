@@ -418,6 +418,7 @@ public partial class MapInstance : IMapInstance
         AddEntity(pet);
         PetInstances[pet.Id] = pet;
         PacketSender.SendEntityDataToProximity(pet);
+        PacketSender.SendPetProgress(pet);
 
         return pet;
     }

@@ -471,6 +471,21 @@ internal sealed partial class PacketHandler
         pet.ApplyMetadata(pet.OwnerId, pet.DescriptorId, pet.Despawnable, packet.Behavior);
     }
 
+    public void HandlePacket(IPacketSender packetSender, PetProgressPacket packet)
+    {
+        if (packet == null)
+        {
+            return;
+        }
+
+        if (!Globals.TryGetEntity(EntityType.Pet, packet.PetId, out var entity) || entity is not Pet pet)
+        {
+            return;
+        }
+
+        pet.ApplyProgress(packet.Experience, packet.ExperienceToNextLevel, packet.StatPoints, packet.StatPointAllocations);
+    }
+
     public void HandlePacket(IPacketSender packetSender, PetHubStatePacket packet)
     {
         Globals.PetHub.Process(packet);

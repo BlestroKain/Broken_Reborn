@@ -1432,32 +1432,58 @@ public partial class Player : Entity
 
     public bool DismissActivePet(bool closePetHub = false)
     {
+        // 1) Disable the hub flag so UpdatePetState does not respawn the pet automatically.
         SetPetHubSpawnFlag(false);
 
-        var dismissed = false;
+        var despawned = false;
 
-        foreach (var pet in GetActivePetsSnapshot())
+        // 2) Despawn any pets tracked locally.
+        var snapshot = GetActivePetsSnapshot();
+        foreach (var pet in snapshot)
         {
             if (pet == null)
             {
                 continue;
             }
 
-            dismissed = true;
-            DespawnPet(pet, killIfDespawnable: false);
+            try
+            {
+                if (!pet.IsDisposed)
+                {
+                    // Force the despawn even if the pet is flagged as non-despawnable.
+                    pet.Despawn(killIfDespawnable: true);
+                }
+
+                despawned = true;
+            }
+            catch
+            {
+                // Even if we fail we consider that a despawn attempt happened.
+                despawned = true;
+            }
         }
 
+        // 3) Clear local collections and references.
+        lock (_spawnedPetsLock)
+        {
+            SpawnedPets.Clear();
+        }
+
+        CurrentPet = null;
+
+        // 4) Ask the map instance to clear any remaining pets owned by this player.
         if (MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var instance) && instance != null)
         {
-            instance.DespawnActivePetOf(this, killIfDespawnable: false);
+            instance.DespawnActivePetOf(this, killIfDespawnable: true);
         }
 
-        if (dismissed && closePetHub)
+        // 5) Optionally close the pet hub if requested.
+        if (closePetHub)
         {
             PacketSender.SendOpenPetHub(this, close: true);
         }
 
-        return dismissed;
+        return despawned;
     }
 
     internal Pet[] GetActivePetsSnapshot()

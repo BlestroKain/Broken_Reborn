@@ -1272,7 +1272,7 @@ public partial class Player : Entity
             // Intento por referencia; si no, limpieza por Id/estado
             if (!SpawnedPets.Remove(pet))
             {
-                _ = SpawnedPets.RemoveWhere(p => p == null || p.IsDisposed || p.Id == pet.Id);
+                _ = SpawnedPets.RemoveAll(p => p == null || p.IsDisposed || p.Id == pet.Id);
             }
         }
 
@@ -1280,18 +1280,7 @@ public partial class Player : Entity
         {
             // Limpiar la selección actual y el estado del hub
             CurrentPet = null;
-
-            // Si tu hub lleva el comportamiento actual y uno pendiente, resetea
-            _pendingBehavior = null;
-            _behavior = PetState.Follow; // valor por defecto “seguro” en UI
-
-            // Si manejas un flag de invocación en curso, límpialo
-            IsSpawnRequested = false;
-
-            // Notificar a la UI/suscriptores
-            BehaviorChanged?.Invoke();
-            ActivePetChanged?.Invoke();
-            SpawnStateChanged?.Invoke();
+                         
         }
     }
 

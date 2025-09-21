@@ -953,6 +953,31 @@ public sealed class Pet : Entity
             return;
         }
 
+        var ownerMapId = owner.MapId;
+        var ownerMapInstanceId = owner.MapInstanceId;
+
+        if (MapInstanceId == ownerMapInstanceId &&
+            MapController.TryGet(MapId, out var petMap) &&
+            MapController.TryGet(ownerMapId, out var ownerMap) &&
+            petMap.MapGrid >= 0 &&
+            ownerMap.MapGrid >= 0 &&
+            petMap.MapGridX >= 0 &&
+            petMap.MapGridY >= 0 &&
+            ownerMap.MapGridX >= 0 &&
+            ownerMap.MapGridY >= 0 &&
+            petMap.MapGrid == ownerMap.MapGrid)
+        {
+            var gridDeltaX = Math.Abs(petMap.MapGridX - ownerMap.MapGridX);
+            var gridDeltaY = Math.Abs(petMap.MapGridY - ownerMap.MapGridY);
+
+            if (gridDeltaX <= 1 && gridDeltaY <= 1)
+            {
+                _ownerMapId = ownerMapId;
+                _ownerMapInstanceId = ownerMapInstanceId;
+                return;
+            }
+        }
+
         var previousMapId = MapId;
         var previousInstanceId = MapInstanceId;
 
@@ -968,15 +993,15 @@ public sealed class Pet : Entity
 
         lock (EntityLock)
         {
-            MapId = owner.MapId;
-            MapInstanceId = owner.MapInstanceId;
+            MapId = ownerMapId;
+            MapInstanceId = ownerMapInstanceId;
             X = owner.X;
             Y = owner.Y;
             Z = owner.Z;
             Dir = owner.Dir;
 
-            _ownerMapId = owner.MapId;
-            _ownerMapInstanceId = owner.MapInstanceId;
+            _ownerMapId = ownerMapId;
+            _ownerMapInstanceId = ownerMapInstanceId;
         }
 
         if (MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var newInstance))

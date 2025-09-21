@@ -71,7 +71,7 @@ public sealed class PetHub
         }
     }
 
-    public bool InvokePet(bool openPetHub = false)
+    public bool InvokePet(bool openPetHub = true)
     {
         lock (_syncRoot)
         {

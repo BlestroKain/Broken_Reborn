@@ -109,6 +109,52 @@ public partial class PlayerTests
     }
 
     [Test]
+    public void TestEquippingPetWithoutSummonDoesNotAutoSpawn()
+    {
+        var petDescriptor = new PetDescriptor(Guid.NewGuid())
+        {
+            Name = "Manual Pet",
+        };
+        PetDescriptor.Lookup.Set(petDescriptor.Id, petDescriptor);
+
+        var itemDescriptor = new ItemDescriptor(Guid.NewGuid())
+        {
+            Name = "Manual Pet Collar",
+            ItemType = ItemType.Equipment,
+            EquipmentSlot = 0,
+            Pet = new PetItemData
+            {
+                PetDescriptorId = petDescriptor.Id,
+                SummonOnEquip = false,
+                DespawnOnUnequip = false,
+                BindOnEquip = false,
+            },
+        };
+        ItemDescriptor.Lookup.Set(itemDescriptor.Id, itemDescriptor);
+
+        Player player = new()
+        {
+            MapId = _mapId,
+        };
+
+        Assert.That(player.TryGiveItem(itemDescriptor.Id, 1), Is.True);
+
+        var inventorySlot = player.FindInventoryItemSlots(itemDescriptor.Id).Single();
+        var slotIndex = player.FindInventoryItemSlotIndex(inventorySlot);
+
+        player.EquipItem(itemDescriptor, slotIndex, updateCooldown: false);
+
+        Assert.Multiple(
+            () =>
+            {
+                Assert.That(player.ActivePet, Is.Not.Null);
+                Assert.That(player.CurrentPet, Is.Null);
+                Assert.That(player.IsPetSpawnedViaHub, Is.False);
+            }
+        );
+    }
+
+    [Test]
     public void TestUnequippingSummonedPetDespawnsActiveInstance()
     {
         var petDescriptor = new PetDescriptor(Guid.NewGuid())

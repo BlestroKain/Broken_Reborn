@@ -163,15 +163,21 @@ public sealed class PetHubWindow : Window
 
     private void RefreshState()
     {
-        var hasPet = Globals.PetHub.HasActivePet && Globals.PetHub.ActivePet is { } pet;
+        var hasPet = Globals.PetHub.HasActivePet && Globals.PetHub.ActivePet is Pet pet; // Ensure 'pet' is assigned here
         var isSpawnRequested = Globals.PetHub.IsSpawnRequested;
 
         _invokeButton.Text = Strings.Pets.InvokeButton.ToString();
         _dismissButton.Text = Strings.Pets.DismissButton.ToString();
 
-        _statusLabel.Text = hasPet
-            ? Strings.Pets.StatusWithPet.ToString(pet.Name)
-            : Strings.Pets.StatusNoPet.ToString();
+        if (hasPet)
+        {
+            _statusLabel.Text = Strings.Pets.StatusWithPet.ToString(pet.Name); // 'pet' is now guaranteed to be assigned
+        }
+        else
+        {
+            _statusLabel.Text = Strings.Pets.StatusNoPet.ToString();
+        }
+
         _statusLabel.IsHidden = hasPet;
 
         _detailsPanel.IsHidden = !hasPet;
@@ -307,7 +313,7 @@ public sealed class PetHubWindow : Window
         return label;
     }
 
-    private Button CreateActionButton(string name, int x, int y, string text, EventHandler<ClickedEventArgs> onClick)
+    private Button CreateActionButton(string name, int x, int y, string text, Base.GwenEventHandler<MouseButtonState> onClick)
     {
         var button = new Button(this, name)
         {
@@ -319,11 +325,11 @@ public sealed class PetHubWindow : Window
 
         button.SetPosition(x, y);
         button.SetSize(136, 32);
-        button.Clicked += onClick;
+        button.Clicked += onClick; // Adjusted to use the correct delegate type
         return button;
     }
 
-    private void OnInvokeClicked(Base sender, ClickedEventArgs args)
+    private void OnInvokeClicked(Base sender, MouseButtonState arguments)
     {
         if (Globals.PetHub.InvokePet())
         {
@@ -331,7 +337,7 @@ public sealed class PetHubWindow : Window
         }
     }
 
-    private void OnDismissClicked(Base sender, ClickedEventArgs args)
+    private void OnDismissClicked(Base sender, MouseButtonState arguments)
     {
         if (Globals.PetHub.DismissPet())
         {

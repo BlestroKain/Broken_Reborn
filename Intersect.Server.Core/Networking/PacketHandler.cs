@@ -3299,7 +3299,7 @@ internal sealed partial class PacketHandler
             return;
         }
 
-        _ = player.SetPetHubSpawnRequested(true, packet.OpenPetHub);
+        _ = player.SetPetHubSpawnRequested(true, openPetHub: true);
     }
 
     public void HandlePacket(Client client, DespawnPetRequestPacket packet)
@@ -3329,7 +3329,7 @@ internal sealed partial class PacketHandler
             return;
         }
 
-        _ = player.SetPetHubSpawnRequested(true, packet.OpenPetHub);
+        _ = player.SetPetHubSpawnRequested(true, openPetHub: true);
     }
 
     public void HandlePacket(Client client, DismissPetPacket packet)

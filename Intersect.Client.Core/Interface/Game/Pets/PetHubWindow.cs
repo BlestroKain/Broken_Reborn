@@ -163,15 +163,16 @@ public sealed class PetHubWindow : Window
 
     private void RefreshState()
     {
-        var hasPet = Globals.PetHub.HasActivePet && Globals.PetHub.ActivePet is Pet pet; // Ensure 'pet' is assigned here
+        var pet = Globals.PetHub.ActivePet as Pet;
+        var hasPet = Globals.PetHub.HasActivePet && pet != null;
         var isSpawnRequested = Globals.PetHub.IsSpawnRequested;
 
         _invokeButton.Text = Strings.Pets.InvokeButton.ToString();
         _dismissButton.Text = Strings.Pets.DismissButton.ToString();
 
-        if (hasPet)
+        if (hasPet && pet != null)
         {
-            _statusLabel.Text = Strings.Pets.StatusWithPet.ToString(pet.Name); // 'pet' is now guaranteed to be assigned
+            _statusLabel.Text = Strings.Pets.StatusWithPet.ToString(pet.Name);
         }
         else
         {
@@ -187,7 +188,7 @@ public sealed class PetHubWindow : Window
         _invokeButton.IsDisabled = isSpawnRequested;
         _dismissButton.IsDisabled = !isSpawnRequested;
 
-        if (!hasPet)
+        if (!hasPet || pet == null)
         {
             foreach (var label in _statLabels.Values)
             {

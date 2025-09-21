@@ -1488,6 +1488,8 @@ public partial class Player : Entity
                 PlayerId = Id,
                 PetDescriptorId = descriptor.Id,
                 PetInstanceId = petInstanceId.Value,
+                Level = descriptor.Level,
+                Experience = descriptor.Experience,
             };
 
             Pets.Add(playerPet);

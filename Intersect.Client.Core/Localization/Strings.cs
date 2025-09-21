@@ -2166,6 +2166,12 @@ If you are sure you want to hand over your guild enter '\c{{#ff8080}}{02}\c{{}}'
         public static LocalizedString PetNameOverride = @"Pet Name Override:";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetLevel = @"Pet Level:";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetExperience = @"Pet Experience:";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString ScalingPercentage = @"Scaling Percentage:";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

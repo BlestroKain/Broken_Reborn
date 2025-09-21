@@ -396,6 +396,11 @@ RaiseEvents:
         {
             foreach (var slotIndices in player.MyEquipment.Values)
             {
+                if (slotIndices == null)
+                {
+                    continue;
+                }
+
                 foreach (var slotIndex in slotIndices)
                 {
                     if (slotIndex < 0 || slotIndex >= player.Inventory.Length)

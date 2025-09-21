@@ -386,48 +386,125 @@ RaiseEvents:
             ActivePetChanged?.Invoke();
         }
     }
-
     public void SyncEquippedPet(Player? player)
     {
-        PetDescriptor? descriptor = null;
-        string? petName = null;
-
-        if (player?.Inventory != null)
+        try
         {
-            foreach (var slotIndices in player.MyEquipment.Values)
+            // Blindajes de arranque
+            if (player == null || player.IsDisposed)
             {
+                // Si no hay player válido, y hay una pet activa, aseguremos estado coherente
+                if (HasActivePet && ActivePet != null && !ActivePet.IsDisposed)
+                {
+                    _ = DismissPet();
+                }
+
+                UpdateEquippedPet(null, null);
+                return;
+            }
+
+            var inventory = player.Inventory;
+            var equipment = player.MyEquipment;
+
+            if (inventory == null || equipment == null)
+            {
+                // No podemos resolver aún el equipamiento; no rompas el arranque
+                return;
+            }
+
+            PetDescriptor? foundDescriptor = null;
+            string? foundPetName = null;
+
+            // Buscar en TODO el equipamiento cualquier ítem que tenga datos de Pet válidos
+            foreach (var slotIndices in equipment.Values)
+            {
+                if (slotIndices == null)
+                {
+                    continue;
+                }
+
                 foreach (var slotIndex in slotIndices)
                 {
-                    if (slotIndex < 0 || slotIndex >= player.Inventory.Length)
+                    if (slotIndex < 0 || slotIndex >= inventory.Length)
                     {
                         continue;
                     }
 
-                    var item = player.Inventory[slotIndex];
-                    var petData = item?.Descriptor?.Pet;
-                    if (petData?.PetDescriptorId == Guid.Empty)
+                    var item = inventory[slotIndex];
+                    var itemDescriptor = item?.Descriptor;
+                    var petData = itemDescriptor?.Pet;
+
+                    if (petData == null || petData.PetDescriptorId == Guid.Empty)
                     {
                         continue;
                     }
 
-                    descriptor = petData.Descriptor;
+                    // Intentar resolver el descriptor de la mascota
+                    var descriptor = petData.Descriptor;
                     if (descriptor == null)
                     {
+                        // Catálogo aún no cargado completamente — salta sin fallar
                         continue;
                     }
 
-                    petName = string.IsNullOrWhiteSpace(petData.PetNameOverride)
-                        ? null
-                        : petData.PetNameOverride;
+                    foundDescriptor = descriptor;
+                    foundPetName = string.IsNullOrWhiteSpace(petData.PetNameOverride) ? null : petData.PetNameOverride;
 
+                    // Ya encontramos uno válido; salimos
                     goto FoundDescriptor;
                 }
             }
-        }
 
 FoundDescriptor:
-        UpdateEquippedPet(descriptor, petName);
+// Caso: NO hay mascota equipada actualmente (se quitó el item)
+            if (foundDescriptor == null)
+            {
+                // Si hay una pet activa, despawnea
+                if (HasActivePet && ActivePet != null && !ActivePet.IsDisposed)
+                {
+                    _ = DismissPet();
+                }
+
+                // Limpia el descriptor/nombre equipados en el hub
+                UpdateEquippedPet(null, null);
+
+                // No seguir
+                return;
+            }
+
+            // Caso: SÍ hay mascota equipada
+            // Si ya hay pet activa y el descriptor cambió, primero despawnea para evitar duplicados
+            if (HasActivePet && ActivePet != null && !ActivePet.IsDisposed)
+            {
+                var activeDescId = ActivePet.Descriptor?.Id ?? Guid.Empty;
+                if (activeDescId != foundDescriptor.Id)
+                {
+                    _ = DismissPet();
+                }
+            }
+
+            // Si ya teníamos un descriptor equipado y es el mismo, solo refresca el nombre (no dispares nada más)
+            // Nota: si tu PetHub expone EquippedDescriptor, úsalo para comparar y evitar trabajo innecesario
+            if (EquippedDescriptor != null && EquippedDescriptor.Id == foundDescriptor.Id)
+            {
+                UpdateEquippedPet(foundDescriptor, foundPetName);
+                return;
+            }
+
+            // Actualiza el descriptor/nombre equipados en el hub
+            UpdateEquippedPet(foundDescriptor, foundPetName);
+
+            // Importante: NO auto-invocar aquí para evitar duplicados si otro flujo ya invoca.
+            // El usuario podrá usar el botón "Invocar" o tu lógica externa decidirá cuándo hacerlo.
+        }
+        catch
+        {
+            // En cliente, evita tumbar el arranque por un NRE aquí.
+            // (Opcional) Agrega logging si tu contexto lo permite.
+            // ApplicationContext.CurrentContext?.Logger?.LogError(ex, "Error in SyncEquippedPet");
+        }
     }
+
 
     private static bool IsSelectableBehavior(PetState behavior) =>
         behavior is PetState.Follow or PetState.Stay or PetState.Defend or PetState.Passive;

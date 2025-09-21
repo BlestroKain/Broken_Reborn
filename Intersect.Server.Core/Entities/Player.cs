@@ -1250,18 +1250,51 @@ public partial class Player : Entity
             return;
         }
 
-        pet.Despawn(killIfDespawnable);
+        var wasCurrent = ReferenceEquals(CurrentPet, pet);
 
+        // Intento de despawn tolerante (si ya está disposed no hace nada).
+        try
+        {
+            if (!pet.IsDisposed)
+            {
+                pet.Despawn(killIfDespawnable);
+            }
+        }
+        catch
+        {
+            // opcional: loggear si tienes logger
+            // Logger.Warn(ex, "DespawnPet failed");
+        }
+
+        // Quitar de la colección local de mascotas invocadas
         lock (_spawnedPetsLock)
         {
-            SpawnedPets.Remove(pet);
+            // Intento por referencia; si no, limpieza por Id/estado
+            if (!SpawnedPets.Remove(pet))
+            {
+                _ = SpawnedPets.RemoveWhere(p => p == null || p.IsDisposed || p.Id == pet.Id);
+            }
         }
 
-        if (ReferenceEquals(CurrentPet, pet))
+        if (wasCurrent)
         {
+            // Limpiar la selección actual y el estado del hub
             CurrentPet = null;
+
+            // Si tu hub lleva el comportamiento actual y uno pendiente, resetea
+            _pendingBehavior = null;
+            _behavior = PetState.Follow; // valor por defecto “seguro” en UI
+
+            // Si manejas un flag de invocación en curso, límpialo
+            IsSpawnRequested = false;
+
+            // Notificar a la UI/suscriptores
+            BehaviorChanged?.Invoke();
+            ActivePetChanged?.Invoke();
+            SpawnStateChanged?.Invoke();
         }
     }
+
 
     internal Pet? FindPet(Guid petId)
     {
@@ -1411,12 +1444,13 @@ public partial class Player : Entity
     {
         lock (_spawnedPetsLock)
         {
-            for (var index = SpawnedPets.Count - 1; index >= 0; index--)
+            // Replace the usage of RemoveWhere with a manual iteration and removal
+            for (int i = SpawnedPets.Count - 1; i >= 0; i--)
             {
-                var pet = SpawnedPets[index];
+                var pet = SpawnedPets[i];
                 if (pet == null || pet.IsDisposed)
                 {
-                    SpawnedPets.RemoveAt(index);
+                    SpawnedPets.RemoveAt(i);
                 }
             }
         }

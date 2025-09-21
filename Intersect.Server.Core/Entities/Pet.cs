@@ -438,11 +438,8 @@ public sealed class Pet : Entity
             TryAssignTarget(aggressor, timeMs);
         }
     }
-
     public void Despawn(bool killIfDespawnable = true)
     {
-        _ = killIfDespawnable;
-
         lock (EntityLock)
         {
             if (IsDisposed)
@@ -450,28 +447,62 @@ public sealed class Pet : Entity
                 return;
             }
 
-            if (!IsDead)
+            // 1) Decidir si la mascota debe morir o solo desaparecer
+            //    - Si killIfDespawnable=true y Despawnable=true y no está muerta => Die()
+            //    - Si killIfDespawnable=false => no forzamos muerte
+            if (killIfDespawnable && Despawnable && !IsDead)
             {
-                Die(false, Owner);
+                // No dropeamos nada, ni contamos muerte del owner: es un despawn “limpio”
+                Die(false, killer: Owner);
             }
+
+            // 2) Limpieza de estado interno
+            //    Evitar que quede peleando, con target, timers, etc.
+            ClearCombatTarget();
+            _pathfinder?.SetTarget(null); // si usas pathfinder
+            State = PetState.Idle;        // forzar estado neutro antes de salir
 
             var mapId = MapId;
             var mapInstanceId = MapInstanceId;
 
+            // 3) Notificar a clientes y sacar de la instancia (si todavía estaba en mapa)
             if (mapId != Guid.Empty && mapInstanceId != Guid.Empty)
             {
+                // primero broadcast del leave
                 PacketSender.SendEntityLeaveInstanceOfMap(this, mapId, mapInstanceId);
 
+                // luego quitar de la instancia
                 if (MapController.TryGetInstanceFromMap(mapId, mapInstanceId, out var instance))
                 {
                     instance.RemoveEntity(this);
+
+                    // Si llevas un diccionario específico de pets en MapInstance, limpialo aquí también:
+                    if (instance.PetInstances != null)
+                    {
+                        _ = instance.PetInstances.TryRemove(Id, out _);
+                    }
                 }
+
+                // Opcional: resetear para que no haya “residuos” de posición
+                MapId = Guid.Empty;
+                MapInstanceId = Guid.Empty;
             }
 
+            // 4) Desasociar del dueño (si cacheas la referencia)
+            var owner = Owner;
             Owner = null;
+
+            // Si el dueño mantiene una lista/flag de pet activa, limpia aquí (pseudocódigo):
+            // owner?.RemoveActivePet(this);
+
+            // 5) Notificación opcional extra a HUD si tienes una ruta específica (si no, el leave basta)
+            // PacketSender.SendPetStateUpdate(this); // solo si tu cliente lo espera
+
+            // 6) Dispose final
             Dispose();
         }
     }
+
 
     private void UpdateTarget(Player owner, long timeMs)
     {

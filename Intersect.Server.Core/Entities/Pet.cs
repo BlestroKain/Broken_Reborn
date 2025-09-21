@@ -787,6 +787,30 @@ public sealed class Pet : Entity
         }
     }
 
+    public override void Die(bool dropItems = true, Entity killer = null)
+    {
+        var shouldDespawn = false;
+
+        lock (EntityLock)
+        {
+            if (IsDead || IsDisposed)
+            {
+                return;
+            }
+
+            base.Die(dropItems, killer);
+
+            PacketSender.SendEntityDie(this);
+
+            shouldDespawn = true;
+        }
+
+        if (shouldDespawn)
+        {
+            Despawn(killIfDespawnable: false);
+        }
+    }
+
 
     private void UpdateTarget(Player owner, long timeMs)
     {

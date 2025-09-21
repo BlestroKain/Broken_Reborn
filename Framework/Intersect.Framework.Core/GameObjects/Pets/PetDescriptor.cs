@@ -92,6 +92,34 @@ public partial class PetDescriptor : DatabaseObject<PetDescriptor>, IFolderable
 
     public long Experience { get; set; }
 
+    public int ExperienceRate { get; set; } = 100;
+
+    public int StatPointsPerLevel { get; set; }
+
+    private int _maxLevel = 100;
+
+    public int MaxLevel
+    {
+        get => _maxLevel <= 0 ? 1 : _maxLevel;
+        set => _maxLevel = value <= 0 ? 1 : value;
+    }
+
+    public PetLevelingMode LevelingMode { get; set; } = PetLevelingMode.Experience;
+
+    public bool CanEvolve { get; set; }
+
+    public int EvolutionLevel { get; set; }
+
+    [Column("EvolutionTarget")]
+    public Guid EvolutionTargetId { get; set; }
+
+    [NotMapped, JsonIgnore]
+    public PetDescriptor? EvolutionTarget
+    {
+        get => EvolutionTargetId == Guid.Empty ? null : Get(EvolutionTargetId);
+        set => EvolutionTargetId = value?.Id ?? Guid.Empty;
+    }
+
     public string Sprite { get; set; } = string.Empty;
 
     [Column("Spells"), JsonIgnore]
@@ -200,11 +228,17 @@ public partial class PetDescriptor : DatabaseObject<PetDescriptor>, IFolderable
     public PetDescriptor(Guid id) : base(id)
     {
         Name = "New Pet";
+        ExperienceRate = 100;
+        MaxLevel = 100;
+        LevelingMode = PetLevelingMode.Experience;
     }
 
     public PetDescriptor()
     {
         Name = "New Pet";
+        ExperienceRate = 100;
+        MaxLevel = 100;
+        LevelingMode = PetLevelingMode.Experience;
     }
 }
 

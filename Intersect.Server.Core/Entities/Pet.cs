@@ -48,6 +48,20 @@ public sealed class Pet : Entity
 
     public PetDescriptor Descriptor { get; }
 
+    public int ExperienceRate { get; }
+
+    public int StatPointsPerLevel { get; }
+
+    public int MaxLevel { get; }
+
+    public PetLevelingMode LevelingMode { get; }
+
+    public bool CanEvolve { get; }
+
+    public int EvolutionLevel { get; }
+
+    public Guid EvolutionTargetId { get; }
+
     public Guid OwnerId { get; }
 
     public bool Despawnable { get; } = true;
@@ -137,6 +151,14 @@ public sealed class Pet : Entity
         OwnerId = owner.Id;
         Owner = owner;
 
+        ExperienceRate = Math.Max(0, descriptor.ExperienceRate);
+        StatPointsPerLevel = Math.Max(0, descriptor.StatPointsPerLevel);
+        MaxLevel = Math.Max(1, descriptor.MaxLevel);
+        LevelingMode = descriptor.LevelingMode;
+        CanEvolve = descriptor.CanEvolve;
+        EvolutionLevel = Math.Max(0, descriptor.EvolutionLevel);
+        EvolutionTargetId = descriptor.EvolutionTargetId;
+
         var spawnMapId = mapIdOverride ?? owner.MapId;
         var spawnMapInstanceId = mapInstanceIdOverride ?? owner.MapInstanceId;
         var spawnX = xOverride ?? owner.X;
@@ -147,7 +169,7 @@ public sealed class Pet : Entity
             ? descriptor.Name
             : owner.ActivePet.CustomName;
         Sprite = descriptor.Sprite;
-        Level = descriptor.Level;
+        Level = Math.Clamp(descriptor.Level, 1, Math.Max(1, MaxLevel));
         Immunities = descriptor.Immunities?.ToList() ?? [];
 
         for (var index = 0; index < Enum.GetValues<Stat>().Length; index++)

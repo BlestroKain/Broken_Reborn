@@ -1292,7 +1292,7 @@ public partial class Player : Entity
         }
     }
 
-    private void PersistPetProgress(Pet pet)
+    internal void PersistPetProgress(Pet pet)
     {
         PlayerPet? playerPet = null;
 
@@ -2287,7 +2287,16 @@ public partial class Player : Entity
             DonateGuildExperience(guildExp);
         }
 
-        // Agregar la experiencia restante al jugador  
+        if (playerExp > 0)
+        {
+            var pet = CurrentPet;
+            if (pet is { IsDisposed: false })
+            {
+                pet.GiveExperience(playerExp);
+            }
+        }
+
+        // Agregar la experiencia restante al jugador
         Exp += (int)playerExp;
 
         if (Exp < 0)

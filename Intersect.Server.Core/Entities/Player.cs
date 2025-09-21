@@ -1448,6 +1448,8 @@ public partial class Player : Entity
 
             try
             {
+                PersistPetProgress(pet);
+
                 if (!pet.IsDisposed)
                 {
                     // Force the despawn even if the pet is flagged as non-despawnable.

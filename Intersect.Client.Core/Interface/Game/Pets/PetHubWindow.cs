@@ -1,5 +1,6 @@
 using Intersect.Client.Core;
 using Intersect.Client.Framework.File_Management;
+using Intersect.Client.Framework.Graphics;
 using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.General;
@@ -21,21 +22,28 @@ public sealed class PetHubWindow : Window
 
         Alignment = [Alignments.Bottom, Alignments.Left];
         AlignmentPadding = new Padding { Left = 8, Bottom = 8 };
+        SetSize(280, 160);
+        SetPosition(16, 16);
+
+        TitleLabel.FontName = "Arial";
+        TitleLabel.FontSize = 16;
+        TitleLabel.TextColorOverride = Color.White;
 
         _statusLabel = new Label(this, "StatusLabel")
         {
             Text = Strings.Pets.StatusNoPet.ToString(),
             FontName = "Arial",
             FontSize = 14,
+            TextColor = Color.White,
         };
         _statusLabel.SetPosition(16, 32);
-        _statusLabel.SetSize(200, 32);
+        _statusLabel.SetSize(248, 32);
 
         _behaviorWidget = new PetBehaviorWidget(this);
-        _behaviorWidget.Font = _statusLabel.Font;
+        _behaviorWidget.FontName = "Arial";
         _behaviorWidget.FontSize = 14;
+        _behaviorWidget.TextColor = Color.White;
         _behaviorWidget.SetPosition(16, 72);
-        _behaviorWidget.SetSize(200, 48);
 
         Globals.PetHub.ActivePetChanged += OnPetHubStateChanged;
         Globals.PetHub.BehaviorChanged += OnPetHubStateChanged;

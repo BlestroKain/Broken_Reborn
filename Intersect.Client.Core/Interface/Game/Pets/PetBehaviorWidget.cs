@@ -1,18 +1,26 @@
 using System.Collections.Generic;
-using Intersect.Client.General;
+using Intersect.Client.Core;
 using Intersect.Client.Framework.File_Management;
+using Intersect.Client.Framework.Graphics;
 using Intersect.Client.Framework.Gwen;
 using Intersect.Client.Framework.Gwen.Control;
 using Intersect.Client.Framework.Gwen.Control.EventArguments;
+using Intersect.Client.General;
 using Intersect.Client.Localization;
-using Intersect.Localization;
 using Intersect.Enums;
-using Intersect.Client.Core;
+using Intersect.Localization;
 
 namespace Intersect.Client.Interface.Game.Pets;
 
 public sealed class PetBehaviorWidget : RadioButtonGroup
 {
+    private const string DefaultFontName = "Arial";
+    private const int DefaultFontSize = 14;
+    private static readonly Color NormalTextColor = Color.White;
+    private static readonly Color HoveredTextColor = Color.FromArgb(230, 230, 230);
+    private static readonly Color ActiveTextColor = Color.FromArgb(200, 200, 200);
+    private static readonly Color DisabledTextColor = Color.FromArgb(140, 140, 140);
+
     private readonly Dictionary<PetState, LabeledRadioButton> _options = new();
     private bool _suppressSelectionChanged;
 
@@ -21,8 +29,8 @@ public sealed class PetBehaviorWidget : RadioButtonGroup
         Name = nameof(PetBehaviorWidget);
 
         // Establecer tamaño y posición del widget principal
-        SetSize(220, 120); // ejemplo de tamaño
-        SetPosition(20, 20); // ejemplo de posición
+        SetSize(248, 120);
+        SetPosition(16, 0);
 
         Alignment = [Alignments.Bottom, Alignments.Left];
         AlignmentPadding = new Padding { Bottom = 4, Left = 4 };
@@ -32,8 +40,9 @@ public sealed class PetBehaviorWidget : RadioButtonGroup
         Text = Strings.Pets.WidgetTitle.ToString();
 
         // Establecer fuente y tamaño de fuente del widget principal
-        FontName = "Arial";
-        FontSize = 14;
+        FontName = DefaultFontName;
+        FontSize = DefaultFontSize;
+        TextColor = NormalTextColor;
 
         CreateOption(PetState.Follow, Strings.Pets.BehaviorFollow, 0, 0);
         CreateOption(PetState.Stay, Strings.Pets.BehaviorStay, 0, 30);
@@ -68,10 +77,17 @@ public sealed class PetBehaviorWidget : RadioButtonGroup
         option.IsTabable = false;
         option.Margin = new Margin(0, 0, 0, 2);
 
-        // Establecer tamaño, posición, fuente y tamaño de fuente de cada opción
-        option.SetSize(200, 28);
+        // Establecer tamaño, posición, fuente, tamaño de fuente y color de texto de cada opción
+        option.SetSize(248, 28);
         option.SetPosition(x, y);
-      
+        option.FontName = DefaultFontName;
+        option.FontSize = DefaultFontSize;
+        option.TextColor = NormalTextColor;
+        option.SetTextColor(NormalTextColor, ComponentState.Normal);
+        option.SetTextColor(HoveredTextColor, ComponentState.Hovered);
+        option.SetTextColor(ActiveTextColor, ComponentState.Active);
+        option.SetTextColor(DisabledTextColor, ComponentState.Disabled);
+
 
         _options[behavior] = option;
     }

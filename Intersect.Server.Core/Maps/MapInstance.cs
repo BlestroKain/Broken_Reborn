@@ -367,7 +367,6 @@ public partial class MapInstance : IMapInstance
     public Pet? SpawnPetForPlayer(
         Player owner,
         PetDescriptor descriptor,
-        bool despawnable = false,
         Guid? mapIdOverride = null,
         Guid? mapInstanceIdOverride = null,
         int? xOverride = null,
@@ -405,7 +404,6 @@ public partial class MapInstance : IMapInstance
         var pet = new Pet(
             descriptor,
             owner,
-            despawnable: despawnable,
             register: false,
             mapIdOverride: spawnMapId,
             mapInstanceIdOverride: spawnInstanceId,

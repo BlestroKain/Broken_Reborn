@@ -30,7 +30,7 @@ public sealed class Pet : Entity
     /// <summary>
     ///     Gets a value indicating whether the server considers this pet despawnable.
     /// </summary>
-    public bool Despawnable { get; private set; }
+    public bool Despawnable { get; private set; } = true;
 
     /// <summary>
     ///     Gets the behaviour currently reported by the server for the pet.
@@ -105,12 +105,14 @@ public sealed class Pet : Entity
 
         var ownerChanged = OwnerId != ownerId;
         var descriptorChanged = DescriptorId != descriptorId;
-        var despawnableChanged = Despawnable != despawnable;
+        _ = despawnable;
+        const bool normalizedDespawnable = true;
+        var despawnableChanged = Despawnable != normalizedDespawnable;
         var behaviorChanged = Behavior != behavior;
 
         OwnerId = ownerId;
         DescriptorId = descriptorId;
-        Despawnable = despawnable;
+        Despawnable = normalizedDespawnable;
         Behavior = behavior;
 
         if (ownerChanged || descriptorChanged || despawnableChanged || behaviorChanged)
@@ -127,7 +129,7 @@ public sealed class Pet : Entity
         _cachedDescriptor = null;
         OwnerId = Guid.Empty;
         DescriptorId = Guid.Empty;
-        Despawnable = false;
+        Despawnable = true;
         Behavior = PetState.Follow;
     }
 

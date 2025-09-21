@@ -1039,7 +1039,6 @@ public static partial class CommandProcessing
         var pet = instance.SpawnPetForPlayer(
             playerCaller,
             descriptor,
-            despawnable: true,
             mapIdOverride: spawnMapId,
             mapInstanceIdOverride: instance.MapInstanceId,
             xOverride: spawnX,

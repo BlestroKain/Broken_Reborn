@@ -50,7 +50,7 @@ public sealed class Pet : Entity
 
     public Guid OwnerId { get; }
 
-    public bool Despawnable { get; }
+    public bool Despawnable { get; } = true;
 
     public Player? Owner
     {
@@ -122,7 +122,6 @@ public sealed class Pet : Entity
     public Pet(
         PetDescriptor descriptor,
         Player owner,
-        bool despawnable = false,
         bool register = true,
         Guid? mapIdOverride = null,
         Guid? mapInstanceIdOverride = null,
@@ -137,7 +136,6 @@ public sealed class Pet : Entity
         Descriptor = descriptor;
         OwnerId = owner.Id;
         Owner = owner;
-        Despawnable = despawnable;
 
         var spawnMapId = mapIdOverride ?? owner.MapId;
         var spawnMapInstanceId = mapInstanceIdOverride ?? owner.MapInstanceId;
@@ -443,6 +441,8 @@ public sealed class Pet : Entity
 
     public void Despawn(bool killIfDespawnable = true)
     {
+        _ = killIfDespawnable;
+
         lock (EntityLock)
         {
             if (IsDisposed)
@@ -450,7 +450,7 @@ public sealed class Pet : Entity
                 return;
             }
 
-            if (killIfDespawnable && Despawnable && !IsDead)
+            if (!IsDead)
             {
                 Die(false, Owner);
             }

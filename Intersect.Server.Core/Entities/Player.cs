@@ -85,6 +85,10 @@ public partial class Player : Entity
 
     [JsonIgnore][NotMapped] public PetState ActivePetMode { get; set; } = PetState.Defend;
 
+    [JsonIgnore][NotMapped] private bool _isPetSpawnedViaHub;
+
+    [JsonIgnore][NotMapped] public bool IsPetSpawnedViaHub => _isPetSpawnedViaHub;
+
     private const int PetBehaviorChangeCooldownDuration = 500;
     private const int PetInvokeCooldownDuration = 1000;
 
@@ -1126,6 +1130,45 @@ public partial class Player : Entity
         }
     }
 
+    private void SetPetHubSpawnFlag(bool requested, bool notifyClient = true)
+    {
+        if (_isPetSpawnedViaHub == requested)
+        {
+            return;
+        }
+
+        _isPetSpawnedViaHub = requested;
+
+        if (notifyClient)
+        {
+            PacketSender.SendPetHubState(this);
+        }
+    }
+
+    public bool SetPetHubSpawnRequested(bool requested, bool openPetHub = false, bool closePetHub = false)
+    {
+        if (requested)
+        {
+            SetPetHubSpawnFlag(true);
+
+            var descriptor = ActivePet?.Descriptor;
+            if (descriptor == null)
+            {
+                if (openPetHub)
+                {
+                    PacketSender.SendOpenPetHub(this);
+                }
+
+                return false;
+            }
+
+            return TrySpawnActivePet(descriptor, openPetHub);
+        }
+
+        SetPetHubSpawnFlag(false);
+        return DismissActivePet(closePetHub);
+    }
+
     private void UpdatePetState(long timeMs)
     {
         _ = timeMs;
@@ -1135,6 +1178,16 @@ public partial class Player : Entity
         var activePet = ActivePet;
         var descriptor = activePet?.Descriptor;
         var currentPet = CurrentPet;
+
+        if (!IsPetSpawnedViaHub)
+        {
+            if (currentPet != null)
+            {
+                DespawnPet(currentPet, false);
+            }
+
+            return;
+        }
 
         if (currentPet != null && currentPet.IsDisposed)
         {
@@ -1228,6 +1281,42 @@ public partial class Player : Entity
         return null;
     }
 
+    internal bool IsActivePetEquipped()
+    {
+        var playerPet = ActivePet;
+        if (playerPet == null)
+        {
+            return false;
+        }
+
+        foreach (var equippedItem in EquippedItems)
+        {
+            var descriptor = equippedItem?.Descriptor;
+            var petData = descriptor?.Pet;
+            if (descriptor == null || petData == null)
+            {
+                continue;
+            }
+
+            if (equippedItem?.PetInstanceId is { } petInstanceId && petInstanceId != Guid.Empty)
+            {
+                if (petInstanceId == playerPet.PetInstanceId)
+                {
+                    return true;
+                }
+
+                continue;
+            }
+
+            if (petData.PetDescriptorId == playerPet.PetDescriptorId)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     internal bool TryBeginPetBehaviorChange()
     {
         var now = Timing.Global.Milliseconds;
@@ -1266,6 +1355,8 @@ public partial class Player : Entity
 
     public bool DismissActivePet(bool closePetHub = false)
     {
+        SetPetHubSpawnFlag(false);
+
         var dismissed = false;
 
         foreach (var pet in GetActivePetsSnapshot())
@@ -1403,7 +1494,7 @@ public partial class Player : Entity
             return false;
         }
 
-        return TrySpawnActivePet(descriptor, openPetHub);
+        return SetPetHubSpawnRequested(true, openPetHub);
     }
 
     private bool TrySpawnActivePet(PetDescriptor descriptor, bool openPetHub)
@@ -1517,6 +1608,7 @@ public partial class Player : Entity
         {
             ActivePet = null;
             ActivePetId = null;
+            SetPetHubSpawnFlag(false);
         }
 
         if (petData.DespawnOnUnequip)
@@ -1541,6 +1633,7 @@ public partial class Player : Entity
         }
 
         CurrentPet = null;
+        SetPetHubSpawnFlag(false, notifyClient: false);
     }
 
     private Entity? ConsumePendingPetAttacker()
@@ -6777,7 +6870,7 @@ public partial class Player : Entity
 
         if (isPetSlot && petDescriptor != null)
         {
-            _ = TrySpawnActivePet(petDescriptor, openPetHub: itemDescriptor.Pet.SummonOnEquip);
+            _ = SetPetHubSpawnRequested(true, openPetHub: itemDescriptor.Pet.SummonOnEquip);
         }
         else if (itemDescriptor.Pet.SummonOnEquip)
         {

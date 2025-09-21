@@ -1304,6 +1304,45 @@ public static partial class Strings
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString HubTitle = @"Pet Hub";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString CustomNameLabel = @"Name: {0}";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString DescriptorNameLabel = @"Descriptor: {0}";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString UnknownDescriptorName = @"Unknown";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString LevelLabel = @"Level: {0}";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString BehaviorLabel = @"Behavior: {0}";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString BehaviorUnknown = @"Unknown";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString VitalsHeader = @"Vitals";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString VitalFormat = @"{0}: {1}/{2}";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString StatsHeader = @"Stats";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString StatFormat = @"{0}: {1}";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString NoStats = @"No stats available.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString InvokeButton = @"Summon";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString DismissButton = @"Dismiss";
     }
 
     public partial struct Crafting

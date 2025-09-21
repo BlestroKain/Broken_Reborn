@@ -57,6 +57,34 @@ public sealed class PetHub
         }
     }
 
+    public bool InvokePet(bool openPetHub = false)
+    {
+        lock (_syncRoot)
+        {
+            if (_activePet is { IsDisposed: false })
+            {
+                return false;
+            }
+        }
+
+        Network.SendPacket(new InvokePetPacket(openPetHub));
+        return true;
+    }
+
+    public bool DismissPet(bool closePetHub = false)
+    {
+        lock (_syncRoot)
+        {
+            if (_activePet is not { IsDisposed: false })
+            {
+                return false;
+            }
+        }
+
+        Network.SendPacket(new DismissPetPacket(closePetHub));
+        return true;
+    }
+
     public void HandlePetLeft(Guid petId)
     {
         bool activeChanged;

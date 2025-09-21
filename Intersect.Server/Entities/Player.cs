@@ -1162,6 +1162,13 @@ namespace Intersect.Server.Entities
         //Combat
         public override void KilledEntity(Entity entity)
         {
+            if (this is IPet pet)
+            {
+                HandlePetKill(pet, entity);
+
+                return;
+            }
+
             switch (entity)
             {
                 case Npc npc:
@@ -1219,6 +1226,34 @@ namespace Intersect.Server.Entities
                         break;
                     }
             }
+        }
+
+        private void HandlePetKill(IPet pet, Entity entity)
+        {
+            var owner = pet.Owner;
+            if (owner != null && !ReferenceEquals(owner, this))
+            {
+                owner.KilledEntity(entity);
+            }
+
+            if (!pet.IsLeveable || entity is not Npc npc)
+            {
+                return;
+            }
+
+            var descriptor = npc.Base;
+            if (descriptor == null)
+            {
+                return;
+            }
+
+            var experience = descriptor.Experience;
+            if (experience <= 0)
+            {
+                return;
+            }
+
+            pet.GivePetExperience(experience);
         }
 
         public void UpdateQuestKillTasks(Entity en)

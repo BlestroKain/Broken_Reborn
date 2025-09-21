@@ -950,4 +950,9 @@ public partial class FrmPet : EditorForm
 
         combo.SelectedIndex = index;
     }
+
+    private void grpRegen_Enter(object sender, EventArgs e)
+    {
+
+    }
 }

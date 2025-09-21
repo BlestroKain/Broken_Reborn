@@ -25,17 +25,17 @@ public sealed class Pet : Entity
     /// <summary>
     ///     Gets the identifier of the player that owns this pet.
     /// </summary>
-    public Guid OwnerId { get; private set; }
+    public Guid OwnerId { get; set; }
 
     /// <summary>
     ///     Gets a value indicating whether the server considers this pet despawnable.
     /// </summary>
-    public bool Despawnable { get; private set; } = true;
+    public bool Despawnable { get;  set; } = true;
 
     /// <summary>
     ///     Gets the behaviour currently reported by the server for the pet.
     /// </summary>
-    public PetState Behavior { get; private set; } = PetState.Follow;
+    public PetState Behavior { get; set; } = PetState.Follow;
 
     /// <summary>
     ///     Gets the descriptor identifier used to spawn this pet.

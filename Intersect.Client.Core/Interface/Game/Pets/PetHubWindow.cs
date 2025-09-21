@@ -194,6 +194,13 @@ namespace Intersect.Client.Interface.Game.Pets
             Globals.PetHub.SpawnStateChanged += OnPetHubStateChanged;
         }
 
+        protected override void OnClose(Base control, EventArgs args)
+        {
+            _ = Globals.PetHub.DismissPet(closePetHub: true);
+
+            base.OnClose(control, args);
+        }
+
         protected override void EnsureInitialized()
         {
             LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
@@ -395,7 +402,7 @@ namespace Intersect.Client.Interface.Game.Pets
 
         private void OnDismissClicked(Base sender, MouseButtonState arguments)
         {
-            if (Globals.PetHub.DismissPet())
+            if (Globals.PetHub.DismissPet(closePetHub: true))
             {
                 _dismissButton.IsDisabled = true;
                 _invokeButton.IsDisabled = false;

@@ -3287,6 +3287,36 @@ internal sealed partial class PacketHandler
         player.ActivePetMode = packet.Behavior;
     }
 
+    public void HandlePacket(Client client, SpawnPetRequestPacket packet)
+    {
+        if (client?.Entity is not Player player || packet == null)
+        {
+            return;
+        }
+
+        if (!player.IsActivePetEquipped())
+        {
+            return;
+        }
+
+        _ = player.SetPetHubSpawnRequested(true, packet.OpenPetHub);
+    }
+
+    public void HandlePacket(Client client, DespawnPetRequestPacket packet)
+    {
+        if (client?.Entity is not Player player || packet == null)
+        {
+            return;
+        }
+
+        if (!player.IsActivePetEquipped())
+        {
+            return;
+        }
+
+        _ = player.SetPetHubSpawnRequested(false, closePetHub: packet.ClosePetHub);
+    }
+
     public void HandlePacket(Client client, InvokePetPacket packet)
     {
         if (client?.Entity is not Player player || packet == null)
@@ -3294,7 +3324,12 @@ internal sealed partial class PacketHandler
             return;
         }
 
-        _ = player.InvokePet(openPetHub: packet.OpenPetHub);
+        if (!player.IsActivePetEquipped())
+        {
+            return;
+        }
+
+        _ = player.SetPetHubSpawnRequested(true, packet.OpenPetHub);
     }
 
     public void HandlePacket(Client client, DismissPetPacket packet)
@@ -3304,7 +3339,12 @@ internal sealed partial class PacketHandler
             return;
         }
 
-        _ = player.DismissActivePet(closePetHub: packet.ClosePetHub);
+        if (!player.IsActivePetEquipped())
+        {
+            return;
+        }
+
+        _ = player.SetPetHubSpawnRequested(false, closePetHub: packet.ClosePetHub);
     }
 
     //SetAlignmentRequestPacket

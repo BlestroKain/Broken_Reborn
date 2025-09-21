@@ -1050,6 +1050,16 @@ public static partial class PacketSender
         // Aquí solo necesitamos notificar inmediatamente al propietario.
     }
 
+    public static void SendPetHubState(Player player)
+    {
+        if (player == null)
+        {
+            return;
+        }
+
+        player.SendPacket(new PetHubStatePacket(player.IsPetSpawnedViaHub), TransmissionMode.Any);
+    }
+
     public static void SendOpenPetHub(Player player, bool close = false)
     {
         if (player == null)

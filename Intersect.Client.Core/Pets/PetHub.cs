@@ -14,6 +14,7 @@ public sealed class PetHub
     private Pet? _activePet;
     private PetState _behavior = PetState.Follow;
     private PetState? _pendingBehavior;
+    private bool _isSpawnRequested;
 
     public PetHub()
     {
@@ -23,6 +24,8 @@ public sealed class PetHub
     public event Action? ActivePetChanged;
 
     public event Action? BehaviorChanged;
+
+    public event Action? SpawnStateChanged;
 
     public Pet? ActivePet
     {
@@ -57,17 +60,28 @@ public sealed class PetHub
         }
     }
 
+    public bool IsSpawnRequested
+    {
+        get
+        {
+            lock (_syncRoot)
+            {
+                return _isSpawnRequested;
+            }
+        }
+    }
+
     public bool InvokePet(bool openPetHub = false)
     {
         lock (_syncRoot)
         {
-            if (_activePet is { IsDisposed: false })
+            if (_isSpawnRequested)
             {
                 return false;
             }
         }
 
-        Network.SendPacket(new InvokePetPacket(openPetHub));
+        Network.SendPacket(new SpawnPetRequestPacket(openPetHub));
         return true;
     }
 
@@ -75,13 +89,13 @@ public sealed class PetHub
     {
         lock (_syncRoot)
         {
-            if (_activePet is not { IsDisposed: false })
+            if (!_isSpawnRequested)
             {
                 return false;
             }
         }
 
-        Network.SendPacket(new DismissPetPacket(closePetHub));
+        Network.SendPacket(new DespawnPetRequestPacket(closePetHub));
         return true;
     }
 
@@ -158,6 +172,32 @@ RaiseEvents:
         }
     }
 
+    public void Process(PetHubStatePacket packet)
+    {
+        if (packet == null)
+        {
+            return;
+        }
+
+        var spawnChanged = false;
+
+        lock (_syncRoot)
+        {
+            if (_isSpawnRequested == packet.IsActive)
+            {
+                return;
+            }
+
+            _isSpawnRequested = packet.IsActive;
+            spawnChanged = true;
+        }
+
+        if (spawnChanged)
+        {
+            SpawnStateChanged?.Invoke();
+        }
+    }
+
     public void Process(PetStateUpdatePacket packet)
     {
         if (packet == null)
@@ -209,6 +249,7 @@ RaiseEvents:
     {
         bool activeChanged;
         bool behaviorChanged;
+        bool spawnChanged;
 
         lock (_syncRoot)
         {
@@ -217,6 +258,8 @@ RaiseEvents:
             _pendingBehavior = null;
             behaviorChanged = _behavior != PetState.Follow;
             _behavior = PetState.Follow;
+            spawnChanged = _isSpawnRequested;
+            _isSpawnRequested = false;
         }
 
         if (behaviorChanged)
@@ -227,6 +270,11 @@ RaiseEvents:
         if (activeChanged)
         {
             ActivePetChanged?.Invoke();
+        }
+
+        if (spawnChanged)
+        {
+            SpawnStateChanged?.Invoke();
         }
     }
 

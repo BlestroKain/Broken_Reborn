@@ -135,6 +135,7 @@ public sealed class PetHubWindow : Window
 
         Globals.PetHub.ActivePetChanged += OnPetHubStateChanged;
         Globals.PetHub.BehaviorChanged += OnPetHubStateChanged;
+        Globals.PetHub.SpawnStateChanged += OnPetHubStateChanged;
     }
 
     protected override void EnsureInitialized()
@@ -149,6 +150,7 @@ public sealed class PetHubWindow : Window
         {
             Globals.PetHub.ActivePetChanged -= OnPetHubStateChanged;
             Globals.PetHub.BehaviorChanged -= OnPetHubStateChanged;
+            Globals.PetHub.SpawnStateChanged -= OnPetHubStateChanged;
         }
 
         base.Dispose(disposing);
@@ -162,6 +164,7 @@ public sealed class PetHubWindow : Window
     private void RefreshState()
     {
         var hasPet = Globals.PetHub.HasActivePet && Globals.PetHub.ActivePet is { } pet;
+        var isSpawnRequested = Globals.PetHub.IsSpawnRequested;
 
         _invokeButton.Text = Strings.Pets.InvokeButton.ToString();
         _dismissButton.Text = Strings.Pets.DismissButton.ToString();
@@ -175,8 +178,8 @@ public sealed class PetHubWindow : Window
         _statsHeader.IsHidden = !hasPet;
         _statsPanel.IsHidden = !hasPet;
         _behaviorWidget.IsHidden = !hasPet;
-        _invokeButton.IsDisabled = hasPet;
-        _dismissButton.IsDisabled = !hasPet;
+        _invokeButton.IsDisabled = isSpawnRequested;
+        _dismissButton.IsDisabled = !isSpawnRequested;
 
         if (!hasPet)
         {

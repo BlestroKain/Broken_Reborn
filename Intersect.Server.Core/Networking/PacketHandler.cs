@@ -3287,6 +3287,26 @@ internal sealed partial class PacketHandler
         player.ActivePetMode = packet.Behavior;
     }
 
+    public void HandlePacket(Client client, InvokePetPacket packet)
+    {
+        if (client?.Entity is not Player player || packet == null)
+        {
+            return;
+        }
+
+        _ = player.InvokePet(openPetHub: packet.OpenPetHub);
+    }
+
+    public void HandlePacket(Client client, DismissPetPacket packet)
+    {
+        if (client?.Entity is not Player player || packet == null)
+        {
+            return;
+        }
+
+        _ = player.DismissActivePet(closePetHub: packet.ClosePetHub);
+    }
+
     //SetAlignmentRequestPacket
     public void HandlePacket(Client client, SetAlignmentRequestPacket packet)
     {

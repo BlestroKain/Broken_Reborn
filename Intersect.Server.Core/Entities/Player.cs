@@ -1264,6 +1264,34 @@ public partial class Player : Entity
         return true;
     }
 
+    public bool DismissActivePet(bool closePetHub = false)
+    {
+        var dismissed = false;
+
+        foreach (var pet in GetActivePetsSnapshot())
+        {
+            if (pet == null)
+            {
+                continue;
+            }
+
+            dismissed = true;
+            DespawnPet(pet, killIfDespawnable: false);
+        }
+
+        if (MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var instance) && instance != null)
+        {
+            instance.DespawnActivePetOf(this, killIfDespawnable: false);
+        }
+
+        if (dismissed && closePetHub)
+        {
+            PacketSender.SendOpenPetHub(this, close: true);
+        }
+
+        return dismissed;
+    }
+
     internal Pet[] GetActivePetsSnapshot()
     {
         var pets = new List<Pet>();

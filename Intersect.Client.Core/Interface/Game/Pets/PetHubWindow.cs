@@ -196,7 +196,10 @@ namespace Intersect.Client.Interface.Game.Pets
 
         protected override void OnClose(Base control, EventArgs args)
         {
-            _ = Globals.PetHub.DismissPet(closePetHub: true);
+            if (Globals.PetHub.ActivePet == null && Globals.PetHub.IsSpawnRequested)
+            {
+                _ = Globals.PetHub.DismissPet(closePetHub: true);
+            }
 
             base.OnClose(control, args);
         }

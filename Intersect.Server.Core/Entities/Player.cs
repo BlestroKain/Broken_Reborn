@@ -6868,14 +6868,28 @@ public partial class Player : Entity
             }
         }
 
-        if (isPetSlot && petDescriptor != null)
+        if (petDescriptor == null)
         {
-            _ = SetPetHubSpawnRequested(true, openPetHub: itemDescriptor.Pet.SummonOnEquip);
+            return;
         }
-        else if (itemDescriptor.Pet.SummonOnEquip)
+
+        var summonImmediately = itemDescriptor.Pet.SummonOnEquip;
+
+        if (summonImmediately)
         {
-            _ = InvokePet(ignoreCooldown: true, openPetHub: true);
+            if (isPetSlot)
+            {
+                _ = SetPetHubSpawnRequested(true, openPetHub: true);
+            }
+            else
+            {
+                _ = InvokePet(ignoreCooldown: true, openPetHub: true);
+            }
+
+            return;
         }
+
+        PacketSender.SendOpenPetHub(this);
     }
     private void AddEquipmentSlot(int equipmentSlot, int inventorySlot)
     {

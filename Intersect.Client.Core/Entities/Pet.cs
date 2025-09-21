@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Intersect.Client.General;
 using Intersect.Enums;
 using Intersect.Framework.Core;
@@ -16,6 +17,8 @@ public sealed class Pet : Entity
     private PetDescriptor? _cachedDescriptor;
     private Guid _descriptorId;
 
+    private int[] _statPointAllocations = Array.Empty<int>();
+
     public Pet(Guid id, EntityPacket? packet)
         : base(id, packet, EntityType.Pet)
     {
@@ -25,17 +28,17 @@ public sealed class Pet : Entity
     /// <summary>
     ///     Gets the identifier of the player that owns this pet.
     /// </summary>
-    public Guid OwnerId { get; private set; }
+    public Guid OwnerId { get; set; }
 
     /// <summary>
     ///     Gets a value indicating whether the server considers this pet despawnable.
     /// </summary>
-    public bool Despawnable { get; private set; } = true;
+    public bool Despawnable { get;  set; } = true;
 
     /// <summary>
     ///     Gets the behaviour currently reported by the server for the pet.
     /// </summary>
-    public PetState Behavior { get; private set; } = PetState.Follow;
+    public PetState Behavior { get; set; } = PetState.Follow;
 
     /// <summary>
     ///     Gets the descriptor identifier used to spawn this pet.
@@ -89,6 +92,14 @@ public sealed class Pet : Entity
     /// </summary>
     public bool IsOwnedByLocalPlayer => IsOwner(Globals.Me);
 
+    public long Experience { get; private set; }
+
+    public long ExperienceToNextLevel { get; private set; }
+
+    public int StatPoints { get; private set; }
+
+    public IReadOnlyList<int> StatPointAllocations => _statPointAllocations;
+
     /// <summary>
     ///     Applies the metadata provided by the server to this pet instance.
     /// </summary>
@@ -121,6 +132,25 @@ public sealed class Pet : Entity
         }
     }
 
+    public void ApplyProgress(long experience, long experienceToNextLevel, int statPoints, int[]? statPointAllocations)
+    {
+        Experience = Math.Max(0, experience);
+        ExperienceToNextLevel = Math.Max(-1, experienceToNextLevel);
+        StatPoints = Math.Max(0, statPoints);
+
+        if (statPointAllocations == null)
+        {
+            _statPointAllocations = Array.Empty<int>();
+        }
+        else
+        {
+            _statPointAllocations = new int[statPointAllocations.Length];
+            Array.Copy(statPointAllocations, _statPointAllocations, statPointAllocations.Length);
+        }
+
+        Globals.NotifyPetProgressApplied(this);
+    }
+
     /// <inheritdoc />
     public override void Dispose()
     {
@@ -131,6 +161,10 @@ public sealed class Pet : Entity
         DescriptorId = Guid.Empty;
         Despawnable = true;
         Behavior = PetState.Follow;
+        Experience = 0;
+        ExperienceToNextLevel = 0;
+        StatPoints = 0;
+        _statPointAllocations = Array.Empty<int>();
     }
 
     /// <inheritdoc />

@@ -1050,6 +1050,33 @@ public static partial class PacketSender
         // Aquí solo necesitamos notificar inmediatamente al propietario.
     }
 
+    public static void SendPetProgress(Pet pet)
+    {
+        if (pet == null)
+        {
+            return;
+        }
+
+        var owner = pet.Owner ?? Player.FindOnline(pet.OwnerId);
+        if (owner == null || owner.IsDisposed)
+        {
+            return;
+        }
+
+        var allocations = pet.StatPointAllocations ?? Array.Empty<int>();
+
+        owner.SendPacket(
+            new PetProgressPacket(
+                pet.Id,
+                pet.Experience,
+                pet.ExperienceToNextLevel,
+                pet.StatPoints,
+                allocations.ToArray()
+            ),
+            TransmissionMode.Any
+        );
+    }
+
     public static void SendPetHubState(Player player)
     {
         if (player == null)

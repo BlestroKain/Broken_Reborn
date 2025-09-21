@@ -13,6 +13,7 @@ using Intersect.Framework.Core.GameObjects.Resources;
 using Intersect.GameObjects;
 using Intersect.Network.Packets.Server;
 using Intersect.Server.Database;
+using Intersect.Server.Database.PlayerData.Players;
 using Intersect.Server.Entities.Events;
 using Intersect.Server.Networking;
 using Intersect.Utilities;
@@ -367,6 +368,7 @@ public partial class MapInstance : IMapInstance
     public Pet? SpawnPetForPlayer(
         Player owner,
         PetDescriptor descriptor,
+        PlayerPet? persistedPet = null,
         Guid? mapIdOverride = null,
         Guid? mapInstanceIdOverride = null,
         int? xOverride = null,
@@ -409,12 +411,14 @@ public partial class MapInstance : IMapInstance
             mapInstanceIdOverride: spawnInstanceId,
             xOverride: xOverride ?? owner.X,
             yOverride: yOverride ?? owner.Y,
-            directionOverride: dirOverride ?? owner.Dir
+            directionOverride: dirOverride ?? owner.Dir,
+            persistedPet: persistedPet
         );
 
         AddEntity(pet);
         PetInstances[pet.Id] = pet;
         PacketSender.SendEntityDataToProximity(pet);
+        PacketSender.SendPetProgress(pet);
 
         return pet;
     }

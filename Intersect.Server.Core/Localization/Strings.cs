@@ -1263,6 +1263,15 @@ public static partial class Strings
 
     }
 
+    public sealed partial class PetsNamespace : LocaleNamespace
+    {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString LevelUp = @"Your pet {00} reached level {01}!";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString StatPoints = @"Your pet {00} gained {01} stat points.";
+    }
+
     public sealed partial class PortcheckingNamespace : LocaleNamespace
     {
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -1477,6 +1486,7 @@ public static partial class Strings
     }
 
     public static MarketNamespace Market => Root.Market;
+    public static PetsNamespace Pets => Root.Pets;
 
     public sealed class MarketNamespace : LocaleNamespace
     {
@@ -1642,6 +1652,8 @@ public static partial class Strings
             new PasswordResetNotificationNamespace();
 
         public readonly PlayerNamespace Player = new PlayerNamespace();
+
+        public readonly PetsNamespace Pets = new PetsNamespace();
 
         public readonly PortcheckingNamespace Portchecking = new PortcheckingNamespace();
 

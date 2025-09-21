@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Intersect;
 using Intersect.Config;
 using Intersect.Enums;
@@ -11,6 +12,7 @@ using Intersect.Network.Packets.Server;
 using Intersect.Server.Database.PlayerData.Players;
 using Intersect.Server.Entities.Pathfinding;
 using Intersect.Server.Framework.Items;
+using Intersect.Server.Localization;
 using Intersect.Server.Maps;
 using Intersect.Server.Networking;
 namespace Intersect.Server.Entities;
@@ -48,9 +50,33 @@ public sealed class Pet : Entity
 
     public PetDescriptor Descriptor { get; }
 
+    public int ExperienceRate { get; }
+
+    public int StatPointsPerLevel { get; }
+
+    public int MaxLevel { get; }
+
+    public PetLevelingMode LevelingMode { get; }
+
+    public bool CanEvolve { get; }
+
+    public int EvolutionLevel { get; }
+
+    public Guid EvolutionTargetId { get; }
+
     public Guid OwnerId { get; }
 
     public bool Despawnable { get; } = true;
+
+    public Guid PetInstanceId { get; }
+
+    public long Experience { get; private set; }
+
+    public long ExperienceToNextLevel => GetExperienceToNextLevel(Level);
+
+    public int StatPoints { get; private set; }
+
+    public int TotalAllocatedStatPoints => StatPointAllocations.Sum();
 
     public Player? Owner
     {
@@ -127,7 +153,8 @@ public sealed class Pet : Entity
         Guid? mapInstanceIdOverride = null,
         int? xOverride = null,
         int? yOverride = null,
-        Direction? directionOverride = null
+        Direction? directionOverride = null,
+        PlayerPet? persistedPet = null
     )
     {
         ArgumentNullException.ThrowIfNull(descriptor);
@@ -136,6 +163,19 @@ public sealed class Pet : Entity
         Descriptor = descriptor;
         OwnerId = owner.Id;
         Owner = owner;
+
+        PetInstanceId = persistedPet?.PetInstanceId ?? Guid.Empty;
+
+        ExperienceRate = Math.Max(0, descriptor.ExperienceRate);
+        StatPointsPerLevel = Math.Max(0, descriptor.StatPointsPerLevel);
+        MaxLevel = Math.Max(1, descriptor.MaxLevel);
+        LevelingMode = descriptor.LevelingMode;
+        CanEvolve = descriptor.CanEvolve;
+        EvolutionLevel = Math.Max(0, descriptor.EvolutionLevel);
+        EvolutionTargetId = descriptor.EvolutionTargetId;
+
+        Experience = 0;
+        StatPoints = 0;
 
         var spawnMapId = mapIdOverride ?? owner.MapId;
         var spawnMapInstanceId = mapInstanceIdOverride ?? owner.MapInstanceId;
@@ -147,7 +187,7 @@ public sealed class Pet : Entity
             ? descriptor.Name
             : owner.ActivePet.CustomName;
         Sprite = descriptor.Sprite;
-        Level = descriptor.Level;
+        Level = Math.Clamp(descriptor.Level, 1, Math.Max(1, MaxLevel));
         Immunities = descriptor.Immunities?.ToList() ?? [];
 
         for (var index = 0; index < Enum.GetValues<Stat>().Length; index++)
@@ -162,6 +202,11 @@ public sealed class Pet : Entity
         {
             SetMaxVital(index, descriptor.MaxVitals[index]);
             SetVital(index, descriptor.MaxVitals[index]);
+        }
+
+        if (persistedPet != null)
+        {
+            ApplyPersistedState(persistedPet);
         }
 
         var spellSlot = 0;
@@ -203,7 +248,246 @@ public sealed class Pet : Entity
         }
     }
 
+    private void ApplyPersistedState(PlayerPet persistedPet)
+    {
+        Level = Math.Clamp(persistedPet.Level <= 0 ? Descriptor.Level : persistedPet.Level, 1, Math.Max(1, MaxLevel));
+        Experience = Math.Max(0, persistedPet.Experience);
+        StatPoints = Math.Max(0, persistedPet.StatPoints);
+
+        var statCount = Enum.GetValues<Stat>().Length;
+        if (persistedPet.BaseStats.Length == statCount)
+        {
+            Array.Copy(persistedPet.BaseStats, BaseStats, statCount);
+        }
+
+        if (persistedPet.StatPointAllocations.Length == statCount)
+        {
+            Array.Copy(persistedPet.StatPointAllocations, StatPointAllocations, statCount);
+        }
+
+        var vitalCount = Enum.GetValues<Vital>().Length;
+        if (persistedPet.MaxVitals.Length == vitalCount)
+        {
+            for (var index = 0; index < vitalCount; index++)
+            {
+                var maximum = persistedPet.MaxVitals[index];
+                if (maximum <= 0)
+                {
+                    maximum = Descriptor.MaxVitals[index];
+                }
+
+                SetMaxVital(index, maximum);
+            }
+        }
+
+        if (persistedPet.Vitals.Length == vitalCount)
+        {
+            for (var index = 0; index < vitalCount; index++)
+            {
+                var maximum = GetMaxVital((Vital)index);
+                var value = persistedPet.Vitals[index];
+                if (value <= 0 && maximum > 0)
+                {
+                    value = maximum;
+                }
+
+                SetVital(index, Math.Clamp(value, 0, maximum));
+            }
+        }
+        else
+        {
+            for (var index = 0; index < vitalCount; index++)
+            {
+                SetVital(index, GetMaxVital((Vital)index));
+            }
+        }
+    }
+
     public override EntityType GetEntityType() => EntityType.Pet;
+
+    public bool TrySpendStatPoint(Stat stat, int amount = 1)
+    {
+        if (amount <= 0)
+        {
+            return false;
+        }
+
+        if (StatPoints < amount)
+        {
+            return false;
+        }
+
+        var index = (int)stat;
+        if (!Enum.IsDefined(typeof(Stat), stat) || index < 0 || index >= StatPointAllocations.Length)
+        {
+            return false;
+        }
+
+        var maxStat = Options.Instance.Player.MaxStat;
+        if (Stat[index].BaseStat + StatPointAllocations[index] + amount > maxStat)
+        {
+            return false;
+        }
+
+        StatPointAllocations[index] += amount;
+        StatPoints -= amount;
+
+        PacketSender.SendEntityStats(this);
+        PacketSender.SendPetProgress(this);
+        Owner?.PersistPetProgress(this);
+
+        return true;
+    }
+
+    public bool TryRefundStatPoint(Stat stat, int amount = 1)
+    {
+        if (amount <= 0)
+        {
+            return false;
+        }
+
+        var index = (int)stat;
+        if (!Enum.IsDefined(typeof(Stat), stat) || index < 0 || index >= StatPointAllocations.Length)
+        {
+            return false;
+        }
+
+        if (StatPointAllocations[index] < amount)
+        {
+            return false;
+        }
+
+        StatPointAllocations[index] -= amount;
+        StatPoints += amount;
+
+        PacketSender.SendEntityStats(this);
+        PacketSender.SendPetProgress(this);
+        Owner?.PersistPetProgress(this);
+
+        return true;
+    }
+
+    public void GiveExperience(long amount)
+    {
+        if (amount <= 0)
+        {
+            return;
+        }
+
+        if (LevelingMode != PetLevelingMode.Experience)
+        {
+            return;
+        }
+
+        if (Level >= MaxLevel)
+        {
+            return;
+        }
+
+        var scaledExperience = (long)Math.Floor(amount * (ExperienceRate / 100.0));
+        if (scaledExperience <= 0)
+        {
+            return;
+        }
+
+        Experience += scaledExperience;
+
+        var levelsGained = 0;
+        var experienceToNextLevel = GetExperienceToNextLevel(Level + levelsGained);
+        while (experienceToNextLevel > 0 && Experience >= experienceToNextLevel)
+        {
+            Experience -= experienceToNextLevel;
+            levelsGained++;
+            experienceToNextLevel = GetExperienceToNextLevel(Level + levelsGained);
+        }
+
+        if (Level + levelsGained >= MaxLevel)
+        {
+            levelsGained = Math.Max(0, MaxLevel - Level);
+            Experience = 0;
+        }
+
+        if (levelsGained > 0)
+        {
+            ApplyLevelGain(levelsGained);
+        }
+        else
+        {
+            PacketSender.SendPetProgress(this);
+            Owner?.PersistPetProgress(this);
+        }
+    }
+
+    private long GetExperienceToNextLevel(int level)
+    {
+        if (LevelingMode != PetLevelingMode.Experience)
+        {
+            return -1;
+        }
+
+        if (Descriptor == null)
+        {
+            return -1;
+        }
+
+        if (level >= MaxLevel)
+        {
+            return -1;
+        }
+
+        var baseExperience = Math.Max(1, Descriptor.Experience);
+        return baseExperience * Math.Max(1, level);
+    }
+
+    private void ApplyLevelGain(int levelsGained)
+    {
+        if (levelsGained <= 0)
+        {
+            return;
+        }
+
+        Level = Math.Clamp(Level + levelsGained, 1, MaxLevel);
+
+        var statPointsGained = levelsGained * StatPointsPerLevel;
+        if (statPointsGained > 0)
+        {
+            StatPoints += statPointsGained;
+        }
+
+        PacketSender.SendEntityDataToProximity(this);
+        PacketSender.SendPetProgress(this);
+
+        NotifyOwnerOfLevelUp(levelsGained, statPointsGained);
+        Owner?.PersistPetProgress(this);
+    }
+
+    private void NotifyOwnerOfLevelUp(int levelsGained, int statPointsGained)
+    {
+        var owner = Owner;
+        if (owner == null || owner.IsDisposed)
+        {
+            return;
+        }
+
+        PacketSender.SendChatMsg(
+            owner,
+            Strings.Pets.LevelUp.ToString(Name, Level),
+            ChatMessageType.Experience,
+            CustomColors.Combat.LevelUp,
+            owner.Name
+        );
+
+        if (statPointsGained > 0)
+        {
+            PacketSender.SendChatMsg(
+                owner,
+                Strings.Pets.StatPoints.ToString(Name, statPointsGained),
+                ChatMessageType.Experience,
+                CustomColors.Combat.StatPoints,
+                owner.Name
+            );
+        }
+    }
 
     public override EntityPacket EntityPacket(EntityPacket packet = null, Player forPlayer = null)
     {
@@ -500,6 +784,30 @@ public sealed class Pet : Entity
 
             // 6) Dispose final
             Dispose();
+        }
+    }
+
+    public override void Die(bool dropItems = true, Entity killer = null)
+    {
+        var shouldDespawn = false;
+
+        lock (EntityLock)
+        {
+            if (IsDead || IsDisposed)
+            {
+                return;
+            }
+
+            base.Die(dropItems, killer);
+
+            PacketSender.SendEntityDie(this);
+
+            shouldDespawn = true;
+        }
+
+        if (shouldDespawn)
+        {
+            Despawn(killIfDespawnable: false);
         }
     }
 

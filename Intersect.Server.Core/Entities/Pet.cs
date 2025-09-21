@@ -66,6 +66,12 @@ public sealed class Pet : Entity
 
     public bool Despawnable { get; } = true;
 
+    public Guid PetInstanceId { get; }
+
+    public long Experience { get; private set; }
+
+    public int StatPoints { get; private set; }
+
     public Player? Owner
     {
         get
@@ -141,7 +147,8 @@ public sealed class Pet : Entity
         Guid? mapInstanceIdOverride = null,
         int? xOverride = null,
         int? yOverride = null,
-        Direction? directionOverride = null
+        Direction? directionOverride = null,
+        PlayerPet? persistedPet = null
     )
     {
         ArgumentNullException.ThrowIfNull(descriptor);
@@ -151,6 +158,8 @@ public sealed class Pet : Entity
         OwnerId = owner.Id;
         Owner = owner;
 
+        PetInstanceId = persistedPet?.PetInstanceId ?? Guid.Empty;
+
         ExperienceRate = Math.Max(0, descriptor.ExperienceRate);
         StatPointsPerLevel = Math.Max(0, descriptor.StatPointsPerLevel);
         MaxLevel = Math.Max(1, descriptor.MaxLevel);
@@ -158,6 +167,9 @@ public sealed class Pet : Entity
         CanEvolve = descriptor.CanEvolve;
         EvolutionLevel = Math.Max(0, descriptor.EvolutionLevel);
         EvolutionTargetId = descriptor.EvolutionTargetId;
+
+        Experience = Math.Max(0, descriptor.Experience);
+        StatPoints = 0;
 
         var spawnMapId = mapIdOverride ?? owner.MapId;
         var spawnMapInstanceId = mapInstanceIdOverride ?? owner.MapInstanceId;
@@ -184,6 +196,11 @@ public sealed class Pet : Entity
         {
             SetMaxVital(index, descriptor.MaxVitals[index]);
             SetVital(index, descriptor.MaxVitals[index]);
+        }
+
+        if (persistedPet != null)
+        {
+            ApplyPersistedState(persistedPet);
         }
 
         var spellSlot = 0;
@@ -222,6 +239,61 @@ public sealed class Pet : Entity
         {
             instance.AddEntity(this);
             PacketSender.SendEntityDataToProximity(this);
+        }
+    }
+
+    private void ApplyPersistedState(PlayerPet persistedPet)
+    {
+        Level = Math.Clamp(persistedPet.Level <= 0 ? Descriptor.Level : persistedPet.Level, 1, Math.Max(1, MaxLevel));
+        Experience = Math.Max(0, persistedPet.Experience);
+        StatPoints = Math.Max(0, persistedPet.StatPoints);
+
+        var statCount = Enum.GetValues<Stat>().Length;
+        if (persistedPet.BaseStats.Length == statCount)
+        {
+            Array.Copy(persistedPet.BaseStats, BaseStats, statCount);
+        }
+
+        if (persistedPet.StatPointAllocations.Length == statCount)
+        {
+            Array.Copy(persistedPet.StatPointAllocations, StatPointAllocations, statCount);
+        }
+
+        var vitalCount = Enum.GetValues<Vital>().Length;
+        if (persistedPet.MaxVitals.Length == vitalCount)
+        {
+            for (var index = 0; index < vitalCount; index++)
+            {
+                var maximum = persistedPet.MaxVitals[index];
+                if (maximum <= 0)
+                {
+                    maximum = Descriptor.MaxVitals[index];
+                }
+
+                SetMaxVital(index, maximum);
+            }
+        }
+
+        if (persistedPet.Vitals.Length == vitalCount)
+        {
+            for (var index = 0; index < vitalCount; index++)
+            {
+                var maximum = GetMaxVital((Vital)index);
+                var value = persistedPet.Vitals[index];
+                if (value <= 0 && maximum > 0)
+                {
+                    value = maximum;
+                }
+
+                SetVital(index, Math.Clamp(value, 0, maximum));
+            }
+        }
+        else
+        {
+            for (var index = 0; index < vitalCount; index++)
+            {
+                SetVital(index, GetMaxVital((Vital)index));
+            }
         }
     }
 

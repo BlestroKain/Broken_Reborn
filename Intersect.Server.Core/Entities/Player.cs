@@ -1218,7 +1218,13 @@ public partial class Player : Entity
                 return;
             }
 
-            var newPet = instance.SpawnPetForPlayer(this, descriptor);
+            var playerPet = ActivePet;
+            if (playerPet != null)
+            {
+                EnsurePlayerPetArraySizes(playerPet);
+            }
+
+            var newPet = instance.SpawnPetForPlayer(this, descriptor, playerPet);
             if (newPet == null)
             {
                 return;
@@ -1250,6 +1256,8 @@ public partial class Player : Entity
             return;
         }
 
+        PersistPetProgress(pet);
+
         var wasCurrent = ReferenceEquals(CurrentPet, pet);
 
         // Intento de despawn tolerante (si ya está disposed no hace nada).
@@ -1280,7 +1288,54 @@ public partial class Player : Entity
         {
             // Limpiar la selección actual y el estado del hub
             CurrentPet = null;
-                         
+
+        }
+    }
+
+    private void PersistPetProgress(Pet pet)
+    {
+        PlayerPet? playerPet = null;
+
+        if (pet.PetInstanceId != Guid.Empty)
+        {
+            playerPet = Pets.FirstOrDefault(p => p.PetInstanceId == pet.PetInstanceId);
+        }
+
+        var descriptorId = pet.Descriptor?.Id ?? Guid.Empty;
+        if (playerPet == null && descriptorId != Guid.Empty)
+        {
+            playerPet = Pets.FirstOrDefault(p => p.PetDescriptorId == descriptorId);
+        }
+
+        if (playerPet == null)
+        {
+            return;
+        }
+
+        EnsurePlayerPetArraySizes(playerPet);
+
+        playerPet.Level = Math.Clamp(pet.Level, 1, pet.MaxLevel);
+        playerPet.Experience = Math.Max(0, pet.Experience);
+        playerPet.StatPoints = Math.Max(0, pet.StatPoints);
+
+        var statCount = Enum.GetValues<Stat>().Length;
+        for (var index = 0; index < statCount; index++)
+        {
+            playerPet.BaseStats[index] = pet.BaseStats[index];
+            playerPet.StatPointAllocations[index] = pet.StatPointAllocations[index];
+        }
+
+        var vitalCount = Enum.GetValues<Vital>().Length;
+        for (var index = 0; index < vitalCount; index++)
+        {
+            var vital = (Vital)index;
+            playerPet.MaxVitals[index] = pet.GetMaxVital(vital);
+            playerPet.Vitals[index] = pet.GetVital(vital);
+        }
+
+        if (playerPet.PetInstanceId == Guid.Empty && pet.PetInstanceId != Guid.Empty)
+        {
+            playerPet.PetInstanceId = pet.PetInstanceId;
         }
     }
 
@@ -1492,6 +1547,8 @@ public partial class Player : Entity
                 Experience = descriptor.Experience,
             };
 
+            InitializePlayerPetFromDescriptor(playerPet, descriptor);
+
             Pets.Add(playerPet);
         }
         else
@@ -1502,6 +1559,8 @@ public partial class Player : Entity
             {
                 playerPet.PetInstanceId = petInstanceId.Value;
             }
+
+            EnsurePlayerPetArraySizes(playerPet);
         }
 
         if (!string.IsNullOrWhiteSpace(petData.PetNameOverride))
@@ -1510,6 +1569,76 @@ public partial class Player : Entity
         }
 
         return true;
+    }
+
+    private static void InitializePlayerPetFromDescriptor(PlayerPet playerPet, PetDescriptor descriptor)
+    {
+        EnsurePlayerPetArraySizes(playerPet);
+
+        var statLength = Math.Min(playerPet.BaseStats.Length, descriptor.Stats.Length);
+        Array.Copy(descriptor.Stats, playerPet.BaseStats, statLength);
+
+        Array.Clear(playerPet.StatPointAllocations, 0, playerPet.StatPointAllocations.Length);
+
+        var vitalLength = Math.Min(playerPet.MaxVitals.Length, descriptor.MaxVitals.Length);
+        Array.Copy(descriptor.MaxVitals, playerPet.MaxVitals, vitalLength);
+        Array.Copy(playerPet.MaxVitals, playerPet.Vitals, playerPet.Vitals.Length);
+
+        playerPet.StatPoints = 0;
+    }
+
+    private static void EnsurePlayerPetArraySizes(PlayerPet playerPet)
+    {
+        var statCount = Enum.GetValues<Stat>().Length;
+        var vitalCount = Enum.GetValues<Vital>().Length;
+
+        var baseStats = playerPet.BaseStats ?? Array.Empty<int>();
+        if (baseStats.Length != statCount)
+        {
+            var resized = new int[statCount];
+            Array.Copy(baseStats, resized, Math.Min(baseStats.Length, statCount));
+            playerPet.BaseStats = resized;
+        }
+        else
+        {
+            playerPet.BaseStats = baseStats;
+        }
+
+        var allocations = playerPet.StatPointAllocations ?? Array.Empty<int>();
+        if (allocations.Length != statCount)
+        {
+            var resized = new int[statCount];
+            Array.Copy(allocations, resized, Math.Min(allocations.Length, statCount));
+            playerPet.StatPointAllocations = resized;
+        }
+        else
+        {
+            playerPet.StatPointAllocations = allocations;
+        }
+
+        var maxVitals = playerPet.MaxVitals ?? Array.Empty<long>();
+        if (maxVitals.Length != vitalCount)
+        {
+            var resized = new long[vitalCount];
+            Array.Copy(maxVitals, resized, Math.Min(maxVitals.Length, vitalCount));
+            playerPet.MaxVitals = resized;
+        }
+        else
+        {
+            playerPet.MaxVitals = maxVitals;
+        }
+
+        var vitals = playerPet.Vitals ?? Array.Empty<long>();
+        if (vitals.Length != vitalCount)
+        {
+            var resized = new long[vitalCount];
+            Array.Copy(vitals, resized, Math.Min(vitals.Length, vitalCount));
+            playerPet.Vitals = resized;
+        }
+        else
+        {
+            playerPet.Vitals = vitals;
+        }
     }
 
     private bool TrySummonPet(PlayerPet playerPet, PetDescriptor descriptor, bool openPetHub)
@@ -1544,7 +1673,23 @@ public partial class Player : Entity
 
         instance.DespawnActivePetOf(this, killIfDespawnable: true);
 
-        var newPet = instance.SpawnPetForPlayer(this, descriptor);
+        var playerPet = ActivePet;
+        if (playerPet != null && playerPet.PetDescriptorId != descriptor.Id)
+        {
+            var activePet = playerPet;
+            playerPet = Pets.FirstOrDefault(
+                p => activePet != null && activePet.PetInstanceId != Guid.Empty && p.PetInstanceId == activePet.PetInstanceId
+            );
+        }
+
+        playerPet ??= Pets.FirstOrDefault(pet => pet.PetDescriptorId == descriptor.Id);
+
+        if (playerPet != null)
+        {
+            EnsurePlayerPetArraySizes(playerPet);
+        }
+
+        var newPet = instance.SpawnPetForPlayer(this, descriptor, playerPet);
         if (newPet == null)
         {
             return false;

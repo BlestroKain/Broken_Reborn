@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using Intersect.Client.Entities;
 using Intersect.Client.General;
 using Intersect.Client.Networking;
 using Intersect.Enums;
+using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.Network.Packets.Client;
 using Intersect.Network.Packets.Server;
 
@@ -14,6 +16,8 @@ public sealed class PetHub
     private Pet? _activePet;
     private PetState _behavior = PetState.Follow;
     private PetState? _pendingBehavior;
+    private PetDescriptor? _equippedDescriptor;
+    private string? _equippedPetName;
     private bool _isSpawnRequested;
 
     public PetHub()
@@ -33,7 +37,7 @@ public sealed class PetHub
         {
             lock (_syncRoot)
             {
-                return _activePet;
+                return _activePet is { IsDisposed: false } ? _activePet : null;
             }
         }
     }
@@ -55,7 +59,29 @@ public sealed class PetHub
         {
             lock (_syncRoot)
             {
-                return _activePet is { IsDisposed: false };
+                return (_activePet is { IsDisposed: false }) || _equippedDescriptor != null;
+            }
+        }
+    }
+
+    public PetDescriptor? EquippedDescriptor
+    {
+        get
+        {
+            lock (_syncRoot)
+            {
+                return _equippedDescriptor;
+            }
+        }
+    }
+
+    public string? EquippedPetName
+    {
+        get
+        {
+            lock (_syncRoot)
+            {
+                return _equippedPetName;
             }
         }
     }
@@ -76,6 +102,11 @@ public sealed class PetHub
         lock (_syncRoot)
         {
             if (_isSpawnRequested)
+            {
+                return false;
+            }
+
+            if (_activePet is not { IsDisposed: false } && _equippedDescriptor == null)
             {
                 return false;
             }
@@ -250,6 +281,7 @@ RaiseEvents:
         bool activeChanged;
         bool behaviorChanged;
         bool spawnChanged;
+        bool descriptorChanged;
 
         lock (_syncRoot)
         {
@@ -260,6 +292,9 @@ RaiseEvents:
             _behavior = PetState.Follow;
             spawnChanged = _isSpawnRequested;
             _isSpawnRequested = false;
+            descriptorChanged = _equippedDescriptor != null || !string.IsNullOrWhiteSpace(_equippedPetName);
+            _equippedDescriptor = null;
+            _equippedPetName = null;
         }
 
         if (behaviorChanged)
@@ -267,7 +302,7 @@ RaiseEvents:
             BehaviorChanged?.Invoke();
         }
 
-        if (activeChanged)
+        if (activeChanged || descriptorChanged)
         {
             ActivePetChanged?.Invoke();
         }
@@ -352,6 +387,48 @@ RaiseEvents:
         }
     }
 
+    public void SyncEquippedPet(Player? player)
+    {
+        PetDescriptor? descriptor = null;
+        string? petName = null;
+
+        if (player?.Inventory != null)
+        {
+            foreach (var slotIndices in player.MyEquipment.Values)
+            {
+                foreach (var slotIndex in slotIndices)
+                {
+                    if (slotIndex < 0 || slotIndex >= player.Inventory.Length)
+                    {
+                        continue;
+                    }
+
+                    var item = player.Inventory[slotIndex];
+                    var petData = item?.Descriptor?.Pet;
+                    if (petData?.PetDescriptorId == Guid.Empty)
+                    {
+                        continue;
+                    }
+
+                    descriptor = petData.Descriptor;
+                    if (descriptor == null)
+                    {
+                        continue;
+                    }
+
+                    petName = string.IsNullOrWhiteSpace(petData.PetNameOverride)
+                        ? null
+                        : petData.PetNameOverride;
+
+                    goto FoundDescriptor;
+                }
+            }
+        }
+
+FoundDescriptor:
+        UpdateEquippedPet(descriptor, petName);
+    }
+
     private static bool IsSelectableBehavior(PetState behavior) =>
         behavior is PetState.Follow or PetState.Stay or PetState.Defend or PetState.Passive;
 
@@ -364,6 +441,12 @@ RaiseEvents:
 
         var activeChanged = false;
         var behaviorChanged = false;
+
+        if (pet != null)
+        {
+            _equippedDescriptor = pet.Descriptor ?? _equippedDescriptor;
+            _equippedPetName = string.IsNullOrWhiteSpace(pet.Name) ? _equippedPetName : pet.Name;
+        }
 
         if (!ReferenceEquals(_activePet, pet))
         {
@@ -383,5 +466,26 @@ RaiseEvents:
         }
 
         return (activeChanged, behaviorChanged);
+    }
+
+    private void UpdateEquippedPet(PetDescriptor? descriptor, string? petName)
+    {
+        bool descriptorChanged;
+        lock (_syncRoot)
+        {
+            petName = string.IsNullOrWhiteSpace(petName) ? null : petName;
+            descriptorChanged = !ReferenceEquals(_equippedDescriptor, descriptor)
+                || !string.Equals(_equippedPetName, petName, StringComparison.Ordinal);
+
+            if (!descriptorChanged)
+            {
+                return;
+            }
+
+            _equippedDescriptor = descriptor;
+            _equippedPetName = petName;
+        }
+
+        ActivePetChanged?.Invoke();
     }
 }

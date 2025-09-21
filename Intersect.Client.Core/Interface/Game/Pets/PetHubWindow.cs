@@ -163,32 +163,39 @@ public sealed class PetHubWindow : Window
 
     private void RefreshState()
     {
-        var pet = Globals.PetHub.ActivePet as Pet;
-        var hasPet = Globals.PetHub.HasActivePet && pet != null;
+        var pet = Globals.PetHub.ActivePet;
+        var descriptor = pet?.Descriptor ?? Globals.PetHub.EquippedDescriptor;
+        var hasDescriptor = descriptor != null;
         var isSpawnRequested = Globals.PetHub.IsSpawnRequested;
 
         _invokeButton.Text = Strings.Pets.InvokeButton.ToString();
         _dismissButton.Text = Strings.Pets.DismissButton.ToString();
 
-        if (hasPet && pet != null)
+        var petName = pet?.Name ?? Globals.PetHub.EquippedPetName ?? descriptor?.Name;
+        if (string.IsNullOrWhiteSpace(petName))
         {
-            _statusLabel.Text = Strings.Pets.StatusWithPet.ToString(pet.Name);
+            petName = Strings.Pets.UnknownDescriptorName.ToString();
+        }
+
+        if (hasDescriptor)
+        {
+            _statusLabel.Text = Strings.Pets.StatusWithPet.ToString(petName);
         }
         else
         {
             _statusLabel.Text = Strings.Pets.StatusNoPet.ToString();
         }
 
-        _statusLabel.IsHidden = hasPet;
+        _statusLabel.IsHidden = hasDescriptor;
 
-        _detailsPanel.IsHidden = !hasPet;
-        _statsHeader.IsHidden = !hasPet;
-        _statsPanel.IsHidden = !hasPet;
-        _behaviorWidget.IsHidden = !hasPet;
-        _invokeButton.IsDisabled = isSpawnRequested;
+        _detailsPanel.IsHidden = !hasDescriptor;
+        _statsHeader.IsHidden = !hasDescriptor;
+        _statsPanel.IsHidden = !hasDescriptor;
+        _behaviorWidget.IsHidden = !hasDescriptor;
+        _invokeButton.IsDisabled = isSpawnRequested || !hasDescriptor;
         _dismissButton.IsDisabled = !isSpawnRequested;
 
-        if (!hasPet || pet == null)
+        if (!hasDescriptor || descriptor == null)
         {
             foreach (var label in _statLabels.Values)
             {
@@ -206,32 +213,48 @@ public sealed class PetHubWindow : Window
             return;
         }
 
-        var descriptor = pet.Descriptor;
-
-        _customNameLabel.Text = Strings.Pets.CustomNameLabel.ToString(pet.Name);
-        var descriptorName = descriptor?.Name;
+        _customNameLabel.Text = Strings.Pets.CustomNameLabel.ToString(petName);
+        var descriptorName = descriptor.Name;
         if (string.IsNullOrWhiteSpace(descriptorName))
         {
             descriptorName = Strings.Pets.UnknownDescriptorName.ToString();
         }
 
         _descriptorNameLabel.Text = Strings.Pets.DescriptorNameLabel.ToString(descriptorName);
-        _levelLabel.Text = Strings.Pets.LevelLabel.ToString(pet.Level);
+        var level = pet?.Level ?? descriptor.Level;
+        _levelLabel.Text = Strings.Pets.LevelLabel.ToString(level);
 
         var behaviorText = GetBehaviorLabel(Globals.PetHub.Behavior);
         _behaviorLabel.Text = Strings.Pets.BehaviorLabel.ToString(behaviorText);
 
-        UpdateVitals(pet);
+        UpdateVitals(pet, descriptor);
         UpdateStats(descriptor);
     }
 
-    private void UpdateVitals(Pet pet)
+    private void UpdateVitals(Pet? pet, PetDescriptor descriptor)
     {
         var hasVitals = false;
         foreach (var (vital, label) in _vitalLabels)
         {
-            var max = pet.MaxVital[(int)vital];
-            var current = pet.Vital[(int)vital];
+            long max;
+            long current;
+
+            if (pet != null)
+            {
+                max = pet.MaxVital[(int)vital];
+                current = pet.Vital[(int)vital];
+            }
+            else
+            {
+                max = descriptor.MaxVitals[(int)vital];
+                current = max;
+
+                if (max <= 0)
+                {
+                    label.IsHidden = true;
+                    continue;
+                }
+            }
 
             var vitalName = GetVitalName(vital);
             label.Text = Strings.Pets.VitalFormat.ToString(vitalName, current, max);

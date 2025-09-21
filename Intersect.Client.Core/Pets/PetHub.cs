@@ -112,7 +112,7 @@ public sealed class PetHub
             }
         }
 
-        Network.SendPacket(new SpawnPetRequestPacket(openPetHub));
+        Intersect.Client.Networking. Network.SendPacket(new SpawnPetRequestPacket(openPetHub));
         return true;
     }
 
@@ -126,7 +126,7 @@ public sealed class PetHub
             }
         }
 
-        Network.SendPacket(new DespawnPetRequestPacket(closePetHub));
+        Intersect.Client.Networking. Network.SendPacket(new DespawnPetRequestPacket(closePetHub));
         return true;
     }
 

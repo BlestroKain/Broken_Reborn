@@ -48,22 +48,22 @@ public sealed class Pet : Entity
 
     private Player? _ownerCache;
 
-    public PetDescriptor Descriptor { get; }
+    public PetDescriptor Descriptor { get; private set; }
 
-    public int ExperienceRate { get; }
+    public int ExperienceRate { get; private set; }
 
-    public int StatPointsPerLevel { get; }
+    public int StatPointsPerLevel { get; private set; }
 
-    public int MaxLevel { get; }
+    public int MaxLevel { get; private set; }
 
-    public PetLevelingMode LevelingMode { get; }
+    public PetLevelingMode LevelingMode { get; private set; }
 
-    public bool CanEvolve { get; }
+    public bool CanEvolve { get; private set; }
 
-    public int EvolutionLevel { get; }
+    public int EvolutionLevel { get; private set; }
 
-    public Guid EvolutionTargetId { get; }
-
+    public Guid EvolutionTargetId { get; private set; }
+       
     public Guid OwnerId { get; }
 
     public bool Despawnable { get; } = true;
@@ -458,7 +458,17 @@ public sealed class Pet : Entity
         PacketSender.SendPetProgress(this);
 
         NotifyOwnerOfLevelUp(levelsGained, statPointsGained);
-        Owner?.PersistPetProgress(this);
+
+        var evolved = false;
+        while (TryEvolve())
+        {
+            evolved = true;
+        }
+
+        if (!evolved)
+        {
+            Owner?.PersistPetProgress(this);
+        }
     }
 
     private void NotifyOwnerOfLevelUp(int levelsGained, int statPointsGained)
@@ -1337,6 +1347,10 @@ public sealed class Pet : Entity
         base.KilledEntity(entity);
 
         var owner = Owner ?? Player.FindOnline(OwnerId);
+        if (owner != null && owner.IsDisposed)
+        {
+            owner = null;
+        }
         owner?.KilledEntity(entity);
     }
 
@@ -1352,5 +1366,150 @@ public sealed class Pet : Entity
         // Since the Pet class does not seem to represent an item source, we return null.
         // If additional logic is required to represent the Pet as an item source, it can be implemented here.
         return null;
+    }
+
+    private bool TryEvolve()
+    {
+        if (!CanEvolve || EvolutionTargetId == Guid.Empty)
+        {
+            return false;
+        }
+
+        if (Level < EvolutionLevel)
+        {
+            return false;
+        }
+
+        var targetDescriptor = PetDescriptor.Get(EvolutionTargetId);
+        if (targetDescriptor == null)
+        {
+            return false;
+        }
+
+        var previousDescriptor = Descriptor;
+        if (previousDescriptor != null && previousDescriptor.Id == targetDescriptor.Id)
+        {
+            return false;
+        }
+
+        ApplyEvolutionDescriptor(previousDescriptor, targetDescriptor);
+
+        var owner = Owner ?? Player.FindOnline(OwnerId);
+        if (owner != null && owner.IsDisposed)
+        {
+            owner = null;
+        }
+        PlayerPet? playerPet = null;
+
+        if (owner != null)
+        {
+            if (PetInstanceId != Guid.Empty)
+            {
+                playerPet = owner.Pets.FirstOrDefault(pet => pet.PetInstanceId == PetInstanceId);
+            }
+
+            if (playerPet == null && previousDescriptor != null)
+            {
+                playerPet = owner.Pets.FirstOrDefault(pet => pet.PetDescriptorId == previousDescriptor.Id);
+            }
+
+            playerPet ??= owner.ActivePet;
+
+            if (playerPet != null)
+            {
+                playerPet.PetDescriptorId = Descriptor.Id;
+                Name = string.IsNullOrWhiteSpace(playerPet.CustomName) ? Descriptor.Name : playerPet.CustomName;
+            }
+            else if (string.IsNullOrWhiteSpace(Name))
+            {
+                Name = Descriptor.Name;
+            }
+
+            owner.PersistPetProgress(this);
+            owner.Save();
+        }
+        else if (string.IsNullOrWhiteSpace(Name))
+        {
+            Name = Descriptor.Name;
+        }
+
+        MarkMetadataDirty();
+
+        PacketSender.SendEntityDataToProximity(this);
+        PacketSender.SendPetProgress(this);
+
+        return true;
+    }
+
+    private void ApplyEvolutionDescriptor(PetDescriptor? previousDescriptor, PetDescriptor targetDescriptor)
+    {
+        Descriptor = targetDescriptor;
+
+        ExperienceRate = Math.Max(0, targetDescriptor.ExperienceRate);
+        StatPointsPerLevel = Math.Max(0, targetDescriptor.StatPointsPerLevel);
+        MaxLevel = Math.Max(1, targetDescriptor.MaxLevel);
+        LevelingMode = targetDescriptor.LevelingMode;
+        CanEvolve = targetDescriptor.CanEvolve;
+        EvolutionLevel = Math.Max(0, targetDescriptor.EvolutionLevel);
+        EvolutionTargetId = targetDescriptor.EvolutionTargetId;
+
+        Sprite = targetDescriptor.Sprite;
+        Immunities = targetDescriptor.Immunities?.ToList() ?? [];
+
+        var statCount = Enum.GetValues<Stat>().Length;
+        for (var index = 0; index < statCount; index++)
+        {
+            BaseStats[index] = targetDescriptor.Stats[index];
+        }
+
+        var vitalCount = Enum.GetValues<Vital>().Length;
+        for (var index = 0; index < vitalCount; index++)
+        {
+            var maximum = targetDescriptor.MaxVitals[index];
+            SetMaxVital(index, maximum);
+            SetVital(index, maximum);
+        }
+
+        Array.Clear(_vitalAccumulators, 0, _vitalAccumulators.Length);
+
+        if (previousDescriptor != null && previousDescriptor.IdleAnimationId != Guid.Empty)
+        {
+            _ = Animations.Remove(previousDescriptor.IdleAnimationId);
+        }
+
+        if (targetDescriptor.IdleAnimationId != Guid.Empty && !Animations.Contains(targetDescriptor.IdleAnimationId))
+        {
+            Animations.Add(targetDescriptor.IdleAnimationId);
+        }
+
+        DeathAnimation = targetDescriptor.DeathAnimationId;
+
+        Spells.Clear();
+        var spellSlot = 0;
+        foreach (var spellId in targetDescriptor.Spells)
+        {
+            var slot = new PlayerSpell(spellSlot++);
+            slot.Set(new Spell(spellId));
+            Spells.Add(slot);
+        }
+
+        if (Level > MaxLevel)
+        {
+            Level = MaxLevel;
+            Experience = 0;
+        }
+
+        if (LevelingMode == PetLevelingMode.Experience)
+        {
+            var experienceToNext = GetExperienceToNextLevel(Level);
+            if (experienceToNext > 0 && Experience >= experienceToNext)
+            {
+                Experience = Math.Max(0, experienceToNext - 1);
+            }
+        }
+        else
+        {
+            Experience = 0;
+        }
     }
 }

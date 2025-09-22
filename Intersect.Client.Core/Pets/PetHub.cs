@@ -12,6 +12,7 @@ using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.Network.Packets.Client;
 using Intersect.Network.Packets.Server;
 using Intersect;
+using Intersect.Localization;
 
 namespace Intersect.Client.Core.Pets;
 
@@ -807,9 +808,8 @@ FoundDescriptor:
             return;
         }
 
-        Interface.EnqueueInGame(
-            () => ChatboxMsg.AddMessage(new ChatboxMsg(message, CustomColors.Alerts.Info, ChatMessageType.Notice))
-        );
+        ChatboxMsg.AddMessage(new ChatboxMsg(message, CustomColors.Alerts.Info, ChatMessageType.Notice));
+
     }
 
     private static string GetDescriptorName(Guid descriptorId)

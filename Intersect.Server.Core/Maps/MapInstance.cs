@@ -366,89 +366,135 @@ public partial class MapInstance : IMapInstance
     }
 
     public Pet? SpawnPetForPlayer(
-        Player owner,
-        PetDescriptor descriptor,
-        PlayerPet? persistedPet = null,
-        Guid? mapIdOverride = null,
-        Guid? mapInstanceIdOverride = null,
-        int? xOverride = null,
-        int? yOverride = null,
-        Direction? dirOverride = null
-    )
+    Player owner,
+    PetDescriptor descriptor,
+    PlayerPet? persistedPet = null,
+    Guid? mapIdOverride = null,
+    Guid? mapInstanceIdOverride = null,
+    int? xOverride = null,
+    int? yOverride = null,
+    Direction? dirOverride = null
+)
     {
         if (owner == null || owner.IsDisposed || descriptor == null)
         {
             return null;
         }
 
+        // Usar el mapa/instancia actuales del owner si no hay override
         var spawnMapId = mapIdOverride ?? owner.MapId;
         var spawnInstanceId = mapInstanceIdOverride ?? owner.MapInstanceId;
 
-        if (spawnInstanceId != MapInstanceId)
+        // Asegurar que spawneamos en ESTA instancia
+        if (spawnInstanceId != MapInstanceId || spawnMapId != MapId)
         {
             return null;
         }
 
-        foreach (var entity in mEntities.Values.ToArray())
+        lock (GetLock())
         {
-            if (entity is Pet existing && !existing.IsDisposed && existing.OwnerId == owner.Id
-                && existing.MapInstanceId == MapInstanceId)
+            // 1) Despawnear cualquier pet anterior del mismo owner en ESTA instancia (inmediato y limpio)
+            foreach (var entity in mEntities.Values.ToArray())
             {
-                lock (existing.EntityLock)
+                if (entity is Pet existing &&
+                    !existing.IsDisposed &&
+                    existing.OwnerId == owner.Id &&
+                    existing.MapInstanceId == MapInstanceId)
                 {
-                    existing.Despawn(true);
+                    try
+                    {
+                        // Avisar a los clientes YA
+                        PacketSender.SendEntityLeave(existing);
+
+                        // Intentar despawn real (si ya está disposed no pasa nada)
+                        lock (existing.EntityLock)
+                        {
+                            if (!existing.IsDisposed)
+                            {
+                                existing.Despawn(true);
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // opcional: log
+                    }
+
+                    // Limpiar estructuras de la instancia
+                    RemoveEntity(existing);
+                    PetInstances.TryRemove(existing.Id, out _);
                 }
-
-                RemoveEntity(existing);
             }
+
+            // 2) Crear nueva pet y registrarla en ESTA instancia
+            var pet = new Pet(
+                descriptor,
+                owner,
+                register: false,
+                mapIdOverride: spawnMapId,
+                mapInstanceIdOverride: spawnInstanceId,
+                xOverride: xOverride ?? owner.X,
+                yOverride: yOverride ?? owner.Y,
+                directionOverride: dirOverride ?? owner.Dir,
+                persistedPet: persistedPet
+            );
+
+            AddEntity(pet);                   // entra al diccionario y cache de entidades
+            PetInstances[pet.Id] = pet;       // opcional si llevas este índice auxiliar
+
+            // 3) Notificar al instante a todos los jugadores cercanos
+            PacketSender.SendEntityDataToProximity(pet);
+
+            // Si tienes UI/progreso de pet, notifícalo tras spawnear
+            PacketSender.SendPetProgress(pet);
+
+            return pet;
         }
-
-        var pet = new Pet(
-            descriptor,
-            owner,
-            register: false,
-            mapIdOverride: spawnMapId,
-            mapInstanceIdOverride: spawnInstanceId,
-            xOverride: xOverride ?? owner.X,
-            yOverride: yOverride ?? owner.Y,
-            directionOverride: dirOverride ?? owner.Dir,
-            persistedPet: persistedPet
-        );
-
-        AddEntity(pet);
-        PetInstances[pet.Id] = pet;
-        PacketSender.SendEntityDataToProximity(pet);
-        PacketSender.SendPetProgress(pet);
-
-        return pet;
     }
 
     public void DespawnActivePetOf(Player owner, bool killIfDespawnable = true)
     {
-        if (owner == null || owner.IsDisposed)
+        if (owner == null)
         {
             return;
         }
 
-        foreach (var kv in PetInstances.ToArray())
+        // 1) Buscar todas las pets del owner dentro de ESTA instancia.
+        var toDespawn = new List<Pet>();
+        foreach (var entity in mEntities.Values)
         {
-            var pet = kv.Value;
-            if (pet == null || pet.IsDisposed)
+            if (entity is Pet pet && pet.Owner == owner && !pet.IsDisposed)
             {
-                continue;
+                toDespawn.Add(pet);
             }
+        }
 
-            if (pet.OwnerId != owner.Id || pet.MapInstanceId != MapInstanceId)
-            {
-                continue;
-            }
+        if (toDespawn.Count == 0)
+        {
+            return;
+        }
 
-            lock (pet.EntityLock)
+        // 2) Para cada pet:
+        foreach (var pet in toDespawn)
+        {
+            // a) Notificar de inmediato a TODOS los jugadores de la instancia
+            //    que esta entidad sale del mapa (esto evita que “desaparezca” recién al cambiar de mapa).
+            //    Usa el mismo helper que para NPCs y Players.
+            PacketSender.SendEntityLeave(pet);
+
+            // b) Intentar despawn “real”
+            try
             {
                 pet.Despawn(killIfDespawnable);
             }
+            catch
+            {
+                // opcional: log
+            }
 
-            PetInstances.TryRemove(pet.Id, out _);
+            // c) Limpieza defensiva de estructuras de la instancia
+            RemoveEntity(pet); // actualiza mCachedEntities
+            PetInstances.TryRemove(pet.Id, out _); // si la llevas en este diccionario
         }
     }
 

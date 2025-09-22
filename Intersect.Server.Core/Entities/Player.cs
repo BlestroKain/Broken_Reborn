@@ -1744,9 +1744,9 @@ public partial class Player : Entity
 
         return true;
     }
-
     private void HandlePetUnequipped(PetItemData? petData, Guid? petInstanceId)
     {
+        // Si el ítem no es de pet, o no referencia un descriptor válido, no hay nada que hacer.
         if (petData?.PetDescriptorId == Guid.Empty)
         {
             return;
@@ -1755,67 +1755,67 @@ public partial class Player : Entity
         var descriptorId = petData.PetDescriptorId;
         var targetInstanceId = petInstanceId.GetValueOrDefault(Guid.Empty);
 
-        PlayerPet? matchedPlayerPet = null;
-        if (targetInstanceId != Guid.Empty)
-        {
-            matchedPlayerPet = Pets.FirstOrDefault(pet => pet.PetInstanceId == targetInstanceId);
-        }
-
-        matchedPlayerPet ??= Pets.FirstOrDefault(pet => pet.PetDescriptorId == descriptorId);
-
+        // 1) Determinar si el ActivePet actual corresponde al ítem removido (por descriptor o por instancia).
         var activePet = ActivePet;
-        var activeMatches = false;
+        var activeMatches =
+            activePet != null
+            && (
+                (targetInstanceId != Guid.Empty && activePet.PetInstanceId == targetInstanceId)
+                || (targetInstanceId == Guid.Empty && activePet.PetDescriptorId == descriptorId)
+            );
 
-        if (activePet != null)
-        {
-            if (matchedPlayerPet != null)
-            {
-                activeMatches = activePet.Id == matchedPlayerPet.Id;
-            }
-            else
-            {
-                activeMatches = targetInstanceId != Guid.Empty
-                    ? activePet.PetInstanceId == targetInstanceId
-                    : activePet.PetDescriptorId == descriptorId;
-            }
-        }
-
+        // 2) Despawnear TODAS las mascotas que provengan de este descriptor (o la instancia exacta),
+        //    por las dudas hubiera duplicados/rezagos.
         CleanupSpawnedPetsList();
 
         var despawnedAny = false;
         foreach (var pet in GetActivePetsSnapshot())
         {
-            if (pet?.Descriptor == null || pet.Descriptor.Id != descriptorId)
+            var desc = pet?.Descriptor;
+            if (pet == null || pet.IsDisposed || desc == null)
             {
                 continue;
             }
 
-            DespawnPet(pet, killIfDespawnable: true);
-            despawnedAny = true;
+            // Match por instancia (si la tenemos) o por descriptor (fallback).
+            var matches = (targetInstanceId != Guid.Empty && pet.PetInstanceId == targetInstanceId)
+                          || (targetInstanceId == Guid.Empty && desc.Id == descriptorId);
+
+            if (matches)
+            {
+                DespawnPet(pet, killIfDespawnable: true);
+                despawnedAny = true;
+            }
         }
 
-        var shouldClearActivePet = activeMatches
-            || (despawnedAny && activePet != null && activePet.PetDescriptorId == descriptorId);
-
-        if (shouldClearActivePet
-            && MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var instance)
-            && instance != null)
+        // 3) Asegurar que también se despawnea lo que el Mapa piense que es el "ActivePet" de este Player.
+        if (MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var instance) && instance != null)
         {
             instance.DespawnActivePetOf(this, killIfDespawnable: true);
         }
 
-        if (shouldClearActivePet)
+        // 4) Si el ActivePet apuntaba al ítem removido, limpiar SIEMPRE estado de hub/selección.
+        //    También si desmontamos cualquiera que estuviese invocada (despawnedAny).
+        if (activeMatches || despawnedAny)
         {
+            // Limpiar selección y lista local sin dejar residuos.
+            ClearPets(killDespawnable: false);
+
+            // Asegurar que el Hub quede en "no solicitado" y que el cliente reciba el estado.
+            SetPetHubSpawnFlag(false /* requested */, notifyClient: true);
+
             ActivePet = null;
             ActivePetId = null;
-            SetPetHubSpawnFlag(false);
+            CurrentPet = null;
         }
 
+        // 5) Opcional: cerrar Hub si el ítem tiene esa semántica.
         if (petData.DespawnOnUnequip)
         {
             PacketSender.SendOpenPetHub(this, close: true);
         }
 
+        // Limpieza final defensiva.
         CleanupSpawnedPetsList();
     }
 
@@ -2406,6 +2406,11 @@ public partial class Player : Entity
     //Combat
     public override void KilledEntity(Entity entity)
     {
+        if (entity == null || entity.IsDisposed)
+        {
+            return;
+        }
+
         switch (entity)
         {
             case Npc npc:
@@ -2414,38 +2419,56 @@ public partial class Player : Entity
                     var playerEvent = descriptor.OnDeathEvent;
                     var partyEvent = descriptor.OnDeathPartyEvent;
 
-                    // If in party, split the exp.
+                    // Si la kill fue hecha por la pet, este método debe ser invocado por el dueño (owner.KilledEntity(npc)).
+                    // Npc.Die ya atribuye drops/bestiario al dueño si el killer es Pet; asegúrate de también
+                    // llamar aquí para XP/misiones si el killer fue una Pet.
+
                     if (Party != null && Party.Count > 0)
                     {
-                        var partyMembersInXpRange = Party.Where(partyMember => partyMember.InRangeOf(this, Options.Instance.Party.SharedXpRange)).ToArray();
-                        float bonusExp = Options.Instance.Party.BonusExperiencePercentPerMember / 100;
-                        var multiplier = 1.0f + (partyMembersInXpRange.Length * bonusExp);
-                        var partyExperience = (int)(descriptor.Experience * multiplier) / partyMembersInXpRange.Length;
-                        foreach (var partyMember in partyMembersInXpRange)
+                        // Miembros en rango de XP
+                        var membersInRange = Party.Where(p => p.InRangeOf(this, Options.Instance.Party.SharedXpRange)).ToArray();
+
+                        // Bonus por miembro en rango
+                        float bonusExp = Options.Instance.Party.BonusExperiencePercentPerMember / 100f;
+                        var multiplier = 1.0f + (membersInRange.Length * bonusExp);
+
+                        // XP total escalada por nivel del NPC y repartida
+                        var totalXp = ExpModifiedByLevel(descriptor.Level, descriptor.Experience);
+                        var partyExperience = (int)(totalXp * multiplier) / Math.Max(1, membersInRange.Length);
+
+                        foreach (var member in membersInRange)
                         {
-                            partyMember.GiveExperience(
-                                ExpModifiedByLevel(descriptor.Level, partyExperience, partyMember.Level)
+                            member.GiveExperience(
+                                ExpModifiedByLevel(descriptor.Level, partyExperience, member.Level)
                             );
-                            partyMember.UpdateQuestKillTasks(entity);
+                            member.UpdateQuestKillTasks(entity);
                         }
 
+                        // Evento de muerte para el grupo (evitar duplicar si ya correrá el del player)
                         if (partyEvent != null)
                         {
-                            foreach (var partyMember in Party)
+                            foreach (var member in Party)
                             {
-                                if ((Options.Instance.Party.NpcDeathCommonEventStartRange <= 0 || partyMember.InRangeOf(this, Options.Instance.Party.NpcDeathCommonEventStartRange)) && !(partyMember == this && playerEvent != null))
+                                var inRangeForEvent = Options.Instance.Party.NpcDeathCommonEventStartRange <= 0
+                                                      || member.InRangeOf(this, Options.Instance.Party.NpcDeathCommonEventStartRange);
+
+                                var skipSelfIfPlayerEventAlsoRuns = member == this && playerEvent != null;
+
+                                if (inRangeForEvent && !skipSelfIfPlayerEventAlsoRuns)
                                 {
-                                    partyMember.EnqueueStartCommonEvent(partyEvent);
+                                    member.EnqueueStartCommonEvent(partyEvent);
                                 }
                             }
                         }
                     }
                     else
                     {
+                        // XP individual
                         GiveExperience(ExpModifiedByLevel(descriptor.Level, descriptor.Experience));
                         UpdateQuestKillTasks(entity);
                     }
 
+                    // Evento individual (para el dueño si la kill vino de la Pet)
                     if (playerEvent != null)
                     {
                         EnqueueStartCommonEvent(playerEvent);
@@ -2466,6 +2489,7 @@ public partial class Player : Entity
                 }
         }
     }
+
 
     public void HandlePlayerKill(Player victim)
     {

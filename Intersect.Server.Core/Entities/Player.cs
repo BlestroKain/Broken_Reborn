@@ -1374,17 +1374,23 @@ public partial class Player : Entity
                 && slot.PetInstanceId.HasValue
                 && slot.PetInstanceId.Value == petInstanceId;
 
-            if (!referencesPreviousDescriptor && !referencesCurrentInstance)
+            var slotPetInstanceId = slot.PetInstanceId;
+            var isBoundToAnotherInstance =
+                slotPetInstanceId.HasValue
+                && slotPetInstanceId.Value != Guid.Empty
+                && slotPetInstanceId.Value != petInstanceId;
+
+            if (!referencesCurrentInstance && (!referencesPreviousDescriptor || isBoundToAnotherInstance))
             {
                 continue;
             }
 
-            if (petInstanceId != Guid.Empty)
+            if (petInstanceId != Guid.Empty && !isBoundToAnotherInstance)
             {
                 slot.PetInstanceId = petInstanceId;
             }
 
-            if (referencesPreviousDescriptor && newDescriptorId != Guid.Empty)
+            if (referencesPreviousDescriptor && newDescriptorId != Guid.Empty && !isBoundToAnotherInstance)
             {
                 // Ensure future lookups rely on the updated descriptor by binding the slot to the evolved pet instance.
                 // The descriptor itself is shared, so we avoid mutating it directly.

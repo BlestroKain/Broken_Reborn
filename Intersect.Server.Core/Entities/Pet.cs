@@ -1514,6 +1514,7 @@ public sealed class Pet : Entity
             if (playerPet != null)
             {
                 playerPet.PetDescriptorId = Descriptor.Id;
+                owner.UpdatePetItemReferences(playerPet, previousDescriptor?.Id ?? Guid.Empty);
                 Name = string.IsNullOrWhiteSpace(playerPet.CustomName) ? Descriptor.Name : playerPet.CustomName;
             }
             else if (string.IsNullOrWhiteSpace(Name))

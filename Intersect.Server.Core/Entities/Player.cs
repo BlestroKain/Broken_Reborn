@@ -1342,6 +1342,60 @@ public partial class Player : Entity
         }
     }
 
+    internal void UpdatePetItemReferences(PlayerPet playerPet, Guid previousDescriptorId)
+    {
+        if (playerPet == null)
+        {
+            return;
+        }
+
+        var newDescriptorId = playerPet.PetDescriptorId;
+        var petInstanceId = playerPet.PetInstanceId;
+
+        foreach (var slot in Items)
+        {
+            if (slot == null || slot.ItemId == Guid.Empty)
+            {
+                continue;
+            }
+
+            var descriptor = slot.Descriptor;
+            var petData = descriptor?.Pet;
+            if (descriptor == null || petData == null)
+            {
+                continue;
+            }
+
+            var referencesPreviousDescriptor =
+                previousDescriptorId != Guid.Empty && petData.PetDescriptorId == previousDescriptorId;
+
+            var referencesCurrentInstance =
+                petInstanceId != Guid.Empty
+                && slot.PetInstanceId.HasValue
+                && slot.PetInstanceId.Value == petInstanceId;
+
+            if (!referencesPreviousDescriptor && !referencesCurrentInstance)
+            {
+                continue;
+            }
+
+            if (petInstanceId != Guid.Empty)
+            {
+                slot.PetInstanceId = petInstanceId;
+            }
+
+            if (referencesPreviousDescriptor && newDescriptorId != Guid.Empty)
+            {
+                // Ensure future lookups rely on the updated descriptor by binding the slot to the evolved pet instance.
+                // The descriptor itself is shared, so we avoid mutating it directly.
+                if (!slot.PetInstanceId.HasValue || slot.PetInstanceId.Value == Guid.Empty)
+                {
+                    slot.PetInstanceId = petInstanceId;
+                }
+            }
+        }
+    }
+
 
     internal Pet? FindPet(Guid petId)
     {

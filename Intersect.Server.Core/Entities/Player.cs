@@ -1147,26 +1147,29 @@ public partial class Player : Entity
 
     public bool SetPetHubSpawnRequested(bool requested, bool openPetHub = false, bool closePetHub = false)
     {
-        if (requested)
+        lock (EntityLock)
         {
-            SetPetHubSpawnFlag(true);
-
-            var descriptor = ActivePet?.Descriptor;
-            if (descriptor == null)
+            if (requested)
             {
-                if (openPetHub)
+                SetPetHubSpawnFlag(true);
+
+                var descriptor = ActivePet?.Descriptor;
+                if (descriptor == null)
                 {
-                    PacketSender.SendOpenPetHub(this);
+                    if (openPetHub)
+                    {
+                        PacketSender.SendOpenPetHub(this);
+                    }
+
+                    return false;
                 }
 
-                return false;
+                return TrySpawnActivePet(descriptor, openPetHub);
             }
 
-            return TrySpawnActivePet(descriptor, openPetHub);
+            SetPetHubSpawnFlag(false);
+            return DismissActivePet(closePetHub);
         }
-
-        SetPetHubSpawnFlag(false);
-        return DismissActivePet(closePetHub);
     }
 
     private void UpdatePetState(long timeMs)

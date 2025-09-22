@@ -86,7 +86,9 @@ internal sealed partial class PacketHandler
         return type == EntityType.GlobalEntity ||
                type == EntityType.Player ||
                type == EntityType.Resource ||
-               type == EntityType.Projectile;
+               type == EntityType.Projectile ||
+               type==EntityType.Pet;
+
     }
 
     public PacketHandler(IClientContext context, PacketHandlerRegistry packetHandlerRegistry)

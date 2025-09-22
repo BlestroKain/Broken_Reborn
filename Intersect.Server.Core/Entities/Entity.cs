@@ -3235,6 +3235,9 @@ public abstract partial class Entity : IEntity
             var owner = pet.Owner ?? Player.FindOnline(pet.OwnerId);
             if (owner != null && !owner.IsDisposed)
             {
+                {
+                    owner.KilledEntity(this);
+                }
                 rewardContext = owner;
 
                 if (this is Npc npc && !ReferenceEquals(owner, pet))
@@ -3249,14 +3252,7 @@ public abstract partial class Entity : IEntity
 
         rewardContext?.KilledEntity(this);
 
-        if (killer is Pet pet && lootContext is Pet)
-        {
-            var owner = pet.Owner ?? Player.FindOnline(pet.OwnerId);
-            if (owner != null && !owner.IsDisposed && !ReferenceEquals(owner, lootContext))
-            {
-                owner.KilledEntity(this);
-            }
-        }
+ 
 
         if (lootContext is Player attacker && this is Player victim)
         {

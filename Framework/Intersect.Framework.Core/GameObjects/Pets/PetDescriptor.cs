@@ -83,6 +83,8 @@ public partial class PetDescriptor : DatabaseObject<PetDescriptor>, IFolderable
     public double CritMultiplier { get; set; } = 1.5;
 
     public double Tenacity { get; set; }
+    [NotMapped]
+    public int ResetRadius { get; set; }
 
     public int Scaling { get; set; } = 100;
 

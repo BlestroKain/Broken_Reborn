@@ -84,6 +84,8 @@ public partial class PetDescriptor : DatabaseObject<PetDescriptor>, IFolderable
 
     public double Tenacity { get; set; }
 
+    public int ResetRadius { get; set; }
+
     public int Scaling { get; set; } = 100;
 
     public int ScalingStat { get; set; }

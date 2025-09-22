@@ -48,6 +48,10 @@ public sealed class Pet : Entity
 
     private Player? _ownerCache;
 
+    private Guid _resetCenterMapId;
+    private int _resetCenterX;
+    private int _resetCenterY;
+
     public PetDescriptor Descriptor { get; private set; }
 
     public int ExperienceRate { get; private set; }
@@ -236,6 +240,10 @@ public sealed class Pet : Entity
 
         _ownerMapId = owner.MapId;
         _ownerMapInstanceId = owner.MapInstanceId;
+
+        _resetCenterMapId = MapId;
+        _resetCenterX = X;
+        _resetCenterY = Y;
 
         _pathfinder = new Pathfinder(this);
 
@@ -732,6 +740,53 @@ public sealed class Pet : Entity
             TryAssignTarget(aggressor, timeMs);
         }
     }
+
+    internal override void RegisterIncomingAttack(Entity attacker, Vital vital)
+    {
+        if (vital != Vital.Health)
+        {
+            return;
+        }
+
+        if (attacker == null || attacker.IsDisposed || attacker.IsDead)
+        {
+            return;
+        }
+
+        var owner = Owner;
+        if (owner == null || owner.IsDisposed)
+        {
+            return;
+        }
+
+        if (IsRestrained())
+        {
+            return;
+        }
+
+        var timeMs = Timing.Global.Milliseconds;
+
+        lock (EntityLock)
+        {
+            if (!IsValidAggressor(attacker, owner))
+            {
+                return;
+            }
+
+            if (!_canEngageTarget)
+            {
+                if (State == PetState.Attack && ReferenceEquals(Target, attacker))
+                {
+                    RefreshCombatTimeout(timeMs);
+                }
+
+                return;
+            }
+
+            TryAssignTarget(attacker, timeMs);
+        }
+    }
+
     public void Despawn(bool killIfDespawnable = true)
     {
         lock (EntityLock)
@@ -1083,6 +1138,14 @@ public sealed class Pet : Entity
 
         ResetFollowFailureCountersIfExpired(petOptions, timeMs);
 
+        if (IsOutsideResetRadius(owner))
+        {
+            State = PetState.Idle;
+            _pathfinder.SetTarget(null);
+            ResetFollowFailureCounters();
+            return;
+        }
+
         var distanceToOwner = GetDistanceTo(owner);
         if (distanceToOwner <= 1)
         {
@@ -1146,6 +1209,38 @@ public sealed class Pet : Entity
         {
             ResetFollowFailureCounters();
         }
+    }
+
+    private bool IsOutsideResetRadius(Player owner)
+    {
+        if (!Options.Instance.Npc.AllowResetRadius)
+        {
+            return false;
+        }
+
+        if (Descriptor.ResetRadius <= 0)
+        {
+            return false;
+        }
+
+        if (_resetCenterMapId == Guid.Empty)
+        {
+            return false;
+        }
+
+        if (!MapController.TryGet(_resetCenterMapId, out var centerMap))
+        {
+            return false;
+        }
+
+        if (!MapController.TryGet(owner.MapId, out var ownerMap))
+        {
+            return false;
+        }
+
+        var distance = GetDistanceBetween(centerMap, ownerMap, _resetCenterX, owner.X, _resetCenterY, owner.Y);
+
+        return distance > Descriptor.ResetRadius;
     }
 
     private void SnapToOwner(Player owner)
@@ -1320,6 +1415,13 @@ public sealed class Pet : Entity
 
             _ownerMapId = ownerMapId;
             _ownerMapInstanceId = ownerMapInstanceId;
+
+            if (Options.Instance.Npc.AllowResetRadius && Descriptor.ResetRadius > 0)
+            {
+                _resetCenterMapId = MapId;
+                _resetCenterX = X;
+                _resetCenterY = Y;
+            }
         }
 
         if (MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var newInstance))

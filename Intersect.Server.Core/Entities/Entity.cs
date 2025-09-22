@@ -3230,7 +3230,7 @@ public abstract partial class Entity : IEntity
         var lootContext = ResolveLootSource(killer);
         lootContext?.KilledEntity(this);
 
-        if (killer is Pet pet && lootContext is not Pet)
+        if (killer is Pet pet && lootContext is Pet)
         {
             var owner = pet.Owner ?? Player.FindOnline(pet.OwnerId);
             if (owner != null && !owner.IsDisposed && !ReferenceEquals(owner, lootContext))

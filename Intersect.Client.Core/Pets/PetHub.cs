@@ -624,15 +624,20 @@ RaiseEvents:
                     }
 
                     foundDescriptor = descriptor;
-                    foundPetName = string.IsNullOrWhiteSpace(petData.PetNameOverride) ? null : petData.PetNameOverride;
+                    foundPetName = string.IsNullOrWhiteSpace(petData.PetNameOverride)
+                        ? null
+                        : petData.PetNameOverride;
 
-                    // Ya encontramos uno válido; salimos
-                    goto FoundDescriptor;
+                    break;
+                }
+
+                if (foundDescriptor != null)
+                {
+                    break;
                 }
             }
 
-FoundDescriptor:
-// Caso: NO hay mascota equipada actualmente (se quitó el item)
+            // Caso: NO hay mascota equipada actualmente (se quitó el item)
             if (foundDescriptor == null)
             {
                 // Si hay una pet activa, despawnea

@@ -3463,6 +3463,7 @@ public partial class Player : Entity
         if (oldMap != null && oldMap.TryGetInstance(PreviousMapInstanceId, out var oldMapInstance))
         {
             PacketSender.SendMapInstanceChangedPacket(this, oldMap, PreviousMapInstanceId);
+            oldMapInstance.DespawnActivePetOf(this, killIfDespawnable: false);
             oldMapInstance.ClearEntityTargetsOf(this); // Remove targets of this entity
             RemoveFromInstanceController(PreviousMapInstanceId);
         }

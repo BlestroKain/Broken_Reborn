@@ -818,7 +818,7 @@ public sealed class Pet : Entity
             if (mapId != Guid.Empty && mapInstanceId != Guid.Empty)
             {
                 // primero broadcast del leave
-                PacketSender.SendEntityLeaveInstanceOfMap(this, mapId, mapInstanceId);
+                PacketSender.SendEntityLeave(this);
 
                 // luego quitar de la instancia
                 if (MapController.TryGetInstanceFromMap(mapId, mapInstanceId, out var instance))
@@ -841,13 +841,7 @@ public sealed class Pet : Entity
             var owner = Owner;
             Owner = null;
 
-            // Si el dueño mantiene una lista/flag de pet activa, limpia aquí (pseudocódigo):
-            // owner?.RemoveActivePet(this);
-
-            // 5) Notificación opcional extra a HUD si tienes una ruta específica (si no, el leave basta)
-            // PacketSender.SendPetStateUpdate(this); // solo si tu cliente lo espera
-
-            // 6) Dispose final
+            PacketSender.SendEntityLeave(this);
             Dispose();
         }
     }
@@ -1396,7 +1390,7 @@ public sealed class Pet : Entity
 
         if (previousMapId != Guid.Empty && previousInstanceId != Guid.Empty)
         {
-            PacketSender.SendEntityLeaveInstanceOfMap(this, previousMapId, previousInstanceId);
+            PacketSender.SendEntityLeave(this);
 
             if (MapController.TryGetInstanceFromMap(previousMapId, previousInstanceId, out var oldInstance))
             {

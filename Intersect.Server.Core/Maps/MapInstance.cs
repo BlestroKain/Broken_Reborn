@@ -533,18 +533,58 @@ public partial class MapInstance : IMapInstance
         AddEntity(player);
         player.LastMapEntered = mMapController.Id;
 
+        var sentEntitiesDuringPetSync = false;
+        var needsResendAfterPetSync = false;
         foreach (var pet in player.GetActivePetsSnapshot())
         {
-            if (pet == null)
+            if (pet == null || pet.IsDisposed)
             {
                 continue;
             }
 
+            var previousMapId = pet.MapId;
+            var previousInstanceId = pet.MapInstanceId;
+
             pet.SynchronizeWithOwner(player);
+
+            if (pet.IsDisposed)
+            {
+                continue;
+            }
+
+            var sameInstance = pet.MapId == MapId && pet.MapInstanceId == MapInstanceId;
+            if (!sameInstance)
+            {
+                continue;
+            }
+
+            var addedToInstance = false;
+            if (!mEntities.ContainsKey(pet.Id))
+            {
+                AddEntity(pet);
+                addedToInstance = true;
+            }
+            else
+            {
+                PetInstances[pet.Id] = pet;
+            }
+
+            PacketSender.SendEntityDataToProximity(pet);
+
+            needsResendAfterPetSync |= previousMapId != pet.MapId || previousInstanceId != pet.MapInstanceId;
+
+            if (addedToInstance)
+            {
+                SendMapEntitiesTo(player);
+                sentEntitiesDuringPetSync = true;
+            }
         }
 
-        // Send the entities/items of this current MapInstance to the player
-        SendMapEntitiesTo(player);
+        if (!sentEntitiesDuringPetSync || needsResendAfterPetSync)
+        {
+            // Send the entities/items of this current MapInstance to the player
+            SendMapEntitiesTo(player);
+        }
 
         // send the entities/items of the SURROUNDING maps on this instance to the player
         foreach (var surroundingMapInstance in MapController.GetSurroundingMapInstances(mMapController.Id, MapInstanceId, false))

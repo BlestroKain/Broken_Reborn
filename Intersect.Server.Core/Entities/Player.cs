@@ -1530,93 +1530,6 @@ public partial class Player : Entity
         }
     }
 
-    private bool TryGetOrCreatePlayerPet(
-        Item? sourceItem,
-        PetItemData? petData,
-        [NotNullWhen(true)] out PlayerPet? playerPet,
-        [NotNullWhen(true)] out PetDescriptor? descriptor
-    )
-    {
-        playerPet = null;
-        descriptor = null;
-
-        if (petData?.PetDescriptorId == Guid.Empty)
-        {
-            return false;
-        }
-
-        descriptor = petData.Descriptor;
-        if (descriptor == null)
-        {
-            return false;
-        }
-
-        var descriptorId = descriptor.Id;
-
-        var petInstanceId = sourceItem?.EnsurePetInstanceId();
-        if (!petInstanceId.HasValue || petInstanceId == Guid.Empty)
-        {
-            return false;
-        }
-
-        playerPet = Pets.FirstOrDefault(pet => pet.PetInstanceId == petInstanceId);
-        if (playerPet == null)
-        {
-            playerPet = Pets.FirstOrDefault(pet => pet.PetInstanceId == Guid.Empty && pet.PetDescriptorId == descriptorId)
-                ?? Pets.FirstOrDefault(pet => pet.PetDescriptorId == descriptorId && pet.PetInstanceId == default);
-        }
-
-        if (playerPet == null)
-        {
-            playerPet = new PlayerPet
-            {
-                PlayerId = Id,
-                PetDescriptorId = descriptor.Id,
-                PetInstanceId = petInstanceId.Value,
-                Level = descriptor.Level,
-                Experience = descriptor.Experience,
-            };
-
-            InitializePlayerPetFromDescriptor(playerPet, descriptor);
-
-            Pets.Add(playerPet);
-        }
-        else
-        {
-            playerPet.PetDescriptorId = descriptor.Id;
-
-            if (playerPet.PetInstanceId == Guid.Empty)
-            {
-                playerPet.PetInstanceId = petInstanceId.Value;
-            }
-
-            EnsurePlayerPetArraySizes(playerPet);
-        }
-
-        if (!string.IsNullOrWhiteSpace(petData.PetNameOverride))
-        {
-            playerPet.CustomName = petData.PetNameOverride;
-        }
-
-        return true;
-    }
-
-    private static void InitializePlayerPetFromDescriptor(PlayerPet playerPet, PetDescriptor descriptor)
-    {
-        EnsurePlayerPetArraySizes(playerPet);
-
-        var statLength = Math.Min(playerPet.BaseStats.Length, descriptor.Stats.Length);
-        Array.Copy(descriptor.Stats, playerPet.BaseStats, statLength);
-
-        Array.Clear(playerPet.StatPointAllocations, 0, playerPet.StatPointAllocations.Length);
-
-        var vitalLength = Math.Min(playerPet.MaxVitals.Length, descriptor.MaxVitals.Length);
-        Array.Copy(descriptor.MaxVitals, playerPet.MaxVitals, vitalLength);
-        Array.Copy(playerPet.MaxVitals, playerPet.Vitals, playerPet.Vitals.Length);
-
-        playerPet.StatPoints = 0;
-    }
-
     private static void EnsurePlayerPetArraySizes(PlayerPet playerPet)
     {
         var statCount = Enum.GetValues<Stat>().Length;
@@ -1744,81 +1657,6 @@ public partial class Player : Entity
 
         return true;
     }
-    private void HandlePetUnequipped(PetItemData? petData, Guid? petInstanceId)
-    {
-        // Si el ítem no es de pet, o no referencia un descriptor válido, no hay nada que hacer.
-        if (petData?.PetDescriptorId == Guid.Empty)
-        {
-            return;
-        }
-
-        var descriptorId = petData.PetDescriptorId;
-        var targetInstanceId = petInstanceId.GetValueOrDefault(Guid.Empty);
-
-        // 1) Determinar si el ActivePet actual corresponde al ítem removido (por descriptor o por instancia).
-        var activePet = ActivePet;
-        var activeMatches =
-            activePet != null
-            && (
-                (targetInstanceId != Guid.Empty && activePet.PetInstanceId == targetInstanceId)
-                || (targetInstanceId == Guid.Empty && activePet.PetDescriptorId == descriptorId)
-            );
-
-        // 2) Despawnear TODAS las mascotas que provengan de este descriptor (o la instancia exacta),
-        //    por las dudas hubiera duplicados/rezagos.
-        CleanupSpawnedPetsList();
-
-        var despawnedAny = false;
-        foreach (var pet in GetActivePetsSnapshot())
-        {
-            var desc = pet?.Descriptor;
-            if (pet == null || pet.IsDisposed || desc == null)
-            {
-                continue;
-            }
-
-            // Match por instancia (si la tenemos) o por descriptor (fallback).
-            var matches = (targetInstanceId != Guid.Empty && pet.PetInstanceId == targetInstanceId)
-                          || (targetInstanceId == Guid.Empty && desc.Id == descriptorId);
-
-            if (matches)
-            {
-                DespawnPet(pet, killIfDespawnable: true);
-                despawnedAny = true;
-            }
-        }
-
-        // 3) En TODOS los casos, marcar que ya no se solicita la invocación via hub.
-        SetPetHubSpawnFlag(false /* requested */, notifyClient: true);
-
-        // 4) Asegurar que también se despawnea lo que el Mapa piense que es el "ActivePet" de este Player.
-        if (MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var instance) && instance != null)
-        {
-            instance.DespawnActivePetOf(this, killIfDespawnable: true);
-        }
-
-        // 5) Si el ActivePet apuntaba al ítem removido, limpiar SIEMPRE estado de hub/selección.
-        //    También si desmontamos cualquiera que estuviese invocada (despawnedAny).
-        if (activeMatches || despawnedAny)
-        {
-            // Limpiar selección y lista local sin dejar residuos.
-            ClearPets(killDespawnable: false);
-
-            ActivePet = null;
-            ActivePetId = null;
-            CurrentPet = null;
-        }
-
-        // 6) Opcional: cerrar Hub si el ítem tiene esa semántica.
-        if (petData.DespawnOnUnequip)
-        {
-            PacketSender.SendOpenPetHub(this, close: true);
-        }
-
-        // Limpieza final defensiva.
-        CleanupSpawnedPetsList();
-    }
-
     private void ClearPets(bool killDespawnable)
     {
         var pets = GetActivePetsSnapshot();
@@ -7084,47 +6922,6 @@ public partial class Player : Entity
         EnqueueStartCommonEvent(itemDescriptor.GetEventTrigger(ItemEventTrigger.OnEquip));
         ProcessEquipmentUpdated(true);
 
-        var inventorySlot = Items.ElementAtOrDefault(slot);
-
-        if (!TryGetOrCreatePlayerPet(inventorySlot, itemDescriptor.Pet, out var playerPet, out var petDescriptor))
-        {
-            return;
-        }
-
-        ActivePet = playerPet;
-        ActivePetId = playerPet.Id;
-
-        if (itemDescriptor.Pet.BindOnEquip)
-        {
-            if (inventorySlot != null && inventorySlot.BoundPlayerId != Id)
-            {
-                inventorySlot.BoundPlayerId = Id;
-                PacketSender.SendInventoryItemUpdate(this, slot);
-            }
-        }
-
-        if (petDescriptor == null)
-        {
-            return;
-        }
-
-        var summonImmediately = itemDescriptor.Pet.SummonOnEquip;
-
-        if (summonImmediately)
-        {
-            if (isPetSlot)
-            {
-                _ = SetPetHubSpawnRequested(true, openPetHub: true);
-            }
-            else
-            {
-                _ = InvokePet(ignoreCooldown: true, openPetHub: true);
-            }
-
-            return;
-        }
-
-        PacketSender.SendOpenPetHub(this);
     }
     private void AddEquipmentSlot(int equipmentSlot, int inventorySlot)
     {
@@ -7150,9 +6947,6 @@ public partial class Player : Entity
     public void UnequipItem(Guid itemId, bool sendUpdate = true)
     {
         var updated = false;
-        PetItemData? unequippedPetData = null;
-        Guid? unequippedPetInstanceId = null;
-
         foreach (var kvp in Equipment)
         {
             var slotIndex = kvp.Key;
@@ -7164,9 +6958,6 @@ public partial class Player : Entity
                 var inventoryIndex = itemsInSlot[i];
                 if (inventoryIndex >= 0 && inventoryIndex < Items.Count && Items[inventoryIndex].ItemId == itemId)
                 {
-                    var slotItem = Items[inventoryIndex];
-                    unequippedPetData = slotItem.Descriptor?.Pet;
-                    unequippedPetInstanceId = slotItem.PetInstanceId;
                     itemsInSlot.RemoveAt(i); // Quitamos solo este ítem
                     updated = true;
                     break; // Salimos del bucle porque ya encontramos el ítem
@@ -7181,7 +6972,6 @@ public partial class Player : Entity
 
         if (updated)
         {
-            HandlePetUnequipped(unequippedPetData, unequippedPetInstanceId);
             ProcessEquipmentUpdated(sendUpdate);
         }
     }
@@ -7192,27 +6982,15 @@ public partial class Player : Entity
             return;
         }
 
-        List<(PetItemData PetData, Guid? PetInstanceId)> unequippedPetDatas = new();
         if (TryGetEquippedItem(equipmentSlot, out var items))
         {
             foreach (var item in items)
             {
                 EnqueueStartCommonEvent(item.Descriptor?.GetEventTrigger(ItemEventTrigger.OnUnequip));
-
-                var petData = item.Descriptor?.Pet;
-                if (petData != null && petData.PetDescriptorId != Guid.Empty)
-                {
-                    unequippedPetDatas.Add((petData, item.PetInstanceId));
-                }
             }
         }
 
         Equipment.Remove(equipmentSlot);
-
-        foreach (var (petData, petInstanceId) in unequippedPetDatas)
-        {
-            HandlePetUnequipped(petData, petInstanceId);
-        }
 
         ProcessEquipmentUpdated(sendUpdate);
     }

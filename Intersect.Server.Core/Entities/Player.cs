@@ -1590,6 +1590,119 @@ public partial class Player : Entity
         }
     }
 
+    private bool TryGetOrCreatePlayerPet(
+        Item equippedItem,
+        PetItemData petData,
+        [NotNullWhen(true)] out PlayerPet? playerPet
+    )
+    {
+        playerPet = null;
+
+        if (equippedItem == null)
+        {
+            return false;
+        }
+
+        var descriptor = petData?.Descriptor;
+        if (descriptor == null)
+        {
+            return false;
+        }
+
+        var petInstanceId = equippedItem.EnsurePetInstanceId();
+
+        if (petInstanceId is { } instanceId && instanceId != Guid.Empty)
+        {
+            playerPet = Pets.FirstOrDefault(pet => pet.PetInstanceId == instanceId);
+        }
+
+        playerPet ??= Pets.FirstOrDefault(pet => pet.PetDescriptorId == descriptor.Id);
+
+        if (playerPet == null)
+        {
+            playerPet = InitializePlayerPetFromDescriptor(descriptor, petData, petInstanceId);
+            Pets.Add(playerPet);
+        }
+        else
+        {
+            playerPet.PetDescriptorId = descriptor.Id;
+
+            if (petInstanceId is { } instanceId && instanceId != Guid.Empty)
+            {
+                playerPet.PetInstanceId = instanceId;
+            }
+            else if (playerPet.PetInstanceId != Guid.Empty)
+            {
+                equippedItem.PetInstanceId = playerPet.PetInstanceId;
+            }
+
+            if (!Pets.Contains(playerPet))
+            {
+                Pets.Add(playerPet);
+            }
+        }
+
+        playerPet.PlayerId = Id;
+
+        var customName = petData?.PetNameOverride;
+        if (!string.IsNullOrWhiteSpace(customName))
+        {
+            playerPet.CustomName = customName;
+        }
+
+        EnsurePlayerPetArraySizes(playerPet);
+
+        ActivePet = playerPet;
+        ActivePetId = playerPet.Id == Guid.Empty ? null : playerPet.Id;
+
+        return true;
+    }
+
+    private PlayerPet InitializePlayerPetFromDescriptor(
+        PetDescriptor descriptor,
+        PetItemData petData,
+        Guid? petInstanceId
+    )
+    {
+        var statCount = Enum.GetValues<Stat>().Length;
+        var vitalCount = Enum.GetValues<Vital>().Length;
+
+        var playerPet = new PlayerPet
+        {
+            PlayerId = Id,
+            PetDescriptorId = descriptor.Id,
+            PetInstanceId = petInstanceId ?? Guid.Empty,
+            Level = Math.Clamp(descriptor.Level, 1, descriptor.MaxLevel),
+            Experience = Math.Max(0, descriptor.Experience),
+            StatPoints = 0,
+            CustomName = string.Empty,
+        };
+
+        var initialName = petData.PetNameOverride;
+        if (!string.IsNullOrWhiteSpace(initialName))
+        {
+            playerPet.CustomName = initialName;
+        }
+
+        playerPet.BaseStats = descriptor.Stats.ToArray();
+        if (playerPet.BaseStats.Length != statCount)
+        {
+            Array.Resize(ref playerPet.BaseStats, statCount);
+        }
+
+        playerPet.StatPointAllocations = new int[playerPet.BaseStats.Length];
+        playerPet.MaxVitals = descriptor.MaxVitals.ToArray();
+        if (playerPet.MaxVitals.Length != vitalCount)
+        {
+            Array.Resize(ref playerPet.MaxVitals, vitalCount);
+        }
+
+        playerPet.Vitals = new long[playerPet.MaxVitals.Length];
+        Array.Copy(playerPet.MaxVitals, playerPet.Vitals, playerPet.MaxVitals.Length);
+
+        return playerPet;
+    }
+
     private static void EnsurePlayerPetArraySizes(PlayerPet playerPet)
     {
         var statCount = Enum.GetValues<Stat>().Length;
@@ -6974,6 +7087,20 @@ public partial class Player : Entity
         // ✅ Equipar el ítem
         AddEquipmentSlot(itemDescriptor.EquipmentSlot, slot);
 
+        if (isPetSlot)
+        {
+            var inventorySlot = Items[slot];
+            var petData = itemDescriptor.Pet;
+            if (petData?.Descriptor != null
+                && TryGetOrCreatePlayerPet(inventorySlot, petData, out _))
+            {
+                if (petData.SummonOnEquip)
+                {
+                    InvokePet(ignoreCooldown: true, openPetHub: true);
+                }
+            }
+        }
+
         if (updateCooldown)
         {
             UpdateCooldown(itemDescriptor);
@@ -7009,24 +7136,31 @@ public partial class Player : Entity
         var updated = false;
         foreach (var kvp in Equipment)
         {
-            var slotIndex = kvp.Key;
             var itemsInSlot = kvp.Value;
 
-            // Buscar si este slot contiene el itemId
-            for (int i = 0; i < itemsInSlot.Count; i++)
+            for (var index = 0; index < itemsInSlot.Count; index++)
             {
-                var inventoryIndex = itemsInSlot[i];
-                if (inventoryIndex >= 0 && inventoryIndex < Items.Count && Items[inventoryIndex].ItemId == itemId)
+                var inventoryIndex = itemsInSlot[index];
+                if (inventoryIndex < 0 || inventoryIndex >= Options.Instance.Player.MaxInventory)
                 {
-                    itemsInSlot.RemoveAt(i); // Quitamos solo este ítem
-                    updated = true;
-                    break; // Salimos del bucle porque ya encontramos el ítem
+                    continue;
                 }
+
+                var inventorySlot = Items[inventoryIndex];
+                if (inventorySlot.ItemId != itemId)
+                {
+                    continue;
+                }
+
+                HandlePetUnequipped(inventorySlot, inventorySlot.Descriptor?.Pet);
+                itemsInSlot.RemoveAt(index);
+                updated = true;
+                break;
             }
 
             if (updated)
             {
-                break; // Salimos del foreach porque ya se hizo el cambio
+                break;
             }
         }
 
@@ -7035,6 +7169,7 @@ public partial class Player : Entity
             ProcessEquipmentUpdated(sendUpdate);
         }
     }
+
     public void UnequipItem(int equipmentSlot, bool sendUpdate = true)
     {
         if (!Equipment.ContainsKey(equipmentSlot))
@@ -7046,6 +7181,7 @@ public partial class Player : Entity
         {
             foreach (var item in items)
             {
+                HandlePetUnequipped(item, item.Descriptor?.Pet);
                 EnqueueStartCommonEvent(item.Descriptor?.GetEventTrigger(ItemEventTrigger.OnUnequip));
             }
         }
@@ -7053,6 +7189,40 @@ public partial class Player : Entity
         Equipment.Remove(equipmentSlot);
 
         ProcessEquipmentUpdated(sendUpdate);
+    }
+
+    private void HandlePetUnequipped(Item? item, PetItemData? petData)
+    {
+        if (item == null || petData == null)
+        {
+            return;
+        }
+
+        var descriptor = petData.Descriptor;
+        var playerPet = ActivePet;
+
+        if (descriptor == null || playerPet == null)
+        {
+            return;
+        }
+
+        var matchesDescriptor = playerPet.PetDescriptorId == descriptor.Id;
+        var matchesInstance = item.PetInstanceId.HasValue
+            && item.PetInstanceId.Value != Guid.Empty
+            && playerPet.PetInstanceId != Guid.Empty
+            && playerPet.PetInstanceId == item.PetInstanceId.Value;
+
+        if (!matchesDescriptor && !matchesInstance)
+        {
+            return;
+        }
+
+        var closePetHub = petData.DespawnOnUnequip;
+
+        SetPetHubSpawnFlag(false);
+        _ = DismissActivePet(closePetHub);
+        ActivePet = null;
+        ActivePetId = null;
     }
 
     public void ProcessEquipmentUpdated(bool sendPackets, bool ignoreEvents = false)

@@ -3230,6 +3230,15 @@ public abstract partial class Entity : IEntity
         var lootContext = ResolveLootSource(killer);
         lootContext?.KilledEntity(this);
 
+        if (killer is Pet pet && lootContext is not Pet)
+        {
+            var owner = pet.Owner ?? Player.FindOnline(pet.OwnerId);
+            if (owner != null && !owner.IsDisposed && !ReferenceEquals(owner, lootContext))
+            {
+                owner.KilledEntity(this);
+            }
+        }
+
         if (lootContext is Player attacker && this is Player victim)
         {
             AlignmentPvPService.HandleKill(attacker, victim);

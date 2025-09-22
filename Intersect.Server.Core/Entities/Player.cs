@@ -586,7 +586,7 @@ public partial class Player : Entity
             return;
         }
 
-        ClearPets(true);
+        ClearPets(killDespawnable: true);
 
         Guild?.NotifyPlayerDisposed(this);
 
@@ -675,7 +675,7 @@ public partial class Player : Entity
 
         SpawnedNpcs.Clear();
 
-        ClearPets(true);
+        ClearPets(killDespawnable: true);
 
         lock (mEventLock)
         {
@@ -2015,7 +2015,7 @@ public partial class Player : Entity
     {
         CastTime = 0;
         CastTarget = null;
-        ClearPets(true);
+        ClearPets(killDespawnable: true);
 
         //Flag death to the client
         PlayDeathAnimation();

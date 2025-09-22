@@ -3228,7 +3228,26 @@ public abstract partial class Entity : IEntity
 
         // Run events and other things.
         var lootContext = ResolveLootSource(killer);
-        lootContext?.KilledEntity(this);
+        var rewardContext = lootContext;
+
+        if (killer is Pet pet)
+        {
+            var owner = pet.Owner ?? Player.FindOnline(pet.OwnerId);
+            if (owner != null && !owner.IsDisposed)
+            {
+                rewardContext = owner;
+
+                if (this is Npc npc && !ReferenceEquals(owner, pet))
+                {
+                    if (npc.DamageMap.TryRemove(pet, out var petDamage) && petDamage > 0)
+                    {
+                        npc.DamageMap.AddOrUpdate(owner, petDamage, (_, existing) => existing + petDamage);
+                    }
+                }
+            }
+        }
+
+        rewardContext?.KilledEntity(this);
 
         if (killer is Pet pet && lootContext is Pet)
         {

@@ -1788,28 +1788,28 @@ public partial class Player : Entity
             }
         }
 
-        // 3) Asegurar que también se despawnea lo que el Mapa piense que es el "ActivePet" de este Player.
+        // 3) En TODOS los casos, marcar que ya no se solicita la invocación via hub.
+        SetPetHubSpawnFlag(false /* requested */, notifyClient: true);
+
+        // 4) Asegurar que también se despawnea lo que el Mapa piense que es el "ActivePet" de este Player.
         if (MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var instance) && instance != null)
         {
             instance.DespawnActivePetOf(this, killIfDespawnable: true);
         }
 
-        // 4) Si el ActivePet apuntaba al ítem removido, limpiar SIEMPRE estado de hub/selección.
+        // 5) Si el ActivePet apuntaba al ítem removido, limpiar SIEMPRE estado de hub/selección.
         //    También si desmontamos cualquiera que estuviese invocada (despawnedAny).
         if (activeMatches || despawnedAny)
         {
             // Limpiar selección y lista local sin dejar residuos.
             ClearPets(killDespawnable: false);
 
-            // Asegurar que el Hub quede en "no solicitado" y que el cliente reciba el estado.
-            SetPetHubSpawnFlag(false /* requested */, notifyClient: true);
-
             ActivePet = null;
             ActivePetId = null;
             CurrentPet = null;
         }
 
-        // 5) Opcional: cerrar Hub si el ítem tiene esa semántica.
+        // 6) Opcional: cerrar Hub si el ítem tiene esa semántica.
         if (petData.DespawnOnUnequip)
         {
             PacketSender.SendOpenPetHub(this, close: true);

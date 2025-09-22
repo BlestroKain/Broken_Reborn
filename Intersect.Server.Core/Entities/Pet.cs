@@ -814,11 +814,14 @@ public sealed class Pet : Entity
             var mapId = MapId;
             var mapInstanceId = MapInstanceId;
 
+            var hasNotifiedLeave = false;
+
             // 3) Notificar a clientes y sacar de la instancia (si todavía estaba en mapa)
             if (mapId != Guid.Empty && mapInstanceId != Guid.Empty)
             {
                 // primero broadcast del leave
                 PacketSender.SendEntityLeave(this);
+                hasNotifiedLeave = true;
 
                 // luego quitar de la instancia
                 if (MapController.TryGetInstanceFromMap(mapId, mapInstanceId, out var instance))
@@ -841,7 +844,11 @@ public sealed class Pet : Entity
             var owner = Owner;
             Owner = null;
 
-            PacketSender.SendEntityLeave(this);
+            if (!hasNotifiedLeave)
+            {
+                PacketSender.SendEntityLeave(this);
+            }
+
             Dispose();
         }
     }

@@ -1610,8 +1610,9 @@ public partial class Player : Entity
         }
 
         var petInstanceId = equippedItem.EnsurePetInstanceId();
+        var resolvedInstanceId = petInstanceId is { } value && value != Guid.Empty ? value : null;
 
-        if (petInstanceId is { } instanceId && instanceId != Guid.Empty)
+        if (resolvedInstanceId is { } instanceId)
         {
             playerPet = Pets.FirstOrDefault(pet => pet.PetInstanceId == instanceId);
         }
@@ -1627,7 +1628,7 @@ public partial class Player : Entity
         {
             playerPet.PetDescriptorId = descriptor.Id;
 
-            if (petInstanceId is { } instanceId && instanceId != Guid.Empty)
+            if (resolvedInstanceId is { } instanceId)
             {
                 playerPet.PetInstanceId = instanceId;
             }
@@ -1653,7 +1654,10 @@ public partial class Player : Entity
         EnsurePlayerPetArraySizes(playerPet);
 
         ActivePet = playerPet;
-        ActivePetId = playerPet.Id == Guid.Empty ? null : playerPet.Id;
+        if (playerPet.Id != Guid.Empty)
+        {
+            ActivePetId = playerPet.Id;
+        }
 
         return true;
     }
@@ -1684,18 +1688,22 @@ public partial class Player : Entity
             playerPet.CustomName = initialName;
         }
 
-        playerPet.BaseStats = descriptor.Stats.ToArray();
-        if (playerPet.BaseStats.Length != statCount)
+        var baseStats = descriptor.Stats.ToArray();
+        if (baseStats.Length != statCount)
         {
-            Array.Resize(ref playerPet.BaseStats, statCount);
+            Array.Resize(ref baseStats, statCount);
         }
 
+        playerPet.BaseStats = baseStats;
+
         playerPet.StatPointAllocations = new int[playerPet.BaseStats.Length];
-        playerPet.MaxVitals = descriptor.MaxVitals.ToArray();
-        if (playerPet.MaxVitals.Length != vitalCount)
+        var maxVitals = descriptor.MaxVitals.ToArray();
+        if (maxVitals.Length != vitalCount)
         {
-            Array.Resize(ref playerPet.MaxVitals, vitalCount);
+            Array.Resize(ref maxVitals, vitalCount);
         }
+
+        playerPet.MaxVitals = maxVitals;
 
         playerPet.Vitals = new long[playerPet.MaxVitals.Length];
         Array.Copy(playerPet.MaxVitals, playerPet.Vitals, playerPet.MaxVitals.Length);

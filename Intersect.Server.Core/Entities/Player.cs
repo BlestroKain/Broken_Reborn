@@ -2015,6 +2015,7 @@ public partial class Player : Entity
     {
         CastTime = 0;
         CastTarget = null;
+        ClearPets(true);
 
         //Flag death to the client
         PlayDeathAnimation();

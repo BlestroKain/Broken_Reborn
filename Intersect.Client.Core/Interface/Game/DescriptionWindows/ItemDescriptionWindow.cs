@@ -1,5 +1,6 @@
 using Intersect;
 using Intersect.Enums;
+using Intersect.Client.Entities;
 using Intersect.Client.General;
 using Intersect.Client.Localization;
 using Intersect.Core;
@@ -11,6 +12,7 @@ using Intersect.Utilities;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using System.Globalization;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Gwen.Input;
 using Intersect.Client.Interface.Game.DescriptionWindows.Components;
@@ -868,6 +870,22 @@ public partial class ItemDescriptionWindow() : DescriptionWindowBase(Interface.G
         {
             rows.AddKeyValueRow(Strings.ItemDescription.PetLevel, petDescriptor.Level.ToString());
             rows.AddKeyValueRow(Strings.ItemDescription.PetExperience, petDescriptor.Experience.ToString());
+
+            if (Globals.PetHub.ActivePet is Pet activePet
+                && activePet.IsOwnedByLocalPlayer
+                && activePet.Descriptor?.Id == petDescriptor.Id)
+            {
+                rows.AddKeyValueRow(Strings.ItemDescription.PetCurrentLevel, activePet.Level.ToString());
+
+                var experienceText = activePet.Experience.ToString("N0", CultureInfo.CurrentCulture);
+                rows.AddKeyValueRow(Strings.ItemDescription.PetCurrentExperience, experienceText);
+
+                var experienceToNext = activePet.ExperienceToNextLevel;
+                var experienceToNextText = experienceToNext >= 0
+                    ? activePet.ExperienceToNextLevel.ToString("N0", CultureInfo.CurrentCulture)
+                    : Strings.ItemDescription.PetMaxLevel.ToString();
+                rows.AddKeyValueRow(Strings.ItemDescription.PetExperienceToNext, experienceToNextText);
+            }
 
             var vitalCount = Enum.GetValues<Vital>().Length;
             for (var index = 0; index < vitalCount; index++)

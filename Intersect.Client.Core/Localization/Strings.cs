@@ -1318,6 +1318,15 @@ public static partial class Strings
         public static LocalizedString LevelLabel = @"Level: {0}";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString ExperienceLabel = @"Experience: {0}";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString ExperienceToNextLabel = @"Next Level: {0}";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString MaxLevelReached = @"Max Level";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString BehaviorLabel = @"Behavior: {0}";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -1343,6 +1352,33 @@ public static partial class Strings
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString DismissButton = @"Dismiss";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString SummonRequested = @"You begin summoning {0}.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Summoned = @"{0} has answered your call.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString DismissRequested = @"You ask {0} to rest.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Dismissed = @"{0} has returned to rest.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetLost = @"{0} is no longer by your side.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetDied = @"{0} has fallen in battle.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetEvolved = @"{0} evolved into {1}!";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetExperienceGained = @"{0} gained {1} experience.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetLevelGained = @"{0} reached level {1}!";
     }
 
     public partial struct Crafting
@@ -2170,6 +2206,18 @@ If you are sure you want to hand over your guild enter '\c{{#ff8080}}{02}\c{{}}'
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString PetExperience = @"Pet Experience:";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetCurrentLevel = @"Current Level:";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetCurrentExperience = @"Current Experience:";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetExperienceToNext = @"Experience to Next:";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString PetMaxLevel = @"Max Level";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString ScalingPercentage = @"Scaling Percentage:";

@@ -1,12 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Intersect.Client.Entities;
 using Intersect.Client.General;
+using Intersect.Client.Interface;
+using Intersect.Client.Interface.Game.Chat;
+using Intersect.Client.Localization;
 using Intersect.Client.Networking;
 using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.Network.Packets.Client;
 using Intersect.Network.Packets.Server;
+using Intersect;
 
 namespace Intersect.Client.Core.Pets;
 
@@ -19,10 +24,14 @@ public sealed class PetHub
     private PetDescriptor? _equippedDescriptor;
     private string? _equippedPetName;
     private bool _isSpawnRequested;
+    private bool _invokeRequested;
+    private bool _dismissRequested;
+    private readonly Dictionary<Guid, PetProgressSnapshot> _progressSnapshots = new();
 
     public PetHub()
     {
         Globals.PetMetadataChanged += OnPetMetadataChanged;
+        Globals.PetProgressChanged += OnPetProgressChanged;
     }
 
     public event Action? ActivePetChanged;
@@ -99,6 +108,8 @@ public sealed class PetHub
 
     public bool InvokePet(bool openPetHub = true)
     {
+        var petName = string.Empty;
+
         lock (_syncRoot)
         {
             if (_isSpawnRequested)
@@ -110,23 +121,33 @@ public sealed class PetHub
             {
                 return false;
             }
+
+            _invokeRequested = true;
+            petName = GetEquippedPetDisplayName();
         }
 
         Intersect.Client.Networking. Network.SendPacket(new SpawnPetRequestPacket(openPetHub));
+        QueuePetMessage(Strings.Pets.SummonRequested, petName);
         return true;
     }
 
     public bool DismissPet(bool closePetHub = false)
     {
+        var petName = string.Empty;
+
         lock (_syncRoot)
         {
             if (!_isSpawnRequested)
             {
                 return false;
             }
+
+            _dismissRequested = true;
+            petName = GetEquippedPetDisplayName();
         }
 
         Intersect.Client.Networking. Network.SendPacket(new DespawnPetRequestPacket(closePetHub));
+        QueuePetMessage(Strings.Pets.DismissRequested, petName);
         return true;
     }
 
@@ -134,6 +155,7 @@ public sealed class PetHub
     {
         bool activeChanged;
         bool behaviorChanged;
+        Pet? previousPet = null;
 
         lock (_syncRoot)
         {
@@ -142,7 +164,12 @@ public sealed class PetHub
                 return;
             }
 
+            previousPet = _activePet;
             (activeChanged, behaviorChanged) = UpdateState(null, PetState.Follow, true);
+            if (previousPet != null)
+            {
+                _progressSnapshots.Remove(previousPet.Id);
+            }
         }
 
         if (behaviorChanged)
@@ -152,6 +179,7 @@ public sealed class PetHub
 
         if (activeChanged)
         {
+            HandleActivePetChanged(previousPet, null);
             ActivePetChanged?.Invoke();
         }
     }
@@ -165,6 +193,8 @@ public sealed class PetHub
 
         bool activeChanged = false;
         bool behaviorChanged = false;
+        Pet? previousPet = null;
+        Pet? currentPet = null;
 
         lock (_syncRoot)
         {
@@ -172,7 +202,12 @@ public sealed class PetHub
             {
                 if (_activePet?.Id == packet.EntityId)
                 {
+                    previousPet = _activePet;
                     (activeChanged, behaviorChanged) = UpdateState(null, PetState.Follow, true);
+                    if (previousPet != null)
+                    {
+                        _progressSnapshots.Remove(previousPet.Id);
+                    }
                 }
 
                 goto RaiseEvents;
@@ -182,16 +217,27 @@ public sealed class PetHub
             {
                 if (_activePet?.Id == pet.Id)
                 {
+                    previousPet = _activePet;
                     (activeChanged, behaviorChanged) = UpdateState(null, PetState.Follow, true);
+                    if (previousPet != null)
+                    {
+                        _progressSnapshots.Remove(previousPet.Id);
+                    }
                 }
 
                 goto RaiseEvents;
             }
 
+            previousPet = _activePet;
             (activeChanged, behaviorChanged) = UpdateState(pet, packet.Behavior, true);
+            currentPet = _activePet;
+            if (currentPet != null)
+            {
+                _progressSnapshots[currentPet.Id] = CreateSnapshot(currentPet);
+            }
         }
 
-RaiseEvents:
+    RaiseEvents:
         if (behaviorChanged)
         {
             BehaviorChanged?.Invoke();
@@ -199,8 +245,110 @@ RaiseEvents:
 
         if (activeChanged)
         {
+            HandleActivePetChanged(previousPet, currentPet);
             ActivePetChanged?.Invoke();
         }
+    }
+
+    private void OnPetProgressChanged(Pet pet)
+    {
+        if (pet == null || pet.IsDisposed || !pet.IsOwnedByLocalPlayer)
+        {
+            return;
+        }
+
+        PetProgressSnapshot? previousSnapshot;
+        PetProgressSnapshot newSnapshot;
+
+        lock (_syncRoot)
+        {
+            previousSnapshot = GetSnapshot(pet.Id);
+            newSnapshot = CreateSnapshot(pet);
+            _progressSnapshots[pet.Id] = newSnapshot;
+        }
+
+        if (previousSnapshot == null)
+        {
+            return;
+        }
+
+        if (newSnapshot.Level > previousSnapshot.Level)
+        {
+            var petName = !string.IsNullOrWhiteSpace(newSnapshot.Name)
+                ? newSnapshot.Name!
+                : GetDescriptorName(newSnapshot.DescriptorId);
+            QueuePetMessage(Strings.Pets.PetLevelGained, petName, newSnapshot.Level);
+            return;
+        }
+
+        if (newSnapshot.Level == previousSnapshot.Level)
+        {
+            var experienceGained = newSnapshot.Experience - previousSnapshot.Experience;
+            if (experienceGained > 0)
+            {
+                var petName = !string.IsNullOrWhiteSpace(newSnapshot.Name)
+                    ? newSnapshot.Name!
+                    : GetDescriptorName(newSnapshot.DescriptorId);
+                QueuePetMessage(Strings.Pets.PetExperienceGained, petName, FormatNumber(experienceGained));
+            }
+        }
+    }
+
+    private void HandleActivePetChanged(Pet? previousPet, Pet? currentPet)
+    {
+        if (ReferenceEquals(previousPet, currentPet))
+        {
+            return;
+        }
+
+        if (currentPet != null)
+        {
+            var name = GetPetDisplayName(currentPet);
+            QueuePetMessage(Strings.Pets.Summoned, name);
+            _invokeRequested = false;
+            _dismissRequested = false;
+            return;
+        }
+
+        if (previousPet == null)
+        {
+            return;
+        }
+
+        var previousName = GetPetDisplayName(previousPet, previousPet.Descriptor, _equippedPetName);
+        var health = previousPet.Vital.Length > (int)Vital.Health ? previousPet.Vital[(int)Vital.Health] : 0;
+
+        if (_dismissRequested)
+        {
+            QueuePetMessage(Strings.Pets.Dismissed, previousName);
+        }
+        else if (health <= 0)
+        {
+            QueuePetMessage(Strings.Pets.PetDied, previousName);
+        }
+        else
+        {
+            QueuePetMessage(Strings.Pets.PetLost, previousName);
+        }
+
+        _dismissRequested = false;
+        _invokeRequested = false;
+    }
+
+    private void HandleDescriptorChange(PetProgressSnapshot previousSnapshot, PetProgressSnapshot newSnapshot)
+    {
+        if (previousSnapshot.DescriptorId == newSnapshot.DescriptorId)
+        {
+            return;
+        }
+
+        var petName = !string.IsNullOrWhiteSpace(newSnapshot.Name)
+            ? newSnapshot.Name!
+            : !string.IsNullOrWhiteSpace(previousSnapshot.Name)
+                ? previousSnapshot.Name!
+                : GetDescriptorName(previousSnapshot.DescriptorId);
+        var newDescriptorName = GetDescriptorName(newSnapshot.DescriptorId);
+        QueuePetMessage(Strings.Pets.PetEvolved, petName, newDescriptorName);
     }
 
     public void Process(PetHubStatePacket packet)
@@ -295,6 +443,9 @@ RaiseEvents:
             descriptorChanged = _equippedDescriptor != null || !string.IsNullOrWhiteSpace(_equippedPetName);
             _equippedDescriptor = null;
             _equippedPetName = null;
+            _invokeRequested = false;
+            _dismissRequested = false;
+            _progressSnapshots.Clear();
         }
 
         if (behaviorChanged)
@@ -363,17 +514,40 @@ RaiseEvents:
     {
         bool activeChanged = false;
         bool behaviorChanged = false;
+        Pet? previousPet = null;
+        Pet? currentPet = null;
+        PetProgressSnapshot? previousSnapshot = null;
+        PetProgressSnapshot? newSnapshot = null;
 
         lock (_syncRoot)
         {
             if (pet.IsOwnedByLocalPlayer)
             {
+                previousPet = _activePet;
+                previousSnapshot = GetSnapshot(pet.Id);
                 (activeChanged, behaviorChanged) = UpdateState(pet, pet.Behavior, true);
+                currentPet = _activePet;
+                if (currentPet != null)
+                {
+                    newSnapshot = CreateSnapshot(currentPet);
+                    _progressSnapshots[currentPet.Id] = newSnapshot;
+                }
             }
             else if (_activePet?.Id == pet.Id)
             {
+                previousPet = _activePet;
                 (activeChanged, behaviorChanged) = UpdateState(null, PetState.Follow, true);
+                currentPet = null;
+                if (previousPet != null)
+                {
+                    _progressSnapshots.Remove(previousPet.Id);
+                }
             }
+        }
+
+        if (pet.IsOwnedByLocalPlayer && previousSnapshot != null && newSnapshot != null)
+        {
+            HandleDescriptorChange(previousSnapshot, newSnapshot);
         }
 
         if (behaviorChanged)
@@ -383,6 +557,7 @@ RaiseEvents:
 
         if (activeChanged)
         {
+            HandleActivePetChanged(previousPet, currentPet);
             ActivePetChanged?.Invoke();
         }
     }
@@ -543,6 +718,111 @@ FoundDescriptor:
         }
 
         return (activeChanged, behaviorChanged);
+    }
+
+    private sealed class PetProgressSnapshot
+    {
+        public Guid PetId { get; init; }
+
+        public string? Name { get; init; }
+
+        public Guid DescriptorId { get; init; }
+
+        public int Level { get; init; }
+
+        public long Experience { get; init; }
+
+        public long ExperienceToNextLevel { get; init; }
+
+        public PetProgressSnapshot Clone() => new()
+        {
+            PetId = PetId,
+            Name = Name,
+            DescriptorId = DescriptorId,
+            Level = Level,
+            Experience = Experience,
+            ExperienceToNextLevel = ExperienceToNextLevel,
+        };
+    }
+
+    private static PetProgressSnapshot CreateSnapshot(Pet pet) => new()
+    {
+        PetId = pet.Id,
+        Name = pet.Name,
+        DescriptorId = pet.Descriptor?.Id ?? Guid.Empty,
+        Level = pet.Level,
+        Experience = pet.Experience,
+        ExperienceToNextLevel = pet.ExperienceToNextLevel,
+    };
+
+    private PetProgressSnapshot? GetSnapshot(Guid petId)
+    {
+        if (!_progressSnapshots.TryGetValue(petId, out var snapshot))
+        {
+            return null;
+        }
+
+        return snapshot.Clone();
+    }
+
+    private static string FormatNumber(long value) => value.ToString("N0", CultureInfo.CurrentCulture);
+
+    private static string GetPetDisplayName(Pet? pet, PetDescriptor? descriptor = null, string? fallbackName = null)
+    {
+        if (!string.IsNullOrWhiteSpace(pet?.Name))
+        {
+            return pet!.Name!;
+        }
+
+        if (!string.IsNullOrWhiteSpace(fallbackName))
+        {
+            return fallbackName!;
+        }
+
+        descriptor ??= pet?.Descriptor;
+        var descriptorName = descriptor?.Name;
+        if (!string.IsNullOrWhiteSpace(descriptorName))
+        {
+            return descriptorName!;
+        }
+
+        return Strings.Pets.UnknownDescriptorName.ToString();
+    }
+
+    private string GetEquippedPetDisplayName()
+    {
+        if (_activePet is { IsDisposed: false } activePet)
+        {
+            return GetPetDisplayName(activePet);
+        }
+
+        return GetPetDisplayName(null, _equippedDescriptor, _equippedPetName);
+    }
+
+    private static void QueuePetMessage(LocalizedString template, params object[] args)
+    {
+        var message = template.ToString(args);
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return;
+        }
+
+        Interface.EnqueueInGame(
+            () => ChatboxMsg.AddMessage(new ChatboxMsg(message, CustomColors.Alerts.Info, ChatMessageType.Notice))
+        );
+    }
+
+    private static string GetDescriptorName(Guid descriptorId)
+    {
+        if (descriptorId == Guid.Empty)
+        {
+            return Strings.Pets.UnknownDescriptorName.ToString();
+        }
+
+        var descriptor = PetDescriptor.Get(descriptorId);
+        return !string.IsNullOrWhiteSpace(descriptor?.Name)
+            ? descriptor!.Name!
+            : Strings.Pets.UnknownDescriptorName.ToString();
     }
 
     private void UpdateEquippedPet(PetDescriptor? descriptor, string? petName)

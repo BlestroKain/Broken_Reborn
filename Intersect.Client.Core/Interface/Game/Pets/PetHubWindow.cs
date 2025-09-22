@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Intersect.Client.Core;
 using Intersect.Client.Entities;
 using Intersect.Client.Framework.File_Management;
@@ -28,6 +29,8 @@ namespace Intersect.Client.Interface.Game.Pets
         private const int StatColumnWidth = 150;
         private const int StatRowHeight = 20;
 
+        private const int DetailsPanelHeight = 264;
+
         // Fonts
         private const string FontName = "sourceproblack";
         private const int TitleSize = 18;
@@ -43,6 +46,8 @@ namespace Intersect.Client.Interface.Game.Pets
         private readonly Label _customNameLabel;
         private readonly Label _descriptorNameLabel;
         private readonly Label _levelLabel;
+        private readonly Label _experienceLabel;
+        private readonly Label _experienceToNextLabel;
         private readonly Label _behaviorLabel;
 
         private readonly Label _vitalsHeader;
@@ -90,19 +95,21 @@ namespace Intersect.Client.Interface.Game.Pets
             // Panel de detalles (nombres, nivel, comportamiento, vitals)
             _detailsPanel = new ImagePanel(this, "DetailsPanel");
             _detailsPanel.SetPosition(Margin, 64);
-            _detailsPanel.SetSize(WindowWidth - Margin * 2, 220);
+            _detailsPanel.SetSize(WindowWidth - Margin * 2, DetailsPanelHeight);
 
             _customNameLabel = CreateDetailLabel(_detailsPanel, "CustomNameLabel", 0);
             _descriptorNameLabel = CreateDetailLabel(_detailsPanel, "DescriptorNameLabel", DetailLineHeight);
             _levelLabel = CreateDetailLabel(_detailsPanel, "LevelLabel", DetailLineHeight * 2);
-            _behaviorLabel = CreateDetailLabel(_detailsPanel, "BehaviorLabel", DetailLineHeight * 3);
+            _experienceLabel = CreateDetailLabel(_detailsPanel, "ExperienceLabel", DetailLineHeight * 3);
+            _experienceToNextLabel = CreateDetailLabel(_detailsPanel, "ExperienceToNextLabel", DetailLineHeight * 4);
+            _behaviorLabel = CreateDetailLabel(_detailsPanel, "BehaviorLabel", DetailLineHeight * 5);
 
-            _vitalsHeader = CreateDetailLabel(_detailsPanel, "VitalsHeaderLabel", DetailLineHeight * 4);
+            _vitalsHeader = CreateDetailLabel(_detailsPanel, "VitalsHeaderLabel", DetailLineHeight * 6);
             _vitalsHeader.FontSize = HeaderSize;
             _vitalsHeader.Text = Strings.Pets.VitalsHeader.ToString();
 
             // Vitals debajo del header
-            var firstVitalY = DetailLineHeight * 5;
+            var firstVitalY = DetailLineHeight * 7;
             var vitalIndex = 0;
             foreach (var vital in Enum.GetValues<Vital>())
             {
@@ -119,12 +126,12 @@ namespace Intersect.Client.Interface.Game.Pets
                 TextColor = Color.White,
                 Text = Strings.Pets.StatsHeader.ToString(),
             };
-            _statsHeader.SetPosition(Margin, 64 + 220 + Gap);
+            _statsHeader.SetPosition(Margin, 64 + DetailsPanelHeight + Gap);
             _statsHeader.SetSize(WindowWidth - Margin * 2, 22);
 
             // Panel stats (2 columnas)
             _statsPanel = new Base(this, "StatsPanel");
-            _statsPanel.SetPosition(Margin, 64 + 220 + Gap + 24);
+            _statsPanel.SetPosition(Margin, 64 + DetailsPanelHeight + Gap + 24);
             _statsPanel.SetSize(WindowWidth - Margin * 2, 110);
 
             var idx = 0;
@@ -265,6 +272,8 @@ namespace Intersect.Client.Interface.Game.Pets
 
                 _vitalsHeader.IsHidden = true;
                 _noStatsLabel.IsHidden = false;
+                _experienceLabel.IsHidden = true;
+                _experienceToNextLabel.IsHidden = true;
 
                 return;
             }
@@ -281,6 +290,15 @@ namespace Intersect.Client.Interface.Game.Pets
 
             _descriptorNameLabel.Text = Strings.Pets.DescriptorNameLabel.ToString(descriptorName);
             _levelLabel.Text = Strings.Pets.LevelLabel.ToString(pet.Level);
+
+            _experienceLabel.Text = Strings.Pets.ExperienceLabel.ToString(FormatNumber(pet.Experience));
+            var experienceToNext = pet.ExperienceToNextLevel;
+            var experienceToNextText = experienceToNext >= 0
+                ? FormatNumber(experienceToNext)
+                : Strings.Pets.MaxLevelReached.ToString();
+            _experienceToNextLabel.Text = Strings.Pets.ExperienceToNextLabel.ToString(experienceToNextText);
+            _experienceLabel.IsHidden = false;
+            _experienceToNextLabel.IsHidden = false;
 
             var behaviorText = GetBehaviorLabel(Globals.PetHub.Behavior);
             _behaviorLabel.Text = Strings.Pets.BehaviorLabel.ToString(behaviorText);
@@ -357,11 +375,13 @@ namespace Intersect.Client.Interface.Game.Pets
         private static string GetBehaviorLabel(PetState behavior) => behavior switch
         {
             PetState.Follow => Strings.Pets.BehaviorFollow.ToString(),
-            PetState    .Stay => Strings.Pets.BehaviorStay.ToString(),
+            PetState.Stay => Strings.Pets.BehaviorStay.ToString(),
             PetState.Defend => Strings.Pets.BehaviorDefend.ToString(),
             PetState.Passive => Strings.Pets.BehaviorPassive.ToString(),
             _ => Strings.Pets.BehaviorUnknown.ToString(),
         };
+
+        private static string FormatNumber(long value) => value.ToString("N0", CultureInfo.CurrentCulture);
 
         private Label CreateDetailLabel(Base parent, string name, int y)
         {

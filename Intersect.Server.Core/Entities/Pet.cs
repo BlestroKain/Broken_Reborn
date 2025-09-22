@@ -818,7 +818,7 @@ public sealed class Pet : Entity
             if (mapId != Guid.Empty && mapInstanceId != Guid.Empty)
             {
                 // primero broadcast del leave
-                PacketSender.SendEntityLeaveInstanceOfMap(this, mapId, mapInstanceId);
+                PacketSender.SendEntityLeave(this);
 
                 // luego quitar de la instancia
                 if (MapController.TryGetInstanceFromMap(mapId, mapInstanceId, out var instance))
@@ -1396,7 +1396,7 @@ public sealed class Pet : Entity
 
         if (previousMapId != Guid.Empty && previousInstanceId != Guid.Empty)
         {
-            PacketSender.SendEntityLeaveInstanceOfMap(this, previousMapId, previousInstanceId);
+            PacketSender.SendEntityLeave(this);
 
             if (MapController.TryGetInstanceFromMap(previousMapId, previousInstanceId, out var oldInstance))
             {

@@ -817,7 +817,7 @@ public sealed class Pet : Entity
             var hasNotifiedLeave = false;
 
             // 3) Notificar a clientes y sacar de la instancia (si todavía estaba en mapa)
-            if (mapId != Guid.Empty && mapInstanceId != Guid.Empty)
+            if (mapId != Guid.Empty)
             {
                 // primero broadcast del leave
                 PacketSender.SendEntityLeave(this);

@@ -110,12 +110,6 @@ namespace Intersect.Editor.Forms.Editors
             toolStripItemUndo = new ToolStripButton();
             DarkGroupBox4 = new DarkGroupBox();
             pnlPetlevel = new Panel();
-            DarkGroupBox5 = new DarkGroupBox();
-            cmbEvolve = new DarkComboBox();
-            DarkLabel15 = new DarkLabel();
-            nudEvolveLvl = new DarkNumericUpDown();
-            DarkLabel14 = new DarkLabel();
-            chkEvolve = new DarkCheckBox();
             nudMaxLevel = new DarkNumericUpDown();
             DarkLabel12 = new DarkLabel();
             nudPetPnts = new DarkNumericUpDown();
@@ -153,8 +147,6 @@ namespace Intersect.Editor.Forms.Editors
             toolStrip.SuspendLayout();
             DarkGroupBox4.SuspendLayout();
             pnlPetlevel.SuspendLayout();
-            DarkGroupBox5.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)nudEvolveLvl).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudMaxLevel).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudPetPnts).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudPetExp).BeginInit();
@@ -1224,7 +1216,6 @@ namespace Intersect.Editor.Forms.Editors
             // 
             // pnlPetlevel
             // 
-            pnlPetlevel.Controls.Add(DarkGroupBox5);
             pnlPetlevel.Controls.Add(nudMaxLevel);
             pnlPetlevel.Controls.Add(DarkLabel12);
             pnlPetlevel.Controls.Add(nudPetPnts);
@@ -1236,95 +1227,8 @@ namespace Intersect.Editor.Forms.Editors
             pnlPetlevel.Name = "pnlPetlevel";
             pnlPetlevel.Size = new Size(582, 136);
             pnlPetlevel.TabIndex = 2;
-            // 
-            // DarkGroupBox5
-            // 
-            DarkGroupBox5.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
-            DarkGroupBox5.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
-            DarkGroupBox5.Controls.Add(cmbEvolve);
-            DarkGroupBox5.Controls.Add(DarkLabel15);
-            DarkGroupBox5.Controls.Add(nudEvolveLvl);
-            DarkGroupBox5.Controls.Add(DarkLabel14);
-            DarkGroupBox5.Controls.Add(chkEvolve);
-            DarkGroupBox5.ForeColor = System.Drawing.Color.Gainsboro;
-            DarkGroupBox5.Location = new System.Drawing.Point(7, 44);
-            DarkGroupBox5.Margin = new Padding(4, 3, 4, 3);
-            DarkGroupBox5.Name = "DarkGroupBox5";
-            DarkGroupBox5.Padding = new Padding(4, 3, 4, 3);
-            DarkGroupBox5.Size = new Size(567, 87);
-            DarkGroupBox5.TabIndex = 7;
-            DarkGroupBox5.TabStop = false;
-            DarkGroupBox5.Text = "Evolution";
-            // 
-            // cmbEvolve
-            // 
-            cmbEvolve.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
-            cmbEvolve.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
-            cmbEvolve.BorderStyle = ButtonBorderStyle.Solid;
-            cmbEvolve.ButtonColor = System.Drawing.Color.FromArgb(43, 43, 43);
-            cmbEvolve.DrawDropdownHoverOutline = false;
-            cmbEvolve.DrawFocusRectangle = false;
-            cmbEvolve.DrawMode = DrawMode.OwnerDrawFixed;
-            cmbEvolve.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbEvolve.FlatStyle = FlatStyle.Flat;
-            cmbEvolve.ForeColor = System.Drawing.Color.Gainsboro;
-            cmbEvolve.FormattingEnabled = true;
-            cmbEvolve.Location = new System.Drawing.Point(117, 52);
-            cmbEvolve.Margin = new Padding(4, 3, 4, 3);
-            cmbEvolve.Name = "cmbEvolve";
-            cmbEvolve.Size = new Size(443, 24);
-            cmbEvolve.TabIndex = 4;
-            cmbEvolve.Text = null;
-            cmbEvolve.TextPadding = new Padding(2);
-            cmbEvolve.SelectedIndexChanged += cmbEvolve_SelectedIndexChanged;
-            // 
-            // DarkLabel15
-            // 
-            DarkLabel15.AutoSize = true;
-            DarkLabel15.ForeColor = System.Drawing.Color.FromArgb(220, 220, 220);
-            DarkLabel15.Location = new System.Drawing.Point(8, 55);
-            DarkLabel15.Margin = new Padding(4, 0, 4, 0);
-            DarkLabel15.Name = "DarkLabel15";
-            DarkLabel15.Size = new Size(73, 15);
-            DarkLabel15.TabIndex = 3;
-            DarkLabel15.Text = "Evolves into:";
-            // 
-            // nudEvolveLvl
-            // 
-            nudEvolveLvl.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
-            nudEvolveLvl.ForeColor = System.Drawing.Color.Gainsboro;
-            nudEvolveLvl.Location = new System.Drawing.Point(486, 24);
-            nudEvolveLvl.Margin = new Padding(4, 3, 4, 3);
-            nudEvolveLvl.Name = "nudEvolveLvl";
-            nudEvolveLvl.Size = new Size(74, 23);
-            nudEvolveLvl.TabIndex = 2;
-            nudEvolveLvl.Value = new decimal(new int[] { 0, 0, 0, 0 });
-            nudEvolveLvl.ValueChanged += nudEvolveLvl_ValueChanged;
-            // 
-            // DarkLabel14
-            // 
-            DarkLabel14.AutoSize = true;
-            DarkLabel14.ForeColor = System.Drawing.Color.FromArgb(220, 220, 220);
-            DarkLabel14.Location = new System.Drawing.Point(382, 26);
-            DarkLabel14.Margin = new Padding(4, 0, 4, 0);
-            DarkLabel14.Name = "DarkLabel14";
-            DarkLabel14.Size = new Size(96, 15);
-            DarkLabel14.TabIndex = 1;
-            DarkLabel14.Text = "Evolves on Level:";
-            // 
-            // chkEvolve
-            // 
-            chkEvolve.AutoSize = true;
-            chkEvolve.Location = new System.Drawing.Point(8, 22);
-            chkEvolve.Margin = new Padding(4, 3, 4, 3);
-            chkEvolve.Name = "chkEvolve";
-            chkEvolve.Size = new Size(104, 19);
-            chkEvolve.TabIndex = 0;
-            chkEvolve.Text = "Pet Can Evolve";
-            chkEvolve.CheckedChanged += chkEvolve_CheckedChanged;
-            // 
             // nudMaxLevel
-            // 
+            //
             nudMaxLevel.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
             nudMaxLevel.ForeColor = System.Drawing.Color.Gainsboro;
             nudMaxLevel.Location = new System.Drawing.Point(379, 14);
@@ -1474,9 +1378,6 @@ namespace Intersect.Editor.Forms.Editors
             DarkGroupBox4.PerformLayout();
             pnlPetlevel.ResumeLayout(false);
             pnlPetlevel.PerformLayout();
-            DarkGroupBox5.ResumeLayout(false);
-            DarkGroupBox5.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)nudEvolveLvl).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudMaxLevel).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudPetPnts).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudPetExp).EndInit();
@@ -1571,12 +1472,6 @@ namespace Intersect.Editor.Forms.Editors
         public ToolStripButton toolStripItemUndo;
         internal DarkGroupBox DarkGroupBox4;
         internal Panel pnlPetlevel;
-        internal DarkGroupBox DarkGroupBox5;
-        internal DarkComboBox cmbEvolve;
-        internal DarkLabel DarkLabel15;
-        internal DarkNumericUpDown nudEvolveLvl;
-        internal DarkLabel DarkLabel14;
-        internal DarkCheckBox chkEvolve;
         internal DarkNumericUpDown nudMaxLevel;
         internal DarkLabel DarkLabel12;
         internal DarkNumericUpDown nudPetPnts;

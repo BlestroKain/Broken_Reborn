@@ -230,7 +230,7 @@ public partial class InventoryItem : SlotItem
 
     private void _openPetHubMenuItem_Clicked(Base sender, MouseButtonState arguments)
     {
-        PacketSender.Send(new OpenPetHubRequestPacket());
+        PacketSender.SendOpenPetHubRequest();
     }
 
     private void _showItemContextItem_Clicked(Base sender, MouseButtonState arguments)

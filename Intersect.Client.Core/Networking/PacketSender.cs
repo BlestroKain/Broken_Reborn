@@ -148,6 +148,11 @@ public static partial class PacketSender
         Network.SendPacket(new SetAlignmentRequestPacket(alignment));
     }
 
+    public static void SendOpenPetHubRequest()
+    {
+        Network.SendPacket(new OpenPetHubRequestPacket());
+    }
+
 
     public static void SendActivateEvent(Guid eventId)
     {

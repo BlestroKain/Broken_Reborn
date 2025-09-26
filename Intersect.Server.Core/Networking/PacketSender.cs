@@ -55,6 +55,8 @@ public static partial class PacketSender
 
     public static long SentBytes { get; set; }
 
+    internal static event Action<Entity>? EntityLeaveSent;
+
     public static void ResetMetrics()
     {
         SentPackets = 0;
@@ -669,7 +671,9 @@ public static partial class PacketSender
     //EntityLeftPacket
     public static void SendEntityLeave(Entity en)
     {
-        SendDataToProximityOnMapInstance(en.MapId, en.MapInstanceId, new EntityLeftPacket(en.Id, en.GetEntityType(), en.MapId));
+        var packet = new EntityLeftPacket(en.Id, en.GetEntityType(), en.MapId);
+        EntityLeaveSent?.Invoke(en);
+        SendDataToProximityOnMapInstance(en.MapId, en.MapInstanceId, packet);
     }
 
     //EntityLeftPacket

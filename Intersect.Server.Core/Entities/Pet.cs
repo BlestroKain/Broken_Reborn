@@ -803,6 +803,7 @@ public sealed class Pet : Entity
             {
                 // No dropeamos nada, ni contamos muerte del owner: es un despawn “limpio”
                 Die(false, killer: Owner);
+                return;
             }
 
             // 2) Limpieza de estado interno

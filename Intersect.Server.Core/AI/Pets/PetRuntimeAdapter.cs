@@ -33,8 +33,8 @@ namespace Intersect.Server.AI.Pets
         public Player? Owner => _pet.Owner;
         public PetState Behavior => _pet.Behavior;
 
-        public long[] MaxVital => _pet.GetMaxVitals();
-        public long[] Vital => _pet.GetVitals();
+        public long[] MaxVitals => _pet.GetMaxVitals();
+        public long[] Vitals => _pet.GetVitals();
 
         public PetDescriptor? Descriptor => _pet.Descriptor;
 

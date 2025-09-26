@@ -77,8 +77,8 @@ namespace Intersect.Server.AI.Pets
         Player? Owner { get; }
         PetState Behavior { get; }
 
-        long[] MaxVital { get; }
-        long[] Vital { get; }
+        long[] MaxVitals { get; }
+        long[] Vitals { get; }
 
         bool HasManaFor(SpellDescriptor spell);
         bool IsInLineOfSight(Entity target);
@@ -226,7 +226,7 @@ namespace Intersect.Server.AI.Pets
         private bool TryHealIfNeeded(Player owner)
         {
             // Evitar gastar maná muy bajo
-            if (Percent(_pet.Vital[(int)Vital.Mana], _pet.MaxVital[(int)Vital.Mana]) < _cfg.MinManaPercentToCast)
+            if (Percent(_pet.Vitals[(int)Vital.Mana], _pet.MaxVitals[(int)Vital.Mana]) < _cfg.MinManaPercentToCast)
             {
                 return false;
             }
@@ -243,7 +243,7 @@ namespace Intersect.Server.AI.Pets
             }
 
             // Curarse a sí misma si está mal
-            var selfHpPct = Percent(_pet.Vital[(int)Vital.Health], _pet.MaxVital[(int)Vital.Health]);
+            var selfHpPct = Percent(_pet.Vitals[(int)Vital.Health], _pet.MaxVitals[(int)Vital.Health]);
             if (selfHpPct < _cfg.HealSelfThresholdPercent)
             {
                 var selfHeal = FindBestHealSpell(targetSelf: true);
@@ -388,7 +388,7 @@ namespace Intersect.Server.AI.Pets
             }
 
             // ¿tenemos maná decente?
-            if (Percent(_pet.Vital[(int)Vital.Mana], _pet.MaxVital[(int)Vital.Mana]) < _cfg.MinManaPercentToCast)
+            if (Percent(_pet.Vitals[(int)Vital.Mana], _pet.MaxVitals[(int)Vital.Mana]) < _cfg.MinManaPercentToCast)
             {
                 // acercarse/mejor posición si no puede castear, o autoataque si existe
                 return MoveIntoAttackRange(target);

@@ -108,20 +108,6 @@ public partial class PetDescriptor : DatabaseObject<PetDescriptor>, IFolderable
 
     public PetLevelingMode LevelingMode { get; set; } = PetLevelingMode.Experience;
 
-    public bool CanEvolve { get; set; }
-
-    public int EvolutionLevel { get; set; }
-
-    [Column("EvolutionTarget")]
-    public Guid EvolutionTargetId { get; set; }
-
-    [NotMapped, JsonIgnore]
-    public PetDescriptor? EvolutionTarget
-    {
-        get => EvolutionTargetId == Guid.Empty ? null : Get(EvolutionTargetId);
-        set => EvolutionTargetId = value?.Id ?? Guid.Empty;
-    }
-
     public string Sprite { get; set; } = string.Empty;
 
     [Column("Spells"), JsonIgnore]

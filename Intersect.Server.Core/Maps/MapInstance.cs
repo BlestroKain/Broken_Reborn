@@ -403,10 +403,7 @@ public partial class MapInstance : IMapInstance
                 {
                     try
                     {
-                        // Avisar a los clientes YA
-                        PacketSender.SendEntityLeave(existing);
-
-                        // Intentar despawn real (si ya está disposed no pasa nada)
+                        // Pet.Despawn se encarga de notificar a los clientes y limpiar la instancia.
                         lock (existing.EntityLock)
                         {
                             if (!existing.IsDisposed)
@@ -477,12 +474,8 @@ public partial class MapInstance : IMapInstance
         // 2) Para cada pet:
         foreach (var pet in toDespawn)
         {
-            // a) Notificar de inmediato a TODOS los jugadores de la instancia
-            //    que esta entidad sale del mapa (esto evita que “desaparezca” recién al cambiar de mapa).
-            //    Usa el mismo helper que para NPCs y Players.
-            PacketSender.SendEntityLeave(pet);
-
-            // b) Intentar despawn “real”
+            // Pet.Despawn se encarga de enviar la notificación de salida y limpiar la instancia.
+            // Intentar despawn “real”
             try
             {
                 pet.Despawn(killIfDespawnable);

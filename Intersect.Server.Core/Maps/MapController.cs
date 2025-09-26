@@ -821,10 +821,7 @@ public partial class MapController : MapDescriptor
         {
             try
             {
-                // 1) Avisar YA a los clientes que se va (antes de remover)
-                PacketSender.SendEntityLeave(pet);
-
-                // 2) Despawnear tolerante (si ya murió/disposed no rompe)
+                // Despawnear tolerante (si ya murió/disposed no rompe). Pet.Despawn se encarga de notificar a los clientes.
                 lock (pet.EntityLock)
                 {
                     if (!pet.IsDisposed)

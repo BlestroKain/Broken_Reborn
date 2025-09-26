@@ -91,7 +91,12 @@ public class PetTests
         var pet = new Pet(descriptor, owner);
 
         var leaveCount = 0;
-        void Handler(Entity _) => leaveCount++;
+        var leaveAfterDeath = false;
+        void Handler(Entity entity)
+        {
+            leaveCount++;
+            leaveAfterDeath = entity.IsDead;
+        }
 
         try
         {
@@ -108,5 +113,7 @@ public class PetTests
             Is.EqualTo(1),
             "Pet despawn should emit exactly one leave packet when kill cleanup is requested."
         );
+
+        Assert.That(leaveAfterDeath, Is.True, "Pet should already be dead when the leave packet is emitted.");
     }
 }

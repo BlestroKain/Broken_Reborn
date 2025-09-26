@@ -4,6 +4,7 @@ using Intersect.Enums;
 using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.Server.Entities;
 using Intersect.Server.Maps;
+using Intersect.Server.Networking;
 using NUnit.Framework;
 
 namespace Intersect.Tests.Server.Entities;
@@ -74,5 +75,38 @@ public class PetTests
              Options.Instance.Player.MaxStat));
 
         Assert.That(pet.CalculateAttackTime(), Is.EqualTo(expected));
+    }
+
+    [Test]
+    public void Despawn_KillDespawnable_SendsSingleEntityLeavePacket()
+    {
+        var descriptor = new PetDescriptor(Guid.NewGuid())
+        {
+            Name = "Leave Counter",
+        };
+
+        var owner = CreateOwner(_mapId);
+        MapController.Get(_mapId).TryCreateInstance(owner.MapInstanceId, out _, owner);
+
+        var pet = new Pet(descriptor, owner);
+
+        var leaveCount = 0;
+        void Handler(Entity _) => leaveCount++;
+
+        try
+        {
+            PacketSender.EntityLeaveSent += Handler;
+            pet.Despawn(killIfDespawnable: true);
+        }
+        finally
+        {
+            PacketSender.EntityLeaveSent -= Handler;
+        }
+
+        Assert.That(
+            leaveCount,
+            Is.EqualTo(1),
+            "Pet despawn should emit exactly one leave packet when kill cleanup is requested."
+        );
     }
 }

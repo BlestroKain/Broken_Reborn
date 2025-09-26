@@ -9,6 +9,7 @@ using Intersect.Framework.Core.GameObjects.Pets;
 using Intersect.Framework.Reflection;
 using Intersect.GameObjects;
 using Intersect.Network.Packets.Server;
+using Intersect.Server.AI.Pets;
 using Intersect.Server.Database.PlayerData.Players;
 using Intersect.Server.Entities.Pathfinding;
 using Intersect.Server.Framework.Items;
@@ -26,6 +27,8 @@ public sealed class Pet : Entity
     private long _lastFollowFailureTime;
 
     private readonly Pathfinder _pathfinder;
+
+    public PetAIController Brain { get; }
 
     private bool _canAssistOwner;
 
@@ -114,6 +117,7 @@ public sealed class Pet : Entity
             _behavior = value;
 
             ApplyBehaviorSettings(value);
+            Brain.OnBehaviorChanged(value);
             MarkMetadataDirty();
 
             if (State == previousState)
@@ -246,6 +250,8 @@ public sealed class Pet : Entity
         _resetCenterY = Y;
 
         _pathfinder = new Pathfinder(this);
+
+        Brain = new PetAIController(new PetRuntimeAdapter(this));
 
         Behavior = PetState.Follow;
 
@@ -562,6 +568,8 @@ public sealed class Pet : Entity
                 _pathfinder.SetTarget(null);
                 break;
         }
+
+        Brain.Update(timeMs);
     }
 
     public override void ProcessRegen()
@@ -612,6 +620,8 @@ public sealed class Pet : Entity
         base.Reset();
 
         Array.Clear(_vitalAccumulators, 0, _vitalAccumulators.Length);
+
+        Brain.Reset();
     }
 
     public override bool CanAttack(Entity entity, SpellDescriptor spell)
@@ -712,6 +722,8 @@ public sealed class Pet : Entity
             return;
         }
 
+        Brain.OnOwnerDamaged(attacker);
+
         if (!_canDefendOwner || !_canEngageTarget)
         {
             return;
@@ -739,6 +751,116 @@ public sealed class Pet : Entity
 
             TryAssignTarget(aggressor, timeMs);
         }
+    }
+
+    public bool TryCastSpell(SpellDescriptor spell, PlayerSpell spellSlot, Entity? targetEntity, int? tx = null, int? ty = null)
+    {
+        if (spell == null || spellSlot == null || spellSlot.IsEmpty)
+        {
+            return false;
+        }
+
+        var target = targetEntity;
+        var combat = spell.Combat;
+
+        if (target == null && combat != null && (combat.Friendly || combat.TargetType == SpellTargetType.Self))
+        {
+            target = this;
+        }
+
+        if (target == null && combat != null && combat.TargetType == SpellTargetType.Single && !combat.Friendly)
+        {
+            return false;
+        }
+
+        lock (EntityLock)
+        {
+            if (IsCasting)
+            {
+                return false;
+            }
+
+            var effectiveTarget = target ?? this;
+
+            if (!CanCastSpell(spell, effectiveTarget, true, SoftRetargetOnSelfCast, out _))
+            {
+                return false;
+            }
+
+            CastSpellProperties = spellSlot.Properties;
+            CastTarget = effectiveTarget;
+            SpellCastSlot = spellSlot.Slot;
+            CastTime = Timing.Global.Milliseconds + spell.CastDuration;
+
+            if (spell.CastDuration > 0)
+            {
+                PacketSender.SendEntityCastTime(this, spell.Id);
+            }
+
+            _ = tx;
+            _ = ty;
+
+            return true;
+        }
+    }
+
+    public bool TryMoveToward(int targetX, int targetY)
+    {
+        lock (EntityLock)
+        {
+            var now = Timing.Global.Milliseconds;
+            var success = UpdatePathfinder(MapId, targetX, targetY, Z, now, out var madeProgress);
+            return success && madeProgress;
+        }
+    }
+
+    public bool TryStepAwayFrom(Entity from, int tiles = 1)
+    {
+        if (from == null)
+        {
+            return false;
+        }
+
+        var dx = Math.Sign(X - from.X);
+        var dy = Math.Sign(Y - from.Y);
+
+        if (dx == 0 && dy == 0)
+        {
+            return false;
+        }
+
+        var targetX = X + dx * tiles;
+        var targetY = Y + dy * tiles;
+
+        if (dx == 0)
+        {
+            targetX = X;
+        }
+
+        if (dy == 0)
+        {
+            targetY = Y;
+        }
+
+        return TryMoveToward(targetX, targetY);
+    }
+
+    public bool TryFace(Entity target)
+    {
+        if (target == null)
+        {
+            return false;
+        }
+
+        var direction = DirectionToTarget(target);
+        if (direction == Direction.None)
+        {
+            return false;
+        }
+
+        var changed = Dir != direction;
+        ChangeDir(direction);
+        return changed;
     }
 
     internal override void RegisterIncomingAttack(Entity attacker, Vital vital)
@@ -874,6 +996,8 @@ public sealed class Pet : Entity
 
             shouldDespawn = true;
         }
+
+        Brain.OnDied();
 
         owner?.NotifyPetDied(this);
 

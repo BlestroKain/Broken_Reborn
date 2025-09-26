@@ -261,6 +261,7 @@ namespace Intersect.Server.AI.Pets
             return _pet
                 .GetUsableSpells()
                 .Where(IsHealingSpell)
+                .Where(spell => CanTargetRecipient(spell, targetSelf))
                 .OrderByDescending(EstimatedHealPower)
                 .FirstOrDefault();
         }
@@ -278,6 +279,25 @@ namespace Intersect.Server.AI.Pets
             }
 
             return spell.Combat.VitalDiff[(int)Vital.Health] > 0;
+        }
+
+        private static bool CanTargetRecipient(SpellDescriptor? spell, bool targetSelf)
+        {
+            if (spell?.Combat == null)
+            {
+                return false;
+            }
+
+            return spell.Combat.TargetType switch
+            {
+                SpellTargetType.Self => targetSelf,
+                SpellTargetType.Single => true,
+                SpellTargetType.AoE => targetSelf,
+                SpellTargetType.Projectile => !targetSelf,
+                SpellTargetType.OnHit => false,
+                SpellTargetType.Trap => false,
+                _ => false,
+            };
         }
 
         private static long EstimatedHealPower(SpellDescriptor spell)

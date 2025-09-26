@@ -1348,6 +1348,9 @@ public static partial class Strings
         public static LocalizedString NoStats = @"No stats available.";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString OpenHub = @"Open Pet Hub";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString InvokeButton = @"Summon";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

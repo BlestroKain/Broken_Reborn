@@ -3344,7 +3344,17 @@ internal sealed partial class PacketHandler
             return;
         }
 
-        _ = player.SetPetHubSpawnRequested(false, closePetHub: packet.ClosePetHub);
+        _ = player.SetPetHubSpawnRequested(false, closePetHub: false);
+    }
+
+    public void HandlePacket(Client client, OpenPetHubRequestPacket packet)
+    {
+        if (client?.Entity is not Player player)
+        {
+            return;
+        }
+
+        PacketSender.SendOpenPetHub(player);
     }
 
     //SetAlignmentRequestPacket

@@ -857,6 +857,7 @@ public sealed class Pet : Entity
     public override void Die(bool dropItems = true, Entity killer = null)
     {
         var shouldDespawn = false;
+        Player? owner = null;
 
         lock (EntityLock)
         {
@@ -867,10 +868,14 @@ public sealed class Pet : Entity
 
             base.Die(dropItems, killer);
 
+            owner = Owner;
+
             PacketSender.SendEntityDie(this);
 
             shouldDespawn = true;
         }
+
+        owner?.NotifyPetDied(this);
 
         if (shouldDespawn)
         {

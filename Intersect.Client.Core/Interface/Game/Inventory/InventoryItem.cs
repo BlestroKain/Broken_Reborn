@@ -20,6 +20,7 @@ using Intersect.Configuration;
 using Intersect.Framework.Core.GameObjects.Items;
 using Intersect.GameObjects;
 using Intersect.Utilities;
+using Intersect.Network.Packets.Client;
 
 namespace Intersect.Client.Interface.Game.Inventory;
 
@@ -37,6 +38,7 @@ public partial class InventoryItem : SlotItem
     private readonly MenuItem _actionItemMenuItem;
     private readonly MenuItem _dropItemMenuItem;
     private readonly MenuItem _showItemMenuItem;
+    private readonly MenuItem _openPetHubMenuItem;
 
     public InventoryItem(InventoryWindow inventoryWindow, Base parent, int index, ContextMenu contextMenu)
         : base(parent, nameof(InventoryItem), index, contextMenu)
@@ -96,6 +98,8 @@ public partial class InventoryItem : SlotItem
         _actionItemMenuItem.Clicked += _actionItemContextItem_Clicked;
         _showItemMenuItem = contextMenu.AddItem(Strings.ItemContextMenu.Show);
         _showItemMenuItem.Clicked += _showItemContextItem_Clicked;
+        _openPetHubMenuItem = contextMenu.AddItem(Strings.Pets.OpenHub);
+        _openPetHubMenuItem.Clicked += _openPetHubMenuItem_Clicked;
         contextMenu.LoadJsonUi(GameContentManager.UI.InGame, Graphics.Renderer.GetResolutionString());
 
         if (Globals.Me is { } player)
@@ -124,6 +128,7 @@ public partial class InventoryItem : SlotItem
         }
 
         // Add our use Item prompt, assuming we have a valid usecase.
+        var isEquipped = false;
         switch (descriptor.ItemType)
         {
             case ItemType.Spell:
@@ -146,7 +151,7 @@ public partial class InventoryItem : SlotItem
             case ItemType.Equipment:
                 contextMenu.AddChild(_useItemMenuItem);
 
-                var isEquipped = Globals.Me.MyEquipment.Any(pair => pair.Value.Contains(SlotIndex));
+                isEquipped = Globals.Me.MyEquipment.Any(pair => pair.Value.Contains(SlotIndex));
 
                 var equipItemLabel = isEquipped
                     ? Strings.ItemContextMenu.Unequip
@@ -155,6 +160,12 @@ public partial class InventoryItem : SlotItem
                 _useItemMenuItem.Text = equipItemLabel.ToString(descriptor.Name);
                 break;
 
+        }
+
+        if (descriptor.ItemType == ItemType.Equipment && descriptor.Pet?.Descriptor != null && isEquipped)
+        {
+            contextMenu.AddChild(_openPetHubMenuItem);
+            _openPetHubMenuItem.Text = Strings.Pets.OpenHub.ToString();
         }
 
         // Set up the correct contextual additional action.
@@ -215,6 +226,11 @@ public partial class InventoryItem : SlotItem
         {
             Globals.Me?.TryOfferItemToTrade(SlotIndex);
         }
+    }
+
+    private void _openPetHubMenuItem_Clicked(Base sender, MouseButtonState arguments)
+    {
+        PacketSender.Send(new OpenPetHubRequestPacket());
     }
 
     private void _showItemContextItem_Clicked(Base sender, MouseButtonState arguments)

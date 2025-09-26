@@ -457,6 +457,9 @@ public static partial class Strings
         public readonly LocalizedString ItemCount = @" - {00} Items.";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public readonly LocalizedString PetCount = @" - {00} Pets.";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public readonly LocalizedString SetCount = @" - {00} Sets.";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

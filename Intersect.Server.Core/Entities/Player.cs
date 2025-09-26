@@ -91,12 +91,16 @@ public partial class Player : Entity
 
     private const int PetBehaviorChangeCooldownDuration = 500;
     private const int PetInvokeCooldownDuration = 1000;
+    private const long PetDeathReinvokeCooldownDuration = 15_000;
 
     [JsonIgnore][NotMapped]
     private long _nextPetBehaviorChangeTime;
 
     [JsonIgnore][NotMapped]
     private long _nextPetInvokeTime;
+
+    [JsonIgnore][NotMapped]
+    private long _nextPetReinvokeAllowedTime;
 
     #endregion
 
@@ -1145,12 +1149,28 @@ public partial class Player : Entity
         }
     }
 
-    public bool SetPetHubSpawnRequested(bool requested, bool openPetHub = false, bool closePetHub = false)
+    public bool SetPetHubSpawnRequested(
+        bool requested,
+        bool openPetHub = false,
+        bool closePetHub = false,
+        bool ignoreCooldown = false
+    )
     {
         lock (EntityLock)
         {
             if (requested)
             {
+                var now = Timing.Global.Milliseconds;
+                if (!ignoreCooldown && now < _nextPetReinvokeAllowedTime)
+                {
+                    if (openPetHub)
+                    {
+                        PacketSender.SendOpenPetHub(this);
+                    }
+
+                    return false;
+                }
+
                 SetPetHubSpawnFlag(true);
 
                 var descriptor = ActivePet?.Descriptor;
@@ -1178,11 +1198,22 @@ public partial class Player : Entity
 
         CleanupSpawnedPetsList();
 
+        var now = Timing.Global.Milliseconds;
         var activePet = ActivePet;
         var descriptor = activePet?.Descriptor;
         var currentPet = CurrentPet;
 
         if (!IsPetSpawnedViaHub)
+        {
+            if (currentPet != null)
+            {
+                DespawnPet(currentPet, false);
+            }
+
+            return;
+        }
+
+        if (now < _nextPetReinvokeAllowedTime)
         {
             if (currentPet != null)
             {
@@ -1217,6 +1248,11 @@ public partial class Player : Entity
         if (currentPet == null)
         {
             if (!MapController.TryGetInstanceFromMap(MapId, MapInstanceId, out var instance))
+            {
+                return;
+            }
+
+            if (now < _nextPetReinvokeAllowedTime)
             {
                 return;
             }
@@ -1469,12 +1505,49 @@ public partial class Player : Entity
         return true;
     }
 
+    public void NotifyPetDied(Pet pet)
+    {
+        if (pet == null || pet.OwnerId != Id)
+        {
+            return;
+        }
+
+        _nextPetReinvokeAllowedTime = Timing.Global.Milliseconds + PetDeathReinvokeCooldownDuration;
+
+        SetPetHubSpawnFlag(false, notifyClient: true);
+
+        if (ReferenceEquals(CurrentPet, pet))
+        {
+            CurrentPet = null;
+        }
+
+        lock (_spawnedPetsLock)
+        {
+            _ = SpawnedPets.Remove(pet);
+        }
+
+        PacketSender.SendChatMsg(
+            this,
+            "Tu mascota ha muerto. Podrás volver a invocarla cuando termine el enfriamiento.",
+            ChatMessageType.Combat,
+            CustomColors.Alerts.Info
+        );
+    }
+
     public bool InvokePet(bool ignoreCooldown = false, bool openPetHub = false)
     {
         var now = Timing.Global.Milliseconds;
-        if (!ignoreCooldown && now < _nextPetInvokeTime)
+        if (!ignoreCooldown)
         {
-            return false;
+            if (now < _nextPetInvokeTime)
+            {
+                return false;
+            }
+
+            if (now < _nextPetReinvokeAllowedTime)
+            {
+                return false;
+            }
         }
 
         var playerPet = ActivePet;
@@ -1484,7 +1557,7 @@ public partial class Player : Entity
             return false;
         }
 
-        if (!TrySummonPet(playerPet, descriptor, openPetHub))
+        if (!TrySummonPet(playerPet, descriptor, openPetHub, ignoreCooldown))
         {
             return false;
         }
@@ -1768,14 +1841,19 @@ public partial class Player : Entity
         }
     }
 
-    private bool TrySummonPet(PlayerPet playerPet, PetDescriptor descriptor, bool openPetHub)
+    private bool TrySummonPet(
+        PlayerPet playerPet,
+        PetDescriptor descriptor,
+        bool openPetHub,
+        bool ignoreCooldown
+    )
     {
         if (playerPet == null || descriptor == null)
         {
             return false;
         }
 
-        return SetPetHubSpawnRequested(true, openPetHub);
+        return SetPetHubSpawnRequested(true, openPetHub, ignoreCooldown: ignoreCooldown);
     }
 
     private bool TrySpawnActivePet(PetDescriptor descriptor, bool openPetHub)

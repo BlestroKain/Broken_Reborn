@@ -20,7 +20,7 @@ namespace Intersect.Server.Entities;
 
 public sealed class Pet : Entity
 {
-    private const int FollowDistance = 3;
+    private const int FollowDistance = 1;
     private const long PathUpdateInterval = 100;
     private const long TargetLostGracePeriod = 2000;
     private int _followPathFailureCount;

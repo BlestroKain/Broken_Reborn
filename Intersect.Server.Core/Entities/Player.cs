@@ -1356,6 +1356,9 @@ public partial class Player : Entity
         playerPet.Level = Math.Clamp(pet.Level, 1, pet.MaxLevel);
         playerPet.Experience = Math.Max(0, pet.Experience);
         playerPet.StatPoints = Math.Max(0, pet.StatPoints);
+        playerPet.Energy = pet.Energy;
+        playerPet.Mood = pet.Mood;
+        playerPet.Maturity = pet.Maturity;
 
         var statCount = Enum.GetValues<Stat>().Length;
         for (var index = 0; index < statCount; index++)
@@ -1756,6 +1759,21 @@ public partial class Player : Entity
             Experience = Math.Max(0, descriptor.Experience),
             StatPoints = 0,
             CustomName = string.Empty,
+            Energy = Math.Clamp(
+                descriptor.BaseEnergy,
+                Pet.MinAttributeValue,
+                Math.Max(Pet.MaxAttributeValue, descriptor.BaseEnergy)
+            ),
+            Mood = Math.Clamp(
+                descriptor.BaseMood,
+                Pet.MinAttributeValue,
+                Math.Max(Pet.MaxAttributeValue, descriptor.BaseMood)
+            ),
+            Maturity = Math.Clamp(
+                descriptor.BaseMaturity,
+                Pet.MinAttributeValue,
+                Math.Max(Pet.MaxAttributeValue, descriptor.BaseMaturity)
+            ),
         };
 
         var initialName = petData.PetNameOverride;
@@ -1791,6 +1809,37 @@ public partial class Player : Entity
     {
         var statCount = Enum.GetValues<Stat>().Length;
         var vitalCount = Enum.GetValues<Vital>().Length;
+
+        var descriptor = playerPet.Descriptor;
+        if (playerPet.Energy < Pet.MinAttributeValue)
+        {
+            var baseEnergy = descriptor?.BaseEnergy ?? Pet.MaxAttributeValue;
+            playerPet.Energy = Math.Clamp(
+                baseEnergy,
+                Pet.MinAttributeValue,
+                Math.Max(Pet.MaxAttributeValue, baseEnergy)
+            );
+        }
+
+        if (playerPet.Mood < Pet.MinAttributeValue)
+        {
+            var baseMood = descriptor?.BaseMood ?? Pet.MaxAttributeValue;
+            playerPet.Mood = Math.Clamp(
+                baseMood,
+                Pet.MinAttributeValue,
+                Math.Max(Pet.MaxAttributeValue, baseMood)
+            );
+        }
+
+        if (playerPet.Maturity < Pet.MinAttributeValue)
+        {
+            var baseMaturity = descriptor?.BaseMaturity ?? Pet.MinAttributeValue;
+            playerPet.Maturity = Math.Clamp(
+                baseMaturity,
+                Pet.MinAttributeValue,
+                Math.Max(Pet.MaxAttributeValue, baseMaturity)
+            );
+        }
 
         var baseStats = playerPet.BaseStats ?? Array.Empty<int>();
         if (baseStats.Length != statCount)

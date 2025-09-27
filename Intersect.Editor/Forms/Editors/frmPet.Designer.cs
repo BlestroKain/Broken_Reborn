@@ -88,6 +88,12 @@ namespace Intersect.Editor.Forms.Editors
             btnAddFolder = new DarkButton();
             lblFolder = new Label();
             cmbFolder = new DarkComboBox();
+            lblBaseEnergy = new Label();
+            nudBaseEnergy = new DarkNumericUpDown();
+            lblBaseMood = new Label();
+            nudBaseMood = new DarkNumericUpDown();
+            lblBaseMaturity = new Label();
+            nudBaseMaturity = new DarkNumericUpDown();
             lblName = new Label();
             txtName = new DarkTextBox();
             grpSpells = new DarkGroupBox();
@@ -141,6 +147,9 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)nudStr).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudMana).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudHp).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudBaseEnergy).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudBaseMood).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudBaseMaturity).BeginInit();
             grpGeneral.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)picPet).BeginInit();
             grpSpells.SuspendLayout();
@@ -889,6 +898,12 @@ namespace Intersect.Editor.Forms.Editors
             grpGeneral.Controls.Add(lblPic);
             grpGeneral.Controls.Add(cmbSprite);
             grpGeneral.Controls.Add(picPet);
+            grpGeneral.Controls.Add(lblBaseMaturity);
+            grpGeneral.Controls.Add(nudBaseMaturity);
+            grpGeneral.Controls.Add(lblBaseMood);
+            grpGeneral.Controls.Add(nudBaseMood);
+            grpGeneral.Controls.Add(lblBaseEnergy);
+            grpGeneral.Controls.Add(nudBaseEnergy);
             grpGeneral.Controls.Add(btnAddFolder);
             grpGeneral.Controls.Add(lblFolder);
             grpGeneral.Controls.Add(cmbFolder);
@@ -897,22 +912,22 @@ namespace Intersect.Editor.Forms.Editors
             grpGeneral.ForeColor = System.Drawing.Color.Gainsboro;
             grpGeneral.Location = new System.Drawing.Point(7, 8);
             grpGeneral.Name = "grpGeneral";
-            grpGeneral.Size = new Size(280, 124);
+            grpGeneral.Size = new Size(280, 220);
             grpGeneral.TabIndex = 0;
             grpGeneral.TabStop = false;
             grpGeneral.Text = "General";
-            // 
+            //
             // lblPic
-            // 
+            //
             lblPic.AutoSize = true;
-            lblPic.Location = new System.Drawing.Point(13, 86);
+            lblPic.Location = new System.Drawing.Point(13, 176);
             lblPic.Name = "lblPic";
             lblPic.Size = new Size(37, 15);
             lblPic.TabIndex = 7;
             lblPic.Text = "Sprite";
-            // 
+            //
             // cmbSprite
-            // 
+            //
             cmbSprite.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
             cmbSprite.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
             cmbSprite.BorderStyle = ButtonBorderStyle.Solid;
@@ -923,23 +938,23 @@ namespace Intersect.Editor.Forms.Editors
             cmbSprite.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbSprite.FlatStyle = FlatStyle.Flat;
             cmbSprite.ForeColor = System.Drawing.Color.Gainsboro;
-            cmbSprite.Location = new System.Drawing.Point(60, 84);
+            cmbSprite.Location = new System.Drawing.Point(60, 174);
             cmbSprite.Name = "cmbSprite";
             cmbSprite.Size = new Size(122, 24);
             cmbSprite.TabIndex = 3;
             cmbSprite.Text = null;
             cmbSprite.TextPadding = new Padding(2);
             cmbSprite.SelectedIndexChanged += cmbSprite_SelectedIndexChanged;
-            // 
+            //
             // picPet
-            // 
+            //
             picPet.BackColor = System.Drawing.Color.Black;
-            picPet.Location = new System.Drawing.Point(188, 22);
+            picPet.Location = new System.Drawing.Point(188, 24);
             picPet.Name = "picPet";
             picPet.Size = new Size(86, 92);
             picPet.TabIndex = 8;
             picPet.TabStop = false;
-            // 
+            //
             // btnAddFolder
             // 
             btnAddFolder.Location = new System.Drawing.Point(156, 54);
@@ -978,9 +993,72 @@ namespace Intersect.Editor.Forms.Editors
             cmbFolder.Text = null;
             cmbFolder.TextPadding = new Padding(2);
             cmbFolder.SelectedIndexChanged += cmbFolder_SelectedIndexChanged;
-            // 
+            //
+            // lblBaseEnergy
+            //
+            lblBaseEnergy.AutoSize = true;
+            lblBaseEnergy.Location = new System.Drawing.Point(13, 86);
+            lblBaseEnergy.Name = "lblBaseEnergy";
+            lblBaseEnergy.Size = new Size(71, 15);
+            lblBaseEnergy.TabIndex = 11;
+            lblBaseEnergy.Text = "Base Energy";
+            //
+            // nudBaseEnergy
+            //
+            nudBaseEnergy.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            nudBaseEnergy.ForeColor = System.Drawing.Color.Gainsboro;
+            nudBaseEnergy.Location = new System.Drawing.Point(110, 82);
+            nudBaseEnergy.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
+            nudBaseEnergy.Minimum = new decimal(new int[] { 0, 0, 0, 0 });
+            nudBaseEnergy.Name = "nudBaseEnergy";
+            nudBaseEnergy.Size = new Size(105, 23);
+            nudBaseEnergy.TabIndex = 4;
+            nudBaseEnergy.ValueChanged += nudBaseEnergy_ValueChanged;
+            //
+            // lblBaseMood
+            //
+            lblBaseMood.AutoSize = true;
+            lblBaseMood.Location = new System.Drawing.Point(13, 116);
+            lblBaseMood.Name = "lblBaseMood";
+            lblBaseMood.Size = new Size(66, 15);
+            lblBaseMood.TabIndex = 12;
+            lblBaseMood.Text = "Base Mood";
+            //
+            // nudBaseMood
+            //
+            nudBaseMood.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            nudBaseMood.ForeColor = System.Drawing.Color.Gainsboro;
+            nudBaseMood.Location = new System.Drawing.Point(110, 112);
+            nudBaseMood.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
+            nudBaseMood.Minimum = new decimal(new int[] { 0, 0, 0, 0 });
+            nudBaseMood.Name = "nudBaseMood";
+            nudBaseMood.Size = new Size(105, 23);
+            nudBaseMood.TabIndex = 5;
+            nudBaseMood.ValueChanged += nudBaseMood_ValueChanged;
+            //
+            // lblBaseMaturity
+            //
+            lblBaseMaturity.AutoSize = true;
+            lblBaseMaturity.Location = new System.Drawing.Point(13, 146);
+            lblBaseMaturity.Name = "lblBaseMaturity";
+            lblBaseMaturity.Size = new Size(82, 15);
+            lblBaseMaturity.TabIndex = 13;
+            lblBaseMaturity.Text = "Base Maturity";
+            //
+            // nudBaseMaturity
+            //
+            nudBaseMaturity.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+            nudBaseMaturity.ForeColor = System.Drawing.Color.Gainsboro;
+            nudBaseMaturity.Location = new System.Drawing.Point(110, 142);
+            nudBaseMaturity.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
+            nudBaseMaturity.Minimum = new decimal(new int[] { 0, 0, 0, 0 });
+            nudBaseMaturity.Name = "nudBaseMaturity";
+            nudBaseMaturity.Size = new Size(105, 23);
+            nudBaseMaturity.TabIndex = 6;
+            nudBaseMaturity.ValueChanged += nudBaseMaturity_ValueChanged;
+            //
             // lblName
-            // 
+            //
             lblName.AutoSize = true;
             lblName.Location = new System.Drawing.Point(13, 26);
             lblName.Name = "lblName";
@@ -1368,6 +1446,9 @@ namespace Intersect.Editor.Forms.Editors
             ((System.ComponentModel.ISupportInitialize)nudStr).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudMana).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudHp).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudBaseEnergy).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudBaseMood).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudBaseMaturity).EndInit();
             grpGeneral.ResumeLayout(false);
             grpGeneral.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)picPet).EndInit();
@@ -1450,6 +1531,12 @@ namespace Intersect.Editor.Forms.Editors
         private DarkButton btnAddFolder;
         private Label lblFolder;
         private DarkComboBox cmbFolder;
+        private Label lblBaseEnergy;
+        private DarkNumericUpDown nudBaseEnergy;
+        private Label lblBaseMood;
+        private DarkNumericUpDown nudBaseMood;
+        private Label lblBaseMaturity;
+        private DarkNumericUpDown nudBaseMaturity;
         private Label lblName;
         private DarkTextBox txtName;
         private DarkGroupBox grpSpells;

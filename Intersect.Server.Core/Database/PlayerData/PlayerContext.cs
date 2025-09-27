@@ -110,6 +110,9 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
         modelBuilder.Entity<Player>().HasMany(b => b.BestiaryUnlocks).WithOne(p => p.Player);
         modelBuilder.Entity<Player>().HasMany(b => b.Pets).WithOne(p => p.Player).OnDelete(DeleteBehavior.Cascade);
         modelBuilder.Entity<PlayerPet>().HasIndex(p => new { p.PlayerId, p.PetInstanceId }).IsUnique();
+        modelBuilder.Entity<PlayerPet>().Property(pet => pet.Energy).HasDefaultValue(-1);
+        modelBuilder.Entity<PlayerPet>().Property(pet => pet.Mood).HasDefaultValue(-1);
+        modelBuilder.Entity<PlayerPet>().Property(pet => pet.Maturity).HasDefaultValue(-1);
         modelBuilder.Entity<Player>()
             .HasOne(p => p.ActivePet)
             .WithMany()

@@ -1333,6 +1333,15 @@ public static partial class Strings
         public static LocalizedString BehaviorUnknown = @"Unknown";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString EnergyLabel = @"Energy: {0}/{1}";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString MoodLabel = @"Mood: {0}/{1}";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString MaturityLabel = @"Maturity: {0}/{1}";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString VitalsHeader = @"Vitals";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

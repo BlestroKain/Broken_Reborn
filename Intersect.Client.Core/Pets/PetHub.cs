@@ -740,6 +740,12 @@ RaiseEvents:
 
         public long ExperienceToNextLevel { get; init; }
 
+        public int Energy { get; init; }
+
+        public int Mood { get; init; }
+
+        public int Maturity { get; init; }
+
         public PetProgressSnapshot Clone() => new()
         {
             PetId = PetId,
@@ -748,6 +754,9 @@ RaiseEvents:
             Level = Level,
             Experience = Experience,
             ExperienceToNextLevel = ExperienceToNextLevel,
+            Energy = Energy,
+            Mood = Mood,
+            Maturity = Maturity,
         };
     }
 
@@ -759,6 +768,9 @@ RaiseEvents:
         Level = pet.Level,
         Experience = pet.Experience,
         ExperienceToNextLevel = pet.ExperienceToNextLevel,
+        Energy = pet.Energy,
+        Mood = pet.Mood,
+        Maturity = pet.Maturity,
     };
 
     private PetProgressSnapshot? GetSnapshot(Guid petId)

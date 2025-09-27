@@ -485,7 +485,15 @@ internal sealed partial class PacketHandler
             return;
         }
 
-        pet.ApplyProgress(packet.Experience, packet.ExperienceToNextLevel, packet.StatPoints, packet.StatPointAllocations);
+        pet.ApplyProgress(
+            packet.Experience,
+            packet.ExperienceToNextLevel,
+            packet.StatPoints,
+            packet.StatPointAllocations,
+            packet.Energy,
+            packet.Mood,
+            packet.Maturity
+        );
     }
 
     public void HandlePacket(IPacketSender packetSender, PetHubStatePacket packet)

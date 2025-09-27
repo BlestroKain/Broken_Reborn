@@ -55,6 +55,14 @@ public sealed class Pet : Entity
     private int _resetCenterX;
     private int _resetCenterY;
 
+    public const int MinAttributeValue = 0;
+
+    public const int MaxAttributeValue = 100;
+
+    private int _energy;
+    private int _mood;
+    private int _maturity;
+
     public PetDescriptor Descriptor { get; private set; }
 
     public int ExperienceRate { get; private set; }
@@ -78,6 +86,56 @@ public sealed class Pet : Entity
     public int StatPoints { get; private set; }
 
     public int TotalAllocatedStatPoints => StatPointAllocations.Sum();
+
+    public int Energy => _energy;
+
+    public int Mood => _mood;
+
+    public int Maturity => _maturity;
+
+    private static int ClampAttribute(int value, int descriptorBase) =>
+        Math.Clamp(value, MinAttributeValue, Math.Max(MaxAttributeValue, descriptorBase));
+
+    private bool UpdateAttribute(ref int field, int value, int descriptorBase, bool persist, bool notify)
+    {
+        var clamped = ClampAttribute(value, descriptorBase);
+        if (field == clamped)
+        {
+            return false;
+        }
+
+        field = clamped;
+
+        if (notify)
+        {
+            PacketSender.SendPetProgress(this);
+        }
+
+        if (persist)
+        {
+            Owner?.PersistPetProgress(this);
+        }
+
+        return true;
+    }
+
+    public bool SetEnergy(int value, bool persist = true, bool notify = true) =>
+        UpdateAttribute(ref _energy, value, Descriptor.BaseEnergy, persist, notify);
+
+    public bool ModifyEnergy(int delta, bool persist = true, bool notify = true) =>
+        SetEnergy(_energy + delta, persist, notify);
+
+    public bool SetMood(int value, bool persist = true, bool notify = true) =>
+        UpdateAttribute(ref _mood, value, Descriptor.BaseMood, persist, notify);
+
+    public bool ModifyMood(int delta, bool persist = true, bool notify = true) =>
+        SetMood(_mood + delta, persist, notify);
+
+    public bool SetMaturity(int value, bool persist = true, bool notify = true) =>
+        UpdateAttribute(ref _maturity, value, Descriptor.BaseMaturity, persist, notify);
+
+    public bool ModifyMaturity(int delta, bool persist = true, bool notify = true) =>
+        SetMaturity(_maturity + delta, persist, notify);
 
     public Player? Owner
     {
@@ -175,6 +233,10 @@ public sealed class Pet : Entity
 
         Experience = 0;
         StatPoints = 0;
+
+        SetEnergy(descriptor.BaseEnergy, persist: false, notify: false);
+        SetMood(descriptor.BaseMood, persist: false, notify: false);
+        SetMaturity(descriptor.BaseMaturity, persist: false, notify: false);
 
         var spawnMapId = mapIdOverride ?? owner.MapId;
         var spawnMapInstanceId = mapInstanceIdOverride ?? owner.MapInstanceId;
@@ -306,6 +368,15 @@ public sealed class Pet : Entity
                 SetVital(index, GetMaxVital((Vital)index));
             }
         }
+
+        var energy = persistedPet.Energy < 0 ? Descriptor.BaseEnergy : persistedPet.Energy;
+        SetEnergy(energy, persist: false, notify: false);
+
+        var mood = persistedPet.Mood < 0 ? Descriptor.BaseMood : persistedPet.Mood;
+        SetMood(mood, persist: false, notify: false);
+
+        var maturity = persistedPet.Maturity < 0 ? Descriptor.BaseMaturity : persistedPet.Maturity;
+        SetMaturity(maturity, persist: false, notify: false);
     }
 
     public override EntityType GetEntityType() => EntityType.Pet;

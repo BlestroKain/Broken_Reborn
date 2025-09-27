@@ -78,6 +78,12 @@ public partial class PetDescriptor : DatabaseObject<PetDescriptor>, IFolderable
 
     public int DamageType { get; set; }
 
+    public int BaseEnergy { get; set; } = 100;
+
+    public int BaseMood { get; set; } = 100;
+
+    public int BaseMaturity { get; set; }
+
     public int CritChance { get; set; }
 
     public double CritMultiplier { get; set; } = 1.5;

@@ -14,6 +14,8 @@ namespace Intersect.Client.Entities;
 /// </summary>
 public sealed class Pet : Entity
 {
+    private const int DefaultAttributeCap = 100;
+
     private PetDescriptor? _cachedDescriptor;
     private Guid _descriptorId;
 
@@ -100,6 +102,12 @@ public sealed class Pet : Entity
 
     public IReadOnlyList<int> StatPointAllocations => _statPointAllocations;
 
+    public int Energy { get; private set; }
+
+    public int Mood { get; private set; }
+
+    public int Maturity { get; private set; }
+
     /// <summary>
     ///     Applies the metadata provided by the server to this pet instance.
     /// </summary>
@@ -132,7 +140,15 @@ public sealed class Pet : Entity
         }
     }
 
-    public void ApplyProgress(long experience, long experienceToNextLevel, int statPoints, int[]? statPointAllocations)
+    public void ApplyProgress(
+        long experience,
+        long experienceToNextLevel,
+        int statPoints,
+        int[]? statPointAllocations,
+        int energy,
+        int mood,
+        int maturity
+    )
     {
         Experience = Math.Max(0, experience);
         ExperienceToNextLevel = Math.Max(-1, experienceToNextLevel);
@@ -147,6 +163,10 @@ public sealed class Pet : Entity
             _statPointAllocations = new int[statPointAllocations.Length];
             Array.Copy(statPointAllocations, _statPointAllocations, statPointAllocations.Length);
         }
+
+        Energy = ClampAttribute(energy, Descriptor?.BaseEnergy ?? DefaultAttributeCap);
+        Mood = ClampAttribute(mood, Descriptor?.BaseMood ?? DefaultAttributeCap);
+        Maturity = ClampAttribute(maturity, Descriptor?.BaseMaturity ?? DefaultAttributeCap);
 
         Globals.NotifyPetProgressApplied(this);
     }
@@ -165,6 +185,9 @@ public sealed class Pet : Entity
         ExperienceToNextLevel = 0;
         StatPoints = 0;
         _statPointAllocations = Array.Empty<int>();
+        Energy = 0;
+        Mood = 0;
+        Maturity = 0;
     }
 
     /// <inheritdoc />
@@ -183,5 +206,8 @@ public sealed class Pet : Entity
             petPacket.Despawnable,
             petPacket.Behavior
         );
-    }
+}
+
+    private static int ClampAttribute(int value, int baseValue) =>
+        Math.Clamp(value, 0, Math.Max(DefaultAttributeCap, baseValue));
 }

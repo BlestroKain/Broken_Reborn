@@ -1075,7 +1075,10 @@ public static partial class PacketSender
                 pet.Experience,
                 pet.ExperienceToNextLevel,
                 pet.StatPoints,
-                allocations.ToArray()
+                allocations.ToArray(),
+                pet.Energy,
+                pet.Mood,
+                pet.Maturity
             ),
             TransmissionMode.Any
         );

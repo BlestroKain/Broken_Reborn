@@ -20,7 +20,7 @@ namespace Intersect.Client.Interface.Game.Pets
     {
         // Layout
         private const int WindowWidth = 360;
-        private const int WindowHeight = 560;
+        private const int WindowHeight = 720;
 
         private const int Margin = 16;
         private const int Gap = 8;
@@ -29,7 +29,9 @@ namespace Intersect.Client.Interface.Game.Pets
         private const int StatColumnWidth = 150;
         private const int StatRowHeight = 20;
 
-        private const int DetailsPanelHeight = 264;
+        private const int DetailsPanelHeight = 330;
+
+        private const int DefaultAttributeCap = 100;
 
         // Fonts
         private const string FontName = "sourceproblack";
@@ -49,6 +51,10 @@ namespace Intersect.Client.Interface.Game.Pets
         private readonly Label _experienceLabel;
         private readonly Label _experienceToNextLabel;
         private readonly Label _behaviorLabel;
+
+        private readonly Label _energyLabel;
+        private readonly Label _moodLabel;
+        private readonly Label _maturityLabel;
 
         private readonly Label _vitalsHeader;
         private readonly Dictionary<Vital, Label> _vitalLabels = new();
@@ -104,12 +110,16 @@ namespace Intersect.Client.Interface.Game.Pets
             _experienceToNextLabel = CreateDetailLabel(_detailsPanel, "ExperienceToNextLabel", DetailLineHeight * 4);
             _behaviorLabel = CreateDetailLabel(_detailsPanel, "BehaviorLabel", DetailLineHeight * 5);
 
-            _vitalsHeader = CreateDetailLabel(_detailsPanel, "VitalsHeaderLabel", DetailLineHeight * 6);
+            _energyLabel = CreateDetailLabel(_detailsPanel, "EnergyLabel", DetailLineHeight * 6);
+            _moodLabel = CreateDetailLabel(_detailsPanel, "MoodLabel", DetailLineHeight * 7);
+            _maturityLabel = CreateDetailLabel(_detailsPanel, "MaturityLabel", DetailLineHeight * 8);
+
+            _vitalsHeader = CreateDetailLabel(_detailsPanel, "VitalsHeaderLabel", DetailLineHeight * 9);
             _vitalsHeader.FontSize = HeaderSize;
             _vitalsHeader.Text = Strings.Pets.VitalsHeader.ToString();
 
             // Vitals debajo del header
-            var firstVitalY = DetailLineHeight * 7;
+            var firstVitalY = DetailLineHeight * 10;
             var vitalIndex = 0;
             foreach (var vital in Enum.GetValues<Vital>())
             {
@@ -274,6 +284,9 @@ namespace Intersect.Client.Interface.Game.Pets
                 _noStatsLabel.IsHidden = false;
                 _experienceLabel.IsHidden = true;
                 _experienceToNextLabel.IsHidden = true;
+                _energyLabel.IsHidden = true;
+                _moodLabel.IsHidden = true;
+                _maturityLabel.IsHidden = true;
 
                 return;
             }
@@ -303,8 +316,41 @@ namespace Intersect.Client.Interface.Game.Pets
             var behaviorText = GetBehaviorLabel(Globals.PetHub.Behavior);
             _behaviorLabel.Text = Strings.Pets.BehaviorLabel.ToString(behaviorText);
 
+            UpdateAttributes(pet);
             UpdateVitals(pet);
             UpdateStats(descriptor);
+        }
+
+        private void UpdateAttributes(Pet pet)
+        {
+            var descriptor = pet.Descriptor;
+
+            var energyCap = Math.Max(DefaultAttributeCap, descriptor?.BaseEnergy ?? 0);
+            if (energyCap <= 0)
+            {
+                energyCap = DefaultAttributeCap;
+            }
+
+            var moodCap = Math.Max(DefaultAttributeCap, descriptor?.BaseMood ?? 0);
+            if (moodCap <= 0)
+            {
+                moodCap = DefaultAttributeCap;
+            }
+
+            var maturityCap = Math.Max(DefaultAttributeCap, descriptor?.BaseMaturity ?? 0);
+            if (maturityCap <= 0)
+            {
+                maturityCap = DefaultAttributeCap;
+            }
+
+            _energyLabel.Text = Strings.Pets.EnergyLabel.ToString(pet.Energy, energyCap);
+            _energyLabel.IsHidden = false;
+
+            _moodLabel.Text = Strings.Pets.MoodLabel.ToString(pet.Mood, moodCap);
+            _moodLabel.IsHidden = false;
+
+            _maturityLabel.Text = Strings.Pets.MaturityLabel.ToString(pet.Maturity, maturityCap);
+            _maturityLabel.IsHidden = false;
         }
 
         private void UpdateVitals(Pet pet)

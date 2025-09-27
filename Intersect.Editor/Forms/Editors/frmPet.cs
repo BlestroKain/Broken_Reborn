@@ -341,6 +341,9 @@ public partial class FrmPet : EditorForm
         lblName.Text = Strings.Pets.name;
         lblFolder.Text = Strings.Pets.folderlabel;
         btnAddFolder.Text = Strings.Pets.addfolder;
+        lblBaseEnergy.Text = Strings.Pets.baseenergy;
+        lblBaseMood.Text = Strings.Pets.basemood;
+        lblBaseMaturity.Text = Strings.Pets.basematurity;
         lblPic.Text = Strings.Pets.sprite;
 
         grpStats.Text = Strings.Pets.stats;
@@ -444,6 +447,9 @@ public partial class FrmPet : EditorForm
             {
                 cmbSprite.SelectedIndex = 0;
             }
+            nudBaseEnergy.Value = Math.Max(nudBaseEnergy.Minimum, Math.Min(nudBaseEnergy.Maximum, _editorItem.BaseEnergy));
+            nudBaseMood.Value = Math.Max(nudBaseMood.Minimum, Math.Min(nudBaseMood.Maximum, _editorItem.BaseMood));
+            nudBaseMaturity.Value = Math.Max(nudBaseMaturity.Minimum, Math.Min(nudBaseMaturity.Maximum, _editorItem.BaseMaturity));
             SetComboIndex(cmbAttackAnimation, AnimationDescriptor.ListIndex(_editorItem.AttackAnimationId) + 1, 0);
             SetComboIndex(cmbDeathAnimation, AnimationDescriptor.ListIndex(_editorItem.DeathAnimationId) + 1, 0);
             SetComboIndex(cmbDamageType, _editorItem.DamageType);
@@ -541,6 +547,36 @@ public partial class FrmPet : EditorForm
     private void nudHp_ValueChanged(object sender, EventArgs e) => UpdateVital(Vital.Health, nudHp);
 
     private void nudMana_ValueChanged(object sender, EventArgs e) => UpdateVital(Vital.Mana, nudMana);
+
+    private void nudBaseEnergy_ValueChanged(object sender, EventArgs e)
+    {
+        if (_editorItem == null)
+        {
+            return;
+        }
+
+        _editorItem.BaseEnergy = (int)nudBaseEnergy.Value;
+    }
+
+    private void nudBaseMood_ValueChanged(object sender, EventArgs e)
+    {
+        if (_editorItem == null)
+        {
+            return;
+        }
+
+        _editorItem.BaseMood = (int)nudBaseMood.Value;
+    }
+
+    private void nudBaseMaturity_ValueChanged(object sender, EventArgs e)
+    {
+        if (_editorItem == null)
+        {
+            return;
+        }
+
+        _editorItem.BaseMaturity = (int)nudBaseMaturity.Value;
+    }
 
     private void nudHpRegen_ValueChanged(object sender, EventArgs e) => UpdateVitalRegen(Vital.Health, nudHpRegen);
 

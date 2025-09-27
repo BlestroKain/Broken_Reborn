@@ -19,7 +19,10 @@ public sealed class PetProgressPacket : IntersectPacket
         long experience,
         long experienceToNextLevel,
         int statPoints,
-        int[] statPointAllocations
+        int[] statPointAllocations,
+        int energy,
+        int mood,
+        int maturity
     )
     {
         PetId = petId;
@@ -27,6 +30,9 @@ public sealed class PetProgressPacket : IntersectPacket
         ExperienceToNextLevel = experienceToNextLevel;
         StatPoints = statPoints;
         StatPointAllocations = statPointAllocations ?? Array.Empty<int>();
+        Energy = energy;
+        Mood = mood;
+        Maturity = maturity;
     }
 
     [Key(0)]
@@ -43,4 +49,13 @@ public sealed class PetProgressPacket : IntersectPacket
 
     [Key(4)]
     public int[] StatPointAllocations { get; set; } = Array.Empty<int>();
+
+    [Key(5)]
+    public int Energy { get; set; }
+
+    [Key(6)]
+    public int Mood { get; set; }
+
+    [Key(7)]
+    public int Maturity { get; set; }
 }

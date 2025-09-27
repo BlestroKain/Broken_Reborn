@@ -32,6 +32,12 @@ public partial class PlayerPet : IPlayerOwned
 
     public int StatPoints { get; set; }
 
+    public int Energy { get; set; } = -1;
+
+    public int Mood { get; set; } = -1;
+
+    public int Maturity { get; set; } = -1;
+
     [NotMapped]
     public int[] BaseStats { get; set; } = new int[Enum.GetValues<Stat>().Length];
 
